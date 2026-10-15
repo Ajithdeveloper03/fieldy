@@ -1,6 +1,6 @@
 import React from "react";
 import { Tabs, router } from "expo-router";
-import { Home, Package, Sprout, PhoneCall, User } from "lucide-react-native";
+import { Home, Package, Building2, PhoneCall, User } from "lucide-react-native";
 import {
   Text,
   TouchableOpacity,
@@ -20,8 +20,8 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   const routeTitleMap: Record<string, string> = {
     dashboard: "Home",
     orders: "Orders",
-    "crop-health": "Crops",
-    officer: "Officer",
+    "crop-health": "Facility",
+    officer: "Support",
     profile: "Profile",
   };
   return (
@@ -47,7 +47,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
             }
           };
           const getIcon = () => {
-            const activeColor = "#10b981"; // Emerald Green
+            const activeColor = "#0f172a"; // Slate dark
             const inactiveColor = "#94a3b8"; // Slate gray
             const color = isFocused ? activeColor : inactiveColor;  
             switch (route.name) {
@@ -56,7 +56,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
               case "orders":
                 return <Package size={24} color={color} strokeWidth={isFocused ? 2.5 : 2} />;
               case "crop-health":
-                return <Sprout size={24} color={color} strokeWidth={isFocused ? 2.5 : 2} />;
+                return <Building2 size={24} color={color} strokeWidth={isFocused ? 2.5 : 2} />;
               case "officer":
                 return <PhoneCall size={24} color={color} strokeWidth={isFocused ? 2.5 : 2} />;
               case "profile":

@@ -10,11 +10,11 @@ export type AppLanguage = "en" | "ta";
 export const translations: Record<AppLanguage, Record<string, string>> = {
   en: {
     // Top & Brand
-    appName: "Infinity Organics",
-    tagline: "Smart Farming",
-    manifesto1: "Help farmers.",
-    manifesto2: "Better soil.",
-    manifesto3: "Good future.",
+    appName: "Fieldy",
+    tagline: "Facility Management Services",
+    manifesto1: "Smart Facilities.",
+    manifesto2: "Rapid Response.",
+    manifesto3: "Total Compliance.",
     
     // Auth & Roles
     login: "Login",
@@ -22,12 +22,13 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     logout: "Logout",
     continue: "Next",
     chooseRole: "Who are you?",
-    farmer: "Farmer",
-    fieldOfficer: "Staff",
-    fieldOfficerRole: "Staff • Delta",
-    farmerRole: "Farmer",
-    employeeId: "Staff ID",
-    farmerId: "Farmer ID",
+    farmer: "Facility Client",
+    facilityClient: "Facility / Client",
+    fieldOfficer: "Facility Officer",
+    fieldOfficerRole: "Facility Officer",
+    farmerRole: "Client",
+    employeeId: "Officer ID",
+    farmerId: "Facility ID",
 
     // Navigation & Headers
     home: "Home",
@@ -35,26 +36,26 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     visits: "Visits",
     reports: "Reports",
     profile: "Profile",
-    farm: "Farm",
-    orders: "Orders",
-    support: "Help",
-    history: "Past",
+    farm: "Facility",
+    orders: "Service Orders",
+    support: "Help & SLA",
+    history: "Service History",
     notifications: "Alerts",
-    directory: "People",
+    directory: "Facilities",
     back: "Back",
     viewAll: "See All",
     viewDetails: "Details",
     viewDossier: "File",
     viewReport: "Report",
-    viewProtocol: "Rules",
+    viewProtocol: "SLA Rules",
 
-    // Farmer & Client Types (Mingle)
-    dualClient: "Farm & Shop",
-    cropCultivator: "Farm Only",
-    fertilizerCustomer: "Shop Only",
-    bioInputClient: "Bio Shop",
-    assignedFarmers: "My Farmers",
-    mingleSubtext: "All your assigned people",
+    // Facility & Client Types
+    dualClient: "Hard & Soft FM",
+    cropCultivator: "Technical FM",
+    fertilizerCustomer: "Soft Services",
+    bioInputClient: "Specialized FM",
+    assignedFarmers: "Assigned Facilities",
+    mingleSubtext: "All your assigned facility locations",
 
     // Statuses
     all: "All",

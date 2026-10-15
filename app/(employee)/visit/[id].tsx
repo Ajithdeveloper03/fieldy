@@ -75,14 +75,14 @@ export default function EmployeeVisitPurposeScreen() {
           </View>
 
           {/* VISIT PURPOSE */}
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Purpose of Visit</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Service Purpose</Text>
           <View style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, marginBottom: 24, borderWidth: 1, borderColor: "#e0f2fe" }}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
               <Target size={24} color="#0284c7" />
-              <Text style={{ color: "#0284c7", fontFamily: "Brandon-Bold", fontSize: 18, marginLeft: 12 }}>Routine Crop Health Check</Text>
+              <Text style={{ color: "#0284c7", fontFamily: "Brandon-Bold", fontSize: 18, marginLeft: 12 }}>HVAC & Preventive Maintenance Audit</Text>
             </View>
             <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 15, lineHeight: 24 }}>
-              The farmer reported slight discoloration in the Vetiver leaves. You are required to physically inspect the northern sector of the farm, take high-resolution macro photos of the affected leaves, and test the soil moisture levels.
+              The client reported an airflow irregularity in Air Handling Unit 4 (Floor 3). You are required to physically inspect the chilled water valves, verify thermostat calibration, record refrigerant pressures, and check air filter cleanliness.
             </Text>
           </View>
 
@@ -90,10 +90,10 @@ export default function EmployeeVisitPurposeScreen() {
           <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Required Action Items</Text>
           <View style={{ gap: 12, marginBottom: 32 }}>
             {[
-              { text: "Verify Geofence Check-in", icon: MapPin, color: "#10b981" },
-              { text: "Take 3 macro photos of affected leaves", icon: Camera, color: "#8b5cf6" },
-              { text: "Log Soil Moisture readings", icon: ClipboardList, color: "#f59e0b" },
-              { text: "Check for fungal spread in Sector 2", icon: AlertTriangle, color: "#ef4444" },
+              { text: "Verify Geofence On-Site Check-in", icon: MapPin, color: "#10b981" },
+              { text: "Take photos of equipment condition & serial plates", icon: Camera, color: "#8b5cf6" },
+              { text: "Log AHU pressure & temperature readings", icon: ClipboardList, color: "#f59e0b" },
+              { text: "Inspect electrical panel & circuit breakers", icon: AlertTriangle, color: "#ef4444" },
             ].map((task, idx) => (
               <View key={idx} style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#ffffff", padding: 16, borderRadius: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8 }}>
                 <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: `${task.color}15`, alignItems: "center", justifyContent: "center", marginRight: 16 }}>

@@ -142,52 +142,52 @@ export default function EmployeeDashboardScreen() {
               <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#e0f2fe", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
                 <UserPlus size={24} color="#0284c7" />
               </View>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, textAlign: "center" }}>Register{'\n'}Farmer</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, textAlign: "center" }}>Onboard{'\n'}Facility</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => router.push("/(employee)/my-farmers")} style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 24, padding: 16, alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4, marginHorizontal: 4 }}>
               <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#dcfce7", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
                 <Users size={24} color="#16a34a" />
               </View>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, textAlign: "center" }}>My{'\n'}Farmers</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, textAlign: "center" }}>My{'\n'}Facilities</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => router.push("/(employee)/report/select-method")} style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 24, padding: 16, alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4, marginLeft: 8 }}>
               <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#fef08a", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
                 <FileText size={24} color="#ca8a04" />
               </View>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, textAlign: "center" }}>Submit{'\n'}Report</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, textAlign: "center" }}>Service{'\n'}Report</Text>
             </TouchableOpacity>
           </View>
 
-          {/* ASSIGNED FARMERS (Horizontal List) */}
+          {/* ASSIGNED FACILITIES (Horizontal List) */}
           <View style={{ marginBottom: 32 }}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>Assigned Farmers</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>Assigned Facilities</Text>
               <TouchableOpacity onPress={() => router.push("/(employee)/my-farmers")}>
                 <Text style={{ color: "#0284c7", fontFamily: "Brandon-Bold", fontSize: 13, textTransform: "uppercase" }}>View All</Text>
               </TouchableOpacity>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 24 }}>
               {[
-                { id: "1", name: "Ramesh K.", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" },
-                { id: "2", name: "Suresh R.", img: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&auto=format&fit=crop&q=80" },
-                { id: "3", name: "Muthuvel", img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80" },
-                { id: "4", name: "Kumar", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80" },
-              ].map((farmer) => (
-                <TouchableOpacity key={farmer.id} onPress={() => router.push(`/(employee)/farmer/${farmer.id}` as any)} style={{ alignItems: "center", marginRight: 16 }}>
-                  <View style={{ width: 64, height: 64, borderRadius: 32, borderWidth: 2, borderColor: "#10b981", overflow: "hidden", marginBottom: 8 }}>
-                    <Image source={{ uri: farmer.img }} style={{ width: "100%", height: "100%" }} />
+                { id: "1", name: "Metro Tower", img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=150&auto=format&fit=crop&q=80" },
+                { id: "2", name: "Apex Logistics", img: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=150&auto=format&fit=crop&q=80" },
+                { id: "3", name: "Grand Mall", img: "https://images.unsplash.com/photo-1519643381401-22c77e60520e?w=150&auto=format&fit=crop&q=80" },
+                { id: "4", name: "Horizon Hub", img: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=150&auto=format&fit=crop&q=80" },
+              ].map((facility) => (
+                <TouchableOpacity key={facility.id} onPress={() => router.push(`/(employee)/farmer/${facility.id}` as any)} style={{ alignItems: "center", marginRight: 16 }}>
+                  <View style={{ width: 64, height: 64, borderRadius: 20, borderWidth: 2, borderColor: "#0284c7", overflow: "hidden", marginBottom: 8 }}>
+                    <Image source={{ uri: facility.img }} style={{ width: "100%", height: "100%" }} />
                   </View>
-                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 13 }}>{farmer.name}</Text>
+                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 13 }}>{facility.name}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
 
-          {/* TODAY'S FIELD VISITS */}
+          {/* TODAY'S FACILITY VISITS & AUDITS */}
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>Today's Field Visits</Text>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>Today's Service Visits</Text>
             <TouchableOpacity onPress={() => router.push("/(employee)/map")}>
               <Text style={{ color: "#0284c7", fontFamily: "Brandon-Bold", fontSize: 13, textTransform: "uppercase" }}>View Map</Text>
             </TouchableOpacity>

@@ -109,7 +109,7 @@ export default function RegisterStep4Screen() {
                 Status Approval by
               </Text>
               <Text className="text-slate-500 font-brandon text-xs">
-                Infinity Organics
+                Fieldy Facility Services
               </Text>
             </View>
           </View>

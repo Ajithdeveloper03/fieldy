@@ -107,11 +107,11 @@ export default function FarmerLoginScreen() {
                 <View style={{ width: 160, height: 75, borderRadius: 20, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.4)", marginBottom: 24, paddingHorizontal: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 4 }}>
                   <Image source={require("../../assets/images/logo.png")} style={{ width: 135, height: 55 }} resizeMode="contain" />
                 </View>
-                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 36, textAlign: "center", letterSpacing: 1 }}>
-                  Farmer Login
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 32, textAlign: "center", letterSpacing: 1 }}>
+                  Facility / Client Login
                 </Text>
                 <Text style={{ color: "rgba(255,255,255,0.6)", fontFamily: "Brandon-Medium", fontSize: 16, marginTop: 8 }}>
-                  Access your farm metrics and yield data
+                  Access your facility service records & audit reports
                 </Text>
               </View>
 

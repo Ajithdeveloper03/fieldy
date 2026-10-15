@@ -95,10 +95,10 @@ export default function Step1Mobile() {
             />
           </View>
           <Text className="text-xl font-brandon-bold text-slate-900 mt-3 text-center">
-            Farmer Identity & Category
+            Facility & Client Identity
           </Text>
           <Text className="text-slate-500 font-brandon text-xs text-center mt-1 px-4">
-            Enter the landholder&apos;s registered mobile number & category
+            Enter the authorized facility manager&apos;s mobile number & service scope
           </Text>
         </View>
 
@@ -124,13 +124,13 @@ export default function Step1Mobile() {
           </View>
         </View>
 
-        {/* Customer Category Selection Card */}
+        {/* Facility Service Scope Selection Card */}
         <View className="bg-sky-50/70 rounded-2xl p-4 border border-sky-200/90 shadow-sm mb-4">
           <Text className="text-sky-950 text-xs font-brandon-bold uppercase tracking-wider mb-2.5">
-            Customer Category
+            Service Agreement Scope
           </Text>
           <View className="flex-row justify-between">
-            {(["Crop", "Fertilizer", "Both"] as const).map((cat) => {
+            {(["Hard FM", "Soft FM", "Integrated FM"] as const).map((cat) => {
               const selected = category === cat;
               return (
                 <TouchableOpacity
@@ -138,7 +138,7 @@ export default function Step1Mobile() {
                   onPress={() => setCategory(cat)}
                   activeOpacity={0.8}
                   className={`flex-1 py-3 px-2 rounded-xl mx-1 border items-center shadow-sm ${selected
-                      ? "bg-[#2f6f36] border-[#2f6f36]"
+                      ? "bg-[#0284c7] border-[#0284c7]"
                       : "bg-white border-slate-200"
                     }`}
                 >

@@ -80,10 +80,10 @@ export default function FarmerDashboardScreen() {
           <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 20 }}>Quick Actions</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" }}>
             {[
-              { label: "My Farm", icon: MapPin, route: "/(farmer)/farm", bg: "#fef08a", color: "#ca8a04" },
-              { label: "Crops", icon: Sprout, route: "/(farmer)/crop-health", bg: "#dcfce7", color: "#16a34a" },
-              { label: "Orders", icon: Package, route: "/(farmer)/orders", bg: "#fee2e2", color: "#dc2626" },
-              { label: "Referrals", icon: TrendingUp, route: "/(farmer)/referral", bg: "#e0e7ff", color: "#4f46e5" },
+              { label: "My Facility", icon: MapPin, route: "/(farmer)/farm", bg: "#dbeafe", color: "#2563eb" },
+              { label: "Equipment", icon: Package, route: "/(farmer)/crop-health", bg: "#f1f5f9", color: "#475569" },
+              { label: "Service Logs", icon: TrendingUp, route: "/(farmer)/orders", bg: "#fee2e2", color: "#dc2626" },
+              { label: "Helpdesk", icon: HelpCircle, route: "/(farmer)/support", bg: "#e0e7ff", color: "#4f46e5" },
             ].map((item, idx) => (
               <TouchableOpacity key={idx} onPress={() => router.push(item.route as any)} style={{ width: "23%", alignItems: "center", marginBottom: 20 }}>
                 <View style={{ width: 64, height: 64, borderRadius: 24, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 3, marginBottom: 12, borderWidth: 1, borderColor: "#f1f5f9" }}>
@@ -97,56 +97,56 @@ export default function FarmerDashboardScreen() {
           </View>
         </View>
 
-        {/* LIVE CROP STATUS (Horizontal Cards) */}
+        {/* LIVE ASSET / HVAC STATUS (Horizontal Cards) */}
         <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 16 }}>Live Crop Status</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 16 }}>Live Asset & Facility Status</Text>
           <View style={{ flexDirection: "row", gap: 16 }}>
             <View style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 24, padding: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 10, elevation: 2, borderWidth: 1, borderColor: "#f1f5f9" }}>
               <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-                <Sprout size={16} color="#3b82f6" style={{ marginRight: 6 }} />
-                <Text style={{ color: "#3b82f6", fontFamily: "Brandon-Bold", fontSize: 12, textTransform: "uppercase" }}>VETIVER</Text>
+                <Package size={16} color="#3b82f6" style={{ marginRight: 6 }} />
+                <Text style={{ color: "#3b82f6", fontFamily: "Brandon-Bold", fontSize: 12, textTransform: "uppercase" }}>CHILLER UNIT #1</Text>
               </View>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 12 }}>Sector 1 (2.5 Ac)</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 12 }}>AHU Plant (Tower A)</Text>
               <View style={{ backgroundColor: "#dcfce7", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12, alignSelf: "flex-start" }}>
-                <Text style={{ color: "#16a34a", fontFamily: "Brandon-Bold", fontSize: 11 }}>Optimal • Day 45</Text>
+                <Text style={{ color: "#16a34a", fontFamily: "Brandon-Bold", fontSize: 11 }}>Active • 52 psi</Text>
               </View>
             </View>
 
             <View style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 24, padding: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 10, elevation: 2, borderWidth: 1, borderColor: "#f1f5f9" }}>
               <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
                 <Sun size={16} color="#f59e0b" style={{ marginRight: 6 }} />
-                <Text style={{ color: "#f59e0b", fontFamily: "Brandon-Bold", fontSize: 12, textTransform: "uppercase" }}>BANANA</Text>
+                <Text style={{ color: "#f59e0b", fontFamily: "Brandon-Bold", fontSize: 12, textTransform: "uppercase" }}>DG BACKUP 500KVA</Text>
               </View>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 12 }}>Sector 2 (1.2 Ac)</Text>
-              <View style={{ backgroundColor: "#fee2e2", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12, alignSelf: "flex-start" }}>
-                <Text style={{ color: "#dc2626", fontFamily: "Brandon-Bold", fontSize: 11 }}>Needs Water</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 12 }}>Basement Substation</Text>
+              <View style={{ backgroundColor: "#ecfdf5", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12, alignSelf: "flex-start" }}>
+                <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 11 }}>Standby • Fuel 92%</Text>
               </View>
             </View>
           </View>
         </View>
 
-        {/* FINANCIAL & YIELD OVERVIEW */}
+        {/* FINANCIAL & SLA OVERVIEW */}
         <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 16 }}>Financial Overview</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 16 }}>SLA & Service Billing</Text>
           <View style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 10, elevation: 2, borderWidth: 1, borderColor: "#f1f5f9" }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <View>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Expected Harvest Value</Text>
-                <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 24 }}>₹ 1,45,000</Text>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Annual SLA Contract Value</Text>
+                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 24 }}>₹ 4,80,000</Text>
               </View>
-              <View style={{ backgroundColor: "#ecfdf5", padding: 12, borderRadius: 16 }}>
-                <TrendingUp size={24} color="#10b981" />
+              <View style={{ backgroundColor: "#f8fafc", padding: 12, borderRadius: 16 }}>
+                <TrendingUp size={24} color="#0f172a" />
               </View>
             </View>
             <View style={{ height: 1, width: "100%", backgroundColor: "#f1f5f9", marginBottom: 16 }} />
             <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
               <View>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>Previous Payout</Text>
-                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>₹ 42,500</Text>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>Last Billed Cycle</Text>
+                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>₹ 40,000</Text>
               </View>
               <View>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>Pending Advances</Text>
-                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>₹ 0</Text>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>Next Audit Date</Text>
+                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Oct 22, 2026</Text>
               </View>
             </View>
           </View>

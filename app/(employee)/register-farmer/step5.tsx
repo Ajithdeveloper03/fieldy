@@ -82,10 +82,10 @@ export default function RegisterStep5Screen() {
         </TouchableOpacity>
         <View>
           <Text className="text-xl font-brandon-bold text-slate-900">
-            Farmer Registration
+            Facility Onboarding
           </Text>
           <Text className="text-slate-500 font-brandon text-xs">
-            Step 4 of 4 • Farm Details & Info
+            Step 4 of 4 • Facility & Service Scope
           </Text>
         </View>
       </View>
@@ -114,15 +114,15 @@ export default function RegisterStep5Screen() {
           </View>
         </View>
 
-        {/* SECTION 1: Farm Details */}
+        {/* SECTION 1: Facility & Site Details */}
         <Text className="text-slate-900 font-brandon-bold text-base mt-2 mb-3">
-          Farm Details
+          Facility & Site Details
         </Text>
 
         <View className="space-y-3 mb-6">
           <View className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm mb-3">
             <Text className="text-slate-400 text-[11px] font-brandon-medium mb-1">
-              Total Land Owned
+              Facility / Campus Area (Sq. Ft / Acres)
             </Text>
             <TextInput
               className="text-base font-brandon-bold text-slate-900 p-0 m-0"
@@ -133,7 +133,7 @@ export default function RegisterStep5Screen() {
 
           <View className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm mb-3">
             <Text className="text-slate-400 text-[11px] font-brandon-medium mb-1">
-              Land for Vetiver
+              Covered / Serviceable Area
             </Text>
             <TextInput
               className="text-base font-brandon-bold text-slate-900 p-0 m-0"
@@ -144,7 +144,7 @@ export default function RegisterStep5Screen() {
 
           <View className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm mb-3">
             <Text className="text-slate-400 text-[11px] font-brandon-medium mb-1">
-              Survey Number
+              Building / Unit Number
             </Text>
             <TextInput
               className="text-base font-brandon-bold text-slate-900 p-0 m-0"
@@ -155,7 +155,7 @@ export default function RegisterStep5Screen() {
 
           <View className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm mb-3">
             <Text className="text-slate-400 text-[11px] font-brandon-medium mb-1">
-              Location
+              Facility Location / Address
             </Text>
             <TextInput
               className="text-base font-brandon-bold text-slate-900 p-0 m-0"
@@ -164,10 +164,10 @@ export default function RegisterStep5Screen() {
             />
           </View>
 
-          {/* Land Photos Row matching Design */}
+          {/* Facility Photos Row */}
           <View className="mt-1 mb-2">
             <Text className="text-slate-500 font-brandon text-xs mb-2">
-              Land Photos
+              Facility & Equipment Photos
             </Text>
             <View className="flex-row items-center">
               <View className="w-16 h-20 rounded-xl overflow-hidden border border-slate-200 mr-2.5">
@@ -188,27 +188,27 @@ export default function RegisterStep5Screen() {
                 onPress={() =>
                   showToast({
                     title: "Photo Added",
-                    message: "Land photo attached.",
+                    message: "Facility photo attached.",
                     type: "success",
                   })
                 }
-                className="w-16 h-20 rounded-xl bg-emerald-50 border border-emerald-300 border-dashed items-center justify-center"
+                className="w-16 h-20 rounded-xl bg-sky-50 border border-sky-300 border-dashed items-center justify-center"
               >
-                <Plus size={22} color="#059669" />
+                <Plus size={22} color="#0284c7" />
               </TouchableOpacity>
             </View>
           </View>
         </View>
 
-        {/* SECTION 2: Farming Information */}
+        {/* SECTION 2: Service & Maintenance Scope */}
         <Text className="text-slate-900 font-brandon-bold text-base mt-2 mb-3">
-          Farming Information
+          Service & Maintenance Scope
         </Text>
 
         <View className="space-y-3 mb-8">
           <View className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm mb-3">
             <Text className="text-slate-400 text-[11px] font-brandon-medium mb-1">
-              Seeds/Bags Required
+              Consumables & Spares Budget
             </Text>
             <TextInput
               className="text-base font-brandon-bold text-slate-900 p-0 m-0"
@@ -219,7 +219,7 @@ export default function RegisterStep5Screen() {
 
           <View className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm mb-3">
             <Text className="text-slate-400 text-[11px] font-brandon-medium mb-1">
-              Planned Investment
+              Annual Contract Value (₹)
             </Text>
             <TextInput
               className="text-base font-brandon-bold text-slate-900 p-0 m-0"
@@ -228,37 +228,37 @@ export default function RegisterStep5Screen() {
             />
           </View>
 
-          {/* Irrigation Type Dropdown */}
+          {/* Service Level Agreement */}
           <View className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm mb-3 flex-row items-center justify-between">
             <View className="flex-1">
               <Text className="text-slate-400 text-[11px] font-brandon-medium mb-1">
-                Irrigation Type
+                SLA Tier
               </Text>
               <Text className="text-base font-brandon-bold text-slate-900">
-                {irrigationType}
+                Premium 24x7 SLA
               </Text>
             </View>
             <ChevronDown size={18} color="#64748b" />
           </View>
 
-          {/* Soil Type Dropdown */}
+          {/* Primary Facility Type */}
           <View className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm mb-3 flex-row items-center justify-between">
             <View className="flex-1">
               <Text className="text-slate-400 text-[11px] font-brandon-medium mb-1">
-                Soil Type
+                Facility Category
               </Text>
               <Text className="text-base font-brandon-bold text-slate-900">
-                {soilType}
+                Commercial Office / Tech Park
               </Text>
             </View>
             <ChevronDown size={18} color="#64748b" />
           </View>
 
-          {/* Expected Plantation Date */}
+          {/* Contract Commencement Date */}
           <View className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm mb-3 flex-row items-center justify-between">
             <View className="flex-1">
               <Text className="text-slate-400 text-[11px] font-brandon-medium mb-1">
-                Expected Plantation Date
+                Contract Start Date
               </Text>
               <Text className="text-base font-brandon-bold text-slate-900">
                 {plantationDate}
@@ -310,14 +310,14 @@ export default function RegisterStep5Screen() {
                 Registration Complete!
               </Text>
 
-              <View className="bg-emerald-50 px-3.5 py-1.5 rounded-full border border-emerald-200 my-2">
-                <Text className="text-emerald-800 font-brandon-bold text-xs uppercase tracking-wider">
-                  Farmer ID: {registeredFarmerId}
+              <View className="bg-sky-50 px-3.5 py-1.5 rounded-full border border-sky-200 my-2">
+                <Text className="text-sky-800 font-brandon-bold text-xs uppercase tracking-wider">
+                  Facility ID: {registeredFarmerId}
                 </Text>
               </View>
 
               <Text className="text-slate-600 font-brandon text-center text-sm leading-relaxed my-3">
-                {params.fullName || "Ramesh Kumar"} has been successfully enrolled into Infinity Organics with 5.0 acres of registered organic land.
+                {params.fullName || "Facility Client"} has been successfully onboarded into Fieldy Facility Services under the selected service agreement.
               </Text>
 
               <TouchableOpacity

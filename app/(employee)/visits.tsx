@@ -24,10 +24,10 @@ import { useLanguage } from "../../context/LanguageContext";
 export default function EmployeeVisitsScreen() {
   const { t, language } = useLanguage();
   const visits = [
-    { id: 1, type: "INITIAL VISIT", farmer: "Rajesh Kumar", time: "09:00 AM", status: "Completed", image: require("../../assets/images/image1.jpg") },
-    { id: 2, type: "FIELD INSPECTION", farmer: "Muthuvel", time: "11:30 AM", status: "In Progress", image: require("../../assets/images/image2.jpg") },
-    { id: 3, type: "CROP HEALTH", farmer: "Senthil", time: "02:00 PM", status: "Pending", image: require("../../assets/images/image5.jpg") },
-    { id: 4, type: "SOIL TESTING", farmer: "Kuppusamy", time: "04:30 PM", status: "Pending", image: require("../../assets/images/image6.jpg") },
+    { id: 1, type: "HVAC INSPECTION", farmer: "Metro Plaza Tower A", time: "09:00 AM", status: "Completed", image: require("../../assets/images/image1.jpg") },
+    { id: 2, type: "FIRE SAFETY AUDIT", farmer: "Apex Logistics Hub", time: "11:30 AM", status: "In Progress", image: require("../../assets/images/image2.jpg") },
+    { id: 3, type: "ELECTRICAL MAINTENANCE", farmer: "Grand City Mall", time: "02:00 PM", status: "Pending", image: require("../../assets/images/image5.jpg") },
+    { id: 4, type: "PLUMBING & SANITATION", farmer: "TechPark Horizon Block", time: "04:30 PM", status: "Pending", image: require("../../assets/images/image6.jpg") },
   ];
   return (
     <View style={{ flex: 1, backgroundColor: "#062214" }}>

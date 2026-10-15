@@ -121,7 +121,7 @@ export default function LoginScreen() {
                   Welcome Back
                 </Text>
                 <Text style={{ color: "rgba(255,255,255,0.6)", fontFamily: "Brandon-Medium", fontSize: 16, marginTop: 8 }}>
-                  Sign in to your {role === "farmer" ? "Farmer" : "Field Officer"} account
+                  Sign in to your {role === "farmer" ? "Facility Client" : "Facility Officer"} account
                 </Text>
               </View>
 
