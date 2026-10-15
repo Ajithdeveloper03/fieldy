@@ -209,7 +209,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
 
     return (
         <AdminLayout>
-            <Head title="Live Employee Monitor - Infinity Admin" />
+            <Head title="Live Employee Monitor - Fieldy Admin" />
 
             {/* Page Header */}
             <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">

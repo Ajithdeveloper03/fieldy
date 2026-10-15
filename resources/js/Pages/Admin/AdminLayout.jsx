@@ -211,12 +211,12 @@ export default function AdminLayout({ children }) {
                 >
                     {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
                 </button>
-                <div className="h-24 flex items-center justify-center border-b border-gray-50/50 overflow-hidden">
-                    <Link href="/admin/dashboard" className="flex items-center justify-center w-full px-4">
+                <div className="h-20 flex items-center justify-center border-b border-gray-50/50 overflow-hidden px-3">
+                    <Link href="/admin/dashboard" className="flex items-center justify-center w-full">
                         {isSidebarCollapsed ? (
-                            <img src="/images/logo.png" alt="IO" className="h-10 w-20 object-cover drop-shadow-sm rounded-full" />
+                            <img src="/images/logo.png" alt="Fieldy" className="h-8 w-8 object-contain drop-shadow-sm" />
                         ) : (
-                            <img src="/images/logo.png" alt="Infinity Organics" className="h-20 w-auto object-contain drop-shadow-sm" />
+                            <img src="/images/logo.png" alt="Fieldy" className="h-12 w-auto max-w-[180px] object-contain drop-shadow-sm" />
                         )}
                     </Link>
                 </div>

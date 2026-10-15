@@ -60,7 +60,7 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
 
     return (
         <AdminLayout>
-            <Head title="Payments & Financials - Infinity Admin" />
+            <Head title="Payments & Financials - Fieldy Admin" />
             
             <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>

@@ -6,7 +6,7 @@ import AlertSystem from './Components/AlertSystem';
 import './i18n';
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - Infinity Admin` : 'Infinity Admin'),
+    title: (title) => (title ? `${title} - Fieldy Admin` : 'Fieldy Admin'),
     resolve: (name) => resolvePageComponent(`./Pages/${name}.jsx`, import.meta.glob('./Pages/**/*.jsx')),
     setup({ el, App, props }) {
         const root = createRoot(el);

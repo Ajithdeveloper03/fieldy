@@ -6,7 +6,7 @@ export default function Chatbot() {
     const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
-        { id: 1, text: "Hello! I'm your Infinity AI Assistant. How can I help you today?", sender: 'ai' }
+        { id: 1, text: "Hello! I'm your Fieldy AI Assistant. How can I help you today?", sender: 'ai' }
     ]);
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
@@ -85,7 +85,7 @@ export default function Chatbot() {
                                 <Bot className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-sm">Infinity AI</h3>
+                                <h3 className="font-bold text-sm">Fieldy AI</h3>
                                 <p className="text-[10px] text-slate-300">{t('Always here to help')}</p>
                             </div>
                         </div>

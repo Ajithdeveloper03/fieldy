@@ -284,7 +284,7 @@ export default function TaskManagement({ tasks = [], employees = [] }) {
 
     return (
         <AdminLayout>
-            <Head title={`${t('Tasks & Schedule Management')} - Infinity Admin`} />
+            <Head title={`${t('Tasks & Schedule Management')} - Fieldy Admin`} />
 
             <div className="max-w-7xl mx-auto space-y-6 pb-12">
                 {/* Header Banner */}

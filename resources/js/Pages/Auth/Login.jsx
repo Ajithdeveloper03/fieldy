@@ -15,7 +15,7 @@ export default function Login() {
 
     return (
         <div className="min-h-screen relative flex items-center justify-center font-sans overflow-hidden bg-surface-primary">
-            <Head title="Login - Infinity Admin" />
+            <Head title="Login - Fieldy Admin" />
 
             {/* Full Screen Background */}
             <div className="absolute inset-0 z-0">
@@ -31,9 +31,9 @@ export default function Login() {
             <div className="relative z-10 w-full max-w-md px-6">
 
                 {/* Centered Logo */}
-                <div className="flex flex-col items-center mb-10">
-                    <div className="w-32 h-32 bg-white rounded-full border border-border-subtle shadow-xl mb-4 mt-4 flex items-center justify-center overflow-hidden p-2">
-                        <img src="/images/logo.jpg" alt="Infinity Organic Farming" className="w-full h-full object-contain" />
+                <div className="flex flex-col items-center mb-8">
+                    <div className="w-56 h-24 bg-white rounded-2xl border border-border-subtle shadow-xl mb-4 mt-4 flex items-center justify-center overflow-hidden px-4 py-2">
+                        <img src="/images/logo.png" alt="Fieldy" className="w-full h-full object-contain" />
                     </div>
                    
                 </div>
@@ -125,7 +125,7 @@ export default function Login() {
                 </div>
 
                 <div className="mt-8 text-center text-xs font-bold text-text-muted tracking-wider">
-                    &copy; 2026 INFINITY ORGANIC FARMING. ALL RIGHTS RESERVED.
+                    &copy; 2026 FIELDY. ALL RIGHTS RESERVED.
                 </div>
             </div>
         </div>

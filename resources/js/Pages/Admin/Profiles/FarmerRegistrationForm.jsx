@@ -76,7 +76,7 @@ export default function FarmerRegistrationForm() {
 
     return (
         <AdminLayout>
-            <Head title="Farmer Registration - Infinity Admin" />
+            <Head title="Farmer Registration - Fieldy Admin" />
             
             <div className="max-w-4xl mx-auto">
                 <div className="mb-8">
