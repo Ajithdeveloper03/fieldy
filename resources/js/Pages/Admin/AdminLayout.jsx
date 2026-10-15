@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { 
     LayoutDashboard, Users, FileCheck2, ShieldAlert, 
-    Settings, MapPin, Search, Bell, PlusCircle, Globe, Briefcase,
+    Settings, MapPin, Search, Bell, PlusCircle, Globe, Briefcase, Building2,
     ChevronLeft, ChevronRight, Wallet, ClipboardList
 } from 'lucide-react';
 import { useAlert } from '../../Components/AlertSystem';
@@ -231,10 +231,10 @@ export default function AdminLayout({ children }) {
                     <div className={`px-4 pt-6 pb-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest ${isSidebarCollapsed ? 'text-center px-0' : ''}`}>
                         {isSidebarCollapsed ? '•' : t('Features')}
                     </div>
-                    <NavItem href="/admin/employees" icon={Briefcase} label="Employees" />
-                    <NavItem href="/admin/farmers" icon={Users} label="Farmers" />
-                    <NavItem href="/admin/pending-farmers" icon={PlusCircle} label="Pending Farmers" badge="12" />
-                    <NavItem href="/admin/tasks" icon={ClipboardList} label="Tasks & Schedule" />
+                    <NavItem href="/admin/employees" icon={Briefcase} label={t("Employees / Technicians")} />
+                    <NavItem href="/admin/farmers" icon={Building2} label={t("Facilities / Clients")} />
+                    <NavItem href="/admin/pending-farmers" icon={PlusCircle} label={t("Pending Facilities")} badge="12" />
+                    <NavItem href="/admin/tasks" icon={ClipboardList} label={t("Tasks & Schedule")} />
                     
                     <div className={`px-4 pt-6 pb-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest ${isSidebarCollapsed ? 'text-center px-0' : ''}`}>
                         {isSidebarCollapsed ? '•' : t('General')}

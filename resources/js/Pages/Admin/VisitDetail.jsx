@@ -38,7 +38,7 @@ export default function VisitDetail({ visit }) {
                             </span>
                         </div>
                         <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-slate-800">
-                            {visit.farmer?.user?.name || visit.farmer_name || 'Farmer'} - {t('Farm Assessment')}
+                            {visit.farmer?.user?.name || visit.farmer_name || 'Facility'} - {t('Facility Assessment')}
                         </h1>
                     </div>
                     <div className="text-left md:text-right">
@@ -52,8 +52,8 @@ export default function VisitDetail({ visit }) {
                 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">{t('Farmer Name')}</p>
-                        <p className="font-semibold text-slate-800">{visit.farmer?.user?.name || visit.farmer_name || 'Farmer'}</p>
+                        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">{t('Facility Name')}</p>
+                        <p className="font-semibold text-slate-800">{visit.farmer?.user?.name || visit.farmer_name || 'Facility'}</p>
                     </div>
                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                         <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">{t('Location')}</p>
@@ -80,7 +80,7 @@ export default function VisitDetail({ visit }) {
                             <Leaf className="w-48 h-48" />
                         </div>
                         <h2 className="text-xl font-heading font-bold text-slate-800 flex items-center mb-6 relative z-10">
-                            <Leaf className="w-6 h-6 mr-3 text-emerald-500" /> {t('Farm Conditions & Observations')}
+                            <Leaf className="w-6 h-6 mr-3 text-emerald-500" /> {t('Facility Condition & Observations')}
                         </h2>
                         <div className="prose prose-slate max-w-none relative z-10 text-slate-600 leading-relaxed bg-slate-50 p-6 rounded-2xl border border-slate-100">
                             {visit.farm_condition_notes || t('No conditions noted.')}
@@ -92,7 +92,7 @@ export default function VisitDetail({ visit }) {
                             <AlertCircle className="w-48 h-48" />
                         </div>
                         <h2 className="text-xl font-heading font-bold text-slate-800 flex items-center mb-6 relative z-10">
-                            <AlertCircle className="w-6 h-6 mr-3 text-amber-500" /> {t('Recommendations & Action Items')}
+                            <AlertCircle className="w-6 h-6 mr-3 text-amber-500" /> {t('Maintenance Recommendations & Action Items')}
                         </h2>
                         <div className="prose prose-slate max-w-none relative z-10 text-slate-600 leading-relaxed bg-amber-50/50 p-6 rounded-2xl border border-amber-100/50">
                             {visit.recommendations || t('No recommendations provided.')}

@@ -30,7 +30,7 @@ export default function PendingFarmers({ farmers = [] }) {
         if (processing) return;
         setProcessing(id + '_approve');
         router.post(`/admin/pending-farmers/${id}/approve`, {}, {
-            onSuccess: () => { triggerSuccess(`${t('Farmer')} ${name} ${t('approved successfully!')}`); setProcessing(null); },
+            onSuccess: () => { triggerSuccess(`${t('Facility')} ${name} ${t('approved successfully!')}`); setProcessing(null); },
             onError: () => setProcessing(null),
         });
     };
@@ -40,7 +40,7 @@ export default function PendingFarmers({ farmers = [] }) {
         if (!confirm(t('Are you sure you want to reject') + ` ${name}?`)) return;
         setProcessing(id + '_reject');
         router.post(`/admin/pending-farmers/${id}/reject`, {}, {
-            onSuccess: () => { triggerInfo(`${t('Farmer')} ${name} ${t('application rejected.')}`); setProcessing(null); },
+            onSuccess: () => { triggerInfo(`${t('Facility')} ${name} ${t('application rejected.')}`); setProcessing(null); },
             onError: () => setProcessing(null),
         });
     };
@@ -49,8 +49,8 @@ export default function PendingFarmers({ farmers = [] }) {
         <AdminLayout>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
-                    <h1 className="text-2xl font-heading font-semibold text-slate-800">{t('Pending Approvals')}</h1>
-                    <p className="text-slate-500 mt-1 text-sm font-medium">{t('Review board for new farmer onboarding & location verification.')}</p>
+                    <h1 className="text-2xl font-heading font-semibold text-slate-800">{t('Pending Facility Approvals')}</h1>
+                    <p className="text-slate-500 mt-1 text-sm font-medium">{t('Review board for new facility onboarding & location verification.')}</p>
                 </div>
                 <div className="bg-orange-50 text-orange-600 px-4 py-2 rounded-lg flex items-center font-bold text-sm">
                     <AlertTriangle className="w-4 h-4 mr-2" />
@@ -70,7 +70,7 @@ export default function PendingFarmers({ farmers = [] }) {
                         type="text" 
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
-                        placeholder={t('Search by farmer name, phone, or location...')} 
+                        placeholder={t('Search by facility name, contact, or location...')} 
                         className="w-full pl-9 pr-8 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                     />
                     {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"><X className="w-4 h-4" /></button>}
@@ -94,7 +94,7 @@ export default function PendingFarmers({ farmers = [] }) {
             <div className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm">
                 {filteredFarmers.length === 0 && (
                     <div className="p-12 text-center text-gray-500 text-sm">
-                        {searchQuery ? `${t('No farmers match')} "${searchQuery}".` : t('No pending farmers. All caught up!')}
+                        {searchQuery ? `${t('No facilities match')} "${searchQuery}".` : t('No pending facilities. All caught up!')}
                     </div>
                 )}
                 {filteredFarmers.length > 0 && (
@@ -102,10 +102,10 @@ export default function PendingFarmers({ farmers = [] }) {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50 border-b border-gray-100">
-                                    <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('Farmer')}</th>
+                                    <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('Facility / Client')}</th>
                                     <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('Contact')}</th>
                                     <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('Location')}</th>
-                                    <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('Details')}</th>
+                                    <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('Covered Area & KYC')}</th>
                                     <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">{t('Actions')}</th>
                                 </tr>
                             </thead>
@@ -135,7 +135,7 @@ export default function PendingFarmers({ farmers = [] }) {
                                         </td>
                                         <td className="py-4 px-6">
                                             <div className="text-sm text-gray-600">
-                                                <span className="font-medium text-gray-900">{farmer.land_acres || '–'}</span> {t('Acres')}
+                                                <span className="font-medium text-gray-900">{farmer.land_acres || '–'}</span> {t('Sq. Ft / Units')}
                                                 <span className="mx-2 text-gray-300">|</span>
                                                 <span className="capitalize">{farmer.kyc_status}</span>
                                             </div>

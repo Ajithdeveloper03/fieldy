@@ -38,18 +38,18 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                     {farmer.farmer_photo ? (
                         <img src={farmer.farmer_photo} alt={farmer.name} className="w-full h-full object-cover" />
                     ) : (
-                        <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(farmer.name || 'Farm')}&background=random`} alt={farmer.name} className="w-full h-full object-cover" />
+                        <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(farmer.name || 'Facility')}&background=random`} alt={farmer.name} className="w-full h-full object-cover" />
                     )}
                 </div>
                 
                 <div className="px-6 pb-8 pt-4">
-                    <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-slate-800">{farmer.name}'s Farm</h1>
+                    <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-slate-800">{farmer.name}</h1>
                     <p className="text-sm font-medium flex items-center justify-center mt-2 text-slate-500">
                         <Map className="w-4 h-4 mr-1.5 text-slate-400" /> {farmer.village}, {farmer.district}
                     </p>
                     <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
-                        <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${farmer.customer_category === 'fertilizer' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
-                            {farmer.customer_category === 'fertilizer' ? t('Fertilizer Customers') : t('Crop Farmers (Vetiver, etc)')}
+                        <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${farmer.customer_category === 'fertilizer' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
+                            {farmer.customer_category === 'fertilizer' ? t('Soft FM / Janitorial') : farmer.customer_category === 'both' ? t('Integrated FM') : t('Hard FM / Engineering')}
                         </span>
                         {Array.isArray(farmer.crop_types) && farmer.crop_types.map((crop, idx) => (
                             <span key={idx} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
@@ -64,30 +64,30 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                     <div className="bg-amber-50 border-b border-amber-100 p-4 flex justify-between items-center">
                         <div className="flex items-center">
                             <FileSignature className="w-5 h-5 text-amber-600 mr-2" />
-                            <p className="text-sm font-bold text-amber-900">{t('This profile is pending approval.')}</p>
+                            <p className="text-sm font-bold text-amber-900">{t('This facility is pending approval.')}</p>
                         </div>
                         <div className="flex space-x-2">
                             <button className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 hover:text-red-600 hover:border-red-200 transition-colors shadow-sm">{t('Reject')}</button>
-                            <button className="px-4 py-2 bg-emerald-600 border border-emerald-700 rounded-xl text-xs font-bold text-white hover:bg-emerald-700 transition-colors shadow-sm">{t('Approve Farmer')}</button>
+                            <button className="px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs font-bold text-white hover:bg-slate-800 transition-colors shadow-sm">{t('Approve Facility')}</button>
                         </div>
                     </div>
                 )}
 
                 <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100 bg-white">
                     <div className="p-5 text-center hover:bg-gray-50 transition-colors">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Total Land Size')}</p>
-                        <p className="font-heading font-bold text-2xl text-gray-900">{farmer.land_acres || '–'} {t('Acres')}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Total Facility Area')}</p>
+                        <p className="font-heading font-bold text-2xl text-gray-900">{farmer.land_acres || '–'} {t('Sq. Ft / Units')}</p>
                     </div>
                     <div className="p-5 text-center hover:bg-gray-50 transition-colors">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Primary Crop')}</p>
-                        <p className="font-heading font-bold text-2xl text-slate-800">{Array.isArray(farmer.crop_types) ? farmer.crop_types.join(', ') : (farmer.crop_types || 'Vetiver')}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Primary Service Focus')}</p>
+                        <p className="font-heading font-bold text-2xl text-slate-800">{Array.isArray(farmer.crop_types) ? farmer.crop_types.join(', ') : (farmer.crop_types || 'HVAC & MEP')}</p>
                     </div>
                     <div className="p-5 text-center hover:bg-gray-50 transition-colors">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Current Stage')}</p>
-                        <p className="font-heading font-bold text-xl text-gray-900 mt-1 capitalize">{farmer.crop_stage || t('Unknown')}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('SLA Lifecycle')}</p>
+                        <p className="font-heading font-bold text-xl text-gray-900 mt-1 capitalize">{farmer.crop_stage || t('Active SLA')}</p>
                     </div>
                     <div className="p-5 text-center hover:bg-gray-50 transition-colors">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Contact')}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Facility Contact')}</p>
                         <p className="font-bold text-sm text-gray-900 flex items-center justify-center mt-2"><Smartphone className="w-4 h-4 mr-1 text-slate-700" /> {farmer.phone}</p>
                     </div>
                 </div>
@@ -98,12 +98,12 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                 <div className="col-span-1 space-y-8">
                     <div className="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
                         <h3 className="text-sm font-heading font-semibold text-slate-800 flex items-center mb-6">
-                            <Navigation className="w-5 h-5 text-slate-700 mr-2" /> Registered Coordinates
+                            <Navigation className="w-5 h-5 text-slate-700 mr-2" /> {t('Facility Coordinates')}
                         </h3>
                         <div className="relative h-48 rounded-2xl overflow-hidden mb-6 border border-gray-100 bg-gray-50 flex items-center justify-center">
                             {/* Abstract map representation */}
                             <div className="absolute inset-0 opacity-10 bg-black/5"></div>
-                            <Map className="w-10 h-10 text-green-300 relative z-10" />
+                            <Map className="w-10 h-10 text-blue-400 relative z-10" />
                         </div>
                         <div className="flex justify-between space-x-4">
                             <div className="flex-1 bg-gray-50 border border-gray-100 rounded-xl p-3 text-center">
@@ -117,26 +117,26 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                         </div>
                     </div>
                     
-                    {/* Crop & Fertilizer Requirements */}
+                    {/* Facility & SLA Profile */}
                     <div className="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow">
                         <h3 className="text-sm font-heading font-semibold text-slate-800 flex items-center mb-6 border-b border-gray-50 pb-4">
-                            <Leaf className="w-5 h-5 text-emerald-600 mr-2" /> {t('Agricultural Profile')}
+                            <Briefcase className="w-5 h-5 text-blue-600 mr-2" /> {t('Facility Specification')}
                         </h3>
                         <div className="space-y-4">
                             <div className="flex justify-between items-center p-2 rounded-xl hover:bg-gray-50 transition-colors">
-                                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('Soil Type')}</span>
-                                <span className="text-sm font-semibold text-slate-800 capitalize">{farmer.soil_type || 'N/A'}</span>
+                                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('Building Structure / Flooring')}</span>
+                                <span className="text-sm font-semibold text-slate-800 capitalize">{farmer.soil_type || 'Reinforced Concrete'}</span>
                             </div>
                             <div className="flex justify-between items-center p-2 rounded-xl hover:bg-gray-50 transition-colors">
-                                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('Irrigation')}</span>
-                                <span className="text-sm font-semibold text-slate-800 capitalize">{farmer.irrigation_type || 'N/A'}</span>
+                                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('Fire & Water Utility')}</span>
+                                <span className="text-sm font-semibold text-slate-800 capitalize">{farmer.irrigation_type || 'Centralised Sprinkler'}</span>
                             </div>
                             <div className="flex justify-between items-center p-2 rounded-xl hover:bg-gray-50 transition-colors">
-                                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('Seed Bags Required')}</span>
-                                <span className="text-sm font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md">{farmer.seed_bags_required || 0} Bags</span>
+                                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('Consumables / Spares (Units)')}</span>
+                                <span className="text-sm font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded-md">{farmer.seed_bags_required || 0} Units</span>
                             </div>
                             <div className="flex justify-between items-center p-2 rounded-xl hover:bg-gray-50 transition-colors border-t border-gray-100 pt-3">
-                                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('Planned Investment')}</span>
+                                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('Annual SLA Budget')}</span>
                                 <span className="text-sm font-bold text-amber-600 flex items-center">
                                     <CircleDollarSign className="w-4 h-4 mr-1" /> ₹{farmer.planned_investment || 0}
                                 </span>
@@ -150,7 +150,7 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                     <div className="bg-white border border-gray-100 rounded-[2rem] p-8 shadow-sm cursor-pointer hover:shadow-md transition-shadow h-full">
                         <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
                             <h3 className="text-xl font-heading font-bold text-gray-900 flex items-center">
-                                <FileText className="w-5 h-5 text-orange-600 mr-2" /> Farm Inspection Log
+                                <FileText className="w-5 h-5 text-orange-600 mr-2" /> {t('Facility Service & Audit Log')}
                             </h3>
                             <span className="text-[10px] font-bold text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 uppercase tracking-wider">
                                 {farmer.total_visits || 0} Total Visits
@@ -159,23 +159,23 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
 
                         <div className="space-y-6">
                             {visits.length === 0 ? (
-                                <div className="text-center text-gray-500 py-10">No visits recorded yet.</div>
+                                <div className="text-center text-gray-500 py-10">No service visits recorded yet.</div>
                             ) : visits.map((visit, idx) => (
                                 <div key={visit.id} className="flex items-start group">
                                     <div className="flex flex-col items-center mr-4">
                                         <div className={`w-10 h-10 rounded-xl ${idx === 0 ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-gray-50 border-gray-200 text-gray-400'} border flex items-center justify-center group-hover:bg-slate-900 group-hover:text-white transition-colors`}>
-                                            <Leaf className="w-5 h-5" />
+                                            <Briefcase className="w-5 h-5" />
                                         </div>
                                         {idx !== visits.length - 1 && <div className="w-px h-full bg-gray-200 mt-2"></div>}
                                     </div>
-                                    <div className={`flex-1 bg-gray-50 border border-gray-100 rounded-2xl p-5 shadow-sm ${idx !== 0 ? 'opacity-70 group-hover:opacity-100' : ''} group-hover:border-green-200 group-hover:shadow-md transition-all`}>
+                                    <div className={`flex-1 bg-gray-50 border border-gray-100 rounded-2xl p-5 shadow-sm ${idx !== 0 ? 'opacity-70 group-hover:opacity-100' : ''} group-hover:border-blue-200 group-hover:shadow-md transition-all`}>
                                         <div className="flex justify-between items-start mb-3">
                                             <div>
-                                                <h4 className="font-bold text-gray-900">Farm Inspection</h4>
+                                                <h4 className="font-bold text-gray-900">Facility Inspection</h4>
                                                 <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider mt-0.5">By {visit.employee_name}</p>
                                             </div>
                                             <span className={`text-xs font-bold flex items-center bg-white px-2 py-1 rounded-lg shadow-sm border border-gray-200 ${idx === 0 ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                <Clock className={`w-3 h-3 mr-1 ${idx === 0 ? 'text-green-400' : 'text-gray-400'}`} /> {visit.date}
+                                                <Clock className={`w-3 h-3 mr-1 ${idx === 0 ? 'text-blue-500' : 'text-gray-400'}`} /> {visit.date}
                                             </span>
                                         </div>
                                         <p className="text-sm text-gray-700 leading-relaxed">
@@ -216,9 +216,9 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                                 </div>
                             </div>
                             
-                            {/* Farmer Photo */}
+                            {/* Facility In-charge Photo */}
                             <div className="border border-gray-100 rounded-2xl p-4 bg-gray-50">
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{t('Farmer Photo')}</p>
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{t('Facility Officer Photo')}</p>
                                 <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-200 relative group">
                                     <img 
                                         src={farmer.farmer_photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(farmer.name)}&background=random&size=400`} 
@@ -228,24 +228,24 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                                 </div>
                             </div>
 
-                            {/* Farm Photos */}
+                            {/* Facility Photos */}
                             {farmer.farm_photos && farmer.farm_photos.length > 0 ? farmer.farm_photos.map((photo, idx) => (
                                 <div key={idx} className="border border-gray-100 rounded-2xl p-4 bg-gray-50">
-                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{t('Farm Photo')} {idx + 1}</p>
+                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{t('Facility Photo')} {idx + 1}</p>
                                     <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-200 relative group">
                                         <img 
                                             src={photo} 
-                                            onError={(e) => { e.target.onerror = null; e.target.src = `https://images.unsplash.com/photo-1592982537447-6f2334208f34?w=600&q=80`; }}
+                                            onError={(e) => { e.target.onerror = null; e.target.src = `https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&q=80`; }}
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform" 
                                         />
                                     </div>
                                 </div>
                             )) : (
                                 <div className="border border-gray-100 rounded-2xl p-4 bg-gray-50">
-                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{t('Farm Photo')} 1</p>
+                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{t('Facility Photo')} 1</p>
                                     <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-200 relative group">
                                         <img 
-                                            src="https://images.unsplash.com/photo-1592982537447-6f2334208f34?w=600&q=80" 
+                                            src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&q=80" 
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform" 
                                         />
                                     </div>

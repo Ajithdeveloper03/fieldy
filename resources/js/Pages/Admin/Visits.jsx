@@ -60,10 +60,10 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
         // Simulated purpose distribution based on visit count
         const total = visitsData.length || 1;
         const purposes = [
-            { name: t('Crop Health Audit'), count: Math.ceil(total * 0.45), percent: 45, color: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50' },
-            { name: t('Soil Inspection & pH Check'), count: Math.ceil(total * 0.25), percent: 25, color: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50' },
-            { name: t('Organic Fertilizer Delivery'), count: Math.ceil(total * 0.20), percent: 20, color: 'bg-sky-500', text: 'text-sky-700', bg: 'bg-sky-50' },
-            { name: t('Harvest & Buyback Verification'), count: Math.max(1, Math.floor(total * 0.10)), percent: 10, color: 'bg-purple-500', text: 'text-purple-700', bg: 'bg-purple-50' }
+            { name: t('HVAC Preventive Maintenance'), count: Math.ceil(total * 0.45), percent: 45, color: 'bg-blue-500', text: 'text-blue-700', bg: 'bg-blue-50' },
+            { name: t('Fire Safety & Hydrant Audit'), count: Math.ceil(total * 0.25), percent: 25, color: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50' },
+            { name: t('Electrical Substation & Breaker Check'), count: Math.ceil(total * 0.20), percent: 20, color: 'bg-sky-500', text: 'text-sky-700', bg: 'bg-sky-50' },
+            { name: t('Sanitation & Pest Control Audit'), count: Math.max(1, Math.floor(total * 0.10)), percent: 10, color: 'bg-purple-500', text: 'text-purple-700', bg: 'bg-purple-50' }
         ];
 
         // 7-day activity simulation
@@ -102,7 +102,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                 {t('Visit Analytics & Intelligence')}
                             </h1>
                             <p className="text-slate-300 font-medium text-sm md:text-base leading-relaxed">
-                                {t('Dive into the rich visual data of your field officers. Track agronomy conditions, travel routes, and real-time farmer engagement.')}
+                                {t('Dive into the rich visual data of your field staff. Track facility inspections, travel routes, and real-time maintenance audits.')}
                             </p>
                         </div>
                         
@@ -166,7 +166,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                     value={searchQuery}
                                     onChange={e => setSearchQuery(e.target.value)}
                                     onKeyDown={e => e.key === 'Enter' && handleApplyFilters()}
-                                    placeholder={t('Search by officer or farmer...')}
+                                    placeholder={t('Search by officer or facility...')}
                                     className="w-full pl-11 pr-10 py-3 bg-slate-50 border border-slate-200/80 rounded-xl text-xs sm:text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all"
                                 />
                                 {searchQuery && (

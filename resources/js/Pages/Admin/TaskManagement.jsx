@@ -884,7 +884,7 @@ export default function TaskManagement({ tasks = [], employees = [] }) {
                                     rows={3}
                                     value={newTask.description}
                                     onChange={e => setNewTask(prev => ({ ...prev, description: e.target.value }))}
-                                    placeholder="Provide clear goals, target farmer details, or special notes..."
+                                    placeholder="Provide clear goals, target facility / client details, or special notes..."
                                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all resize-none"
                                 />
                             </div>

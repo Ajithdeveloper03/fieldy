@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import AdminLayout from '../AdminLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { 
-    User, FileText, Map, Sprout, ArrowRight, ArrowLeft, CheckCircle2, 
-    UploadCloud, Smartphone, CreditCard, ShieldCheck, MapPin, Search
+    User, FileText, Map, Building2, ArrowRight, ArrowLeft, CheckCircle2, 
+    UploadCloud, Smartphone, CreditCard, ShieldCheck, MapPin, Search, Briefcase
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -30,11 +30,11 @@ export default function FarmerRegistrationForm() {
         lng: '',
         seed_bags_required: '',
         planned_investment: '',
-        irrigation_type: 'Drip',
-        soil_type: 'Red Soil',
+        irrigation_type: 'Centralised Sprinkler',
+        soil_type: 'Reinforced Concrete',
         expected_plantation_date: '',
         customer_category: 'crop',
-        crop_types: ['Vetiver'],
+        crop_types: ['HVAC & MEP'],
     });
 
     const updateForm = (key, value) => {
@@ -59,10 +59,10 @@ export default function FarmerRegistrationForm() {
             <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-slate-900 rounded-full -z-10 transition-all duration-500" style={{ width: `${((step - 1) / 3) * 100}%` }}></div>
             
             {[
-                { num: 1, icon: User, label: 'Personal' },
-                { num: 2, icon: ShieldCheck, label: 'KYC & Aadhaar' },
-                { num: 3, icon: Map, label: 'Farm Mapping' },
-                { num: 4, icon: Sprout, label: 'Agriculture' }
+                { num: 1, icon: User, label: 'Contact' },
+                { num: 2, icon: ShieldCheck, label: 'Identity / KYC' },
+                { num: 3, icon: Map, label: 'Campus & GPS' },
+                { num: 4, icon: Building2, label: 'Service Scope' }
             ].map((s) => (
                 <div key={s.num} className="flex flex-col items-center">
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 border-white shadow-md transition-colors duration-300 ${step >= s.num ? 'bg-slate-900 text-white' : 'bg-gray-50 text-gray-400 border-gray-200'}`}>
@@ -76,12 +76,12 @@ export default function FarmerRegistrationForm() {
 
     return (
         <AdminLayout>
-            <Head title="Farmer Registration - Fieldy Admin" />
+            <Head title="Facility Onboarding - Fieldy Admin" />
             
             <div className="max-w-4xl mx-auto">
                 <div className="mb-8">
-                    <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-slate-800">{t('Farmer Registration Wizard')}</h1>
-                    <p className="text-slate-500 mt-2 font-medium">Onboard new agricultural partners and verify KYC documentation.</p>
+                    <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-slate-800">{t('Facility Onboarding Wizard')}</h1>
+                    <p className="text-slate-500 mt-2 font-medium">Onboard new commercial, industrial, or residential facilities and verify SLAs.</p>
                 </div>
 
                 <div className="bg-white border border-gray-100 rounded-[2rem] p-8 shadow-sm">
@@ -91,12 +91,12 @@ export default function FarmerRegistrationForm() {
                         
                         {/* STEP 1: Personal Information */}
                         <div className={`space-y-6 transition-all duration-500 ${step === 1 ? 'block opacity-100' : 'hidden opacity-0'}`}>
-                            <h3 className="text-lg sm:text-xl font-heading font-semibold text-slate-800 border-b border-gray-100 pb-3 mb-6">Personal Details & Verification</h3>
+                            <h3 className="text-lg sm:text-xl font-heading font-semibold text-slate-800 border-b border-gray-100 pb-3 mb-6">Facility Manager / Client Contact</h3>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Full Name</label>
-                                    <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="e.g. Muthusamy K." value={formData.full_name} onChange={e => updateForm('full_name', e.target.value)} required />
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Facility / Client Name</label>
+                                    <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="e.g. Olympia Tech Park / Rajesh Kumar" value={formData.full_name} onChange={e => updateForm('full_name', e.target.value)} required />
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Mobile Number</label>
@@ -135,26 +135,26 @@ export default function FarmerRegistrationForm() {
                                     <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                                         <UploadCloud className="w-6 h-6 text-slate-700" />
                                     </div>
-                                    <p className="font-bold text-gray-900 text-sm">Upload Aadhaar Card</p>
+                                    <p className="font-bold text-gray-900 text-sm">Upload Identity / Business Reg</p>
                                     <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">JPEG, PNG, PDF up to 5MB</p>
                                 </div>
                                 <div className="border-2 border-dashed border-gray-200 rounded-2xl p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-slate-50/50 hover:border-green-200 cursor-pointer transition-colors group">
                                     <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                                         <User className="w-6 h-6 text-slate-700" />
                                     </div>
-                                    <p className="font-bold text-gray-900 text-sm">Upload Farmer Photo</p>
-                                    <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">Clear passport size photograph</p>
+                                    <p className="font-bold text-gray-900 text-sm">Upload Facility Officer Photo</p>
+                                    <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">Clear ID / Profile photograph</p>
                                 </div>
                             </div>
 
-                            <h4 className="text-[10px] font-bold text-gray-900 mt-8 mb-4 uppercase tracking-wider border-b border-gray-100 pb-2">Full Address</h4>
+                            <h4 className="text-[10px] font-bold text-gray-900 mt-8 mb-4 uppercase tracking-wider border-b border-gray-100 pb-2">Facility Street Address</h4>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="md:col-span-3">
-                                    <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="Street Address / Door No." value={formData.address} onChange={e => updateForm('address', e.target.value)} />
+                                    <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="Campus / Plot / Street Address" value={formData.address} onChange={e => updateForm('address', e.target.value)} />
                                 </div>
-                                <div><input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="Village" value={formData.village} onChange={e => updateForm('village', e.target.value)} /></div>
-                                <div><input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="Taluk" value={formData.taluk} onChange={e => updateForm('taluk', e.target.value)} /></div>
-                                <div><input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="District" value={formData.district} onChange={e => updateForm('district', e.target.value)} /></div>
+                                <div><input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="Sector / Area" value={formData.village} onChange={e => updateForm('village', e.target.value)} /></div>
+                                <div><input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="Zone / Ward" value={formData.taluk} onChange={e => updateForm('taluk', e.target.value)} /></div>
+                                <div><input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="City / District" value={formData.district} onChange={e => updateForm('district', e.target.value)} /></div>
                                 <div><input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="State" value={formData.state} onChange={e => updateForm('state', e.target.value)} /></div>
                                 <div><input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="PIN Code" value={formData.pincode} onChange={e => updateForm('pincode', e.target.value)} /></div>
                             </div>
@@ -162,26 +162,26 @@ export default function FarmerRegistrationForm() {
 
                         {/* STEP 3: Farm Mapping */}
                         <div className={`space-y-6 transition-all duration-500 ${step === 3 ? 'block opacity-100' : 'hidden opacity-0'}`}>
-                            <h3 className="text-lg sm:text-xl font-heading font-semibold text-slate-800 border-b border-gray-100 pb-3 mb-6">Property & Geolocation</h3>
+                            <h3 className="text-lg sm:text-xl font-heading font-semibold text-slate-800 border-b border-gray-100 pb-3 mb-6">Facility Campus & Geolocation</h3>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div>
-                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Total Land Owned (Acres)</label>
-                                    <input type="number" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-bold focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="e.g. 10.5" value={formData.total_land_owned} onChange={e => updateForm('total_land_owned', e.target.value)} />
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Total Campus Area (Sq. Ft / Units)</label>
+                                    <input type="number" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-bold focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="e.g. 50000" value={formData.total_land_owned} onChange={e => updateForm('total_land_owned', e.target.value)} />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Allocated for Vetiver (Acres)</label>
-                                    <input type="number" className="w-full px-4 py-3 bg-slate-50/50 border-green-200 border-2 rounded-xl text-green-700 font-bold focus:ring-2 focus:ring-green-500/30 transition-all text-sm" placeholder="e.g. 4.0" value={formData.vetiver_land_allocated} onChange={e => updateForm('vetiver_land_allocated', e.target.value)} />
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Serviceable / Covered Area (Sq. Ft)</label>
+                                    <input type="number" className="w-full px-4 py-3 bg-slate-50/50 border-blue-200 border-2 rounded-xl text-blue-700 font-bold focus:ring-2 focus:ring-blue-500/30 transition-all text-sm" placeholder="e.g. 35000" value={formData.vetiver_land_allocated} onChange={e => updateForm('vetiver_land_allocated', e.target.value)} />
                                 </div>
                                 <div className="md:col-span-2">
-                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Survey Number(s)</label>
-                                    <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="e.g. 142/2A, 145/1B" value={formData.survey_number} onChange={e => updateForm('survey_number', e.target.value)} />
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Building / Unit Identification Number</label>
+                                    <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="e.g. Block-B, Tower 3, Floor 4-8" value={formData.survey_number} onChange={e => updateForm('survey_number', e.target.value)} />
                                 </div>
                             </div>
 
                             <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
                                 <div className="flex justify-between items-center mb-4">
-                                    <label className="text-sm font-bold text-gray-900 flex items-center"><MapPin className="w-4 h-4 text-slate-700 mr-2"/> GPS Coordinates</label>
+                                    <label className="text-sm font-bold text-gray-900 flex items-center"><MapPin className="w-4 h-4 text-slate-700 mr-2"/> GPS Geofence Coordinates</label>
                                     <button type="button" className="text-[10px] uppercase tracking-wider font-bold bg-white border border-gray-200 px-3 py-1.5 rounded-lg shadow-sm flex items-center hover:text-slate-800 transition-colors">
                                         <Search className="w-3 h-3 mr-1"/> Auto-Detect Location
                                     </button>
@@ -194,84 +194,84 @@ export default function FarmerRegistrationForm() {
 
                             <div className="border-2 border-dashed border-gray-200 rounded-2xl p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-slate-50/50 hover:border-green-200 cursor-pointer transition-colors group">
                                 <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                    <Map className="w-6 h-6 text-amber-500" />
+                                    <Building2 className="w-6 h-6 text-blue-500" />
                                 </div>
-                                <p className="font-bold text-gray-900 text-sm">Upload Land Photos</p>
-                                <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">Upload at least 2 clear wide-angle photos of the farm</p>
+                                <p className="font-bold text-gray-900 text-sm">Upload Facility Front & Campus Photos</p>
+                                <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">Upload at least 2 clear wide-angle photos of the building/site</p>
                             </div>
                         </div>
 
-                        {/* STEP 4: Agriculture Information */}
+                        {/* STEP 4: Facility Scope & Services */}
                         <div className={`space-y-6 transition-all duration-500 ${step === 4 ? 'block opacity-100' : 'hidden opacity-0'}`}>
-                            <h3 className="text-lg sm:text-xl font-heading font-semibold text-slate-800 border-b border-gray-100 pb-3 mb-6">Agricultural Parameters</h3>
+                            <h3 className="text-lg sm:text-xl font-heading font-semibold text-slate-800 border-b border-gray-100 pb-3 mb-6">FM Contract Scope & Services</h3>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Customer Classification</label>
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Service Agreement Classification</label>
                                     <select
                                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-semibold focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm"
                                         value={formData.customer_category}
                                         onChange={e => updateForm('customer_category', e.target.value)}
                                     >
-                                        <option value="crop">Crop Cultivator (Vetiver, Turmeric, Pepper)</option>
-                                        <option value="fertilizer">Fertilizer Customer (Organic Inputs Buyer)</option>
-                                        <option value="both">Both (Cultivator & Fertilizer Customer)</option>
+                                        <option value="crop">Hard FM (HVAC, Electrical, Plumbing & MEP)</option>
+                                        <option value="fertilizer">Soft FM (Housekeeping, Security, Waste Mgmt)</option>
+                                        <option value="both">Integrated Facility Management (IFM)</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Primary Crops</label>
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Core Services Included</label>
                                     <div className="flex flex-wrap gap-2 pt-1">
-                                        {['Vetiver', 'Turmeric', 'Pepper'].map(crop => {
-                                            const isSelected = formData.crop_types.includes(crop);
+                                        {['HVAC & MEP', 'Fire Safety', 'Janitorial', 'Electrical'].map(srv => {
+                                            const isSelected = formData.crop_types.includes(srv);
                                             return (
                                                 <button
-                                                    key={crop}
+                                                    key={srv}
                                                     type="button"
                                                     onClick={() => {
                                                         const current = [...formData.crop_types];
-                                                        const next = isSelected ? current.filter(c => c !== crop) : [...current, crop];
-                                                        updateForm('crop_types', next.length ? next : [crop]);
+                                                        const next = isSelected ? current.filter(c => c !== srv) : [...current, srv];
+                                                        updateForm('crop_types', next.length ? next : [srv]);
                                                     }}
                                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
                                                         isSelected
-                                                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-xs'
+                                                            ? 'bg-blue-50 text-blue-800 border-blue-300 shadow-xs'
                                                             : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                                                     }`}
                                                 >
-                                                    {crop === 'Vetiver' ? 'Vetiver (வெட்டிவேர்)' : crop === 'Turmeric' ? 'Turmeric (மஞ்சள்)' : 'Black Pepper (மிளகு)'}
+                                                    {srv}
                                                 </button>
                                             );
                                         })}
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Seed Bags Required</label>
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Allocated Equipment / Spares (Units)</label>
                                     <input type="number" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="0" value={formData.seed_bags_required} onChange={e => updateForm('seed_bags_required', e.target.value)} />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Planned Investment (₹)</label>
-                                    <input type="number" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="50000" value={formData.planned_investment} onChange={e => updateForm('planned_investment', e.target.value)} />
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Annual SLA Contract Budget (₹)</label>
+                                    <input type="number" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" placeholder="250000" value={formData.planned_investment} onChange={e => updateForm('planned_investment', e.target.value)} />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Irrigation Type</label>
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Fire & Water Utility System</label>
                                     <select className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" value={formData.irrigation_type} onChange={e => updateForm('irrigation_type', e.target.value)}>
-                                        <option value="Drip">Drip Irrigation</option>
-                                        <option value="Sprinkler">Sprinkler</option>
-                                        <option value="Flood">Flood / Canal</option>
-                                        <option value="Rainfed">Rainfed</option>
+                                        <option value="Centralised Sprinkler">Centralised Sprinkler & Hydrant</option>
+                                        <option value="Rooftop Gravity">Rooftop Gravity Tank & Boosters</option>
+                                        <option value="Borewell/Hydro-pneumatic">Hydro-pneumatic System</option>
+                                        <option value="Municipal Mains">Direct Municipal Mains</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Soil Type</label>
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Building Structure / Flooring</label>
                                     <select className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" value={formData.soil_type} onChange={e => updateForm('soil_type', e.target.value)}>
-                                        <option value="Red Soil">Red Soil</option>
-                                        <option value="Black Cotton">Black Cotton Soil</option>
-                                        <option value="Sandy Loam">Sandy Loam</option>
-                                        <option value="Clay">Clay</option>
+                                        <option value="Reinforced Concrete">Reinforced Concrete / Granite</option>
+                                        <option value="Steel Framework">Steel Framework / Epoxy Industrial</option>
+                                        <option value="Glass Façade Corporate">Glass Façade Corporate</option>
+                                        <option value="Warehouse Pre-engineered">Pre-engineered Warehouse</option>
                                     </select>
                                 </div>
                                 <div className="md:col-span-2">
-                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Expected Plantation Date</label>
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">SLA Effective Start Date</label>
                                     <input type="date" className="w-full md:w-1/2 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-sm" value={formData.expected_plantation_date} onChange={e => updateForm('expected_plantation_date', e.target.value)} />
                                 </div>
                             </div>
@@ -297,11 +297,11 @@ export default function FarmerRegistrationForm() {
                                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
-                                            Processing KYC...
+                                            Onboarding Facility...
                                         </div>
                                     ) : (
                                         <>
-                                            <CheckCircle2 className="w-5 h-5 mr-2" /> Submit Registration
+                                            <CheckCircle2 className="w-5 h-5 mr-2" /> Complete Onboarding
                                         </>
                                     )}
                                 </button>

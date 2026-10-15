@@ -5,7 +5,7 @@ import { router } from '@inertiajs/react';
 import { 
     Users, Activity, MapPin, FileCheck2, 
     TrendingUp, TrendingDown, Clock, ChevronRight, CheckCircle2, ShieldAlert, Maximize, Minimize,
-    Wallet, PiggyBank, Briefcase, ArrowRight, MoreHorizontal, Filter, Search, FileText, PieChart, Activity as ActivityIcon, Leaf, Map, AlertCircle
+    Wallet, PiggyBank, Briefcase, ArrowRight, MoreHorizontal, Filter, Search, FileText, PieChart, Activity as ActivityIcon, Leaf, Map, AlertCircle, Building2
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -181,14 +181,14 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
             {/* ══════════ STAT CARDS ROW ══════════ */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
 
-                {/* Card 1: Farmers */}
+                {/* Card 1: Facilities */}
                 <div onClick={() => router.visit('/admin/farmers')} className="group relative bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer">
                     <div className="flex flex-col mb-4">
-                        <div className="w-10 h-10 bg-emerald-700 rounded-full flex items-center justify-center shadow-lg shadow-emerald-700/30 group-hover:scale-110 transition-transform mb-4">
-                            <Users className="w-5 h-5 text-white" />
+                        <div className="w-10 h-10 bg-sky-700 rounded-full flex items-center justify-center shadow-lg shadow-sky-700/30 group-hover:scale-110 transition-transform mb-4">
+                            <Building2 className="w-5 h-5 text-white" />
                         </div>
-                        <p className="text-base font-semibold text-slate-700 tracking-tight">{t('Total Farmers')}</p>
-                        <p className="text-xs font-normal text-slate-500 mt-1">{t('Easily track and manage all registered farmers...')}</p>
+                        <p className="text-base font-semibold text-slate-700 tracking-tight">{t('Total Facilities')}</p>
+                        <p className="text-xs font-normal text-slate-500 mt-1">{t('Easily track and manage all registered facilities and clients...')}</p>
                     </div>
                     
                     <div className="flex items-center justify-between mb-2">
@@ -202,8 +202,8 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                         <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center shadow-lg shadow-slate-900/10 group-hover:scale-110 transition-transform mb-4">
                             <Briefcase className="w-5 h-5 text-white" />
                         </div>
-                        <p className="text-base font-semibold text-slate-700 tracking-tight">{t('Active Officers')}</p>
-                        <p className="text-xs font-normal text-slate-500 mt-1">{t('Monitor currently active field officers directly...')}</p>
+                        <p className="text-base font-semibold text-slate-700 tracking-tight">{t('Active Field Staff')}</p>
+                        <p className="text-xs font-normal text-slate-500 mt-1">{t('Monitor currently active technicians and inspectors...')}</p>
                     </div>
                     
                     <div className="flex items-center justify-between mb-2">
@@ -211,14 +211,14 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                     </div>
                 </div>
 
-                {/* Card 3: Total Field Visits */}
+                {/* Card 3: Total Service Visits */}
                 <div onClick={() => router.visit('/admin/visits')} className="group relative bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer">
                     <div className="flex flex-col mb-4">
                         <div className="w-10 h-10 bg-teal-600 rounded-full flex items-center justify-center shadow-lg shadow-teal-600/30 group-hover:scale-110 transition-transform mb-4">
                             <FileCheck2 className="w-5 h-5 text-white" />
                         </div>
-                        <p className="text-base font-semibold text-slate-700 tracking-tight">{t('Total Field Visits')}</p>
-                        <p className="text-xs font-normal text-slate-500 mt-1">{t('Review farm visits and officer activity records...')}</p>
+                        <p className="text-base font-semibold text-slate-700 tracking-tight">{t('Total Service Visits')}</p>
+                        <p className="text-xs font-normal text-slate-500 mt-1">{t('Review facility audits, PM inspections, and maintenance records...')}</p>
                     </div>
                     
                     <div className="flex items-center justify-between mb-2">
@@ -403,16 +403,16 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                 </div>
             </div>
 
-            {/* Mobile Data Tier: Farmers & Approvals */}
+            {/* Mobile Data Tier: Facilities & Approvals */}
             <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 ${isMapFullscreen ? 'hidden' : ''}`}>
                 
-                {/* Recent Farmers Widget */}
+                {/* Recent Facilities Widget */}
                 <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm flex flex-col">
                     <div className="p-6 border-b border-gray-50 flex justify-between items-center">
                         <h2 className="text-base sm:text-lg font-semibold text-slate-800 leading-none flex items-center">
-                            <Users className="w-5 h-5 mr-2 text-emerald-600" /> {t('Recently Onboarded Farmers')}
+                            <Building2 className="w-5 h-5 mr-2 text-sky-600" /> {t('Recently Onboarded Facilities')}
                         </h2>
-                        <button onClick={() => router.visit('/admin/farmers')} className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center transition-colors">
+                        <button onClick={() => router.visit('/admin/farmers')} className="text-xs font-semibold text-sky-600 hover:text-sky-700 flex items-center transition-colors">
                             {t('View All')} <ArrowRight className="w-3 h-3 ml-1" />
                         </button>
                     </div>
@@ -433,13 +433,13 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                                         <p className="text-[10px] font-semibold text-gray-400 mt-0.5 uppercase tracking-wider">{farmer.farmer_code}</p>
                                     </div>
                                     <div className="text-right ml-4">
-                                        <p className="text-sm font-semibold text-slate-700">{farmer.crop}</p>
-                                        <p className="text-xs font-medium text-gray-500">{farmer.acres} {t('Acres')}</p>
+                                        <p className="text-sm font-semibold text-slate-700">{farmer.crop || 'Integrated FM'}</p>
+                                        <p className="text-xs font-medium text-gray-500">{farmer.acres} {t('Sq. Ft / Units')}</p>
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <div className="text-center text-gray-400 text-sm py-8">{t('No farmers onboarded yet.')}</div>
+                            <div className="text-center text-gray-400 text-sm py-8">{t('No facilities onboarded yet.')}</div>
                         )}
                     </div>
                 </div>
@@ -448,7 +448,7 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                 <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm flex flex-col">
                     <div className="p-6 border-b border-gray-50 flex justify-between items-center">
                         <h2 className="text-base sm:text-lg font-semibold text-slate-800 leading-none flex items-center">
-                            <AlertCircle className="w-5 h-5 mr-2 text-amber-500" /> {t('Pending Approvals')}
+                            <AlertCircle className="w-5 h-5 mr-2 text-amber-500" /> {t('Pending Facility Approvals')}
                         </h2>
                         <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-2 py-1 rounded-lg">
                             {pendingApprovals.length} {t('Pending')}
@@ -466,15 +466,15 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                                             <span className="text-xs font-medium text-gray-600">{approval.district}</span>
                                         </div>
                                     </div>
-                                    <button onClick={() => router.visit(`/admin/pending-farmers`)} className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 hover:text-emerald-600 hover:border-emerald-200 transition-colors shadow-sm">
+                                    <button onClick={() => router.visit(`/admin/pending-farmers`)} className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 hover:text-sky-600 hover:border-sky-200 transition-colors shadow-sm">
                                         {t('Review')}
                                     </button>
                                 </div>
                             ))
                         ) : (
                             <div className="text-center text-gray-400 text-sm py-8 flex flex-col items-center">
-                                <CheckCircle2 className="w-8 h-8 text-emerald-400 mb-2 opacity-50" />
-                                {t('All caught up! No pending approvals.')}
+                                <CheckCircle2 className="w-8 h-8 text-sky-400 mb-2 opacity-50" />
+                                {t('All caught up! No pending facility approvals.')}
                             </div>
                         )}
                     </div>

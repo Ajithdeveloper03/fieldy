@@ -43,31 +43,31 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
             )}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
-                    <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-slate-800">{t('Farmer Directory')}</h1>
-                    <p className="text-slate-500 mt-1 font-medium text-sm">{farmers.length} {t('verified farm properties and agricultural profiles.')}</p>
+                    <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-slate-800">{t('Facility Directory')}</h1>
+                    <p className="text-slate-500 mt-1 font-medium text-sm">{farmers.length} {t('registered client facilities, commercial sites, and service contracts.')}</p>
                 </div>
                 <Link href="/admin/farmers/register" className="cursor-pointer bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-xl font-semibold flex items-center transition-all shadow-md shadow-slate-900/10">
-                    <Plus className="w-5 h-5 mr-1" /> {t('Register Farmer')}
+                    <Plus className="w-5 h-5 mr-1" /> {t('Onboard Facility')}
                 </Link>
             </div>
             <div className="flex space-x-4 mb-6 border-b border-gray-200">
                 <button
                     onClick={() => handleCategoryChange('crop')}
-                    className={`pb-4 px-2 text-sm font-semibold transition-colors border-b-2 ${category === 'crop' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+                    className={`pb-4 px-2 text-sm font-semibold transition-colors border-b-2 ${category === 'crop' ? 'border-sky-600 text-sky-700' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
                 >
-                    {t('Crop Farmers (Vetiver, etc)')}
+                    {t('Hard FM (HVAC & Mechanical)')}
                 </button>
                 <button
                     onClick={() => handleCategoryChange('fertilizer')}
-                    className={`pb-4 px-2 text-sm font-semibold transition-colors border-b-2 ${category === 'fertilizer' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+                    className={`pb-4 px-2 text-sm font-semibold transition-colors border-b-2 ${category === 'fertilizer' ? 'border-sky-600 text-sky-700' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
                 >
-                    {t('Fertilizer Customers')}
+                    {t('Soft FM (Housekeeping & Cleaning)')}
                 </button>
                 <button
                     onClick={() => handleCategoryChange('both')}
-                    className={`pb-4 px-2 text-sm font-semibold transition-colors border-b-2 ${category === 'both' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+                    className={`pb-4 px-2 text-sm font-semibold transition-colors border-b-2 ${category === 'both' ? 'border-sky-600 text-sky-700' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
                 >
-                    {t('Both (Crop & Fertilizer)')}
+                    {t('Integrated Facility Management (IFM)')}
                 </button>
             </div>
             <form onSubmit={handleSearch} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -139,10 +139,10 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50 border-b border-gray-100">
-                                    <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('Farmer')}</th>
-                                    <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('Acres / Crop')}</th>
+                                    <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('Facility / Client')}</th>
+                                    <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('Service Scope / Area')}</th>
                                     <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('Location')}</th>
-                                    <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('KYC Status')}</th>
+                                    <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('KYC / SLA Status')}</th>
                                     <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">{t('Actions')}</th>
                                 </tr>
                             </thead>
@@ -166,12 +166,12 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                         </td>
                                         <td className="py-4 px-6">
                                             <span className="text-xs font-bold text-slate-700">
-                                                {farm.land_acres || '–'} {t('Acres')}
+                                                {farm.land_acres || '–'} {t('Sq. Ft / Units')}
                                             </span>
-                                            <p className="text-[10px] font-medium text-emerald-700 mt-0.5">
+                                            <p className="text-[10px] font-medium text-sky-700 mt-0.5">
                                                 {Array.isArray(farm.crop_types) && farm.crop_types.length > 0
                                                     ? farm.crop_types.join(', ')
-                                                    : (farm.customer_category === 'fertilizer' ? t('Fertilizer Customers') : 'Vetiver')}
+                                                    : (farm.customer_category === 'fertilizer' ? t('Soft FM Services') : 'Hard FM (HVAC/Electrical)')}
                                             </p>
                                         </td>
                                         <td className="py-4 px-6">
@@ -207,8 +207,8 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                             <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
                             
                             <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
-                                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider backdrop-blur-md text-white shadow-sm border border-white/20 ${farm.customer_category === 'fertilizer' ? 'bg-amber-600/80' : 'bg-emerald-600/80'}`}>
-                                    {farm.customer_category === 'fertilizer' ? t('Fertilizer Customers') : (Array.isArray(farm.crop_types) && farm.crop_types.length ? farm.crop_types.join(', ') : 'Vetiver')}
+                                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider backdrop-blur-md text-white shadow-sm border border-white/20 ${farm.customer_category === 'fertilizer' ? 'bg-amber-600/80' : 'bg-sky-600/80'}`}>
+                                    {farm.customer_category === 'fertilizer' ? t('Soft FM') : (Array.isArray(farm.crop_types) && farm.crop_types.length ? farm.crop_types.join(', ') : 'Hard FM (HVAC)')}
                                 </span>
                                 <div className={`flex items-center gap-1 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider bg-slate-900/60 backdrop-blur-md text-white shadow-sm border border-white/20`}>
                                     {kycIcon(farm.kyc_status)} {t(farm.kyc_status)}
@@ -216,7 +216,7 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                             </div>
                             
                             <div className="absolute bottom-5 left-5 right-5 z-10">
-                                <h3 className="font-heading font-bold text-2xl text-white mb-1 group-hover:text-green-300 transition-colors">{farm.name}</h3>
+                                <h3 className="font-heading font-bold text-2xl text-white mb-1 group-hover:text-sky-300 transition-colors">{farm.name}</h3>
                                 <p className="text-xs font-medium text-slate-300 flex items-center mb-4">
                                     <MapPin className="w-3 h-3 mr-1" /> {farm.village}, {farm.district}
                                 </p>
@@ -231,11 +231,11 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                             )}
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-bold text-white uppercase tracking-wider">{farm.land_acres || '–'} {t('Acres')}</p>
-                                            <p className="text-[10px] font-mono text-emerald-400 mt-0.5">{farm.farmer_code}</p>
+                                            <p className="text-[10px] font-bold text-white uppercase tracking-wider">{farm.land_acres || '–'} {t('Sq. Ft')}</p>
+                                            <p className="text-[10px] font-mono text-sky-400 mt-0.5">{farm.farmer_code}</p>
                                         </div>
                                     </div>
-                                    <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center group-hover:bg-green-500 transition-colors">
+                                    <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center group-hover:bg-sky-500 transition-colors">
                                         <ChevronRight className="w-4 h-4 text-white" />
                                     </div>
                                 </div>

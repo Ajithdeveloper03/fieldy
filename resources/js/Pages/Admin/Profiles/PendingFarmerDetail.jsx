@@ -57,12 +57,12 @@ export default function PendingFarmerDetail({ farmer = {}, visits = [] }) {
                     {farmer.farmer_photo ? (
                         <img src={farmer.farmer_photo} alt={farmer.name} className="w-full h-full object-cover" />
                     ) : (
-                        <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(farmer.name || 'Farm')}&background=random`} alt={farmer.name} className="w-full h-full object-cover" />
+                        <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(farmer.name || 'Facility')}&background=random`} alt={farmer.name} className="w-full h-full object-cover" />
                     )}
                 </div>
                 
                 <div className="px-6 pb-8 pt-4">
-                    <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-slate-800">{farmer.name}'s Farm</h1>
+                    <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-slate-800">{farmer.name}</h1>
                     <p className="text-sm font-medium flex items-center justify-center mt-2 text-slate-500">
                         <Map className="w-4 h-4 mr-1.5 text-slate-400" /> {farmer.village}, {farmer.district}
                     </p>
@@ -72,29 +72,29 @@ export default function PendingFarmerDetail({ farmer = {}, visits = [] }) {
                 <div className="bg-amber-50 border-b border-amber-100 p-4 flex justify-between items-center">
                     <div className="flex items-center">
                         <FileSignature className="w-5 h-5 text-amber-600 mr-2" />
-                        <p className="text-sm font-bold text-amber-900">{t('This profile is pending approval.')}</p>
+                        <p className="text-sm font-bold text-amber-900">{t('This facility onboarding is pending approval.')}</p>
                     </div>
                     <div className="flex space-x-2">
                         <button onClick={handleReject} disabled={processing} className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 hover:text-red-600 hover:border-red-200 transition-colors shadow-sm disabled:opacity-50">{t('Reject')}</button>
-                        <button onClick={handleApprove} disabled={processing} className="px-4 py-2 bg-emerald-600 border border-emerald-700 rounded-xl text-xs font-bold text-white hover:bg-emerald-700 transition-colors shadow-sm disabled:opacity-50">{t('Approve Farmer')}</button>
+                        <button onClick={handleApprove} disabled={processing} className="px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs font-bold text-white hover:bg-slate-800 transition-colors shadow-sm disabled:opacity-50">{t('Approve Facility')}</button>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100 bg-white">
                     <div className="p-5 text-center hover:bg-gray-50 transition-colors">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Total Land Size')}</p>
-                        <p className="font-heading font-bold text-2xl text-gray-900">{farmer.land_acres || 'â€“'} {t('Acres')}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Total Facility Area')}</p>
+                        <p className="font-heading font-bold text-2xl text-gray-900">{farmer.land_acres || '–'} {t('Sq. Ft / Units')}</p>
                     </div>
                     <div className="p-5 text-center hover:bg-gray-50 transition-colors">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Primary Crop')}</p>
-                        <p className="font-heading font-bold text-2xl text-slate-800">{farmer.crop_types?.length > 0 ? farmer.crop_types.join(', ') : 'Vetiver'}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Primary Service Focus')}</p>
+                        <p className="font-heading font-bold text-2xl text-slate-800">{farmer.crop_types?.length > 0 ? farmer.crop_types.join(', ') : 'HVAC & MEP'}</p>
                     </div>
                     <div className="p-5 text-center hover:bg-gray-50 transition-colors">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Current Stage')}</p>
-                        <p className="font-heading font-bold text-xl text-gray-900 mt-1 capitalize">{farmer.crop_stage || t('Unknown')}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('SLA Lifecycle')}</p>
+                        <p className="font-heading font-bold text-xl text-gray-900 mt-1 capitalize">{farmer.crop_stage || t('Under Review')}</p>
                     </div>
                     <div className="p-5 text-center hover:bg-gray-50 transition-colors">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Contact')}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Facility Contact')}</p>
                         <p className="font-bold text-sm text-gray-900 flex items-center justify-center mt-2"><Smartphone className="w-4 h-4 mr-1 text-slate-700" /> {farmer.phone}</p>
                     </div>
                 </div>
@@ -226,9 +226,9 @@ export default function PendingFarmerDetail({ farmer = {}, visits = [] }) {
                                 </div>
                             </div>
                             
-                            {/* Farmer Photo */}
+                            {/* Facility In-charge Photo */}
                             <div className="border border-gray-100 rounded-2xl p-4 bg-gray-50">
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{t('Farmer Photo')}</p>
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{t('Facility Officer Photo')}</p>
                                 <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-200 relative group">
                                     <img 
                                         src={farmer.farmer_photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(farmer.name)}&background=random&size=400`} 
@@ -238,24 +238,24 @@ export default function PendingFarmerDetail({ farmer = {}, visits = [] }) {
                                 </div>
                             </div>
 
-                            {/* Farm Photos */}
+                            {/* Facility Photos */}
                             {farmer.farm_photos && farmer.farm_photos.length > 0 ? farmer.farm_photos.map((photo, idx) => (
                                 <div key={idx} className="border border-gray-100 rounded-2xl p-4 bg-gray-50">
-                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{t('Farm Photo')} {idx + 1}</p>
+                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{t('Facility Photo')} {idx + 1}</p>
                                     <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-200 relative group">
                                         <img 
                                             src={photo} 
-                                            onError={(e) => { e.target.onerror = null; e.target.src = `https://images.unsplash.com/photo-1592982537447-6f2334208f34?w=600&q=80`; }}
+                                            onError={(e) => { e.target.onerror = null; e.target.src = `https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&q=80`; }}
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform" 
                                         />
                                     </div>
                                 </div>
                             )) : (
                                 <div className="border border-gray-100 rounded-2xl p-4 bg-gray-50">
-                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{t('Farm Photo')} 1</p>
+                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{t('Facility Photo')} 1</p>
                                     <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-200 relative group">
                                         <img 
-                                            src="https://images.unsplash.com/photo-1592982537447-6f2334208f34?w=600&q=80" 
+                                            src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&q=80" 
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform" 
                                         />
                                     </div>
