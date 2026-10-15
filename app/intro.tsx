@@ -45,15 +45,13 @@ export default function IntroScreen() {
             </View>
 
         <View style={{ backgroundColor: "#ffffff", borderTopLeftRadius: 40, borderTopRightRadius: 40, paddingHorizontal: 32, paddingTop: 40, paddingBottom: 48, shadowColor: "#000", shadowOffset: { width: 0, height: -12 }, shadowOpacity: 0.1, shadowRadius: 32, zIndex: 10 }}>
-          <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 36, textAlign: "center", lineHeight: 42, marginBottom: 16 }}>
-            {t("chooseRole", "Choose Your Path")}
+          <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 32, textAlign: "center", lineHeight: 38, marginBottom: 12 }}>
+            Field Operations Portal
           </Text> 
-          <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 16, textAlign: "center", lineHeight: 24, marginBottom: 32 }}>
-            {language === "ta"
-              ? "உங்கள் கணக்கைத் தொடர உங்கள் பங்கைத் தேர்ந்தெடுக்கவும்."
-              : "Select your role to access Facility Management services and portals."}
+          <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 15, textAlign: "center", lineHeight: 22, marginBottom: 28 }}>
+            Field staff & technician operational workspace for real-time facility inspections, attendance, and SLA task execution.
           </Text>
-          <View style={{ gap: 16, marginBottom: 32 }}>
+          <View style={{ gap: 12, marginBottom: 28 }}>
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => setRole("employee")}
@@ -61,46 +59,53 @@ export default function IntroScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 backgroundColor: role === "employee" ? "#0f172a" : "#f1f5f9",
-                borderRadius: 999,
+                borderRadius: 24,
                 padding: 16,
-                borderWidth: role === "employee" ? 0 : 1,
-                borderColor: "#e2e8f0"
+                borderWidth: role === "employee" ? 2 : 1,
+                borderColor: role === "employee" ? "#334155" : "#e2e8f0"
               }}
             >
-              <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: role === "employee" ? "#334155" : "#ffffff", alignItems: "center", justifyContent: "center" }}>
+              <View style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: role === "employee" ? "#334155" : "#ffffff", alignItems: "center", justifyContent: "center" }}>
                 <Briefcase size={24} color={role === "employee" ? "#ffffff" : "#475569"} />
               </View>
               <View style={{ marginLeft: 16, flex: 1 }}>
-                <Text style={{ color: role === "employee" ? "#ffffff" : "#000000", fontFamily: "Brandon-Bold", fontSize: 18 }}>
-                  {t("fieldOfficer", "Facility Officer / Staff")}
-                </Text>
-                <Text style={{ color: role === "employee" ? "rgba(255,255,255,0.7)" : "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>
-                  {language === "ta" ? "வருகைகளை நிர்வகிக்கவும்" : "Manage site inspections & service tasks"}
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <Text style={{ color: role === "employee" ? "#ffffff" : "#000000", fontFamily: "Brandon-Bold", fontSize: 18 }}>
+                    Facility Staff / Technician
+                  </Text>
+                  <View style={{ backgroundColor: "#22c55e", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                    <Text style={{ color: "#ffffff", fontSize: 10, fontFamily: "Brandon-Bold" }}>PRIMARY</Text>
+                  </View>
+                </View>
+                <Text style={{ color: role === "employee" ? "rgba(255,255,255,0.7)" : "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 2 }}>
+                  GPS Tracking, Attendance, Audits & Work Orders
                 </Text>
               </View>
             </TouchableOpacity>
+
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => setRole("farmer")}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                backgroundColor: role === "farmer" ? "#0f172a" : "#f1f5f9",
-                borderRadius: 999,
-                padding: 16,
-                borderWidth: role === "farmer" ? 0 : 1,
-                borderColor: "#e2e8f0"
+                backgroundColor: role === "farmer" ? "#0f172a" : "#f8fafc",
+                borderRadius: 20,
+                padding: 14,
+                borderWidth: 1,
+                borderColor: role === "farmer" ? "#0f172a" : "#e2e8f0",
+                opacity: 0.8
               }}
             >
-              <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: role === "farmer" ? "#334155" : "#ffffff", alignItems: "center", justifyContent: "center" }}>
-                <Building2 size={24} color={role === "farmer" ? "#ffffff" : "#475569"} />
+              <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: role === "farmer" ? "#334155" : "#ffffff", alignItems: "center", justifyContent: "center" }}>
+                <Building2 size={20} color={role === "farmer" ? "#ffffff" : "#64748b"} />
               </View>
-              <View style={{ marginLeft: 16, flex: 1 }}>
-                <Text style={{ color: role === "farmer" ? "#ffffff" : "#000000", fontFamily: "Brandon-Bold", fontSize: 18 }}>
-                  {t("facilityClient", "Facility / Client")}
+              <View style={{ marginLeft: 14, flex: 1 }}>
+                <Text style={{ color: role === "farmer" ? "#ffffff" : "#475569", fontFamily: "Brandon-Bold", fontSize: 15 }}>
+                  Facility / Client Access
                 </Text>
-                <Text style={{ color: role === "farmer" ? "rgba(255,255,255,0.7)" : "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>
-                  {language === "ta" ? "சேவைகளைக் கண்காணிக்கவும்" : "Track facility audits & service tickets"}
+                <Text style={{ color: role === "farmer" ? "rgba(255,255,255,0.7)" : "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12 }}>
+                  Client reporting & tickets (Optional)
                 </Text>
               </View>
             </TouchableOpacity>
@@ -115,9 +120,11 @@ export default function IntroScreen() {
                 router.replace("/(auth)/farmer-login");
               }
             }}
-            style={{ width: "100%", backgroundColor: "#15803d", borderRadius: 999, paddingVertical: 20, alignItems: "center", shadowColor: "#15803d", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 8 }}
+            style={{ width: "100%", backgroundColor: "#0f172a", borderRadius: 999, paddingVertical: 18, alignItems: "center", shadowColor: "#0f172a", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 16, elevation: 8 }}
           >
-            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>Get Started</Text>
+            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 17 }}>
+              {role === "employee" ? "Login to Staff Workspace" : "Access Client Portal"}
+            </Text>
           </TouchableOpacity>
 
         </View>

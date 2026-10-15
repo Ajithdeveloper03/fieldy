@@ -27,33 +27,33 @@ export default function EmployeeMyFarmersScreen() {
   const farmers = [
     {
       id: "1",
-      name: "Ramesh Kumar",
-      location: "Annur North, Block A",
-      distance: "12 km away",
-      crop: "Vetiver",
-      health: "Optimal",
+      name: "Apex Cyber Tower",
+      location: "Tidel Park Road, Block B",
+      distance: "4.2 km away",
+      crop: "HVAC & Fire Safety",
+      health: "SLA Active",
       healthColor: "#10b981",
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
       farmImage: require("../../assets/images/image5.jpg"),
     },
     {
       id: "2",
-      name: "Suresh Rajan",
-      location: "Thanjavur West",
-      distance: "45 km away",
-      crop: "Organic Rice",
-      health: "Needs Attention",
+      name: "Metro Logistics Hub",
+      location: "Outer Ring Road, Zone 3",
+      distance: "14 km away",
+      crop: "Electrical Substation & MEP",
+      health: "Service Due",
       healthColor: "#f59e0b",
       image: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&auto=format&fit=crop&q=80",
       farmImage: require("../../assets/images/image2.jpg"),
     },
     {
       id: "3",
-      name: "Muthuvel",
-      location: "Coimbatore South",
-      distance: "22 km away",
-      crop: "Sugarcane",
-      health: "Critical",
+      name: "Grand Horizon Corporate Suites",
+      location: "Central Business District",
+      distance: "8.5 km away",
+      crop: "Integrated FM",
+      health: "Critical Alarm",
       healthColor: "#ef4444",
       image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80",
       farmImage: require("../../assets/images/image6.jpg"),
@@ -71,7 +71,7 @@ export default function EmployeeMyFarmersScreen() {
           <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 8, backgroundColor: "#ffffff", borderRadius: 999, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 }}>
             <ChevronLeft size={24} color="#0f172a" />
           </TouchableOpacity>
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>My Farmers</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>My Facilities & Sites</Text>
           <TouchableOpacity style={{ padding: 8, backgroundColor: "#ffffff", borderRadius: 999, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 }}>
             <Filter size={20} color="#0f172a" />
           </TouchableOpacity>
@@ -81,7 +81,7 @@ export default function EmployeeMyFarmersScreen() {
         <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
           <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#ffffff", borderRadius: 16, paddingHorizontal: 16, paddingVertical: 14, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4 }}>
             <Search size={20} color="#94a3b8" />
-            <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 16, marginLeft: 12, flex: 1 }}>Search by name, crop or location...</Text>
+            <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 16, marginLeft: 12, flex: 1 }}>Search by facility name or location...</Text>
           </View>
         </View>
 
@@ -123,8 +123,7 @@ export default function EmployeeMyFarmersScreen() {
                 </View>
 
                 <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#f0fdf4", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, alignSelf: "flex-start", marginBottom: 20 }}>
-                  <Sprout size={16} color="#16a34a" />
-                  <Text style={{ color: "#16a34a", fontFamily: "Brandon-Bold", fontSize: 13, marginLeft: 8 }}>{farmer.crop}</Text>
+                  <Text style={{ color: "#16a34a", fontFamily: "Brandon-Bold", fontSize: 13 }}>{farmer.crop}</Text>
                 </View>
 
                 {/* Bottom Action Icons */}
@@ -138,7 +137,7 @@ export default function EmployeeMyFarmersScreen() {
                     </TouchableOpacity>
                   </View>
                   <TouchableOpacity style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10, backgroundColor: "#0f172a", borderRadius: 12 }}>
-                    <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13, marginRight: 8 }}>View Profile</Text>
+                    <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13, marginRight: 8 }}>View Facility</Text>
                     <ArrowRight size={16} color="#ffffff" />
                   </TouchableOpacity>
                 </View>

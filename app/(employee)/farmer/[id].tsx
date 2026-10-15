@@ -59,36 +59,36 @@ export default function EmployeeFarmerProfileScreen() {
             <Image source={{ uri: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" }} style={{ width: "100%", height: "100%" }} />
           </View>
           
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 28, marginBottom: 4 }}>Ramesh Kumar</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 28, marginBottom: 4 }}>Apex Cyber Tower</Text>
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
             <MapPin size={14} color="#64748b" />
-            <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 14, marginLeft: 6 }}>Annur North, Block A • 12km</Text>
+            <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 14, marginLeft: 6 }}>Tidel Park Road, Block B • 4.2km</Text>
           </View>
 
           <View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: "#10b981", borderRadius: 16, paddingVertical: 12, flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+            <TouchableOpacity style={{ flex: 1, backgroundColor: "#0f172a", borderRadius: 16, paddingVertical: 12, flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
               <Phone size={18} color="#ffffff" style={{ marginRight: 8 }} />
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14 }}>Call</Text>
+              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14 }}>Call Facility Head</Text>
             </TouchableOpacity>
             <TouchableOpacity style={{ flex: 1, backgroundColor: "#f1f5f9", borderRadius: 16, paddingVertical: 12, flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
               <MessageSquare size={18} color="#0f172a" style={{ marginRight: 8 }} />
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14 }}>Message</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14 }}>Site Chat</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Farm & Crop Info */}
-        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginHorizontal: 24, marginTop: 32, marginBottom: 16 }}>Farm Details</Text>
+        {/* Facility & SLA Info */}
+        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginHorizontal: 24, marginTop: 32, marginBottom: 16 }}>Facility Specification</Text>
         <View style={{ flexDirection: "row", marginHorizontal: 20, gap: 16 }}>
           <View style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 24, padding: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12 }}>
-            <Sprout size={24} color="#10b981" style={{ marginBottom: 12 }} />
-            <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13 }}>Primary Crop</Text>
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginTop: 4 }}>Vetiver</Text>
+            <Activity size={24} color="#0f172a" style={{ marginBottom: 12 }} />
+            <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13 }}>Core Service Focus</Text>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginTop: 4 }}>HVAC & MEP</Text>
           </View>
           <View style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 24, padding: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12 }}>
-            <Activity size={24} color="#3b82f6" style={{ marginBottom: 12 }} />
-            <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13 }}>Crop Health</Text>
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginTop: 4 }}>Optimal</Text>
+            <Activity size={24} color="#10b981" style={{ marginBottom: 12 }} />
+            <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13 }}>SLA Status</Text>
+            <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 18, marginTop: 4 }}>Active (100%)</Text>
           </View>
         </View>
 
