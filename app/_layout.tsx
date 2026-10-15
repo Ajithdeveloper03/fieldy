@@ -130,9 +130,9 @@ export default function RootLayout() {
         >
           <View
             style={{
-              width: 110,
-              height: 110,
-              borderRadius: 55,
+              width: 150,
+              height: 80,
+              borderRadius: 20,
               backgroundColor: "rgba(255, 255, 255, 0.95)",
               alignItems: "center",
               justifyContent: "center",
@@ -141,7 +141,8 @@ export default function RootLayout() {
               shadowOpacity: 0.35,
               shadowRadius: 20,
               elevation: 10,
-              padding: 10,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
               marginBottom: 20,
             }}
           >
@@ -156,14 +157,14 @@ export default function RootLayout() {
         <Text
           style={{
             color: "#ffffff",
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: "700",
-            letterSpacing: 2.5,
+            letterSpacing: 3,
             marginBottom: 6,
             textAlign: "center",
           }}
         >
-          INFINITY ORGANICS
+          FIELDY
         </Text>
         <Text
           style={{
@@ -175,7 +176,7 @@ export default function RootLayout() {
             textTransform: "uppercase",
           }}
         >
-          Eco Agronomy Platform
+          Field Operations & Management
         </Text>
 
         <ActivityIndicator size="small" color="#10b981" />

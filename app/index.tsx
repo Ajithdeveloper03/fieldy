@@ -63,8 +63,8 @@ export default function IndexScreen() {
       
       {/* TEXT */}
       <Animated.View style={[styles.textContainer, { opacity: textOpacityAnim }]}>
-        <Text style={styles.title}>INFINITY ORGANICS</Text>
-        <Text style={styles.subtitle}>Eco Agronomy Platform</Text>
+        <Text style={styles.title}>FIELDY</Text>
+        <Text style={styles.subtitle}>Field Operations & Management Platform</Text>
       </Animated.View>
 
     </View>
@@ -79,12 +79,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   logoContainer: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
+    width: 220,
+    height: 120,
+    borderRadius: 24,
     backgroundColor: "#ffffff", // White background for logo
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 16,
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.3,
@@ -92,8 +93,8 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   logo: {
-    width: 130,
-    height: 130,
+    width: 190,
+    height: 90,
   },
   textContainer: {
     marginTop: 40,

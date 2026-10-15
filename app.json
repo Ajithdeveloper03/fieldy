@@ -1,19 +1,19 @@
 {
   "expo": {
-    "name": "infinity-organics",
-    "slug": "infinity-organics",
+    "name": "Fieldy",
+    "slug": "fieldy",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "infinityorganics",
+    "scheme": "fieldy",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.infinityorganics.app"
+      "bundleIdentifier": "com.fieldy.app"
     },
     "android": {
-      "package": "com.infinityorganics.app",
+      "package": "com.fieldy.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

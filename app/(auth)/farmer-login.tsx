@@ -104,8 +104,8 @@ export default function FarmerLoginScreen() {
             <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center", paddingHorizontal: 24 }}>
               
               <View style={{ alignItems: "center", marginBottom: 40 }}>
-                <View style={{ width: 80, height: 80, borderRadius: 24, backgroundColor: "rgba(255,255,255,0.1)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.2)", marginBottom: 24 }}>
-                  <Image source={require("../../assets/images/logo.png")} style={{ width: 50, height: 50 }} resizeMode="contain" />
+                <View style={{ width: 160, height: 75, borderRadius: 20, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.4)", marginBottom: 24, paddingHorizontal: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 4 }}>
+                  <Image source={require("../../assets/images/logo.png")} style={{ width: 135, height: 55 }} resizeMode="contain" />
                 </View>
                 <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 36, textAlign: "center", letterSpacing: 1 }}>
                   Farmer Login

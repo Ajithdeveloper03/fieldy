@@ -31,11 +31,11 @@ export default function IntroScreen() {
             </View>
             {/* MASSIVE CENTRAL ILLUSTRATION */}
             <View style={{ alignItems: "center", justifyContent: "center", flex: 1, paddingHorizontal: 24, zIndex: 0 }}>
-              <View style={{ width: 260, height: 260, alignItems: "center", justifyContent: "center" }}>
-                <View style={{ width: 240, height: 240, borderRadius: 120, backgroundColor: "#ffffff", borderWidth: 8, borderColor: "rgba(255,255,255,0.2)", shadowColor: "#000", shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.15, shadowRadius: 24, alignItems: "center", justifyContent: "center" }}>
+              <View style={{ width: "100%", alignItems: "center", justifyContent: "center" }}>
+                <View style={{ width: 280, height: 160, borderRadius: 32, backgroundColor: "#ffffff", borderWidth: 4, borderColor: "rgba(255,255,255,0.4)", shadowColor: "#000", shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.15, shadowRadius: 24, alignItems: "center", justifyContent: "center", paddingHorizontal: 20 }}>
                   <Image 
                     source={require("../assets/images/logo.png")} 
-                    style={{ width: 160, height: 160 }} 
+                    style={{ width: 240, height: 110 }} 
                     resizeMode="contain"
                   />
                 </View>

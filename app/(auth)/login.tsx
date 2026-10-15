@@ -114,8 +114,8 @@ export default function LoginScreen() {
             <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center", paddingHorizontal: 24 }}>
               
               <View style={{ alignItems: "center", marginBottom: 40 }}>
-                <View style={{ width: 180, height: 180, borderRadius: 24, backgroundColor: role === "farmer" ? "#ffffff" : "rgba(255,255,255,0.8)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.6)", marginBottom: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: role === "farmer" ? 0.1 : 0, shadowRadius: 16, elevation: role === "farmer" ? 5 : 0 }}>
-                  <Image source={require("../../assets/images/logo.png")} style={{ width: 150, height: 150 }} resizeMode="contain" />
+                <View style={{ width: 220, height: 100, borderRadius: 24, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.6)", marginBottom: 24, paddingHorizontal: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15, shadowRadius: 16, elevation: 5 }}>
+                  <Image source={require("../../assets/images/logo.png")} style={{ width: 190, height: 76 }} resizeMode="contain" />
                 </View>
                 <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 36, textAlign: "center", letterSpacing: 1 }}>
                   Welcome Back
