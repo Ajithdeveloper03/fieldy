@@ -11,14 +11,12 @@ import {
 import { BlurView } from "expo-blur";
 import { useLanguage } from "../../context/LanguageContext";
 import { LanguageProvider } from "../../context/LanguageContext";
-
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const { t } = useLanguage();
   const visibleRoutes = state.routes.filter(
     (route: any) =>
       ["dashboard", "orders", "crop-health", "officer", "profile"].includes(route.name)
   );
-
   const routeTitleMap: Record<string, string> = {
     dashboard: "Home",
     orders: "Orders",
@@ -26,7 +24,6 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
     officer: "Officer",
     profile: "Profile",
   };
-
   return (
     <View style={styles.container}>
       <BlurView
@@ -49,12 +46,10 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
               navigation.navigate(route.name);
             }
           };
-
           const getIcon = () => {
             const activeColor = "#10b981"; // Emerald Green
             const inactiveColor = "#94a3b8"; // Slate gray
-            const color = isFocused ? activeColor : inactiveColor;
-            
+            const color = isFocused ? activeColor : inactiveColor;  
             switch (route.name) {
               case "dashboard":
                 return <Home size={24} color={color} strokeWidth={isFocused ? 2.5 : 2} />;
@@ -70,7 +65,6 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
                 return null;
             }
           };
-
           return (
             <TouchableOpacity
               key={route.key}
@@ -100,8 +94,6 @@ export default function FarmerLayout() {
           <Tabs.Screen name="crop-health" />
           <Tabs.Screen name="officer" />
           <Tabs.Screen name="profile" />
-          
-          {/* Hidden screens (accessible via standard routing) */}
           <Tabs.Screen name="farm" options={{ href: null }} />
           <Tabs.Screen name="documents" options={{ href: null }} />
           <Tabs.Screen name="history" options={{ href: null }} />
@@ -111,7 +103,6 @@ export default function FarmerLayout() {
           <Tabs.Screen name="referral" options={{ href: null }} />
           <Tabs.Screen name="support" options={{ href: null }} />
           <Tabs.Screen name="product/[id]" options={{ href: null }} />
-          <Tabs.Screen name="rate" options={{ href: null }} />
           <Tabs.Screen name="report" options={{ href: null }} />
           <Tabs.Screen name="visit" options={{ href: null }} />
         </Tabs>
@@ -119,7 +110,6 @@ export default function FarmerLayout() {
     </LanguageProvider>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     position: "absolute",

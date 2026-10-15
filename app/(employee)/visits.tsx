@@ -21,22 +21,17 @@ import {
   Clock
 } from "lucide-react-native";
 import { useLanguage } from "../../context/LanguageContext";
-
 export default function EmployeeVisitsScreen() {
   const { t, language } = useLanguage();
-
   const visits = [
     { id: 1, type: "INITIAL VISIT", farmer: "Rajesh Kumar", time: "09:00 AM", status: "Completed", image: require("../../assets/images/image1.jpg") },
     { id: 2, type: "FIELD INSPECTION", farmer: "Muthuvel", time: "11:30 AM", status: "In Progress", image: require("../../assets/images/image2.jpg") },
     { id: 3, type: "CROP HEALTH", farmer: "Senthil", time: "02:00 PM", status: "Pending", image: require("../../assets/images/image5.jpg") },
     { id: 4, type: "SOIL TESTING", farmer: "Kuppusamy", time: "04:30 PM", status: "Pending", image: require("../../assets/images/image6.jpg") },
   ];
-
   return (
     <View style={{ flex: 1, backgroundColor: "#062214" }}>
       <StatusBar barStyle="light-content" />
-
-      {/* DRONE MAP BACKGROUND */}
       <ImageBackground
         source={require("../../assets/images/image2.jpg")}
         style={{ flex: 1 }}
@@ -46,10 +41,7 @@ export default function EmployeeVisitsScreen() {
           colors={["rgba(6, 34, 20, 0.7)", "rgba(6, 34, 20, 0.95)", "#062214"]}
           style={StyleSheet.absoluteFill}
         />
-
         <SafeAreaView style={{ flex: 1 }}>
-          
-          {/* HEADER */}
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 24, paddingTop: 16 }}>
             <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.1)", alignItems: "center", justifyContent: "center", backdropFilter: "blur(10px)" }}>
               <ChevronLeft size={24} color="#ffffff" />
@@ -62,15 +54,10 @@ export default function EmployeeVisitsScreen() {
               <CalendarDays size={20} color="#ffffff" />
             </TouchableOpacity>
           </View>
-
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 32, alignItems: "center", paddingBottom: 160 }}>
             
-            {/* TIMELINE CONTAINER */}
             <View style={{ width: "100%", alignItems: "center" }}>
-              
-              {/* Central Timeline Line */}
               <View style={{ position: "absolute", top: 40, bottom: 40, width: 2, backgroundColor: "rgba(255,255,255,0.1)", left: "50%", marginLeft: -1, zIndex: 0 }} />
-
               {visits.map((visit) => (
                 <TouchableOpacity 
                   key={visit.id} 
@@ -78,21 +65,15 @@ export default function EmployeeVisitsScreen() {
                   onPress={() => router.push(`/(employee)/visit/${visit.id}` as any)}
                   style={{ width: "100%", flexDirection: "row", alignItems: "center", marginVertical: 32, zIndex: 10 }}
                 >
-                  
-                  {/* Left Side (Type & Status) */}
                   <View style={{ flex: 1, alignItems: "flex-end", paddingRight: 56 }}>
                     <Text style={{ color: "rgba(255,255,255,0.5)", fontFamily: "Brandon-Bold", fontSize: 10, letterSpacing: 1, marginBottom: 4 }}>{visit.type}</Text>
                     <Text style={{ color: visit.status === "Completed" ? "#4ade80" : visit.status === "In Progress" ? "#fbbf24" : "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>
                       {visit.status}
                     </Text>
                   </View>
-
-                  {/* Center Circle Image */}
                   <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: "#062214", alignItems: "center", justifyContent: "center", position: "absolute", left: "50%", marginLeft: -40, zIndex: 10, borderWidth: visit.status === "Completed" ? 2 : 1, borderColor: visit.status === "Completed" ? "#4ade80" : "rgba(255,255,255,0.2)" }}>
                     <Image source={visit.image} style={{ width: 72, height: 72, borderRadius: 36 }} />
                   </View>
-
-                  {/* Right Side (Farmer & Time) */}
                   <View style={{ flex: 1, alignItems: "flex-start", paddingLeft: 56 }}>
                     <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20 }}>{visit.time}</Text>
                     <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
@@ -104,8 +85,6 @@ export default function EmployeeVisitsScreen() {
               ))}
             </View>
           </ScrollView>
-
-          {/* BOTTOM FLOATING SUMMARY CARD */}
           <View style={{ position: "absolute", bottom: 24, left: 24, right: 24, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 32, padding: 24, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", backdropFilter: "blur(20px)" }}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -120,7 +99,6 @@ export default function EmployeeVisitsScreen() {
               Your itinerary has been automatically sorted for the most efficient travel time across all sectors today.
             </Text>
           </View>
-
         </SafeAreaView>
       </ImageBackground>
     </View>
