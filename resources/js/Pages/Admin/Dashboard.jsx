@@ -47,6 +47,7 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
     const [isMapFullscreen, setIsMapFullscreen] = useState(false);
     const [prompt, setPrompt] = useState('');
     const [showTip, setShowTip] = useState(true);
+    const [activeAiTab, setActiveAiTab] = useState('dispatch');
     const { t } = useTranslation();
     const { props } = usePage();
     const firstName = (props.auth?.user?.name || 'Admin').split(' ')[0];
@@ -504,6 +505,238 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                         </div>
                     )}
                 </section>
+            </div>
+
+            {/* ══════════ HOSTINGER IMAGE 4 REPLICA: AI OPERATIONS CO-PILOT ══════════ */}
+            <div className="hp-card-gradient-dark-violet rounded-3xl p-6 sm:p-10 shadow-xl border border-indigo-500/20 text-white mt-10 relative overflow-hidden">
+                {/* Glow orbs */}
+                <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-violet-600/20 blur-3xl pointer-events-none" />
+                <div className="absolute left-1/3 -bottom-24 w-72 h-72 rounded-full bg-indigo-500/15 blur-3xl pointer-events-none" />
+
+                <div className="relative space-y-8">
+                    {/* Top Row: Award badge & Header */}
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        <div className="max-w-xl space-y-2">
+                            <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 font-bold text-xs">
+                                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                                    {t('Stevie® Award Winner 2026 · Field Tech AI')}
+                                </span>
+                            </div>
+                            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight">
+                                {t('Your Fieldy AI co-worker. Free with every plan.')}
+                            </h2>
+                            <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+                                {t('Dispatch, fix schedules, audit photo proofs, and calculate payroll timesheets through conversational intelligence. 85% of dispatch workflows solved without manual lag.')}
+                            </p>
+                        </div>
+
+                        <div className="shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => askAssistant('Show today dispatch optimization')}
+                                className="hp-btn hp-btn-primary !rounded-full !h-11 px-6 font-bold text-sm shadow-md"
+                            >
+                                <Sparkles className="w-4 h-4 mr-1.5" />
+                                <span>{t('Start a co-pilot chat')}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Interactive Horizontal Tabs (Speed it up, Dispatch, Photo AI, Payroll, Signatures) */}
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-2">
+                        {[
+                            { id: 'geofence', label: 'Speed it up (GPS)' },
+                            { id: 'dispatch', label: 'Auto-Dispatch' },
+                            { id: 'photo_ai', label: 'Photo Proof AI' },
+                            { id: 'payroll', label: 'Timesheet Payroll' },
+                            { id: 'signature', label: 'E-Signatures' },
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                type="button"
+                                onClick={() => setActiveAiTab(tab.id)}
+                                className={`py-3 px-4 rounded-xl text-xs sm:text-sm font-bold text-center transition-all ${
+                                    activeAiTab === tab.id
+                                        ? 'bg-violet-600/80 text-white shadow-md border border-violet-400/40'
+                                        : 'bg-white/5 text-zinc-300 hover:bg-white/10 border border-white/5'
+                                }`}
+                            >
+                                {t(tab.label)}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Simulated Interactive Chat Box (Replicating Hostinger Image 4 Card) */}
+                    <div className="bg-zinc-900/80 backdrop-blur-md rounded-2xl p-5 sm:p-6 border border-zinc-700/80 space-y-4 max-w-3xl">
+                        {activeAiTab === 'geofence' && (
+                            <>
+                                <div className="flex items-start gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-violet-500/20 text-violet-300 flex items-center justify-center font-bold text-xs shrink-0">
+                                        ADM
+                                    </div>
+                                    <div className="bg-white/10 rounded-2xl p-3 text-xs sm:text-sm text-zinc-200">
+                                        "Did all 14 technicians clock in inside their designated facility geofences this morning?"
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3 pl-4">
+                                    <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+                                        <Sparkles className="w-4 h-4" />
+                                    </div>
+                                    <div className="bg-violet-950/60 border border-violet-800/40 rounded-2xl p-3.5 text-xs sm:text-sm text-zinc-100 space-y-1">
+                                        <p className="font-bold text-emerald-400 flex items-center gap-1.5">
+                                            <CheckCircle2 className="w-4 h-4" /> 13 / 14 Verified on Site via GPS & Face Biometrics
+                                        </p>
+                                        <p className="text-zinc-300 text-xs">
+                                            Officer Suresh was 180m outside Sector 4 boundary. An alert has been flagged in your live notifications log.
+                                        </p>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {activeAiTab === 'dispatch' && (
+                            <>
+                                <div className="flex items-start gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-violet-500/20 text-violet-300 flex items-center justify-center font-bold text-xs shrink-0">
+                                        ADM
+                                    </div>
+                                    <div className="bg-white/10 rounded-2xl p-3 text-xs sm:text-sm text-zinc-200">
+                                        "Urgent HVAC water chiller leak at Apex Tech Park. Who is nearest and certified?"
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3 pl-4">
+                                    <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+                                        <Sparkles className="w-4 h-4" />
+                                    </div>
+                                    <div className="bg-violet-950/60 border border-violet-800/40 rounded-2xl p-3.5 text-xs sm:text-sm text-zinc-100 space-y-1">
+                                        <p className="font-bold text-violet-300">
+                                            Recommended: Karthik Raja (2.1 km away · Level 3 HVAC Certified)
+                                        </p>
+                                        <p className="text-zinc-300 text-xs">
+                                            Estimated arrival time: 8 minutes. Automated job ticket dispatched with WhatsApp alert to client facility manager.
+                                        </p>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {activeAiTab === 'photo_ai' && (
+                            <>
+                                <div className="flex items-start gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-violet-500/20 text-violet-300 flex items-center justify-center font-bold text-xs shrink-0">
+                                        ADM
+                                    </div>
+                                    <div className="bg-white/10 rounded-2xl p-3 text-xs sm:text-sm text-zinc-200">
+                                        "Validate the completion photo uploaded for Solar Inverter #3 preventive inspection."
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3 pl-4">
+                                    <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+                                        <Sparkles className="w-4 h-4" />
+                                    </div>
+                                    <div className="bg-violet-950/60 border border-violet-800/40 rounded-2xl p-3.5 text-xs sm:text-sm text-zinc-100 space-y-1">
+                                        <p className="font-bold text-emerald-400 flex items-center gap-1.5">
+                                            <CheckCircle2 className="w-4 h-4" /> Photo Proof Verified · EXIF GPS & Timestamp Match
+                                        </p>
+                                        <p className="text-zinc-300 text-xs">
+                                            Inverter display readings: 415V / 50Hz within safe tolerances. Serial number tags match client asset master file.
+                                        </p>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {activeAiTab === 'payroll' && (
+                            <>
+                                <div className="flex items-start gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-violet-500/20 text-violet-300 flex items-center justify-center font-bold text-xs shrink-0">
+                                        ADM
+                                    </div>
+                                    <div className="bg-white/10 rounded-2xl p-3 text-xs sm:text-sm text-zinc-200">
+                                        "Calculate overtime and travel allowance for this week's cleaning & security crews."
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3 pl-4">
+                                    <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+                                        <Sparkles className="w-4 h-4" />
+                                    </div>
+                                    <div className="bg-violet-950/60 border border-violet-800/40 rounded-2xl p-3.5 text-xs sm:text-sm text-zinc-100 space-y-1">
+                                        <p className="font-bold text-indigo-300">
+                                            Timesheet Summary Ready: 48 regular hours · 6.5 overtime hours · 142 km GPS mileage
+                                        </p>
+                                        <p className="text-zinc-300 text-xs">
+                                            One-click payroll file ready for export to Tally, Zoho Books, or Excel format.
+                                        </p>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {activeAiTab === 'signature' && (
+                            <>
+                                <div className="flex items-start gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-violet-500/20 text-violet-300 flex items-center justify-center font-bold text-xs shrink-0">
+                                        ADM
+                                    </div>
+                                    <div className="bg-white/10 rounded-2xl p-3 text-xs sm:text-sm text-zinc-200">
+                                        "Has client Metro Plaza signed off on the monthly pest control service sheet?"
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3 pl-4">
+                                    <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+                                        <Sparkles className="w-4 h-4" />
+                                    </div>
+                                    <div className="bg-violet-950/60 border border-violet-800/40 rounded-2xl p-3.5 text-xs sm:text-sm text-zinc-100 space-y-1">
+                                        <p className="font-bold text-emerald-400 flex items-center gap-1.5">
+                                            <CheckCircle2 className="w-4 h-4" /> Signed on Glass by Mr. Rajesh (Facility Manager)
+                                        </p>
+                                        <p className="text-zinc-300 text-xs">
+                                            Digital PDF certificate generated with cryptographic audit hash and delivered to client inbox.
+                                        </p>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Bottom floating dock / quick prompt pills (Hostinger Image 4 lower section) */}
+                    <div className="pt-4 border-t border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs text-zinc-400 font-semibold">{t('Quick Operations Prompts:')}</span>
+                            <button
+                                type="button"
+                                onClick={() => askAssistant('Run GPS geofence audit')}
+                                className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-xs text-zinc-200 transition-colors"
+                            >
+                                {t('Run GPS geofence audit')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => askAssistant('Export weekly overtime report')}
+                                className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-xs text-zinc-200 transition-colors"
+                            >
+                                {t('Export overtime timesheets')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => askAssistant('Check customer satisfaction score')}
+                                className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-xs text-zinc-200 transition-colors"
+                            >
+                                {t('Check CSAT index')}
+                            </button>
+                        </div>
+
+                        {/* Floating bottom dock pill */}
+                        <div className="inline-flex items-center bg-white/10 backdrop-blur-md rounded-full p-1 border border-white/10 text-xs self-start md:self-auto">
+                            <button type="button" onClick={() => router.visit('/admin/tasks')} className="px-3 py-1 rounded-full hover:bg-white/15 text-zinc-200 font-semibold">{t('Jobs')}</button>
+                            <button type="button" onClick={() => askAssistant('Open assistant')} className="px-3 py-1 rounded-full bg-violet-600 text-white font-bold">{t('Chat')}</button>
+                            <button type="button" onClick={() => router.visit('/admin/performance')} className="px-3 py-1 rounded-full hover:bg-white/15 text-zinc-200 font-semibold">{t('Skills')}</button>
+                            <button type="button" onClick={() => router.visit('/admin/visits')} className="px-3 py-1 rounded-full hover:bg-white/15 text-zinc-200 font-semibold">{t('Reports')}</button>
+                            <button type="button" onClick={() => router.visit('/admin/subscriptions')} className="px-3 py-1 rounded-full hover:bg-white/15 text-zinc-200 font-semibold">{t('Modules')}</button>
+                        </div>
+                    </div>
+                </div>
             </div>
             
         </AdminLayout>

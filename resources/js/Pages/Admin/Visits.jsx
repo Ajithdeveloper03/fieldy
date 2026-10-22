@@ -4,16 +4,17 @@ import { router, Link } from '@inertiajs/react';
 import {
     Clock, MapPin, Leaf, CheckCircle2, Search, ChevronDown, X,
     ChevronRight, BarChart3, TrendingUp, ShieldCheck,
-    Navigation, User, Activity, Sparkles, Filter, FileText, ArrowRight
+    Navigation, User, Activity, Sparkles, Filter, FileText, ArrowRight,
+    Building2, Calendar, LayoutGrid, ListFilter, ArrowUpRight
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 export default function Visits({ visits = {}, employees = [], filters = {} }) {
     const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('records'); // 'records' or 'analytics'
+    const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'table'
     const [searchQuery, setSearchQuery] = useState(filters.search || '');
     const [dateRange, setDateRange] = useState(filters.days || '30');
-    const [showDateDropdown, setShowDateDropdown] = useState(false);
     const [processing, setProcessing] = useState(false);
 
     const visitsData = visits.data || [];
@@ -22,9 +23,9 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
         ? (visitsData.reduce((acc, v) => acc + parseFloat(v.distance_from_previous_farmer_km || 0), 0) / visitsData.length).toFixed(1)
         : '3.8';
 
-    const handleApplyFilters = () => {
+    const handleApplyFilters = (newDays, newSearch) => {
         setProcessing(true);
-        router.get('/admin/visits', { search: searchQuery, days: dateRange }, {
+        router.get('/admin/visits', { search: newSearch !== undefined ? newSearch : searchQuery, days: newDays || dateRange }, {
             preserveState: true,
             preserveScroll: true,
             onFinish: () => setProcessing(false)
@@ -59,7 +60,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
         const purposes = [
             { name: t('HVAC Preventive Maintenance'), count: Math.ceil(total * 0.45), percent: 45, color: 'bg-hp-primary' },
             { name: t('Fire Safety & Hydrant Audit'), count: Math.ceil(total * 0.25), percent: 25, color: 'bg-hp-dark' },
-            { name: t('Electrical Substation & Breaker Check'), count: Math.ceil(total * 0.20), percent: 20, color: 'bg-hp-info' },
+            { name: t('Electrical Substation Check'), count: Math.ceil(total * 0.20), percent: 20, color: 'bg-hp-info' },
             { name: t('Sanitation & Pest Control Audit'), count: Math.max(1, Math.floor(total * 0.10)), percent: 10, color: 'bg-hp-success' }
         ];
 
@@ -79,395 +80,405 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
     return (
         <AdminLayout>
             <div className="space-y-6 pb-12 hp-animate-in">
-                
-                {/* hPanel Clean Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="hp-chip hp-chip-primary">{t('Field Operations')}</span>
+
+                {/* ══════════ HOSTINGER HERO CARD (Soft Minimal Slate Gradient) ══════════ */}
+                <div className="hp-card-gradient-slate rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-200">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        <div className="max-w-2xl">
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                <span className="hp-chip hp-chip-primary">
+                                    <Sparkles className="w-3 h-3 mr-1" /> {t('Field Operations')}
+                                </span>
+                                <span className="hp-chip hp-chip-gray">
+                                    {totalVisits} {t('Inspections Recorded')}
+                                </span>
+                            </div>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
+                                {t('Facility Visits & Inspection Intelligence')}
+                            </h1>
+                            <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
+                                {t('Track verified preventive maintenance logs, facility compliance audits, GPS arrival coordinates, and field technician routes.')}
+                            </p>
+
+                            {/* Hostinger Pill Search Bar */}
+                            <form 
+                                onSubmit={(e) => { e.preventDefault(); handleApplyFilters(); }}
+                                className="mt-5 max-w-lg"
+                            >
+                                <div className="hp-search-pill-bar !bg-white !shadow-xs">
+                                    <Search className="w-4 h-4 text-hp-muted shrink-0" />
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        placeholder={t('Search by facility, officer name, or audit notes...')}
+                                        className="w-full bg-transparent text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
+                                    />
+                                    {searchQuery && (
+                                        <button 
+                                            type="button" 
+                                            onClick={() => { setSearchQuery(''); handleApplyFilters(dateRange, ''); }}
+                                            className="p-1 text-hp-muted hover:text-hp-dark"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                    <button 
+                                        type="submit"
+                                        className="w-7 h-7 rounded-full bg-hp-primary text-white flex items-center justify-center hover:bg-hp-primary-hover shrink-0"
+                                    >
+                                        <ArrowRight className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        <h1 className="hp-page-title">{t('Visit Analytics & Intelligence')}</h1>
-                        <p className="text-sm text-hp-muted mt-1">
-                            {t('Track facility audits, inspection routes, telemetry, and completed logs across all field officers.')}
+
+                        {/* Hostinger Mode & Dispatch Actions */}
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 self-start lg:self-center">
+                            <div className="hp-segmented-bar self-start sm:self-auto">
+                                <button
+                                    onClick={() => setActiveTab('records')}
+                                    className={`hp-segmented-item ${activeTab === 'records' ? 'is-active-primary' : ''}`}
+                                >
+                                    <FileText className="w-3.5 h-3.5" />
+                                    <span>{t('Inspection Records')}</span>
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('analytics')}
+                                    className={`hp-segmented-item ${activeTab === 'analytics' ? 'is-active-primary' : ''}`}
+                                >
+                                    <BarChart3 className="w-3.5 h-3.5" />
+                                    <span>{t('Operational Analytics')}</span>
+                                </button>
+                            </div>
+
+                            <button 
+                                onClick={() => router.visit('/admin/tasks')} 
+                                className="hp-btn hp-btn-primary !rounded-full"
+                            >
+                                <Sparkles className="w-4 h-4 mr-1" />
+                                <span>{t('Dispatch Task')}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ══════════ HOSTINGER BENTO METRIC CARDS (TLD Style) ══════════ */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="hp-metric-pill-card">
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total Audits')}</span>
+                            <span className="hp-chip hp-chip-primary !h-5 !text-[11px]">{t(dateRange === 'all' ? 'All Time' : `${dateRange}d`)}</span>
+                        </div>
+                        <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{totalVisits}</div>
+                        <p className="text-xs text-hp-success font-medium mt-1 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" /> 100% {t('Verified GPS')}
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <button 
-                            onClick={() => router.visit('/admin/tasks')} 
-                            className="hp-btn hp-btn-outline"
-                        >
-                            <FileText className="w-4 h-4" />
-                            {t('View Tasks & Schedule')}
-                        </button>
+                    <div className="hp-metric-pill-card">
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Avg Transit Distance')}</span>
+                            <Navigation className="w-3.5 h-3.5 text-hp-primary" />
+                        </div>
+                        <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{avgDistance} <span className="text-sm font-semibold text-hp-muted">km</span></div>
+                        <p className="text-xs text-hp-muted mt-1">{t('Between scheduled sites')}</p>
+                    </div>
+
+                    <div className="hp-metric-pill-card">
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('SLA Compliance')}</span>
+                            <ShieldCheck className="w-3.5 h-3.5 text-hp-success" />
+                        </div>
+                        <div className="text-2xl sm:text-3xl font-bold text-hp-success">98.2%</div>
+                        <p className="text-xs text-hp-muted mt-1">{t('On-time audit execution')}</p>
+                    </div>
+
+                    <div className="hp-metric-pill-card">
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Active Staff on Duty')}</span>
+                            <span className="w-2 h-2 rounded-full bg-hp-success animate-ping"></span>
+                        </div>
+                        <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{employees.length || 8}</div>
+                        <p className="text-xs text-hp-muted mt-1">{t('Live tracking operational')}</p>
                     </div>
                 </div>
 
-                {/* hPanel KPI Overview Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="hp-card p-5">
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total Visits')}</span>
-                            <span className="hp-icon-tile !w-8 !h-8"><Activity className="w-4 h-4" /></span>
-                        </div>
-                        <div className="text-2xl font-bold text-hp-dark">{totalVisits}</div>
-                        <div className="mt-2 flex items-center gap-1.5">
-                            <span className="hp-chip hp-chip-success !h-5 !text-[11px]">100% {t('Verified')}</span>
-                            <span className="text-xs text-hp-muted">{t('Geofenced')}</span>
-                        </div>
+                {/* ══════════ DATE RANGE & VIEW TOGGLES ══════════ */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    {/* Date Range Selector Pills */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto">
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mr-1">{t('Cycle')}:</span>
+                        {dateRangeOptions.map(opt => (
+                            <button
+                                key={opt.value}
+                                onClick={() => { setDateRange(opt.value); handleApplyFilters(opt.value); }}
+                                className={`hp-pill !h-8 !text-xs ${dateRange === opt.value ? '!bg-hp-dark !text-white !border-hp-dark' : ''}`}
+                            >
+                                {t(opt.labelKey)}
+                            </button>
+                        ))}
                     </div>
 
-                    <div className="hp-card p-5">
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Avg Travel')}</span>
-                            <span className="hp-icon-tile !w-8 !h-8"><Navigation className="w-4 h-4" /></span>
+                    {/* View Switcher for Records (Grid / List) */}
+                    {activeTab === 'records' && (
+                        <div className="flex items-center bg-hp-hover border border-hp-border rounded-lg p-0.5 self-start sm:self-auto">
+                            <button
+                                type="button"
+                                onClick={() => setViewMode('grid')}
+                                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white shadow-xs text-hp-dark font-bold' : 'text-hp-muted hover:text-hp-dark'}`}
+                                title={t('Grid View')}
+                            >
+                                <LayoutGrid className="w-4 h-4" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setViewMode('table')}
+                                className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white shadow-xs text-hp-dark font-bold' : 'text-hp-muted hover:text-hp-dark'}`}
+                                title={t('Table View')}
+                            >
+                                <ListFilter className="w-4 h-4" />
+                            </button>
                         </div>
-                        <div className="text-2xl font-bold text-hp-dark">{avgDistance} <span className="text-sm font-normal text-hp-muted">km</span></div>
-                        <div className="mt-2 text-xs text-hp-muted">Per completed audit</div>
-                    </div>
-
-                    <div className="hp-card p-5">
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('GPS Verification')}</span>
-                            <span className="hp-icon-tile !w-8 !h-8"><ShieldCheck className="w-4 h-4" /></span>
-                        </div>
-                        <div className="text-2xl font-bold text-hp-dark">98.5%</div>
-                        <div className="mt-2 flex items-center gap-1.5">
-                            <span className="hp-chip hp-chip-success !h-5 !text-[11px]">Optimal</span>
-                            <span className="text-xs text-hp-muted">Within perimeter</span>
-                        </div>
-                    </div>
-
-                    <div className="hp-card p-5">
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Active Officers')}</span>
-                            <span className="hp-icon-tile !w-8 !h-8"><User className="w-4 h-4" /></span>
-                        </div>
-                        <div className="text-2xl font-bold text-hp-dark">{analytics.topOfficers.length || employees.length}</div>
-                        <div className="mt-2 text-xs text-hp-muted">Field staff reporting</div>
-                    </div>
+                    )}
                 </div>
 
-                {/* hPanel Clean Underline Tab Navigation */}
-                <div className="flex items-center gap-6 border-b border-hp-border">
-                    <button
-                        onClick={() => setActiveTab('records')}
-                        className={`pb-3 text-sm font-bold border-b-2 flex items-center gap-2 transition-colors ${
-                            activeTab === 'records'
-                                ? 'border-hp-primary text-hp-primary'
-                                : 'border-transparent text-hp-muted hover:text-hp-dark'
-                        }`}
-                    >
-                        <FileText className="w-4 h-4" />
-                        <span>{t('Visit Records')}</span>
-                        <span className={`hp-chip !h-5 !px-2 !text-[11px] ${activeTab === 'records' ? 'hp-chip-primary' : 'hp-chip-gray'}`}>
-                            {totalVisits}
-                        </span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('analytics')}
-                        className={`pb-3 text-sm font-bold border-b-2 flex items-center gap-2 transition-colors ${
-                            activeTab === 'analytics'
-                                ? 'border-hp-primary text-hp-primary'
-                                : 'border-transparent text-hp-muted hover:text-hp-dark'
-                        }`}
-                    >
-                        <BarChart3 className="w-4 h-4" />
-                        <span>{t('Visit Analytics')}</span>
-                        <span className="hp-chip hp-chip-success !h-5 !px-2 !text-[11px]">Live</span>
-                    </button>
-                </div>
-
-                {/* TAB 1: VISIT RECORDS */}
+                {/* ══════════ TAB CONTENT: RECORDS ══════════ */}
                 {activeTab === 'records' && (
-                    <div className="space-y-4">
-                        {/* Search & Filter Toolbar */}
-                        <div className="hp-card p-3 flex flex-col md:flex-row gap-3 items-center">
-                            <div className="relative w-full md:flex-1">
-                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-hp-muted pointer-events-none" />
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={e => setSearchQuery(e.target.value)}
-                                    onKeyDown={e => e.key === 'Enter' && handleApplyFilters()}
-                                    placeholder={t('Search by officer or facility...')}
-                                    className="hp-input !pl-10 !pr-10"
-                                />
-                                {searchQuery && (
-                                    <button onClick={() => { setSearchQuery(''); handleApplyFilters(); }} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-hp-muted hover:text-hp-dark">
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                )}
-                            </div>
-                            
-                            <div className="flex w-full md:w-auto gap-2 items-center">
-                                <div className="relative min-w-[160px]">
-                                    <button 
-                                        onClick={() => setShowDateDropdown(!showDateDropdown)}
-                                        className="hp-btn hp-btn-secondary w-full justify-between !h-10"
-                                    >
-                                        <span>{t(dateRangeOptions.find(o => o.value === dateRange)?.labelKey || 'Last 30 Days')}</span>
-                                        <ChevronDown className="w-4 h-4 text-hp-muted ml-2" />
-                                    </button>
-                                    {showDateDropdown && (
-                                        <div className="hp-pop absolute top-full mt-1.5 left-0 right-0 bg-white border border-hp-border rounded-xl shadow-[var(--shadow-hp-lg)] z-30 py-1 overflow-hidden">
-                                            {dateRangeOptions.map(opt => (
-                                                <button 
-                                                    key={opt.value} 
-                                                    onClick={() => { setDateRange(opt.value); setShowDateDropdown(false); }}
-                                                    className={`w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-hp-hover transition-colors ${dateRange === opt.value ? 'text-hp-primary bg-hp-primary-light font-bold' : 'text-hp-dark'}`}
-                                                >
-                                                    {t(opt.labelKey)}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                                <button 
-                                    onClick={handleApplyFilters} 
-                                    disabled={processing}
-                                    className="hp-btn hp-btn-primary !h-10"
-                                >
-                                    {processing ? '...' : t('Apply Filters')}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Visit Records List */}
+                    <>
                         {visitsData.length === 0 ? (
-                            <div className="hp-card p-16 text-center">
+                            <div className="hp-bento-card text-center py-20">
                                 <div className="hp-icon-tile !w-14 !h-14 mx-auto mb-3">
-                                    <Leaf className="w-6 h-6 text-hp-muted" />
+                                    <FileText className="w-6 h-6 text-hp-muted" />
                                 </div>
-                                <h2 className="text-base font-bold text-hp-dark mb-1">{t('No visits found')}</h2>
-                                <p className="text-sm text-hp-muted">
-                                    {searchQuery ? `${t('No visits match')} "${searchQuery}".` : t('No visits recorded yet.')}
+                                <h3 className="text-base font-bold text-hp-dark">{t('No visit records found')}</h3>
+                                <p className="text-xs text-hp-muted mt-1 max-w-sm mx-auto">
+                                    {t('Try adjusting your search terms or expanding the cycle date range.')}
                                 </p>
                             </div>
-                        ) : (
-                            <div className="hp-card divide-y divide-hp-border overflow-hidden">
-                                {visitsData.map(visit => (
-                                    <Link 
-                                        key={visit.id} 
-                                        href={`/admin/visits/${visit.id}`} 
-                                        className="hp-row hover:bg-hp-hover transition-colors group flex-col md:flex-row md:items-center justify-between"
+                        ) : viewMode === 'grid' ? (
+                            /* Hostinger 3-Column Bento Cards Grid (Modelled on Reference Images 3, 4, 5) */
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {visitsData.map((visit) => (
+                                    <div 
+                                        key={visit.id}
+                                        className="hp-bento-card group flex flex-col justify-between"
                                     >
-                                        <div className="flex items-center gap-3.5">
-                                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-hp-hover border border-hp-border shrink-0">
-                                                <img src={getCoverImage(visit.id)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Farm" />
+                                        <div>
+                                            {/* Top Visual Box / Thumbnail */}
+                                            <div className="hp-card-visual h-44 mb-4 flex items-center justify-center relative">
+                                                <img 
+                                                    src={getCoverImage(visit.id)} 
+                                                    alt={visit.farmer_name || 'Facility'} 
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+                                                
+                                                {/* Floating Badges */}
+                                                <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                                                    <span className="hp-chip hp-chip-success !bg-white/90 !text-hp-success backdrop-blur-sm">
+                                                        <CheckCircle2 className="w-3 h-3 mr-1" /> {t('Completed')}
+                                                    </span>
+                                                </div>
+
+                                                <div className="absolute bottom-3 left-3 right-3 text-white">
+                                                    <p className="text-xs text-white/80 flex items-center gap-1">
+                                                        <Calendar className="w-3.5 h-3.5" /> {visit.date} • {visit.check_in_time || '09:30 AM'}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h3 className="text-sm font-bold text-hp-dark group-hover:text-hp-primary transition-colors">
-                                                    {visit.farmer?.user?.name || visit.farmer?.name || 'Facility Client'}
-                                                </h3>
-                                                <p className="text-xs text-hp-muted mt-0.5 flex items-center">
-                                                    <MapPin className="w-3.5 h-3.5 mr-1 text-hp-muted" /> {t('Facility Visit Record')}
+
+                                            {/* Card Details */}
+                                            <div className="space-y-2">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <h3 className="font-bold text-base text-hp-dark group-hover:text-hp-primary transition-colors line-clamp-1">
+                                                        {visit.farmer?.user?.name || visit.farmer_name || 'Facility Client'}
+                                                    </h3>
+                                                    <span className="hp-chip hp-chip-gray shrink-0 font-mono text-[11px]">
+                                                        {visit.farmer?.farmer_code || `FAC-${visit.id}`}
+                                                    </span>
+                                                </div>
+
+                                                <p className="text-xs text-hp-muted flex items-center gap-1">
+                                                    <MapPin className="w-3.5 h-3.5 text-hp-muted shrink-0" />
+                                                    <span className="truncate">{visit.farmer?.village || 'Verified Site'}, {visit.farmer?.district || 'Sector'}</span>
                                                 </p>
+
+                                                {/* Technician pill info */}
+                                                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-hp-hover border border-hp-border mt-3">
+                                                    <div className="w-7 h-7 rounded-lg bg-hp-primary text-white flex items-center justify-center font-bold text-xs shrink-0">
+                                                        {(visit.employee?.name || 'O').charAt(0)}
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-xs font-bold text-hp-dark truncate">{visit.employee?.name || 'Field Officer'}</p>
+                                                        <p className="text-[11px] text-hp-muted truncate">{visit.distance_from_previous_farmer_km || '3.2'} km transit</p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        
-                                        <div className="flex items-center gap-4 sm:gap-6 mt-3 md:mt-0 w-full md:w-auto justify-between md:justify-end">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-7 h-7 rounded-full bg-hp-dark text-white flex items-center justify-center text-xs font-bold shrink-0">
-                                                    {(visit.employee?.name || 'O').charAt(0)}
-                                                </div>
-                                                <div>
-                                                    <p className="text-[10px] font-bold text-hp-muted uppercase tracking-wider">{t('Inspected By')}</p>
-                                                    <p className="text-xs font-bold text-hp-dark">{visit.employee?.name || 'Officer'}</p>
-                                                </div>
-                                            </div>
 
-                                            <div className="flex items-center gap-2">
-                                                <span className="hp-chip hp-chip-gray">{visit.date}</span>
-                                                <span className="hp-chip hp-chip-primary">
-                                                    <Clock className="w-3 h-3 mr-1" /> {visit.check_in_time} - {visit.check_out_time}
-                                                </span>
-                                            </div>
-
-                                            <span className="hp-btn hp-btn-sm hp-btn-outline hidden sm:inline-flex">
-                                                {t('View Details')}
-                                            </span>
+                                        {/* Hostinger Bottom Outline Action Button */}
+                                        <div className="mt-5 pt-3 border-t border-hp-border">
+                                            <Link 
+                                                href={`/admin/visits/${visit.id}`}
+                                                className="hp-btn hp-btn-outline w-full !rounded-xl !h-10 text-sm font-semibold"
+                                            >
+                                                <span>{t('View Audit Report')}</span>
+                                                <ArrowUpRight className="w-4 h-4 ml-1" />
+                                            </Link>
                                         </div>
-                                    </Link>
+                                    </div>
                                 ))}
                             </div>
+                        ) : (
+                            /* Hostinger Table View */
+                            <div className="hp-bento-card !p-0 overflow-hidden">
+                                <div className="overflow-x-auto">
+                                    <table className="hp-table min-w-[750px]">
+                                        <thead>
+                                            <tr>
+                                                <th>{t('Facility')}</th>
+                                                <th>{t('Officer')}</th>
+                                                <th>{t('Date & Time')}</th>
+                                                <th>{t('Transit Distance')}</th>
+                                                <th>{t('Audit Status')}</th>
+                                                <th className="text-right">{t('Action')}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {visitsData.map((visit) => (
+                                                <tr key={visit.id} className="hover:bg-hp-hover/60 transition-colors">
+                                                    <td>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-xl bg-hp-hover border border-hp-border overflow-hidden shrink-0">
+                                                                <img src={getCoverImage(visit.id)} alt="" className="w-full h-full object-cover" />
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-bold text-sm text-hp-dark">
+                                                                    {visit.farmer?.user?.name || visit.farmer_name || 'Facility Client'}
+                                                                </p>
+                                                                <p className="text-xs text-hp-muted">{visit.farmer?.village || 'Verified Site'}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <p className="font-bold text-sm text-hp-dark">{visit.employee?.name || 'Officer'}</p>
+                                                        <p className="text-xs text-hp-muted">{t('Verified Check-in')}</p>
+                                                    </td>
+                                                    <td>
+                                                        <p className="text-xs font-semibold text-hp-dark">{visit.date}</p>
+                                                        <p className="text-xs text-hp-muted">{visit.check_in_time} - {visit.check_out_time}</p>
+                                                    </td>
+                                                    <td>
+                                                        <span className="font-semibold text-xs text-hp-dark">
+                                                            {visit.distance_from_previous_farmer_km || '0'} km
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span className="hp-chip hp-chip-success hp-chip-dot">
+                                                            {t('Completed')}
+                                                        </span>
+                                                    </td>
+                                                    <td className="text-right">
+                                                        <Link 
+                                                            href={`/admin/visits/${visit.id}`} 
+                                                            className="hp-btn hp-btn-sm hp-btn-outline"
+                                                        >
+                                                            {t('Details')} <ArrowUpRight className="w-3.5 h-3.5" />
+                                                        </Link>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         )}
-                    </div>
+                    </>
                 )}
 
-                {/* TAB 2: VISIT ANALYTICS */}
+                {/* ══════════ TAB CONTENT: ANALYTICS ══════════ */}
                 {activeTab === 'analytics' && (
-                    <div className="space-y-6">
-                        {/* Middle Tier: Activity Frequency Trend & Purpose Breakdown */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Bar Chart: Weekly Visit Frequency Trend */}
-                            <div className="lg:col-span-2 hp-card flex flex-col justify-between">
-                                <div className="hp-card-header">
-                                    <div>
-                                        <h3 className="hp-card-title">{t('Visit Activity Trend')}</h3>
-                                        <p className="text-xs text-hp-muted mt-0.5">Daily visit frequency and completion volume</p>
-                                    </div>
-                                    <span className="hp-chip hp-chip-success">
-                                        +14% vs last period
-                                    </span>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Weekly Inspection Rhythm */}
+                        <div className="lg:col-span-2 hp-bento-card">
+                            <div className="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 className="hp-card-title">{t('Weekly Inspection Volume')}</h3>
+                                    <p className="text-xs text-hp-muted mt-0.5">{t('Daily completed preventive maintenance and audits')}</p>
                                 </div>
-
-                                <div className="p-6">
-                                    <div className="h-52 flex items-end justify-between gap-3 pt-6 px-2 border-b border-hp-border">
-                                        {analytics.weekDays.map((bar, idx) => (
-                                            <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer">
-                                                <div className="text-[11px] font-bold text-hp-dark mb-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    {bar.count}
-                                                </div>
-                                                <div
-                                                    style={{ height: bar.height }}
-                                                    className="w-full max-w-[36px] bg-hp-border rounded-t-md group-hover:bg-hp-primary transition-all duration-200"
-                                                />
-                                                <span className="text-xs font-semibold text-hp-muted mt-2">{bar.day}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="flex items-center justify-between text-xs text-hp-muted pt-3">
-                                        <span>Monday</span>
-                                        <span>Sunday</span>
-                                    </div>
-                                </div>
+                                <span className="hp-chip hp-chip-primary">
+                                    <TrendingUp className="w-3 h-3 mr-1" /> +18% {t('Velocity')}
+                                </span>
                             </div>
 
-                            {/* Purpose & Category Breakdown */}
-                            <div className="hp-card flex flex-col justify-between">
-                                <div className="hp-card-header">
-                                    <div>
-                                        <h3 className="hp-card-title">{t('Purpose & Activity Breakdown')}</h3>
-                                        <p className="text-xs text-hp-muted mt-0.5">Distribution of field operation types</p>
+                            <div className="h-56 flex items-end justify-between gap-3 pt-6 px-2 border-b border-hp-border">
+                                {analytics.weekDays.map((d, i) => (
+                                    <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
+                                        <span className="text-[11px] font-bold text-hp-muted opacity-0 group-hover:opacity-100 transition-opacity">
+                                            {d.count}
+                                        </span>
+                                        <div 
+                                            style={{ height: d.height }}
+                                            className="w-full max-w-[42px] bg-hp-primary/80 group-hover:bg-hp-primary rounded-t-lg transition-all"
+                                        />
+                                        <span className="text-xs font-semibold text-hp-muted">{d.day}</span>
                                     </div>
-                                </div>
+                                ))}
+                            </div>
 
-                                <div className="p-6">
-                                    <div className="space-y-4">
-                                        {analytics.purposes.map((p, idx) => (
-                                            <div key={idx}>
-                                                <div className="flex items-center justify-between text-xs font-bold mb-1.5">
-                                                    <span className="text-hp-dark">{p.name}</span>
-                                                    <span className="text-hp-muted">{p.percent}%</span>
-                                                </div>
-                                                <div className="w-full h-2 bg-hp-hover rounded-full overflow-hidden">
-                                                    <div
-                                                        style={{ width: `${p.percent}%` }}
-                                                        className={`h-full rounded-full ${p.color}`}
-                                                    />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="mt-8 pt-4 border-t border-hp-border flex items-center justify-between text-xs text-hp-muted">
-                                        <span>Target Compliance</span>
-                                        <span className="font-bold text-hp-dark">96.4% Verified</span>
-                                    </div>
-                                </div>
+                            <div className="flex items-center justify-between mt-4 text-xs text-hp-muted">
+                                <span>{t('Peak Activity: Thursday (20 audits)')}</span>
+                                <span className="font-bold text-hp-dark">93 {t('Weekly Cumulative')}</span>
                             </div>
                         </div>
 
-                        {/* Bottom Tier: Officer Coverage Leaderboard & Crop Health Assessment */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {/* Officer Coverage Leaderboard */}
-                            <div className="hp-card">
-                                <div className="hp-card-header">
-                                    <h3 className="hp-card-title">{t('Officer Coverage Leaderboard')}</h3>
-                                    <span className="hp-chip hp-chip-gray">{t('Field Operations')}</span>
-                                </div>
+                        {/* Service Focus Distribution */}
+                        <div className="hp-bento-card">
+                            <h3 className="hp-card-title mb-1">{t('Service Scope Breakdown')}</h3>
+                            <p className="text-xs text-hp-muted mb-4">{t('Allocation across FM domains')}</p>
 
-                                <div className="divide-y divide-hp-border">
-                                    {analytics.topOfficers.length > 0 ? (
-                                        analytics.topOfficers.map((officer, idx) => (
-                                            <div key={idx} className="p-4 flex items-center justify-between gap-3 hover:bg-hp-hover transition-colors">
-                                                <div className="flex items-center gap-3">
-                                                    <span className="w-5 text-xs font-bold text-hp-muted">#{idx + 1}</span>
-                                                    <div className="w-8 h-8 rounded-full bg-hp-dark text-white flex items-center justify-center text-xs font-bold">
-                                                        {officer.name.charAt(0)}
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-bold text-hp-dark">{officer.name}</p>
-                                                        <p className="text-xs text-hp-muted">{officer.distance.toFixed(1)} km traveled</p>
-                                                    </div>
-                                                </div>
-                                                <span className="hp-chip hp-chip-primary">
-                                                    {officer.count} {t('tasks')}
-                                                </span>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className="p-8 text-center text-xs text-hp-muted font-medium">
-                                            No officer activity records yet.
+                            <div className="space-y-4">
+                                {analytics.purposes.map((p, idx) => (
+                                    <div key={idx}>
+                                        <div className="flex justify-between text-xs font-semibold mb-1">
+                                            <span className="text-hp-dark truncate">{p.name}</span>
+                                            <span className="text-hp-muted shrink-0 ml-2">{p.percent}%</span>
                                         </div>
-                                    )}
-                                </div>
+                                        <div className="w-full bg-hp-hover h-2 rounded-full overflow-hidden">
+                                            <div className={`${p.color} h-full rounded-full`} style={{ width: `${p.percent}%` }} />
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
+                        </div>
 
-                            {/* Agronomic / Facility Health Assessment */}
-                            <div className="hp-card flex flex-col justify-between">
-                                <div className="hp-card-header">
-                                    <div>
-                                        <h3 className="hp-card-title">{t('Facility & Asset Audit Health')}</h3>
-                                        <p className="text-xs text-hp-muted mt-0.5">Asset health index across all inspected sites</p>
+                        {/* Top Officers Leaderboard */}
+                        <div className="lg:col-span-3 hp-bento-card">
+                            <h3 className="hp-card-title mb-4">{t('Top Performing Field Technicians')}</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {analytics.topOfficers.map((off, idx) => (
+                                    <div key={idx} className="p-4 rounded-xl bg-hp-hover/60 border border-hp-border flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <span className="w-6 h-6 rounded-full bg-hp-primary text-white text-xs font-bold flex items-center justify-center shrink-0">
+                                                {idx + 1}
+                                            </span>
+                                            <div>
+                                                <p className="font-bold text-sm text-hp-dark">{off.name}</p>
+                                                <p className="text-xs text-hp-muted">{off.distance.toFixed(1)} km total travel</p>
+                                            </div>
+                                        </div>
+                                        <span className="hp-chip hp-chip-success">
+                                            {off.count} {t('audits')}
+                                        </span>
                                     </div>
-                                    <span className="hp-chip hp-chip-success">92% Optimal</span>
-                                </div>
-
-                                <div className="p-6">
-                                    <div className="space-y-4">
-                                        <div>
-                                            <div className="flex justify-between text-xs font-bold mb-1">
-                                                <span className="text-hp-dark">{t('Excellent / Normal')}</span>
-                                                <span className="text-hp-muted">62%</span>
-                                            </div>
-                                            <div className="w-full h-2 bg-hp-hover rounded-full overflow-hidden">
-                                                <div className="w-[62%] h-full bg-hp-success rounded-full" />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <div className="flex justify-between text-xs font-bold mb-1">
-                                                <span className="text-hp-dark">{t('Good / Operational')}</span>
-                                                <span className="text-hp-muted">28%</span>
-                                            </div>
-                                            <div className="w-full h-2 bg-hp-hover rounded-full overflow-hidden">
-                                                <div className="w-[28%] h-full bg-hp-info rounded-full" />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <div className="flex justify-between text-xs font-bold mb-1">
-                                                <span className="text-hp-dark">{t('Needs Attention')}</span>
-                                                <span className="text-hp-warning">8%</span>
-                                            </div>
-                                            <div className="w-full h-2 bg-hp-hover rounded-full overflow-hidden">
-                                                <div className="w-[8%] h-full bg-hp-warning rounded-full" />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <div className="flex justify-between text-xs font-bold mb-1">
-                                                <span className="text-hp-dark">{t('Critical')}</span>
-                                                <span className="text-hp-danger">2%</span>
-                                            </div>
-                                            <div className="w-full h-2 bg-hp-hover rounded-full overflow-hidden">
-                                                <div className="w-[2%] h-full bg-hp-danger rounded-full" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-8 pt-4 border-t border-hp-border flex items-center justify-between text-xs text-hp-muted">
-                                        <span>Inspection Advisory</span>
-                                        <span className="font-semibold text-hp-dark">Timely maintenance audit scheduled</span>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
                         </div>
                     </div>
                 )}
-                
+
             </div>
         </AdminLayout>
     );

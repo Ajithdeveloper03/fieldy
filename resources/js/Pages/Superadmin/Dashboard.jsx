@@ -15,28 +15,24 @@ export default function SuperadminDashboard({ stats, companies = [], planBreakdo
             value: stats?.totalCompanies ?? 0,
             subtext: `${stats?.activeCompanies ?? 0} Active Tenancies`,
             icon: Building2,
-            iconBg: 'bg-[var(--color-hp-primary-light)] text-[var(--color-hp-primary)]',
         },
         {
             title: 'Field Workforce',
             value: stats?.totalEmployees ?? 0,
             subtext: `${stats?.activeTrackingToday ?? 0} active GPS sessions`,
             icon: Users2,
-            iconBg: 'bg-emerald-50 text-emerald-600',
         },
         {
             title: "Today's Field Visits",
             value: stats?.todayVisits ?? 0,
             subtext: `${stats?.totalVisits ?? 0} Lifetime Audits`,
             icon: MapPin,
-            iconBg: 'bg-amber-50 text-amber-600',
         },
         {
             title: 'Customer Accounts',
             value: stats?.totalFarmers ?? 0,
             subtext: `${stats?.totalAdmins ?? 0} Client Admins`,
             icon: ShieldCheck,
-            iconBg: 'bg-sky-50 text-sky-600',
         },
     ];
 
@@ -44,131 +40,120 @@ export default function SuperadminDashboard({ stats, companies = [], planBreakdo
         <SuperadminLayout>
             <Head title="Superadmin Platform Overview" />
 
-            <div className="space-y-6">
-                {/* Breadcrumbs */}
-                <div className="flex items-center gap-2 text-xs text-[var(--color-hp-gray-600)]">
-                    <Link href="/superadmin/dashboard" className="hover:text-[var(--color-hp-primary)] flex items-center gap-1 transition-colors">
-                        <Home className="w-3.5 h-3.5" />
-                        <span>Superadmin</span>
-                    </Link>
-                    <ChevronRight className="w-3.5 h-3.5 text-[var(--color-hp-gray-400)]" />
-                    <span className="font-semibold text-[var(--color-hp-dark)]">Platform Overview</span>
+            <div className="space-y-6 pb-12 hp-animate-in">
+
+                {/* ══════════ HOSTINGER HERO CARD ══════════ */}
+                <div className="hp-hero-card p-6 sm:p-8">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        <div className="max-w-2xl">
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                <span className="hp-chip hp-chip-primary">
+                                    <Sparkles className="w-3 h-3 mr-1" /> Multi-Tenant Orchestrator
+                                </span>
+                                <span className="hp-chip hp-chip-gray">
+                                    Global Cloud Health 100%
+                                </span>
+                            </div>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
+                                Global Platform Control & Tenant Fleet
+                            </h1>
+                            <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
+                                High-level telemetry, active tenant companies, subscription allocation tiers, and aggregate workforce telemetry across all organizations.
+                            </p>
+                        </div>
+
+                        {/* Register Action */}
+                        <div className="shrink-0 self-start lg:self-center">
+                            <Link
+                                href="/superadmin/companies"
+                                className="hp-btn hp-btn-primary !rounded-full"
+                            >
+                                <Plus className="w-4 h-4 mr-1" />
+                                <span>Register New Company</span>
+                            </Link>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Hostinger hPanel Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[var(--color-hp-border)]">
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-hp-dark)] tracking-tight">
-                            Global Platform Dashboard
-                        </h1>
-                        <p className="text-xs sm:text-sm text-[var(--color-hp-gray-600)] mt-1">
-                            Cross-company intelligence, tenant metrics, and platform health.
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <Link
-                            href="/superadmin/companies"
-                            className="hp-btn hp-btn-primary inline-flex items-center gap-2"
-                        >
-                            <Plus className="w-4 h-4" />
-                            <span>Register New Company</span>
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Stats Cards Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* ══════════ HOSTINGER BENTO METRIC CARDS ══════════ */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {statCards.map((card, idx) => {
                         const Icon = card.icon;
                         return (
-                            <div
-                                key={idx}
-                                className="hp-card p-5"
-                            >
-                                <div className="flex items-center justify-between mb-3">
-                                    <span className="text-xs font-semibold text-[var(--color-hp-gray-600)]">
-                                        {card.title}
-                                    </span>
-                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${card.iconBg}`}>
-                                        <Icon className="w-4 h-4" />
-                                    </div>
+                            <div key={idx} className="hp-metric-pill-card">
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{card.title}</span>
+                                    <Icon className="w-3.5 h-3.5 text-hp-primary" />
                                 </div>
-                                <div className="text-2xl sm:text-3xl font-bold text-[var(--color-hp-dark)] tracking-tight">
-                                    {card.value}
-                                </div>
-                                <div className="mt-1 flex items-center gap-1.5 text-xs text-[var(--color-hp-gray-500)]">
-                                    <Activity className="w-3.5 h-3.5 text-[var(--color-hp-primary)]" />
-                                    <span>{card.subtext}</span>
-                                </div>
+                                <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{card.value}</div>
+                                <p className="text-xs text-hp-muted mt-1">{card.subtext}</p>
                             </div>
                         );
                     })}
                 </div>
 
-                {/* Plan Distribution and Platform Usage */}
+                {/* ══════════ PLAN DISTRIBUTION & TENANT LEADERBOARD ══════════ */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                     {/* Subscription Plans Breakdown */}
-                    <div className="hp-card p-5 flex flex-col justify-between">
-                        <div>
-                            <div className="flex items-center justify-between pb-3 border-b border-[var(--color-hp-border)]">
-                                <div>
-                                    <h2 className="text-sm font-bold text-[var(--color-hp-dark)]">Subscription Tiers</h2>
-                                    <p className="text-[11px] text-[var(--color-hp-gray-500)]">Tenants by pricing tier</p>
-                                </div>
-                                <Layers className="w-4 h-4 text-[var(--color-hp-primary)]" />
+                    <div className="hp-bento-card">
+                        <div className="flex items-center justify-between pb-3 border-b border-hp-border">
+                            <div>
+                                <h2 className="hp-card-title text-sm">Subscription Tiers</h2>
+                                <p className="text-xs text-hp-muted">Tenants by pricing tier</p>
                             </div>
-                            <div className="mt-4 space-y-2.5">
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--color-hp-gray-50)] border border-[var(--color-hp-border)]">
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-hp-primary)]"></span>
-                                        <span className="text-xs font-semibold text-[var(--color-hp-dark)]">Enterprise</span>
-                                    </div>
-                                    <span className="text-xs font-bold text-[var(--color-hp-primary)] bg-[var(--color-hp-primary-light)] px-2 py-0.5 rounded">
-                                        {planBreakdown?.enterprise ?? 0}
-                                    </span>
+                            <Layers className="w-4 h-4 text-hp-primary" />
+                        </div>
+                        <div className="mt-4 space-y-2.5">
+                            <div className="flex items-center justify-between p-3.5 rounded-xl bg-hp-hover/60 border border-hp-border">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-hp-primary"></span>
+                                    <span className="text-xs font-bold text-hp-dark">Enterprise</span>
                                 </div>
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--color-hp-gray-50)] border border-[var(--color-hp-border)]">
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                                        <span className="text-xs font-semibold text-[var(--color-hp-dark)]">Professional</span>
-                                    </div>
-                                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                                        {planBreakdown?.professional ?? 0}
-                                    </span>
+                                <span className="hp-chip hp-chip-primary !h-5 !text-[11px]">
+                                    {planBreakdown?.enterprise ?? 0}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between p-3.5 rounded-xl bg-hp-hover/60 border border-hp-border">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                    <span className="text-xs font-bold text-hp-dark">Professional</span>
                                 </div>
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--color-hp-gray-50)] border border-[var(--color-hp-border)]">
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                                        <span className="text-xs font-semibold text-[var(--color-hp-dark)]">Starter</span>
-                                    </div>
-                                    <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
-                                        {planBreakdown?.starter ?? 0}
-                                    </span>
+                                <span className="hp-chip hp-chip-success !h-5 !text-[11px]">
+                                    {planBreakdown?.professional ?? 0}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between p-3.5 rounded-xl bg-hp-hover/60 border border-hp-border">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                                    <span className="text-xs font-bold text-hp-dark">Starter</span>
                                 </div>
+                                <span className="hp-chip hp-chip-warning !h-5 !text-[11px]">
+                                    {planBreakdown?.starter ?? 0}
+                                </span>
                             </div>
                         </div>
 
-                        <div className="mt-5 pt-3 border-t border-[var(--color-hp-border)]">
+                        <div className="mt-5 pt-3 border-t border-hp-border">
                             <Link
                                 href="/superadmin/companies"
-                                className="text-xs font-semibold text-[var(--color-hp-primary)] hover:underline flex items-center justify-between"
+                                className="hp-btn hp-btn-outline w-full !rounded-xl !h-9 text-xs"
                             >
                                 <span>Manage Plan Allocations</span>
-                                <ArrowUpRight className="w-3.5 h-3.5" />
+                                <ArrowUpRight className="w-3.5 h-3.5 ml-1" />
                             </Link>
                         </div>
                     </div>
 
                     {/* Company Activity Leaderboard */}
-                    <div className="lg:col-span-2 hp-card overflow-hidden">
-                        <div className="hp-card-header flex items-center justify-between">
+                    <div className="lg:col-span-2 hp-bento-card !p-0 overflow-hidden">
+                        <div className="p-4 border-b border-hp-border flex items-center justify-between bg-white">
                             <div>
-                                <h2 className="hp-card-title">Active Companies</h2>
-                                <p className="text-[11px] text-[var(--color-hp-gray-500)] mt-0.5">Workforce and live operations across tenants</p>
+                                <h2 className="hp-card-title text-sm">Active Companies</h2>
+                                <p className="text-xs text-hp-muted mt-0.5">Workforce and live operations across tenants</p>
                             </div>
                             <Link
                                 href="/superadmin/companies"
-                                className="text-xs font-semibold text-[var(--color-hp-primary)] hover:underline flex items-center gap-1"
+                                className="hp-btn hp-btn-sm hp-btn-outline"
                             >
                                 <span>View All</span>
                                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -188,33 +173,33 @@ export default function SuperadminDashboard({ stats, companies = [], planBreakdo
                                 </thead>
                                 <tbody>
                                     {companies.map((comp) => (
-                                        <tr key={comp.id}>
+                                        <tr key={comp.id} className="hover:bg-hp-hover/60 transition-colors">
                                             <td className="pr-3">
                                                 <div className="flex items-center gap-2.5">
-                                                    <div className="w-7 h-7 rounded-md bg-[var(--color-hp-primary-light)] text-[var(--color-hp-primary)] flex items-center justify-center font-bold text-xs">
+                                                    <div className="w-8 h-8 rounded-xl bg-hp-primary-light text-hp-primary flex items-center justify-center font-bold text-xs shrink-0">
                                                         {comp.name.charAt(0)}
                                                     </div>
                                                     <div>
-                                                        <p className="font-semibold text-xs text-[var(--color-hp-dark)] leading-snug">{comp.name}</p>
-                                                        <p className="text-[11px] text-[var(--color-hp-gray-500)]">{comp.industry || 'Field Ops'}</p>
+                                                        <p className="font-bold text-xs text-hp-dark leading-snug">{comp.name}</p>
+                                                        <p className="text-[11px] text-hp-muted">{comp.industry || 'Field Ops'}</p>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td>
-                                                <span className="text-xs capitalize font-semibold px-2 py-0.5 rounded bg-[var(--color-hp-gray-100)] text-[var(--color-hp-gray-700)]">
+                                                <span className="hp-chip hp-chip-gray !h-5 !text-[11px] capitalize">
                                                     {comp.plan}
                                                 </span>
                                             </td>
-                                            <td className="text-center font-semibold text-xs text-[var(--color-hp-dark)]">
-                                                {comp.employees_count} <span className="text-[11px] text-[var(--color-hp-gray-500)] font-normal">/ {comp.max_employees}</span>
+                                            <td className="text-center font-bold text-xs text-hp-dark">
+                                                {comp.employees_count} <span className="text-[11px] text-hp-muted font-normal">/ {comp.max_employees}</span>
                                             </td>
                                             <td className="text-center">
-                                                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                                                <span className="hp-chip hp-chip-success !h-5 !text-[11px]">
                                                     {comp.visits_today} visits
                                                 </span>
                                             </td>
                                             <td className="text-center">
-                                                <span className={`hp-chip ${comp.status === 'active' ? 'hp-chip-success' : 'hp-chip-danger'}`}>
+                                                <span className={`hp-chip ${comp.status === 'active' ? 'hp-chip-success hp-chip-dot' : 'hp-chip-danger'}`}>
                                                     {comp.status}
                                                 </span>
                                             </td>
@@ -225,6 +210,7 @@ export default function SuperadminDashboard({ stats, companies = [], planBreakdo
                         </div>
                     </div>
                 </div>
+
             </div>
         </SuperadminLayout>
     );

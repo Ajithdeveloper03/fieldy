@@ -103,5 +103,11 @@ Route::prefix('admin')->group(function () {
         // Live Monitor (page + JSON polling endpoint)
         Route::get('/monitor', [LiveMonitorController::class, 'index'])->name('monitor.index');
         Route::get('/monitor/live', [LiveMonitorController::class, 'liveData'])->name('monitor.live');
+
+        // Fieldy Editions & Addon Marketplace (Hostinger Plans & Services replica)
+        Route::get('/subscriptions', fn () => inertia('Admin/Subscriptions'))->name('admin.subscriptions');
+
+        // Customer Satisfaction & Service Quality Analytics (Hostinger Domain Search & Bento replica)
+        Route::get('/satisfaction', fn () => inertia('Admin/CustomerSatisfaction'))->name('admin.satisfaction');
     });
 });

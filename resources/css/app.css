@@ -23,6 +23,18 @@
   --color-hp-bg: #F7F5F2;
   --color-hp-hover: #F4F4F6;
 
+  /* Hostinger gray scale spectrum */
+  --color-hp-gray-50: #FAFAFB;
+  --color-hp-gray-100: #F4F4F6;
+  --color-hp-gray-200: #E3E4E8;
+  --color-hp-gray-300: #DADCE0;
+  --color-hp-gray-400: #B8BAC4;
+  --color-hp-gray-500: #8E92A4;
+  --color-hp-gray-600: #727586;
+  --color-hp-gray-700: #4B4D56;
+  --color-hp-gray-800: #36373D;
+  --color-hp-gray-900: #1D1E20;
+
   --color-hp-success: #00A16B;
   --color-hp-success-light: #DEF4EC;
   --color-hp-warning: #B27600;
@@ -293,6 +305,156 @@ html.lang-ta body,
     font-size: 11px;
     font-weight: 700;
     color: var(--color-hp-muted);
+  }
+
+  /* Hostinger Signature Hero & Bento Components */
+  .hp-hero-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #FFF8F2 0%, #FFFFFF 60%, #FFF1E6 100%);
+    border: 1px solid var(--color-hp-primary-border);
+    border-radius: 24px;
+    box-shadow: 0 4px 20px -2px rgba(242, 106, 16, 0.08), 0 2px 6px rgba(0, 0, 0, 0.02);
+  }
+
+  .hp-search-pill-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    border: 1px solid var(--color-hp-border-strong);
+    border-radius: 9999px;
+    padding: 6px 8px 6px 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all .2s ease;
+  }
+  .hp-search-pill-bar:focus-within {
+    border-color: var(--color-hp-primary);
+    box-shadow: 0 0 0 4px rgba(242, 106, 16, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .hp-segmented-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    background: #F4F4F6;
+    border: 1px solid var(--color-hp-border);
+    border-radius: 9999px;
+  }
+  .hp-segmented-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-hp-muted);
+    transition: all .15s ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .hp-segmented-item:hover {
+    color: var(--color-hp-dark);
+  }
+  .hp-segmented-item.is-active {
+    background: var(--color-hp-dark);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  }
+  .hp-segmented-item.is-active-primary {
+    background: var(--color-hp-primary);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(242,106,16,0.3);
+  }
+
+  .hp-metric-pill-card {
+    background: #ffffff;
+    border: 1px solid var(--color-hp-border);
+    border-radius: 16px;
+    padding: 14px 18px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    transition: all .2s ease;
+  }
+  .hp-metric-pill-card:hover {
+    border-color: var(--color-hp-primary-border);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hp-md);
+  }
+
+  .hp-bento-card {
+    background: #ffffff;
+    border: 1px solid var(--color-hp-border);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: var(--shadow-hp);
+    transition: all .2s ease;
+  }
+  .hp-bento-card:hover {
+    border-color: var(--color-hp-primary-border);
+    box-shadow: var(--shadow-hp-md);
+  }
+
+  .hp-card-visual {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #F4F4F6 0%, #FAFAFB 100%);
+    border: 1px solid var(--color-hp-border);
+  }
+
+  /* Hostinger minimal gradient themes */
+  .hp-card-gradient-lavender {
+    background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 60%, #E0E7FF 100%);
+    border: 1px solid #DDD6FE;
+  }
+  .hp-card-gradient-slate {
+    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 50%, #E2E8F0 100%);
+    border: 1px solid #CBD5E1;
+  }
+  .hp-card-gradient-sunset {
+    background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 50%, #FED7AA 100%);
+    border: 1px solid #FDBA74;
+  }
+  .hp-card-gradient-dark-violet {
+    background: radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.25) 0%, transparent 60%), linear-gradient(135deg, #0F0E17 0%, #17152B 50%, #20193F 100%);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    color: #ffffff;
+  }
+  .hp-card-gradient-charcoal {
+    background: linear-gradient(135deg, #18181B 0%, #27272A 70%, #1F1F23 100%);
+    border: 1px solid #3F3F46;
+    color: #ffffff;
+  }
+
+  /* Hostinger SLA Expiry Alert Banner (Reference Image 3) */
+  .hp-alert-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: #FFF1F2;
+    border: 1px solid #FECDD3;
+    border-radius: 14px;
+    padding: 12px 20px;
+    color: #9F1239;
+    box-shadow: 0 1px 3px rgba(159, 18, 57, 0.04);
+  }
+
+  /* Progress capacity bar */
+  .hp-meter-track {
+    width: 100%;
+    height: 6px;
+    background: #E4E4E7;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .hp-meter-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366F1 0%, #F26A10 100%);
+    border-radius: 999px;
+    transition: width 0.4s ease;
   }
 }
 

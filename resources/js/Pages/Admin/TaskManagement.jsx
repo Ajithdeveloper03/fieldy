@@ -347,147 +347,139 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                     <span className="font-semibold text-[var(--color-hp-dark)]">Tasks & Schedule</span>
                 </div>
 
-                {/* Hostinger hPanel Page Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[var(--color-hp-border)]">
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-hp-dark)] tracking-tight">
-                            {t('Tasks & Schedule Management')}
-                        </h1>
-                        <p className="text-xs sm:text-sm text-[var(--color-hp-gray-600)] mt-1">
-                            {t('Assign targets, track field operations, and monitor daily progress across officers.')}
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        {/* View Switcher: Segmented Control */}
-                        <div className="inline-flex p-1 bg-white border border-[var(--color-hp-border)] rounded-lg shadow-xs">
-                            <button
-                                onClick={() => setViewMode('list')}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                                    viewMode === 'list'
-                                        ? 'bg-[var(--color-hp-dark)] text-white shadow-xs'
-                                        : 'text-[var(--color-hp-gray-600)] hover:text-[var(--color-hp-dark)]'
-                                }`}
-                                title={t('List View')}
-                            >
-                                <ListFilter className="w-3.5 h-3.5" />
-                                <span>{t('List View')}</span>
-                            </button>
-                            <button
-                                onClick={() => setViewMode('board')}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                                    viewMode === 'board'
-                                        ? 'bg-[var(--color-hp-dark)] text-white shadow-xs'
-                                        : 'text-[var(--color-hp-gray-600)] hover:text-[var(--color-hp-dark)]'
-                                }`}
-                                title={t('Board View')}
-                            >
-                                <LayoutGrid className="w-3.5 h-3.5" />
-                                <span>{t('Board View')}</span>
-                            </button>
+                {/* ══════════ HOSTINGER HERO CARD ══════════ */}
+                <div className="hp-hero-card p-6 sm:p-8">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        <div className="max-w-2xl">
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                <span className="hp-chip hp-chip-primary">
+                                    <Sparkles className="w-3 h-3 mr-1" /> {t('Work Orders & Dispatch')}
+                                </span>
+                                <span className="hp-chip hp-chip-gray">
+                                    {metrics.total} {t('Tasks Logged')}
+                                </span>
+                            </div>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
+                                {t('Tasks & Schedule Management')}
+                            </h1>
+                            <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
+                                {t('Assign work orders, track preventive maintenance SLAs, and monitor daily progress across field staff.')}
+                            </p>
                         </div>
 
-                        {/* Create Task Button: Hostinger Primary Orange */}
-                        <button
-                            onClick={() => setShowNewModal(true)}
-                            className="hp-btn hp-btn-primary inline-flex items-center gap-2"
-                        >
-                            <Plus className="w-4 h-4" />
-                            <span>{t('New Task')}</span>
-                        </button>
+                        <div className="flex items-center gap-3 shrink-0 self-start lg:self-center">
+                            {/* View Switcher: Segmented Control */}
+                            <div className="hp-segmented-bar">
+                                <button
+                                    onClick={() => setViewMode('list')}
+                                    className={`hp-segmented-item ${viewMode === 'list' ? 'is-active-primary' : ''}`}
+                                    title={t('List View')}
+                                >
+                                    <ListFilter className="w-3.5 h-3.5" />
+                                    <span>{t('List View')}</span>
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('board')}
+                                    className={`hp-segmented-item ${viewMode === 'board' ? 'is-active-primary' : ''}`}
+                                    title={t('Board View')}
+                                >
+                                    <LayoutGrid className="w-3.5 h-3.5" />
+                                    <span>{t('Board View')}</span>
+                                </button>
+                            </div>
+
+                            {/* Create Task Button */}
+                            <button
+                                onClick={() => setShowNewModal(true)}
+                                className="hp-btn hp-btn-primary !rounded-full"
+                            >
+                                <Plus className="w-4 h-4 mr-1" />
+                                <span>{t('New Task')}</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                {/* Minimalist KPI Overview Cards */}
-                <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+                {/* ══════════ HOSTINGER BENTO METRIC CARDS ══════════ */}
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                     {/* Total Tasks */}
                     <div 
                         onClick={() => { setStatusFilter('all'); setShowOverdueOnly(false); }}
-                        className={`hp-card p-4 transition-all cursor-pointer ${
-                            statusFilter === 'all' && !showOverdueOnly ? 'ring-2 ring-[var(--color-hp-primary)] shadow-xs' : 'hover:border-[var(--color-hp-gray-400)]'
+                        className={`hp-metric-pill-card cursor-pointer ${
+                            statusFilter === 'all' && !showOverdueOnly ? '!border-hp-primary ring-2 ring-hp-primary/20' : ''
                         }`}
                     >
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-semibold text-[var(--color-hp-gray-600)]">{t('Total Tasks')}</span>
-                            <div className="w-8 h-8 rounded-lg bg-[var(--color-hp-gray-100)] flex items-center justify-center text-[var(--color-hp-dark)]">
-                                <ClipboardList className="w-4 h-4" />
-                            </div>
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total Tasks')}</span>
+                            <ClipboardList className="w-3.5 h-3.5 text-hp-primary" />
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-[var(--color-hp-dark)]">{metrics.total}</div>
-                        <div className="text-[11px] text-[var(--color-hp-gray-500)] mt-1">{t('Across all field staff')}</div>
+                        <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{metrics.total}</div>
+                        <div className="text-xs text-hp-muted mt-1">{t('Across all staff')}</div>
                     </div>
 
                     {/* Pending */}
                     <div 
                         onClick={() => { setStatusFilter('pending'); setShowOverdueOnly(false); }}
-                        className={`hp-card p-4 transition-all cursor-pointer ${
-                            statusFilter === 'pending' && !showOverdueOnly ? 'ring-2 ring-amber-500 shadow-xs' : 'hover:border-[var(--color-hp-gray-400)]'
+                        className={`hp-metric-pill-card cursor-pointer ${
+                            statusFilter === 'pending' && !showOverdueOnly ? '!border-amber-500 ring-2 ring-amber-500/20' : ''
                         }`}
                     >
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-semibold text-amber-700">{t('Pending')}</span>
-                            <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
-                                <Clock className="w-4 h-4" />
-                            </div>
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">{t('Pending')}</span>
+                            <Clock className="w-3.5 h-3.5 text-amber-600" />
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-[var(--color-hp-dark)]">{metrics.pending}</div>
-                        <div className="text-[11px] text-amber-600 mt-1 font-medium">{t('Awaiting commencement')}</div>
+                        <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{metrics.pending}</div>
+                        <div className="text-xs text-amber-600 mt-1 font-medium">{t('Awaiting commencement')}</div>
                     </div>
 
                     {/* In Progress */}
                     <div 
                         onClick={() => { setStatusFilter('in_progress'); setShowOverdueOnly(false); }}
-                        className={`hp-card p-4 transition-all cursor-pointer ${
-                            statusFilter === 'in_progress' && !showOverdueOnly ? 'ring-2 ring-sky-500 shadow-xs' : 'hover:border-[var(--color-hp-gray-400)]'
+                        className={`hp-metric-pill-card cursor-pointer ${
+                            statusFilter === 'in_progress' && !showOverdueOnly ? '!border-sky-500 ring-2 ring-sky-500/20' : ''
                         }`}
                     >
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-semibold text-sky-700">{t('In Progress')}</span>
-                            <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600">
-                                <Activity className="w-4 h-4" />
-                            </div>
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold text-sky-700 uppercase tracking-wider">{t('In Progress')}</span>
+                            <Activity className="w-3.5 h-3.5 text-sky-600" />
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-[var(--color-hp-dark)]">{metrics.inProgress}</div>
-                        <div className="text-[11px] text-sky-600 mt-1 font-medium">{t('Ongoing field duties')}</div>
+                        <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{metrics.inProgress}</div>
+                        <div className="text-xs text-sky-600 mt-1 font-medium">{t('Ongoing field duties')}</div>
                     </div>
 
                     {/* Done */}
                     <div 
                         onClick={() => { setStatusFilter('done'); setShowOverdueOnly(false); }}
-                        className={`hp-card p-4 transition-all cursor-pointer ${
-                            statusFilter === 'done' && !showOverdueOnly ? 'ring-2 ring-emerald-500 shadow-xs' : 'hover:border-[var(--color-hp-gray-400)]'
+                        className={`hp-metric-pill-card cursor-pointer ${
+                            statusFilter === 'done' && !showOverdueOnly ? '!border-emerald-500 ring-2 ring-emerald-500/20' : ''
                         }`}
                     >
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-semibold text-emerald-700">{t('Completed')}</span>
-                            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
-                                <CheckCircle2 className="w-4 h-4" />
-                            </div>
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">{t('Completed')}</span>
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-[var(--color-hp-dark)]">{metrics.done}</div>
-                        <div className="text-[11px] text-emerald-600 mt-1 font-medium">{t('Successfully completed')}</div>
+                        <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{metrics.done}</div>
+                        <div className="text-xs text-emerald-600 mt-1 font-medium">{t('Successfully completed')}</div>
                     </div>
 
                     {/* Overdue */}
                     <div 
                         onClick={() => setShowOverdueOnly(!showOverdueOnly)}
-                        className={`col-span-2 lg:col-span-1 hp-card p-4 transition-all cursor-pointer ${
-                            showOverdueOnly ? 'ring-2 ring-rose-500 shadow-xs' : 'hover:border-[var(--color-hp-gray-400)]'
+                        className={`col-span-2 lg:col-span-1 hp-metric-pill-card cursor-pointer ${
+                            showOverdueOnly ? '!border-rose-500 ring-2 ring-rose-500/20' : ''
                         }`}
                     >
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-semibold text-rose-700">{t('Overdue')}</span>
-                            <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600">
-                                <AlertTriangle className="w-4 h-4" />
-                            </div>
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold text-rose-700 uppercase tracking-wider">{t('Overdue')}</span>
+                            <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-rose-600">{metrics.overdue}</div>
-                        <div className="text-[11px] text-rose-500 mt-1 font-medium">{t('Past scheduled deadline')}</div>
+                        <div className="text-xs text-rose-500 mt-1 font-medium">{t('Past deadline')}</div>
                     </div>
                 </div>
 
-                {/* Industry Workspace Selector Tabs */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {/* ══════════ HOSTINGER SEGMENTED INDUSTRY PILL BAR ══════════ */}
+                <div className="hp-segmented-bar overflow-x-auto max-w-full">
                     {[
                         { id: 'all', label: 'All Industries', icon: LayoutGrid },
                         { id: 'facility_management', label: 'Facility Management', icon: Building2 },
@@ -503,13 +495,9 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                             <button
                                 key={ind.id}
                                 onClick={() => setIndustryFilter(ind.id)}
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border ${
-                                    isSelected 
-                                    ? 'bg-[var(--color-hp-dark)] text-white border-[var(--color-hp-dark)] shadow-xs' 
-                                    : 'bg-white text-[var(--color-hp-gray-600)] border-[var(--color-hp-border)] hover:border-[var(--color-hp-gray-400)] hover:text-[var(--color-hp-dark)]'
-                                }`}
+                                className={`hp-segmented-item ${isSelected ? 'is-active-primary' : ''}`}
                             >
-                                <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-[var(--color-hp-primary)]' : 'text-[var(--color-hp-gray-500)]'}`} />
+                                <Icon className="w-3.5 h-3.5" />
                                 <span>{t(ind.label)}</span>
                             </button>
                         );

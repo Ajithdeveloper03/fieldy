@@ -38,7 +38,9 @@ const NAV_GROUPS = [
         label: 'Business',
         items: [
             { href: '/admin/performance', icon: MapPin, label: 'Performance' },
+            { href: '/admin/satisfaction', icon: Star, label: 'Customer Satisfaction' },
             { href: '/admin/payments', icon: Wallet, label: 'Payments & Financials' },
+            { href: '/admin/subscriptions', icon: Crown, label: 'Plans & Add-ons' },
         ],
     },
 ];
