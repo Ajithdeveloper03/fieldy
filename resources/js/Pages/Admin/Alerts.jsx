@@ -1,7 +1,7 @@
 import React from 'react';
 import AdminLayout from './AdminLayout';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, TriangleAlert, Info, Bell, CheckCircle } from 'lucide-react';
+import { AlertCircle, TriangleAlert, Info, Bell, CheckCircle, ShieldAlert } from 'lucide-react';
 
 export default function Alerts({ alerts = [] }) {
     const { t } = useTranslation();
@@ -9,68 +9,86 @@ export default function Alerts({ alerts = [] }) {
     const getAlertIcon = (type) => {
         switch (type) {
             case 'critical':
-                return <AlertCircle className="w-5 h-5 text-red-500" />;
+                return <AlertCircle className="w-5 h-5 text-hp-danger" />;
             case 'high':
-                return <TriangleAlert className="w-5 h-5 text-amber-500" />;
+                return <TriangleAlert className="w-5 h-5 text-hp-warning" />;
             case 'info':
-                return <Info className="w-5 h-5 text-blue-500" />;
+                return <Info className="w-5 h-5 text-hp-info" />;
             default:
-                return <Bell className="w-5 h-5 text-gray-500" />;
+                return <Bell className="w-5 h-5 text-hp-muted" />;
         }
     };
 
-    const getAlertBg = (type) => {
+    const getAlertBadge = (type) => {
         switch (type) {
             case 'critical':
-                return 'bg-red-50 border-red-100';
+                return <span className="hp-chip hp-chip-danger">{t('Critical')}</span>;
             case 'high':
-                return 'bg-amber-50 border-amber-100';
+                return <span className="hp-chip hp-chip-warning">{t('High Priority')}</span>;
             case 'info':
-                return 'bg-blue-50 border-blue-100';
+                return <span className="hp-chip hp-chip-info">{t('Notice')}</span>;
             default:
-                return 'bg-gray-50 border-gray-100';
+                return <span className="hp-chip hp-chip-gray">{t('System')}</span>;
         }
     };
 
     return (
         <AdminLayout>
-            <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-slate-800">{t('Alerts & Notifications')}</h1>
-                    <p className="text-slate-500 mt-1 font-medium text-sm">
-                        {t('System logs and emergency alerts history')}
-                    </p>
-                </div>
-            </div>
-
-            <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
-                <div className="space-y-4">
-                    {alerts.length === 0 ? (
-                        <div className="text-center py-10 text-gray-500">
-                            <CheckCircle className="w-10 h-10 mx-auto text-gray-300 mb-2" />
-                            <p className="font-semibold">{t('No alerts available')}</p>
+            <div className="space-y-6 pb-12 hp-animate-in">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="hp-chip hp-chip-danger hp-chip-dot">{t('System Monitor')}</span>
                         </div>
-                    ) : (
-                        alerts.map(alert => (
-                            <div key={alert.id} className={`flex items-start p-4 rounded-xl border ${getAlertBg(alert.type)}`}>
-                                <div className="p-2 bg-white rounded-full shadow-sm mr-4">
-                                    {getAlertIcon(alert.type)}
+                        <h1 className="hp-page-title">{t('Alerts & Notifications')}</h1>
+                        <p className="text-sm text-hp-muted mt-1">
+                            {t('Audit log of emergency events, geofence violations, and field dispatch notifications.')}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="hp-card overflow-hidden">
+                    <div className="hp-card-header">
+                        <h2 className="hp-card-title flex items-center gap-2">
+                            <ShieldAlert className="w-5 h-5 text-hp-primary" /> {t('Active Incident Stream')}
+                        </h2>
+                        <span className="hp-chip hp-chip-gray">{alerts.length} {t('Logs')}</span>
+                    </div>
+
+                    <div className="divide-y divide-hp-border">
+                        {alerts.length === 0 ? (
+                            <div className="text-center py-16 px-4">
+                                <div className="hp-icon-tile !w-12 !h-12 mx-auto mb-3">
+                                    <CheckCircle className="w-6 h-6 text-hp-success" />
                                 </div>
-                                <div className="flex-1">
-                                    <div className="flex justify-between items-start mb-1">
-                                        <h3 className="font-semibold text-slate-800">{t(alert.title)}</h3>
-                                        <span className="text-xs font-medium text-gray-500">{alert.timestamp}</span>
-                                    </div>
-                                    <p className="text-sm text-gray-700">{t(alert.message)}</p>
-                                    {alert.resolved && (
-                                        <span className="inline-block mt-2 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider bg-green-100 text-green-700">
-                                            {t('Resolved')}
-                                        </span>
-                                    )}
-                                </div>
+                                <h3 className="text-sm font-bold text-hp-dark">{t('All systems operating normally')}</h3>
+                                <p className="text-xs text-hp-muted mt-1">{t('No active alerts or emergency notices at this time.')}</p>
                             </div>
-                        ))
-                    )}
+                        ) : (
+                            alerts.map(alert => (
+                                <div key={alert.id} className="p-4 sm:p-5 flex items-start gap-4 hover:bg-hp-hover transition-colors">
+                                    <div className="w-10 h-10 rounded-lg bg-hp-bg border border-hp-border flex items-center justify-center shrink-0">
+                                        {getAlertIcon(alert.type)}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="text-sm font-bold text-hp-dark">{t(alert.title)}</h3>
+                                                {getAlertBadge(alert.type)}
+                                            </div>
+                                            <span className="text-xs text-hp-muted">{alert.timestamp}</span>
+                                        </div>
+                                        <p className="text-sm text-hp-muted leading-relaxed">{t(alert.message)}</p>
+                                        {alert.resolved && (
+                                            <span className="hp-chip hp-chip-success mt-2">
+                                                {t('Resolved')}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
             </div>
         </AdminLayout>

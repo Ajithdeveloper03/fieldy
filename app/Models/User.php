@@ -20,6 +20,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'company_id',
         'name',
         'email',
         'phone',
@@ -53,6 +54,21 @@ class User extends Authenticatable
     }
 
     // ─── Relations ────────────────────────────────────────────────────────────
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'superadmin';
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
 
     public function locationLogs()
     {

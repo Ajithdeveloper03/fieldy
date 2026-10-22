@@ -23,6 +23,27 @@ Route::prefix('admin')->group(function () {
     Route::get('/login', [LoginController::class, 'index'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])->name('login.store');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+});
+
+// ── Superadmin Portal (Platform Owner) ──────────────────────────────────────────
+Route::prefix('superadmin')->middleware(['auth', 'superadmin'])->group(function () {
+    Route::get('/', fn () => redirect('/superadmin/dashboard'));
+    Route::get('/dashboard', [\App\Http\Controllers\Superadmin\SuperadminDashboardController::class, 'index'])->name('superadmin.dashboard');
+
+    // Company Management & Deep Inspection
+    Route::get('/companies', [\App\Http\Controllers\Superadmin\CompanyManagementController::class, 'index'])->name('superadmin.companies.index');
+    Route::post('/companies', [\App\Http\Controllers\Superadmin\CompanyManagementController::class, 'store'])->name('superadmin.companies.store');
+    Route::get('/companies/{id}', [\App\Http\Controllers\Superadmin\CompanyManagementController::class, 'show'])->name('superadmin.companies.show');
+    Route::put('/companies/{id}', [\App\Http\Controllers\Superadmin\CompanyManagementController::class, 'update'])->name('superadmin.companies.update');
+    Route::post('/companies/{id}/toggle-status', [\App\Http\Controllers\Superadmin\CompanyManagementController::class, 'toggleStatus'])->name('superadmin.companies.toggle');
+    Route::post('/companies/{id}/impersonate', [\App\Http\Controllers\Superadmin\CompanyManagementController::class, 'impersonate'])->name('superadmin.companies.impersonate');
+
+    // Cross-Company Employee & Activity Monitoring
+    Route::get('/employees', [\App\Http\Controllers\Superadmin\SuperadminMonitoringController::class, 'employees'])->name('superadmin.employees');
+    Route::get('/analytics', [\App\Http\Controllers\Superadmin\SuperadminMonitoringController::class, 'analytics'])->name('superadmin.analytics');
+});
+
+Route::prefix('admin')->group(function () {
 
     // ── Protected: All admin routes require auth + admin role ─────────────────
     Route::middleware(['auth', 'admin'])->group(function () {

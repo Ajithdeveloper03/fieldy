@@ -22,6 +22,18 @@ export default function Chatbot() {
         }
     }, [messages, isOpen]);
 
+    // Open from anywhere (home AI prompt, header "Ask Fieldy AI", Help menu)
+    const handleSendRef = useRef(null);
+    useEffect(() => {
+        const onAsk = (e) => {
+            setIsOpen(true);
+            const text = e.detail?.text;
+            if (text) setTimeout(() => handleSendRef.current?.(text), 50);
+        };
+        window.addEventListener('fieldy:ask', onAsk);
+        return () => window.removeEventListener('fieldy:ask', onAsk);
+    }, []);
+
     const handleSend = (overrideText = null) => {
         const textToSend = typeof overrideText === 'string' ? overrideText : inputValue;
         if (!textToSend.trim()) return;
@@ -38,6 +50,7 @@ export default function Chatbot() {
             setIsTyping(false);
         }, 1000);
     };
+    handleSendRef.current = handleSend;
 
     const generateAIResponse = (input) => {
         const lowerInput = input.toLowerCase();
@@ -77,11 +90,11 @@ export default function Chatbot() {
         <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end">
             {/* Chat Window */}
             {isOpen && (
-                <div className="bg-white border border-gray-100 shadow-2xl rounded-2xl w-80 sm:w-96 mb-4 flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-right animate-in slide-in-from-bottom-5">
+                <div className="hp-pop bg-white border border-hp-border shadow-[var(--shadow-hp-lg)] rounded-2xl w-80 sm:w-96 mb-4 flex flex-col overflow-hidden">
                     {/* Header */}
-                    <div className="bg-slate-900 text-white p-4 flex items-center justify-between">
+                    <div className="bg-hp-dark text-white p-4 flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                            <div className="w-8 h-8 bg-hp-primary rounded-full flex items-center justify-center">
                                 <Bot className="w-5 h-5 text-white" />
                             </div>
                             <div>
@@ -98,27 +111,27 @@ export default function Chatbot() {
                     </div>
 
                     {/* Messages Area */}
-                    <div className="p-4 h-80 overflow-y-auto bg-slate-50 flex flex-col space-y-3">
+                    <div className="p-4 h-80 overflow-y-auto bg-hp-bg flex flex-col space-y-3">
                         {messages.map((msg) => (
                             <div 
                                 key={msg.id} 
                                 className={`flex items-end space-x-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
                                 {msg.sender === 'ai' && (
-                                    <div className="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center flex-shrink-0">
-                                        <Bot className="w-4 h-4 text-slate-600" />
+                                    <div className="w-6 h-6 bg-hp-primary-light rounded-full flex items-center justify-center flex-shrink-0">
+                                        <Bot className="w-4 h-4 text-hp-primary" />
                                     </div>
                                 )}
                                 <div 
                                     className={`px-4 py-2 rounded-2xl text-sm max-w-[75%] ${
                                         msg.sender === 'user' 
-                                        ? 'bg-slate-900 text-white rounded-br-sm' 
-                                        : 'bg-white border border-gray-100 text-slate-800 shadow-sm rounded-bl-sm flex flex-col space-y-2'
+                                        ? 'bg-hp-primary text-white rounded-br-sm' 
+                                        : 'bg-white border border-hp-border text-hp-dark rounded-bl-sm flex flex-col space-y-2'
                                     }`}
                                 >
                                     <span>{msg.text}</span>
                                     {msg.action && (
-                                        <a href={msg.action.url} className="inline-block mt-2 text-center text-xs bg-green-50 text-green-700 font-bold py-1.5 px-3 rounded-lg border border-green-200 hover:bg-green-100 transition-colors">
+                                        <a href={msg.action.url} className="hp-btn hp-btn-sm hp-btn-outline mt-1">
                                             {msg.action.label}
                                         </a>
                                     )}
@@ -140,12 +153,12 @@ export default function Chatbot() {
 
                     {/* Suggestions Area */}
                     {!isTyping && (
-                        <div className="px-3 py-2 bg-slate-50 flex gap-2 overflow-x-auto border-t border-gray-100 scrollbar-hide snap-x">
+                        <div className="px-3 py-2 bg-white flex gap-2 overflow-x-auto border-t border-hp-border scrollbar-hide snap-x">
                             {suggestions.map((suggestion, idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => handleSend(suggestion)}
-                                    className="snap-start whitespace-nowrap text-xs bg-white border border-green-200 text-green-700 hover:bg-green-50 px-3 py-1.5 rounded-full transition-colors flex-shrink-0 font-medium shadow-sm"
+                                    className="hp-pill snap-start !h-8 !text-xs flex-shrink-0"
                                 >
                                     {suggestion}
                                 </button>
@@ -154,19 +167,19 @@ export default function Chatbot() {
                     )}
 
                     {/* Input Area */}
-                    <div className="p-3 bg-white border-t border-gray-100 flex items-center space-x-2">
+                    <div className="p-3 bg-white border-t border-hp-border flex items-center space-x-2">
                         <input 
                             type="text" 
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
                             onKeyDown={handleKeyDown}
                             placeholder={t('Ask me anything...')}
-                            className="flex-1 bg-slate-50 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all"
+                            className="hp-input !rounded-full flex-1"
                         />
                         <button 
                             onClick={handleSend}
                             disabled={!inputValue.trim() || isTyping}
-                            className="w-10 h-10 bg-slate-900 text-white rounded-full flex items-center justify-center hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="w-10 h-10 bg-hp-primary text-white rounded-full flex items-center justify-center hover:bg-hp-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
                         >
                             <Send className="w-4 h-4 ml-1" />
                         </button>
@@ -177,7 +190,7 @@ export default function Chatbot() {
             {/* Toggle Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-xl shadow-slate-900/30 hover:bg-slate-800 hover:scale-105 transition-all duration-300"
+                className="w-14 h-14 bg-hp-primary text-white rounded-full flex items-center justify-center shadow-xl shadow-orange-600/30 hover:bg-hp-primary-hover hover:scale-105 transition-all duration-300"
             >
                 {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
             </button>

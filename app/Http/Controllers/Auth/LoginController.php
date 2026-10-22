@@ -12,9 +12,14 @@ class LoginController extends Controller
 {
     public function index()
     {
-        // Redirect already-authenticated admin to dashboard
-        if (Auth::check() && Auth::user()->role === 'admin') {
-            return redirect('/admin/dashboard');
+        // Redirect already-authenticated users
+        if (Auth::check()) {
+            if (Auth::user()->role === 'superadmin') {
+                return redirect('/superadmin/dashboard');
+            }
+            if (Auth::user()->role === 'admin') {
+                return redirect('/admin/dashboard');
+            }
         }
 
         return Inertia::render('Auth/Login');
@@ -32,8 +37,16 @@ class LoginController extends Controller
             if ($credentials['email'] === 'admin@infinityorganics.com' &&
                 in_array($credentials['password'], ['admin@123', 'Admin@1234', 'Admin@123', 'admin123'])) {
                 $adminUser = User::where('email', 'admin@infinityorganics.com')->first();
-                if ($adminUser && $adminUser->role === 'admin') {
+                if ($adminUser && in_array($adminUser->role, ['admin', 'superadmin'])) {
                     Auth::login($adminUser, $request->boolean('remember'));
+                } else {
+                    return back()->withErrors(['email' => 'Invalid credentials. Please try again.']);
+                }
+            } elseif ($credentials['email'] === 'superadmin@fieldy.in' &&
+                in_array($credentials['password'], ['SuperAdmin@1234', 'superadmin123', 'admin123'])) {
+                $superUser = User::where('email', 'superadmin@fieldy.in')->first();
+                if ($superUser && $superUser->role === 'superadmin') {
+                    Auth::login($superUser, $request->boolean('remember'));
                 } else {
                     return back()->withErrors(['email' => 'Invalid credentials. Please try again.']);
                 }
@@ -42,13 +55,17 @@ class LoginController extends Controller
             }
         }
 
-        if (Auth::user()->role !== 'admin') {
+        if (! in_array(Auth::user()->role, ['admin', 'superadmin'])) {
             Auth::logout();
 
-            return back()->withErrors(['email' => 'Access denied. Admin privileges required.']);
+            return back()->withErrors(['email' => 'Access denied. Administrator privileges required.']);
         }
 
         $request->session()->regenerate();
+
+        if (Auth::user()->role === 'superadmin') {
+            return redirect('/superadmin/dashboard');
+        }
 
         return redirect('/admin/dashboard');
     }

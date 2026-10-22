@@ -1,13 +1,10 @@
 <?php
-
 namespace App\Http\Controllers\Admin;
-
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
-
 class SettingsController extends Controller
 {
     public function index()
@@ -23,7 +20,6 @@ class SettingsController extends Controller
             ],
         ]);
     }
-
     public function updateProfile(Request $request)
     {
         $user = Auth::user();
@@ -38,7 +34,6 @@ class SettingsController extends Controller
 
         return redirect('/admin/settings')->with('success', 'Profile updated successfully.');
     }
-
     public function updatePassword(Request $request)
     {
         $request->validate([

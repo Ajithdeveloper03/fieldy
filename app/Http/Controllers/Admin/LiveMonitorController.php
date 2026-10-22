@@ -16,8 +16,10 @@ class LiveMonitorController extends Controller
     private function buildEmployeeData(): Collection
     {
         $today = Carbon::today();
+        $companyId = auth()->user()?->company_id;
 
         return User::where('role', 'employee')
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
             ->with([
                 'employeeDetail',
                 'locationPoints' => function ($query) {

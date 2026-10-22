@@ -19,7 +19,7 @@ class EnsureAdminRole
             return redirect()->route('login')->with('error', 'Please log in to access the admin panel.');
         }
 
-        if (Auth::user()->role !== 'admin') {
+        if (! in_array(Auth::user()->role, ['admin', 'superadmin'])) {
             Auth::logout();
 
             return redirect()->route('login')->with('error', 'Access denied. Admin privileges required.');

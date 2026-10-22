@@ -22,8 +22,10 @@ class EmployeeDirectoryController extends Controller
     {
         $search = $request->query('search', '');
         $region = $request->query('region', '');
+        $companyId = auth()->user()->company_id;
 
         $employees = User::where('role', 'employee')
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
             ->with(['employeeDetail', 'attendanceLogs' => fn ($q) => $q->whereDate('date', Carbon::today())])
             ->when($search, fn ($q) => $q->where(fn ($sub) => $sub->where('name', 'like', "%{$search}%")
                 ->orWhere('phone', 'like', "%{$search}%")

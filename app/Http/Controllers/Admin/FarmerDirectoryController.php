@@ -20,8 +20,10 @@ class FarmerDirectoryController extends Controller
         $district = $request->query('district', '');
         $kyc = $request->query('kyc', '');
         $category = $request->query('category', 'crop');
+        $companyId = auth()->user()->company_id;
 
         $farmers = FarmerProfile::with(['user', 'createdBy:id,name'])
+            ->when($companyId, fn ($q) => $q->whereHas('user', fn ($u) => $u->where('company_id', $companyId)))
             ->when($category, fn ($q) => $q->where('customer_category', $category))
             ->when($search, fn ($q) => $q->whereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%")
                 ->orWhere('phone', 'like', "%{$search}%")

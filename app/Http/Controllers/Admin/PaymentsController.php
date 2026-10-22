@@ -16,8 +16,10 @@ class PaymentsController extends Controller
         $month = $request->query('month', Carbon::now()->format('F Y'));
         $status = $request->query('status', '');
         $empId = $request->query('employee_id', '');
+        $companyId = auth()->user()->company_id;
 
         $payments = Payment::with('employee:id,name')
+            ->when($companyId, fn ($q) => $q->whereHas('employee', fn ($e) => $e->where('company_id', $companyId)))
             ->when($month, fn ($q) => $q->where('month_year', $month))
             ->when($status, fn ($q) => $q->where('status', $status))
             ->when($empId, fn ($q) => $q->where('employee_id', $empId))
@@ -34,14 +36,18 @@ class PaymentsController extends Controller
                 'notes' => $p->notes,
             ]);
 
+        $basePaymentQuery = Payment::when($companyId, fn ($q) => $q->whereHas('employee', fn ($e) => $e->where('company_id', $companyId)))
+            ->when($month, fn ($q) => $q->where('month_year', $month));
+
         $totals = [
-            'total_paid' => Payment::where('status', 'paid')->when($month, fn ($q) => $q->where('month_year', $month))->sum('amount'),
-            'total_pending' => Payment::where('status', 'pending')->when($month, fn ($q) => $q->where('month_year', $month))->sum('amount'),
-            'total' => Payment::when($month, fn ($q) => $q->where('month_year', $month))->sum('amount'),
-            'count' => Payment::when($month, fn ($q) => $q->where('month_year', $month))->count(),
+            'total_paid' => (clone $basePaymentQuery)->where('status', 'paid')->sum('amount'),
+            'total_pending' => (clone $basePaymentQuery)->where('status', 'pending')->sum('amount'),
+            'total' => (clone $basePaymentQuery)->sum('amount'),
+            'count' => (clone $basePaymentQuery)->count(),
         ];
 
         $employees = User::where('role', 'employee')->where('status', 'active')
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
             ->select('id', 'name')->orderBy('name')->get();
 
         $months = Payment::distinct()->pluck('month_year')->filter()->values();

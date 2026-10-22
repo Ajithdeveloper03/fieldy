@@ -18,6 +18,7 @@ class VisitController extends Controller
         $employeeId = $request->query('employee_id', '');
 
         $query = FarmerVisit::with(['employee:id,name', 'farmer:id,name'])
+            ->when(auth()->user()->company_id, fn ($q, $cid) => $q->whereHas('employee', fn ($e) => $e->where('company_id', $cid)))
             ->orderBy('created_at', 'desc');
 
         if ($days !== 'all') {

@@ -1,19 +1,23 @@
 import React, { useState, useMemo } from 'react';
 import AdminLayout from './AdminLayout';
+import { Head, Link } from '@inertiajs/react';
 import { 
-    UserCheck, Star, Trophy, Search, Filter, ChevronDown, Download, X, CheckCircle2
+    UserCheck, Star, Trophy, Search, Filter, ChevronDown, Download, X, CheckCircle2,
+    Home, ChevronRight
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAlert } from '../../Components/AlertSystem';
 
 export default function EmployeePerformance({ employees = [], period = '' }) {
     const { t } = useTranslation();
-    const { triggerInfo } = useAlert();
+    const alertSystem = useAlert ? useAlert() : {};
+    const triggerInfo = alertSystem?.triggerInfo;
+
     const [searchQuery, setSearchQuery] = useState('');
     const [regionFilter, setRegionFilter] = useState('all');
     const [showRegionDropdown, setShowRegionDropdown] = useState(false);
 
-    const regions = ['all', ...Array.from(new Set(employees.map(e => e.region)))];
+    const regions = ['all', ...Array.from(new Set(employees.map(e => e.region).filter(Boolean)))];
 
     const filteredData = useMemo(() => {
         return employees.filter(e => {
@@ -24,88 +28,147 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
     }, [searchQuery, regionFilter, employees]);
 
     const handleExport = () => {
-        triggerInfo(t('Exporting performance report. Download will begin shortly.'));
+        if (triggerInfo) {
+            triggerInfo(t('Exporting performance report. Download will begin shortly.'));
+        } else {
+            alert('Exporting performance report...');
+        }
     };
 
     return (
         <AdminLayout>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                <div>
-                    <h1 className="text-2xl font-heading font-semibold text-slate-800">{t('Performance Analytics')}</h1>
-                    <p className="text-slate-500 mt-1 text-sm font-medium">{t('Monthly performance scoring for')} {period}</p>
-                </div>
-                <button onClick={handleExport} className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition shadow-sm">
-                    <Download className="w-4 h-4 mr-2" /> {t('Export Report')}
-                </button>
-            </div>
+            <Head title="Performance Analytics - Fieldy Admin" />
 
-            {/* Filter Bar */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div className="relative w-full md:w-96">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input 
-                        type="text"
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        placeholder={t('Search by officer name...')} 
-                        className="w-full pl-9 pr-8 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
-                    />
-                    {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"><X className="w-4 h-4" /></button>}
+            <div className="max-w-7xl mx-auto space-y-6 pb-12">
+                {/* Breadcrumbs */}
+                <div className="flex items-center gap-2 text-xs text-[var(--color-hp-gray-600)]">
+                    <Link href="/admin/dashboard" className="hover:text-[var(--color-hp-primary)] flex items-center gap-1 transition-colors">
+                        <Home className="w-3.5 h-3.5" />
+                        <span>Home</span>
+                    </Link>
+                    <ChevronRight className="w-3.5 h-3.5 text-[var(--color-hp-gray-400)]" />
+                    <span className="font-semibold text-[var(--color-hp-dark)]">Performance Analytics</span>
                 </div>
-                <div className="flex w-full md:w-auto gap-3">
-                    <div className="relative">
-                        <button onClick={() => setShowRegionDropdown(!showRegionDropdown)}
-                            className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                            <Filter className="w-4 h-4 mr-2 text-gray-400" />
-                            {regionFilter === 'all' ? t('All Regions') : regionFilter} <ChevronDown className="w-4 h-4 ml-2 text-gray-400" />
-                        </button>
-                        {showRegionDropdown && (
-                            <div className="absolute top-full mt-1 right-0 min-w-[140px] bg-white border border-gray-200 rounded-xl shadow-lg z-30 py-1">
-                                {regions.map(r => (
-                                    <button key={r} onClick={() => { setRegionFilter(r); setShowRegionDropdown(false); }}
-                                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${regionFilter === r ? 'font-bold text-green-700 bg-green-50/50' : 'text-gray-700'}`}>
-                                        {r === 'all' ? t('All Regions') : r}
-                                    </button>
-                                ))}
-                            </div>
+
+                {/* Hostinger hPanel Page Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[var(--color-hp-border)]">
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-hp-dark)] tracking-tight">
+                            {t('Performance Analytics')}
+                        </h1>
+                        <p className="text-xs sm:text-sm text-[var(--color-hp-gray-600)] mt-1">
+                            {t('Monthly performance scoring for')} {period || 'Current Cycle'}
+                        </p>
+                    </div>
+                    <button 
+                        onClick={handleExport} 
+                        className="hp-btn hp-btn-secondary inline-flex items-center gap-2"
+                    >
+                        <Download className="w-4 h-4" />
+                        <span>{t('Export Report')}</span>
+                    </button>
+                </div>
+
+                {/* Filter Bar */}
+                <div className="hp-card p-4 flex flex-col md:flex-row gap-3 items-center justify-between">
+                    <div className="relative w-full md:w-80">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-hp-gray-500)]" />
+                        <input 
+                            type="text"
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            placeholder={t('Search by officer name...')} 
+                            className="hp-input pl-9 pr-8"
+                        />
+                        {searchQuery && (
+                            <button 
+                                onClick={() => setSearchQuery('')} 
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-hp-gray-500)] hover:text-[var(--color-hp-dark)] p-0.5"
+                            >
+                                <X className="w-3.5 h-3.5" />
+                            </button>
                         )}
                     </div>
-                </div>
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <div className="col-span-1 lg:col-span-2 space-y-6">
+                    <div className="flex w-full md:w-auto gap-2">
+                        <div className="relative">
+                            <button 
+                                onClick={() => setShowRegionDropdown(!showRegionDropdown)}
+                                className={`hp-btn hp-btn-secondary inline-flex items-center gap-2 ${
+                                    regionFilter !== 'all' ? 'border-[var(--color-hp-primary)] text-[var(--color-hp-primary)]' : ''
+                                }`}
+                            >
+                                <Filter className="w-3.5 h-3.5" />
+                                <span>{regionFilter === 'all' ? t('All Regions') : regionFilter}</span>
+                                <ChevronDown className="w-3.5 h-3.5" />
+                            </button>
+                            {showRegionDropdown && (
+                                <div className="absolute top-full mt-1 right-0 min-w-[150px] bg-white border border-[var(--color-hp-border)] rounded-lg shadow-lg z-30 py-1 overflow-hidden">
+                                    {regions.map(r => (
+                                        <button 
+                                            key={r} 
+                                            onClick={() => { setRegionFilter(r); setShowRegionDropdown(false); }}
+                                            className={`w-full text-left px-3.5 py-2 text-xs font-semibold hover:bg-[var(--color-hp-gray-100)] transition-colors ${
+                                                regionFilter === r ? 'text-[var(--color-hp-primary)] bg-[var(--color-hp-primary-light)]' : 'text-[var(--color-hp-dark)]'
+                                            }`}
+                                        >
+                                            {r === 'all' ? t('All Regions') : r}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                     {/* Performance Leaderboard */}
-                    <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
-                        <div className="flex items-center mb-6">
-                            <Trophy className="w-5 h-5 text-gray-400 mr-2" />
-                            <h2 className="text-base sm:text-lg font-semibold text-slate-800">{t('Performance Leaderboard')}</h2>
+                    <div className="col-span-1 lg:col-span-2 hp-card overflow-hidden">
+                        <div className="hp-card-header flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Trophy className="w-4 h-4 text-[var(--color-hp-primary)]" />
+                                <h2 className="hp-card-title">{t('Performance Leaderboard')}</h2>
+                            </div>
+                            <span className="text-xs font-semibold text-[var(--color-hp-gray-500)]">
+                                {filteredData.length} Officers
+                            </span>
                         </div>
                         
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
+                            <table className="hp-table">
                                 <thead>
-                                    <tr className="border-b border-gray-100 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                                        <th className="pb-3 px-2">{t('Officer Name')}</th>
-                                        <th className="pb-3 text-center">{t('Visits (Month)')}</th>
-                                        <th className="pb-3 text-center">{t('Attendance')}</th>
-                                        <th className="pb-3 text-right pr-2">{t('Total Score')}</th>
+                                    <tr>
+                                        <th>{t('Officer Name')}</th>
+                                        <th className="text-center">{t('Visits (Month)')}</th>
+                                        <th className="text-center">{t('Attendance')}</th>
+                                        <th className="text-right">{t('Total Score')}</th>
                                     </tr>
                                 </thead>
-                                <tbody className="text-sm divide-y divide-gray-50">
+                                <tbody>
                                     {filteredData.length === 0 && (
-                                        <tr><td colSpan={4} className="py-8 text-center text-gray-500">{t('No officers match your search.')}</td></tr>
+                                        <tr>
+                                            <td colSpan={4} className="py-12 text-center text-[var(--color-hp-gray-500)] text-xs">
+                                                {t('No officers match your search.')}
+                                            </td>
+                                        </tr>
                                     )}
                                     {filteredData.map((e, i) => (
-                                        <tr key={i} className="hover:bg-gray-50 transition-colors">
-                                            <td className="py-4 px-2">
-                                                <div className="font-semibold text-slate-800">{e.name}</div>
-                                                <div className="text-xs text-gray-500 mt-0.5">{e.employee_code}</div>
+                                        <tr key={i}>
+                                            <td>
+                                                <div className="font-semibold text-xs text-[var(--color-hp-dark)]">{e.name}</div>
+                                                <div className="text-[11px] text-[var(--color-hp-gray-500)] mt-0.5 font-mono">{e.employee_code}</div>
                                             </td>
-                                            <td className="py-4 text-center text-gray-600">{e.visits_month} / {e.target_visits}</td>
-                                            <td className="py-4 text-center text-gray-600">{e.attendance_rate}%</td>
-                                            <td className="py-4 text-right font-bold text-green-700 pr-2">{e.score} {t('pts')}</td>
+                                            <td className="text-center text-xs text-[var(--color-hp-gray-700)]">
+                                                {e.visits_month} / {e.target_visits}
+                                            </td>
+                                            <td className="text-center text-xs text-[var(--color-hp-gray-700)]">
+                                                {e.attendance_rate}%
+                                            </td>
+                                            <td className="text-right">
+                                                <span className="hp-chip hp-chip-success font-bold">
+                                                    {e.score} {t('pts')}
+                                                </span>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -113,30 +176,28 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                         </div>
                     </div>
 
-                    {/* Removed Attendance Ledger to simplify page and focus on core metrics */}
-                </div>
-
-                {/* Behavior Matrix */}
-                <div className="col-span-1">
-                    <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm h-full">
-                        <div className="flex items-center mb-6">
-                            <Star className="w-5 h-5 text-gray-400 mr-2" />
-                            <h2 className="text-base sm:text-lg font-semibold text-slate-800">{t('Behavior Matrix')}</h2>
+                    {/* Behavior Matrix */}
+                    <div className="col-span-1 hp-card overflow-hidden">
+                        <div className="hp-card-header flex items-center gap-2">
+                            <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                            <h2 className="hp-card-title">{t('Behavior Matrix')}</h2>
                         </div>
                         
-                        <div className="space-y-3">
+                        <div className="p-4 space-y-3">
                             {filteredData.slice(0, 6).map((officer, i) => (
-                                <div key={i} className="bg-gray-50 border border-gray-100 p-4 rounded-xl">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <p className="font-semibold text-slate-800 text-sm">{officer.name}</p>
-                                        <div className="flex items-center bg-white px-2 py-0.5 rounded text-xs border border-gray-200">
-                                            <Star className="w-3 h-3 text-amber-400 mr-1 fill-amber-400" />
-                                            <span className="font-medium">{officer.avg_rating || 'N/A'}</span>
+                                <div key={i} className="p-3 rounded-lg border border-[var(--color-hp-border)] bg-[var(--color-hp-gray-50)] hover:border-[var(--color-hp-gray-400)] transition-colors">
+                                    <div className="flex justify-between items-center mb-1.5">
+                                        <p className="font-semibold text-xs text-[var(--color-hp-dark)]">{officer.name}</p>
+                                        <div className="flex items-center bg-white px-2 py-0.5 rounded text-[11px] border border-[var(--color-hp-border)]">
+                                            <Star className="w-3 h-3 text-amber-500 mr-1 fill-amber-500" />
+                                            <span className="font-bold text-[var(--color-hp-dark)]">{officer.avg_rating || 'N/A'}</span>
                                         </div>
                                     </div>
-                                    <div className="flex justify-between items-center text-xs text-gray-500 mt-2">
-                                        <span>{t('Total Visits:')} {officer.total_visits}</span>
-                                        <span className={`px-2 py-0.5 rounded font-medium ${officer.score < 50 ? 'text-red-700 bg-red-50' : 'text-green-700 bg-green-50'}`}>
+                                    <div className="flex justify-between items-center text-[11px] text-[var(--color-hp-gray-600)] mt-2">
+                                        <span>{t('Total Visits:')} <strong className="text-[var(--color-hp-dark)]">{officer.total_visits}</strong></span>
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                            officer.score < 50 ? 'text-rose-700 bg-rose-50' : 'text-emerald-700 bg-emerald-50'
+                                        }`}>
                                             {t('Score:')} {officer.score}
                                         </span>
                                     </div>
