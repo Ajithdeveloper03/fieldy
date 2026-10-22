@@ -55,10 +55,10 @@ export default function RegisterStep3Screen() {
         </TouchableOpacity>
         <View>
           <Text className="text-xl font-brandon-bold text-slate-900">
-            Farmer Registration
+            Facility Onboarding
           </Text>
           <Text className="text-slate-500 font-brandon text-xs">
-            Step 2 of 4 • Personal Details
+            Step 2 of 4 • Client & Site Contact Details
           </Text>
         </View>
       </View>
@@ -74,11 +74,11 @@ export default function RegisterStep3Screen() {
         >
           {/* 4-Step Stepper */}
           <View className="flex-row items-center justify-center my-4 px-4">
-            <View className="w-7 h-7 rounded-full bg-[#2f6f36] items-center justify-center shadow-sm">
+            <View className="w-7 h-7 rounded-full bg-[#0284c7] items-center justify-center shadow-sm">
               <Text className="text-white font-brandon-bold text-xs">✓</Text>
             </View>
-            <View className="flex-1 h-0.5 bg-[#2f6f36] mx-2" />
-            <View className="w-8 h-8 rounded-full bg-[#2f6f36] items-center justify-center shadow-sm">
+            <View className="flex-1 h-0.5 bg-[#0284c7] mx-2" />
+            <View className="w-8 h-8 rounded-full bg-[#0284c7] items-center justify-center shadow-sm">
               <Text className="text-white font-brandon-bold text-xs">2</Text>
             </View>
             <View className="flex-1 h-0.5 bg-slate-200 mx-2" />
@@ -93,7 +93,7 @@ export default function RegisterStep3Screen() {
 
           {/* Section Heading */}
           <Text className="text-slate-900 font-brandon-bold text-base mt-2 mb-4">
-            Personal Details
+            Facility Manager & Location Details
           </Text>
 
           {/* Form Fields matching Design */}

@@ -33,8 +33,8 @@ export default function FarmerRecommendationsScreen() {
         style={StyleSheet.absoluteFill}
         resizeMode="cover"
       >
-        <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(255,255,255,0.85)" }} />
-        <View style={{ position: "absolute", top: -100, right: -50, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(16, 185, 129, 0.1)", blurRadius: 40 }} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(255,255,255,0.85)" }]} />
+        <View style={{ position: "absolute", top: -100, right: -50, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(16, 185, 129, 0.1)" }} />
 
         <SafeAreaView style={{ flex: 1 }}>
           

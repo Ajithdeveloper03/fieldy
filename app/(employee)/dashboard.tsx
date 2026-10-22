@@ -27,7 +27,10 @@ import {
   Camera,
   History,
   ShieldCheck,
-  ArrowRight
+  ArrowRight,
+  Receipt,
+  Boxes,
+  AlertOctagon,
 } from "lucide-react-native";
 import { useLanguage, LanguageTogglePill } from "../../context/LanguageContext";
 
@@ -138,25 +141,60 @@ export default function EmployeeDashboardScreen() {
 
           {/* QUICK ACTIONS ROW */}
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 32 }}>
-            <TouchableOpacity onPress={() => router.push("/(employee)/register-farmer")} style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 24, padding: 16, alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4, marginRight: 8 }}>
+            <TouchableOpacity onPress={() => router.push("/(employee)/tasks")} style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 24, padding: 16, alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4, marginRight: 6 }}>
+              <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#ede9fe", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                <ClipboardCheck size={24} color="#7c3aed" />
+              </View>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 13, textAlign: "center" }}>Work{'\n'}Orders</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => router.push("/(employee)/register-farmer/step1")} style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 24, padding: 16, alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4, marginHorizontal: 4 }}>
               <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#e0f2fe", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
                 <UserPlus size={24} color="#0284c7" />
               </View>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, textAlign: "center" }}>Onboard{'\n'}Facility</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 13, textAlign: "center" }}>Onboard{'\n'}Client</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => router.push("/(employee)/my-farmers")} style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 24, padding: 16, alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4, marginHorizontal: 4 }}>
               <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#dcfce7", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
                 <Users size={24} color="#16a34a" />
               </View>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, textAlign: "center" }}>My{'\n'}Facilities</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 13, textAlign: "center" }}>My Sites{'\n'}& Clients</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => router.push("/(employee)/report/select-method")} style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 24, padding: 16, alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4, marginLeft: 8 }}>
+            <TouchableOpacity onPress={() => router.push("/(employee)/report/select-method")} style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 24, padding: 16, alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4, marginLeft: 6 }}>
               <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#fef08a", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
                 <FileText size={24} color="#ca8a04" />
               </View>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, textAlign: "center" }}>Service{'\n'}Report</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 13, textAlign: "center" }}>Service{'\n'}Report</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* SECONDARY FIELD TOOLKIT (Expenses, Inventory, Safety SOS) */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 32, gap: 10 }}>
+            <TouchableOpacity onPress={() => router.push("/(employee)/expenses")} style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 20, padding: 14, flexDirection: "row", alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 3 }}>
+              <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: "#dcfce7", alignItems: "center", justifyContent: "center", marginRight: 10 }}>
+                <Receipt size={18} color="#16a34a" />
+              </View>
+              <View>
+                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 13 }}>Claim Bills</Text>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 11 }}>Fuel & Meals</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => router.push("/(employee)/inventory")} style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 20, padding: 14, flexDirection: "row", alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 3 }}>
+              <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: "#e0f2fe", alignItems: "center", justifyContent: "center", marginRight: 10 }}>
+                <Boxes size={18} color="#0284c7" />
+              </View>
+              <View>
+                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 13 }}>Boot Stock</Text>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 11 }}>Kit & Tools</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => router.push("/(employee)/sos")} style={{ width: 52, height: 66, backgroundColor: "#fee2e2", borderRadius: 20, alignItems: "center", justifyContent: "center", shadowColor: "#ef4444", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 6, elevation: 3 }}>
+              <AlertOctagon size={24} color="#ef4444" />
+              <Text style={{ color: "#ef4444", fontFamily: "Brandon-Bold", fontSize: 10, marginTop: 4 }}>SOS</Text>
             </TouchableOpacity>
           </View>
 
@@ -199,14 +237,14 @@ export default function EmployeeDashboardScreen() {
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-                    <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>Ramesh Kumar</Text>
+                    <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>Apex Cyber Tower</Text>
                     <View style={{ backgroundColor: "#fee2e2", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginLeft: 8 }}>
                       <Text style={{ color: "#ef4444", fontFamily: "Brandon-Bold", fontSize: 10 }}>HIGH PRIORITY</Text>
                     </View>
                   </View>
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <MapPin size={14} color="#64748b" />
-                    <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 4 }}>Annur North (12km away)</Text>
+                    <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 4 }}>Tidel Park Road, Block B (4.2km)</Text>
                   </View>
                 </View>
                 <View style={{ alignItems: "flex-end" }}>
@@ -231,10 +269,10 @@ export default function EmployeeDashboardScreen() {
             <View style={{ backgroundColor: "#f8fafc", borderRadius: 24, padding: 20, borderWidth: 1, borderColor: "#e2e8f0" }}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 18, textDecorationLine: "line-through" }}>Suresh Rajan</Text>
+                  <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 18, textDecorationLine: "line-through" }}>Metro Logistics Hub</Text>
                   <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
                     <CheckCircle2 size={14} color="#10b981" />
-                    <Text style={{ color: "#10b981", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 4 }}>Visited at 09:45 AM</Text>
+                    <Text style={{ color: "#10b981", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 4 }}>Audit Complete at 09:45 AM</Text>
                   </View>
                 </View>
               </View>
@@ -251,7 +289,7 @@ export default function EmployeeDashboardScreen() {
             <View style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, borderRadius: 50, backgroundColor: "rgba(255,255,255,0.1)" }} />
             <View>
               <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20 }}>My Performance</Text>
-              <Text style={{ color: "rgba(255,255,255,0.8)", fontFamily: "Brandon-Medium", fontSize: 14, marginTop: 4 }}>You're at 86% Efficiency Level</Text>
+              <Text style={{ color: "rgba(255,255,255,0.8)", fontFamily: "Brandon-Medium", fontSize: 14, marginTop: 4 }}>You&apos;re at 86% Efficiency Level • 480 Pts</Text>
             </View>
             <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" }}>
               <ArrowRight size={20} color="#0284c7" />
@@ -262,12 +300,12 @@ export default function EmployeeDashboardScreen() {
           <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Management Tools</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" }}>
             {[
-              { title: "Task List", icon: ClipboardCheck, color: "#8b5cf6", route: "/(employee)/tasks" },
-              { title: "Work Calendar", icon: CalendarDays, color: "#ec4899", route: "/(employee)/calendar" },
+              { title: "Work Orders", icon: ClipboardCheck, color: "#8b5cf6", route: "/(employee)/tasks" },
+              { title: "Shift Calendar", icon: CalendarDays, color: "#ec4899", route: "/(employee)/calendar" },
               { title: "Daily Attendance", icon: CheckCircle2, color: "#10b981", route: "/(employee)/attendance-hub" },
-              { title: "Assigned Farmers", icon: Users, color: "#3b82f6", route: "/(employee)/my-farmers" },
-              { title: "Add New Farmer", icon: UserPlus, color: "#f59e0b", route: "/(employee)/register-farmer/step1" },
-              { title: "Visit Itinerary", icon: MapPin, color: "#0ea5e9", route: "/(employee)/visits" },
+              { title: "Sites & Clients", icon: Users, color: "#3b82f6", route: "/(employee)/my-farmers" },
+              { title: "Onboard Site", icon: UserPlus, color: "#f59e0b", route: "/(employee)/register-farmer/step1" },
+              { title: "Service Route", icon: MapPin, color: "#0ea5e9", route: "/(employee)/visits" },
               { title: "Past History", icon: History, color: "#64748b", route: "/(employee)/visit-history" },
               { title: "View Reports", icon: FileText, color: "#14b8a6", route: "/(employee)/reports" },
             ].map((tool, index) => (

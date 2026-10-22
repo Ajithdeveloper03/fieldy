@@ -111,29 +111,50 @@ export default function SubmitReportScreen() {
           </View>
           {/* Form Fields */}
           <Text className="text-gray-900 font-brandon-bold mb-2 ml-1">
-            Crop Condition
+            Service Inspection Status
           </Text>
           <TouchableOpacity
             activeOpacity={0.8}
             className="border border-gray-200 rounded-xl px-4 py-4 mb-6 flex-row justify-between items-center bg-gray-50 shadow-sm"
           >
             <Text className="text-gray-900 font-brandon-medium text-base">
-              Good
+              Completed & Verified (Good)
             </Text>
             <ChevronDown size={20} color="#6b7280" />
           </TouchableOpacity>
           <Text className="text-gray-900 font-brandon-bold mb-2 ml-1">
-            Observations / Notes *
+            Service Execution Notes / Observations *
           </Text>
           <View className="border border-gray-200 rounded-xl px-4 py-3 mb-6 bg-gray-50 h-28 shadow-sm">
             <TextInput
               className="flex-1 text-gray-900 font-brandon text-base"
               multiline
               textAlignVertical="top"
-              placeholder="Enter detailed observations..."
+              placeholder="Enter work details, diagnostics, replaced parts or notes..."
               value={notes}
               onChangeText={setNotes}
             />
+          </View>
+          {/* Customer OTP Verification Section */}
+          <View className="bg-emerald-50 rounded-2xl p-5 mb-6 border border-emerald-100 shadow-sm">
+            <View className="flex-row items-center mb-2">
+              <Check size={18} color="#059669" className="mr-2" />
+              <Text className="text-gray-900 font-brandon-bold text-base">
+                Customer OTP Verification
+              </Text>
+            </View>
+            <Text className="text-gray-500 font-brandon text-xs mb-3">
+              Ask customer for the 4-digit code (Testing Dummy Code: 4821)
+            </Text>
+            <View className="border border-emerald-200 rounded-xl px-4 py-3 bg-white flex-row items-center">
+              <TextInput
+                className="flex-1 text-gray-900 font-brandon-bold text-lg tracking-widest text-center"
+                placeholder="Enter 4-Digit OTP"
+                keyboardType="numeric"
+                maxLength={4}
+                defaultValue="4821"
+              />
+            </View>
           </View>
           {/* Payment Details Section */}
           <View className="bg-orange-50 rounded-2xl p-5 mb-6 border border-orange-100 shadow-sm">

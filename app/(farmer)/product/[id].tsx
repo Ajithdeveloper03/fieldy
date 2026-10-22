@@ -20,7 +20,8 @@ import {
   Droplet,
   Info,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Leaf
 } from "lucide-react-native";
 
 const { width } = Dimensions.get("window");

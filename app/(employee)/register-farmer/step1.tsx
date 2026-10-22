@@ -14,8 +14,8 @@ import { showToast } from "../../../components/ui/ToastMessage";
 
 export default function Step1Mobile() {
   const [mobile, setMobile] = useState("9842155678");
-  const [category, setCategory] = useState<"Crop" | "Fertilizer" | "Both">("Crop");
-  const [crops, setCrops] = useState("Vetiver & Turmeric");
+  const [category, setCategory] = useState<"Hard FM" | "Soft FM" | "Security & MEP">("Hard FM");
+  const [crops, setCrops] = useState("Chillers & Elevators");
 
   const handleNext = () => {
     if (!mobile || mobile.trim().length < 10) {
@@ -51,10 +51,10 @@ export default function Step1Mobile() {
 
         <View className="items-center">
           <Text className="text-lg font-brandon-bold text-slate-900">
-            Register Farmer
+            Onboard Client & Site
           </Text>
           <Text className="text-slate-500 font-brandon text-xs">
-            Step 1 of 4 • Identity & Category
+            Step 1 of 4 • Facility Identity & Scope
           </Text>
         </View>
 
@@ -68,7 +68,7 @@ export default function Step1Mobile() {
       >
         {/* 4-Step Stepper */}
         <View className="flex-row items-center justify-center my-4 px-6">
-          <View className="w-8 h-8 rounded-full bg-[#2f6f36] items-center justify-center shadow-sm">
+          <View className="w-8 h-8 rounded-full bg-[#0284c7] items-center justify-center shadow-sm">
             <Text className="text-white font-brandon-bold text-xs">1</Text>
           </View>
           <View className="flex-1 h-0.5 bg-slate-200 mx-2" />
@@ -85,9 +85,9 @@ export default function Step1Mobile() {
           </View>
         </View>
 
-        {/* Hero Visual: Phone with Shield & Leaves */}
+        {/* Hero Visual: Phone with Shield & Facilities */}
         <View className="items-center justify-center my-3">
-          <View className="w-24 h-24 rounded-full bg-emerald-50/80 items-center justify-center border border-emerald-200/80 shadow-sm relative">
+          <View className="w-24 h-24 rounded-full bg-sky-50/80 items-center justify-center border border-sky-200/80 shadow-sm relative">
             <Image
               source={require("../../../assets/images/shield_phone.png")}
               style={{ width: 68, height: 68 }}
@@ -103,12 +103,12 @@ export default function Step1Mobile() {
         </View>
 
         {/* Mobile Input Card */}
-        <View className="bg-emerald-50/70 rounded-2xl p-4 border border-emerald-200/90 shadow-sm mb-4">
-          <Text className="text-emerald-900 text-xs font-brandon-bold uppercase tracking-wider mb-2">
-            Mobile Number
+        <View className="bg-sky-50/70 rounded-2xl p-4 border border-sky-200/90 shadow-sm mb-4">
+          <Text className="text-sky-900 text-xs font-brandon-bold uppercase tracking-wider mb-2">
+            Facility Manager / Contact Mobile
           </Text>
           <View className="flex-row items-center bg-white rounded-xl px-3.5 py-3 border border-slate-200">
-            <Phone size={18} color="#059669" />
+            <Phone size={18} color="#0284c7" />
             <Text className="text-slate-900 font-brandon-bold text-base ml-2.5 mr-1.5">
               +91
             </Text>
@@ -125,17 +125,17 @@ export default function Step1Mobile() {
         </View>
 
         {/* Facility Service Scope Selection Card */}
-        <View className="bg-sky-50/70 rounded-2xl p-4 border border-sky-200/90 shadow-sm mb-4">
-          <Text className="text-sky-950 text-xs font-brandon-bold uppercase tracking-wider mb-2.5">
-            Service Agreement Scope
+        <View className="bg-slate-50/70 rounded-2xl p-4 border border-slate-200/90 shadow-sm mb-4">
+          <Text className="text-slate-950 text-xs font-brandon-bold uppercase tracking-wider mb-2.5">
+            Service Industry Scope
           </Text>
           <View className="flex-row justify-between">
-            {(["Hard FM", "Soft FM", "Integrated FM"] as const).map((cat) => {
+            {(["Hard FM", "Soft FM", "Security & MEP"] as const).map((cat) => {
               const selected = category === cat;
               return (
                 <TouchableOpacity
                   key={cat}
-                  onPress={() => setCategory(cat)}
+                  onPress={() => setCategory(cat as any)}
                   activeOpacity={0.8}
                   className={`flex-1 py-3 px-2 rounded-xl mx-1 border items-center shadow-sm ${selected
                       ? "bg-[#0284c7] border-[#0284c7]"
@@ -154,33 +154,31 @@ export default function Step1Mobile() {
           </View>
         </View>
 
-        {/* Crops Input Card */}
-        {(category === "Crop" || category === "Both") && (
-          <View className="bg-amber-50/70 rounded-2xl p-4 border border-amber-200/90 shadow-sm mb-6">
-            <Text className="text-amber-950 text-xs font-brandon-bold uppercase tracking-wider mb-2">
-              Cultivated Crop Varieties
-            </Text>
-            <View className="flex-row items-center bg-white rounded-xl px-3.5 py-3 border border-slate-200">
-              <Tag size={18} color="#d97706" />
-              <TextInput
-                className="flex-1 ml-2.5 text-base font-brandon-bold text-slate-900 p-0 m-0"
-                placeholder="e.g. Vetiver, Turmeric, Pepper"
-                placeholderTextColor="#94a3b8"
-                value={crops}
-                onChangeText={setCrops}
-              />
-            </View>
+        {/* Facility Asset / Key Systems Focus */}
+        <View className="bg-slate-50/70 rounded-2xl p-4 border border-slate-200/90 shadow-sm mb-6">
+          <Text className="text-slate-950 text-xs font-brandon-bold uppercase tracking-wider mb-2">
+            Primary Assets / Systems
+          </Text>
+          <View className="flex-row items-center bg-white rounded-xl px-3.5 py-3 border border-slate-200">
+            <Tag size={18} color="#0284c7" />
+            <TextInput
+              className="flex-1 ml-2.5 text-base font-brandon-bold text-slate-900 p-0 m-0"
+              placeholder="e.g. Chillers, Elevators, Solar, Access Control"
+              placeholderTextColor="#94a3b8"
+              value={crops}
+              onChangeText={setCrops}
+            />
           </View>
-        )}
+        </View>
 
-        {/* Action Button: Directly proceeds to Personal Details without OTP */}
+        {/* Action Button: Directly proceeds to Facility Details */}
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={handleNext}
-          className="w-full bg-[#2f6f36] py-4 rounded-2xl items-center justify-center shadow-md shadow-emerald-900/20 flex-row mt-2"
+          className="w-full bg-[#0284c7] py-4 rounded-2xl items-center justify-center shadow-md shadow-sky-900/20 flex-row mt-2"
         >
           <Text className="text-white font-brandon-bold text-base tracking-wide mr-2">
-            Continue to Personal Details
+            Continue to Facility Details
           </Text>
           <ArrowRight size={18} color="#ffffff" />
         </TouchableOpacity>

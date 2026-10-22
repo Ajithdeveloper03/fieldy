@@ -21,7 +21,7 @@ import {
 import { useLanguage } from "../../context/LanguageContext";
 
 export default function EmployeePerformanceScreen() {
-  const { userName } = useLanguage();
+  const userName = "Field Officer";
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0284c7" }}>
@@ -104,8 +104,8 @@ export default function EmployeePerformanceScreen() {
             <View style={{ flexDirection: "row", marginBottom: 24 }}>
               <View style={{ flex: 1, backgroundColor: "#f8fafc", borderRadius: 24, padding: 20, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                 <View>
-                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>Morning Inspection <Text style={{ color: "#10b981" }}>(+2)</Text></Text>
-                  <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 4 }}>Farm A • Soil Test • Report</Text>
+                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>AHU Maintenance <Text style={{ color: "#10b981" }}>(+40 pts)</Text></Text>
+                  <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 4 }}>Metro Tower • OTP Verified</Text>
                 </View>
                 <CheckCircle2 size={24} color="#0f172a" />
               </View>
@@ -119,12 +119,13 @@ export default function EmployeePerformanceScreen() {
             <View style={{ flexDirection: "row", marginBottom: 24 }}>
               <View style={{ flex: 1, backgroundColor: "#f8fafc", borderRadius: 24, padding: 20, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                 <View>
-                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>Afternoon Visit</Text>
+                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>Fire Safety Audit <Text style={{ color: "#38bdf8" }}>(+35 pts)</Text></Text>
+                  <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 4 }}>Apex Logistics • In Progress</Text>
                 </View>
-                <PlusCircle size={24} color="#cbd5e1" style={{ borderStyle: "dashed", borderWidth: 1, borderColor: "#cbd5e1", borderRadius: 12 }} />
+                <PlusCircle size={24} color="#0284c7" />
               </View>
               <View style={{ width: 60, alignItems: "center" }}>
-                <View style={{ width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: "#e2e8f0", backgroundColor: "#ffffff", marginBottom: 8 }} />
+                <View style={{ width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: "#0284c7", backgroundColor: "#ffffff", marginBottom: 8 }} />
                 <View style={{ width: 2, flex: 1, backgroundColor: "#e2e8f0" }} />
               </View>
             </View>
