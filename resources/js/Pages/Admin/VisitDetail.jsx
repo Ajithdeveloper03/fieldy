@@ -15,7 +15,7 @@ export default function VisitDetail({ visit }) {
         return (
             <AdminLayout>
                 <div className="hp-bento-card text-center py-20 text-hp-muted">
-                    {t('Visit record not found.')}
+                    {t('Visit record not found...')}
                 </div>
             </AdminLayout>
         );
