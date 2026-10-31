@@ -63,17 +63,17 @@ export default function Alerts({ alerts = [] }) {
                     <div className="max-w-3xl">
                         <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <span className="hp-chip hp-chip-danger hp-chip-dot">
-                                {t('Live Incident Telemetry Active')}
+                                {t('Live Site Geofence & SOS Telemetry Active')}
                             </span>
                             <span className="hp-chip hp-chip-gray">
                                 {alerts.length} {t('Total Events')}
                             </span>
                         </div>
                         <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                            {t('Incident Stream & Operational Alerts')}
+                            {t('Real Estate Site Geofence & Advisor SOS Alerts')}
                         </h1>
                         <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                            {t('Real-time audit log of geofence violations, offline beacon signals, SOS safety pings, and field dispatch escalations.')}
+                            {t('Real-time audit log of project site geofence deviations, delayed buyer showings, offline GPS beacons, and field advisor SOS safety pings.')}
                         </p>
 
                         {/* Search Pill Input Bar */}
@@ -84,7 +84,7 @@ export default function Alerts({ alerts = [] }) {
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder={t('Search alerts by facility, officer name, or keyword...')}
+                                    placeholder={t('Search alerts by property project, advisor name, or corridor...')}
                                     className="w-full bg-transparent text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
                                 />
                                 {searchQuery && (

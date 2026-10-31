@@ -54,23 +54,28 @@ export default function Chatbot() {
 
     const generateAIResponse = (input) => {
         const lowerInput = input.toLowerCase();
-        if (lowerInput.includes('farmer') || lowerInput.includes('pending')) {
+        if (lowerInput.includes('farmer') || lowerInput.includes('property') || lowerInput.includes('pending') || lowerInput.includes('rera')) {
             return {
-                text: "You have 12 pending farmers waiting for approval.",
-                action: { label: "Go to Approvals", url: "/admin/pending-farmers" }
+                text: "You have 12 pending real estate property listings waiting for RERA & title approval.",
+                action: { label: "Review Listings", url: "/admin/pending-farmers" }
             };
-        } else if (lowerInput.includes('task') || lowerInput.includes('schedule')) {
+        } else if (lowerInput.includes('task') || lowerInput.includes('visit') || lowerInput.includes('schedule') || lowerInput.includes('showing')) {
             return {
-                text: "There are 5 tasks scheduled for today. Officer John Doe is assigned to Sector 4.",
-                action: { label: "View Tasks", url: "/admin/tasks" }
+                text: "There are 8 buyer site showings scheduled for today across OMR and ECR corridors.",
+                action: { label: "View Site Visits", url: "/admin/tasks" }
             };
-        } else if (lowerInput.includes('alert') || lowerInput.includes('emergency')) {
+        } else if (lowerInput.includes('alert') || lowerInput.includes('emergency') || lowerInput.includes('sos')) {
             return {
-                text: "There are no active critical alerts at the moment. System is running optimally.",
-                action: { label: "Check Alerts Monitor", url: "/admin/alerts" }
+                text: "All project site geofences are active with zero boundary breaches reported today.",
+                action: { label: "Check Site Alerts", url: "/admin/alerts" }
+            };
+        } else if (lowerInput.includes('commission') || lowerInput.includes('payment') || lowerInput.includes('booking')) {
+            return {
+                text: "Total MTD token advances and bookings stand at ₹37.9 Lakhs. Advisor brokerage payouts are on schedule.",
+                action: { label: "View Ledger", url: "/admin/payments" }
             };
         } else {
-            return { text: "I can help you with checking pending farmers, daily tasks, or system alerts. What would you like to know?" };
+            return { text: "I can help you check pending RERA property listings, scheduled buyer site showings, live agent GPS telemetry, or booking commissions. What would you like to review?" };
         }
     };
 
@@ -81,9 +86,10 @@ export default function Chatbot() {
     };
 
     const suggestions = [
-        "Check pending farmers",
-        "Today's tasks",
-        "System alerts"
+        "Check pending RERA listings",
+        "Today's buyer site visits",
+        "Site geofence alerts",
+        "Bookings & commissions"
     ];
 
     return (

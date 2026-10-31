@@ -4,43 +4,41 @@ import {
     LayoutDashboard, Users, FileCheck2, ShieldAlert,
     Settings, MapPin, Search, Bell, PlusCircle, Globe, Briefcase, Building2,
     ChevronDown, ChevronRight, Wallet, ClipboardList, Menu, X, Star, Sparkles,
-    PanelLeftClose, PanelLeftOpen, LogOut, HelpCircle, User, Crown
+    PanelLeftClose, PanelLeftOpen, LogOut, HelpCircle, User
 } from 'lucide-react';
 import { useAlert } from '../../Components/AlertSystem';
 import { useTranslation } from 'react-i18next';
 import Chatbot from '../../Components/Chatbot';
 
 /* ─────────────────────────────────────────────────────────────
-   Navigation map — grouped like hPanel (Favorites → Home → groups)
+   Navigation map — Simple & Clean Real Estate Admin Navigation
    ───────────────────────────────────────────────────────────── */
 const NAV_GROUPS = [
     {
         id: 'operations',
-        label: 'Operations',
+        label: 'Field Work',
         items: [
-            { href: '/admin/visits', icon: FileCheck2, label: 'Analytics & Visits' },
-            { href: '/admin/monitor', icon: ShieldAlert, label: 'Live Monitor', dot: true },
-            { href: '/admin/tasks', icon: ClipboardList, label: 'Tasks & Schedule' },
-            { href: '/admin/alerts', icon: Bell, label: 'Alerts & Notifications' },
+            { href: '/admin/visits', icon: FileCheck2, label: 'Site Visits' },
+            { href: '/admin/monitor', icon: ShieldAlert, label: 'Live GPS Map', dot: true },
+            { href: '/admin/tasks', icon: ClipboardList, label: 'Daily Tasks' },
+            { href: '/admin/alerts', icon: Bell, label: 'Alerts' },
         ],
     },
     {
         id: 'directory',
-        label: 'Directory',
+        label: 'Properties & Team',
         items: [
-            { href: '/admin/employees', icon: Briefcase, label: 'Employees / Technicians' },
-            { href: '/admin/farmers', icon: Building2, label: 'Facilities / Clients' },
-            { href: '/admin/pending-farmers', icon: PlusCircle, label: 'Pending Facilities', badge: '12' },
+            { href: '/admin/farmers', icon: Building2, label: 'Properties' },
+            { href: '/admin/pending-farmers', icon: PlusCircle, label: 'Pending Approvals', badge: '12' },
+            { href: '/admin/employees', icon: Briefcase, label: 'Agents' },
         ],
     },
     {
         id: 'business',
-        label: 'Business',
+        label: 'Sales & Finance',
         items: [
-            { href: '/admin/performance', icon: MapPin, label: 'Performance' },
-            { href: '/admin/satisfaction', icon: Star, label: 'Customer Satisfaction' },
-            { href: '/admin/payments', icon: Wallet, label: 'Payments & Financials' },
-            { href: '/admin/subscriptions', icon: Crown, label: 'Plans & Add-ons' },
+            { href: '/admin/performance', icon: MapPin, label: 'Agent Scores' },
+            { href: '/admin/payments', icon: Wallet, label: 'Payments' },
         ],
     },
 ];
@@ -79,8 +77,8 @@ export default function AdminLayout({ children }) {
     const profileRef = useRef(null);
 
     const user = props.auth?.user;
-    const userName = user?.name || 'Client Admin';
-    const companyName = user?.company?.name || 'Infinity Organics';
+    const userName = user?.name || 'Real Estate Admin';
+    const companyName = user?.company?.name || 'Apex Realty & Developers';
 
     /* Persist hPanel-style preferences across sessions */
     useEffect(() => { localStorage.setItem('fieldy.sidebarCollapsed', JSON.stringify(isSidebarCollapsed)); }, [isSidebarCollapsed]);
@@ -135,7 +133,7 @@ export default function AdminLayout({ children }) {
 
     const isActive = (path) => url.startsWith(path);
     const testAlert = () => {
-        triggerCritical("OFFICER JOHN DOE - GPS DISABLED - SECTOR 4");
+        triggerCritical("ADVISOR KARTHIK RAJA - GEOFENCE BREACH AT SKYLINE VILLA SITE (OMR ZONE)");
     };
     const toggleLanguage = () => {
         const nextLang = i18n.language === 'en' ? 'ta' : 'en';
@@ -148,117 +146,19 @@ export default function AdminLayout({ children }) {
 
     const getBreadcrumbs = () => {
         const cleanPath = url.split('?')[0];
-        
         if (cleanPath === '/admin/dashboard' || cleanPath === '/admin') {
             return [{ label: t('Dashboard'), href: '/admin/dashboard' }];
         }
-        
-        if (cleanPath.startsWith('/admin/tasks')) {
-            return [
-                { label: t('Operations', 'Operations'), href: '/admin/tasks' },
-                { label: t('Tasks & Schedule', 'Tasks & Schedule'), href: '/admin/tasks' }
-            ];
-        }
-        
-        if (cleanPath.startsWith('/admin/visits')) {
-            if (cleanPath === '/admin/visits') {
-                return [
-                    { label: t('Field Operations', 'Field Operations'), href: '/admin/visits' },
-                    { label: t('Visits & Analytics', 'Visits & Analytics'), href: '/admin/visits' }
-                ];
-            } else {
-                return [
-                    { label: t('Field Operations', 'Field Operations'), href: '/admin/visits' },
-                    { label: t('Visits', 'Visits'), href: '/admin/visits' },
-                    { label: t('Visit Details', 'Visit Details'), href: cleanPath }
-                ];
-            }
-        }
-        
-        if (cleanPath.startsWith('/admin/monitor') || cleanPath.startsWith('/admin/live-monitor')) {
-            return [
-                { label: t('Operations', 'Operations'), href: '/admin/monitor' },
-                { label: t('Live Monitor', 'Live Monitor'), href: '/admin/monitor' }
-            ];
-        }
-        
-        if (cleanPath.startsWith('/admin/pending-farmers')) {
-            return [
-                { label: t('Approvals', 'Approvals'), href: '/admin/pending-farmers' },
-                { label: t('Pending Farmers', 'Pending Farmers'), href: '/admin/pending-farmers' }
-            ];
-        }
-        
-        if (cleanPath.startsWith('/admin/farmers')) {
-            if (cleanPath === '/admin/farmers') {
-                return [
-                    { label: t('Directories', 'Directories'), href: '/admin/farmers' },
-                    { label: t('Farmers', 'Farmers'), href: '/admin/farmers' }
-                ];
-            } else if (cleanPath.includes('/register')) {
-                return [
-                    { label: t('Directories', 'Directories'), href: '/admin/farmers' },
-                    { label: t('Farmers', 'Farmers'), href: '/admin/farmers' },
-                    { label: t('Register Farmer', 'Register Farmer'), href: cleanPath }
-                ];
-            } else {
-                return [
-                    { label: t('Directories', 'Directories'), href: '/admin/farmers' },
-                    { label: t('Farmers', 'Farmers'), href: '/admin/farmers' },
-                    { label: t('Farmer Profile', 'Farmer Profile'), href: cleanPath }
-                ];
-            }
-        }
-        
-        if (cleanPath.startsWith('/admin/employees')) {
-            if (cleanPath === '/admin/employees') {
-                return [
-                    { label: t('Directories', 'Directories'), href: '/admin/employees' },
-                    { label: t('Employees', 'Employees'), href: '/admin/employees' }
-                ];
-            } else if (cleanPath.includes('/register')) {
-                return [
-                    { label: t('Directories', 'Directories'), href: '/admin/employees' },
-                    { label: t('Employees', 'Employees'), href: '/admin/employees' },
-                    { label: t('New Officer', 'New Officer'), href: cleanPath }
-                ];
-            } else {
-                return [
-                    { label: t('Directories', 'Directories'), href: '/admin/employees' },
-                    { label: t('Employees', 'Employees'), href: '/admin/employees' },
-                    { label: t('Employee Profile', 'Employee Profile'), href: cleanPath }
-                ];
-            }
-        }
-        
-        if (cleanPath.startsWith('/admin/performance')) {
-            return [
-                { label: t('Management', 'Management'), href: '/admin/performance' },
-                { label: t('Performance', 'Performance'), href: '/admin/performance' }
-            ];
-        }
-        
-        if (cleanPath.startsWith('/admin/payments')) {
-            return [
-                { label: t('Financials', 'Financials'), href: '/admin/payments' },
-                { label: t('Payments', 'Payments'), href: '/admin/payments' }
-            ];
-        }
-        
-        if (cleanPath.startsWith('/admin/settings')) {
-            return [
-                { label: t('General', 'General'), href: '/admin/settings' },
-                { label: t('Settings', 'Settings'), href: '/admin/settings' }
-            ];
-        }
-        
-        if (cleanPath.startsWith('/admin/alerts')) {
-            return [
-                { label: t('Operations', 'Operations'), href: '/admin/alerts' },
-                { label: t('Alerts', 'Alerts'), href: '/admin/alerts' }
-            ];
-        }
-        
+        if (cleanPath.startsWith('/admin/tasks')) return [{ label: t('Field Work'), href: '/admin/tasks' }, { label: t('Daily Tasks'), href: '/admin/tasks' }];
+        if (cleanPath.startsWith('/admin/visits')) return [{ label: t('Field Work'), href: '/admin/visits' }, { label: t('Site Visits'), href: '/admin/visits' }];
+        if (cleanPath.startsWith('/admin/monitor')) return [{ label: t('Field Work'), href: '/admin/monitor' }, { label: t('Live GPS Map'), href: '/admin/monitor' }];
+        if (cleanPath.startsWith('/admin/pending-farmers')) return [{ label: t('Properties & Team'), href: '/admin/pending-farmers' }, { label: t('Pending Approvals'), href: '/admin/pending-farmers' }];
+        if (cleanPath.startsWith('/admin/farmers')) return [{ label: t('Properties & Team'), href: '/admin/farmers' }, { label: t('Properties'), href: '/admin/farmers' }];
+        if (cleanPath.startsWith('/admin/employees')) return [{ label: t('Properties & Team'), href: '/admin/employees' }, { label: t('Agents'), href: '/admin/employees' }];
+        if (cleanPath.startsWith('/admin/performance')) return [{ label: t('Sales & Finance'), href: '/admin/performance' }, { label: t('Agent Scores'), href: '/admin/performance' }];
+        if (cleanPath.startsWith('/admin/payments')) return [{ label: t('Sales & Finance'), href: '/admin/payments' }, { label: t('Payments'), href: '/admin/payments' }];
+        if (cleanPath.startsWith('/admin/alerts')) return [{ label: t('Field Work'), href: '/admin/alerts' }, { label: t('Alerts'), href: '/admin/alerts' }];
+        if (cleanPath.startsWith('/admin/settings')) return [{ label: t('Settings'), href: '/admin/settings' }];
         return [{ label: t('Dashboard'), href: '/admin/dashboard' }];
     };
 
@@ -475,12 +375,12 @@ export default function AdminLayout({ children }) {
                                     <div className="min-w-0">
                                         <p className="text-sm font-bold text-hp-dark truncate">{userName}</p>
                                         <p className="text-xs text-hp-muted truncate">{user?.email || companyName}</p>
-                                        <span className="hp-chip hp-chip-primary !h-5 !text-[11px] mt-1.5">{t('Client Admin', 'Client Admin')}</span>
+                                        <span className="hp-chip hp-chip-primary !h-5 !text-[11px] mt-1.5">{t('Real Estate Admin', 'Real Estate Admin')}</span>
                                     </div>
                                 </div>
                                 <div className="p-1.5">
                                     <div className="px-3 py-2 text-xs text-hp-muted">
-                                        {t('Organization', 'Organization')}: <span className="font-bold text-hp-dark">{companyName}</span>
+                                        {t('Developer / Agency', 'Developer / Agency')}: <span className="font-bold text-hp-dark">{companyName}</span>
                                     </div>
                                     <Link href="/admin/settings" className="hp-nav-item"><User className="w-[18px] h-[18px] text-hp-muted" /> {t('Account settings', 'Account settings')}</Link>
                                     <button type="button" onClick={toggleLanguage} className="hp-nav-item w-full">
@@ -488,9 +388,6 @@ export default function AdminLayout({ children }) {
                                         <span className="ml-auto hp-chip hp-chip-gray">{i18n.language === 'ta' ? 'தமிழ்' : 'English'}</span>
                                     </button>
                                     <button type="button" onClick={openAssistant} className="hp-nav-item w-full"><HelpCircle className="w-[18px] h-[18px] text-hp-muted" /> {t('Help & support', 'Help & support')}</button>
-                                    {user?.role === 'superadmin' && (
-                                        <Link href="/superadmin/dashboard" className="hp-nav-item"><Crown className="w-[18px] h-[18px] text-hp-primary" /> {t('Superadmin Console', 'Superadmin Console')}</Link>
-                                    )}
                                 </div>
                                 <div className="p-1.5 border-t border-hp-border">
                                     <button type="button" onClick={logout} className="hp-nav-item w-full hover:!text-hp-danger hover:!bg-hp-danger-light">

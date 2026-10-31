@@ -74,7 +74,7 @@ class DashboardController extends Controller
                 'id' => $f->user_id,
                 'name' => $f->user?->name ?? 'Unknown',
                 'farmer_code' => $f->farmer_code,
-                'crop' => $f->crop_types ? implode(', ', $f->crop_types) : 'Vetiver',
+                'crop' => $f->crop_types ? implode(', ', $f->crop_types) : 'Residential Plots & Villas',
                 'acres' => $f->land_size_acres,
                 'photo' => $f->farmer_photo_path ? Storage::url($f->farmer_photo_path) : null,
                 'status' => $f->approval_status,

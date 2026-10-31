@@ -31,7 +31,7 @@ export default function PendingFarmers({ farmers = [] }) {
         if (processing) return;
         setProcessing(id + '_approve');
         router.post(`/admin/pending-farmers/${id}/approve`, {}, {
-            onSuccess: () => { triggerSuccess(`${t('Facility')} ${name} ${t('approved successfully!')}`); setProcessing(null); },
+            onSuccess: () => { triggerSuccess(`${t('Property Listing')} ${name} ${t('RERA & Title approved!')}`); setProcessing(null); },
             onError: () => setProcessing(null),
         });
     };
@@ -41,7 +41,7 @@ export default function PendingFarmers({ farmers = [] }) {
         if (!confirm(t('Are you sure you want to reject') + ` ${name}?`)) return;
         setProcessing(id + '_reject');
         router.post(`/admin/pending-farmers/${id}/reject`, {}, {
-            onSuccess: () => { triggerInfo(`${t('Facility')} ${name} ${t('application rejected.')}`); setProcessing(null); },
+            onSuccess: () => { triggerInfo(`${t('Property Listing')} ${name} ${t('submission rejected.')}`); setProcessing(null); },
             onError: () => setProcessing(null),
         });
     };
@@ -62,17 +62,17 @@ export default function PendingFarmers({ farmers = [] }) {
                         <div className="max-w-2xl">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                                 <span className="hp-chip hp-chip-warning hp-chip-dot">
-                                    {t('Verification Queue')}
+                                    {t('RERA & Legal KYC Queue')}
                                 </span>
                                 <span className="hp-chip hp-chip-gray">
-                                    {farmers.length} {t('Pending Contracts')}
+                                    {farmers.length} {t('Pending Listings')}
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {t('Pending Facility Onboarding & Approvals')}
+                                {t('Pending Property Listings, Title Deeds & RERA KYC')}
                             </h1>
                             <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                                {t('Review administrative onboarding submissions, verified GPS site boundaries, client contact ledgers, and KYC document checklists.')}
+                                {t('Review new developer project submissions, verify GPS plot boundary geofences, inspect patta/title deeds, and approve RERA marketing mandates.')}
                             </p>
 
                             {/* Hostinger Pill Search Bar */}
@@ -83,7 +83,7 @@ export default function PendingFarmers({ farmers = [] }) {
                                         type="text" 
                                         value={searchQuery}
                                         onChange={e => setSearchQuery(e.target.value)}
-                                        placeholder={t('Search by facility name, contact person, or location...')} 
+                                        placeholder={t('Search by property name, developer contact, or sales corridor...')} 
                                         className="w-full bg-transparent text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
                                     />
                                     {searchQuery && (
@@ -102,7 +102,7 @@ export default function PendingFarmers({ farmers = [] }) {
                                 className="hp-btn hp-btn-secondary !rounded-full"
                             >
                                 <Building2 className="w-4 h-4 mr-1.5" />
-                                <span>{t('View Live Directory')}</span>
+                                <span>{t('View Properties Directory')}</span>
                             </Link>
                         </div>
                     </div>
@@ -112,29 +112,29 @@ export default function PendingFarmers({ farmers = [] }) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Awaiting Review')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Awaiting RERA Review')}</span>
                             <Clock className="w-3.5 h-3.5 text-hp-warning" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{farmers.length}</div>
-                        <p className="text-xs text-hp-muted mt-1">{t('New facilities submitted this week')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('New properties submitted by field advisors')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Avg SLA Review Time')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Avg Legal Verification Time')}</span>
                             <Sparkles className="w-3.5 h-3.5 text-hp-primary" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">2.4 <span className="text-sm font-semibold text-hp-muted">hours</span></div>
-                        <p className="text-xs text-hp-success font-medium mt-1">99.4% {t('On-target approval velocity')}</p>
+                        <p className="text-xs text-hp-success font-medium mt-1">99.4% {t('Fast-track RERA & title clearance')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Geofence Verification')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Site Boundary GPS')}</span>
                             <ShieldCheck className="w-3.5 h-3.5 text-hp-success" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-success">100%</div>
-                        <p className="text-xs text-hp-muted mt-1">{t('GPS coordinates captured')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Plot & project coordinates captured')}</p>
                     </div>
                 </div>
 
@@ -145,7 +145,7 @@ export default function PendingFarmers({ farmers = [] }) {
                             onClick={() => setActiveCategory('all')}
                             className={`hp-segmented-item ${activeCategory === 'all' ? 'is-active-primary' : ''}`}
                         >
-                            <span>{t('Awaiting Verification')}</span>
+                            <span>{t('Awaiting Title & RERA Verification')}</span>
                             <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${activeCategory === 'all' ? 'bg-white/20 text-white' : 'bg-hp-border text-hp-muted'}`}>
                                 {farmers.length}
                             </span>
@@ -154,7 +154,7 @@ export default function PendingFarmers({ farmers = [] }) {
                             onClick={() => setActiveCategory('docs')}
                             className={`hp-segmented-item ${activeCategory === 'docs' ? 'is-active-primary' : ''}`}
                         >
-                            <span>{t('Documentation Checklist')}</span>
+                            <span>{t('Patta, EC & RERA Checklist')}</span>
                         </button>
                     </div>
                 </div>
@@ -164,10 +164,10 @@ export default function PendingFarmers({ farmers = [] }) {
                     <div className="p-5 border-b border-hp-border flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Building2 className="w-5 h-5 text-hp-primary" />
-                            <h2 className="hp-card-title">{t('Onboarding Verification Queue')}</h2>
+                            <h2 className="hp-card-title">{t('Property Listing & Legal Verification Queue')}</h2>
                         </div>
                         <span className="text-xs text-hp-muted font-medium">
-                            {filteredFarmers.length} {t('facilities')}
+                            {filteredFarmers.length} {t('properties')}
                         </span>
                     </div>
 
@@ -177,17 +177,17 @@ export default function PendingFarmers({ farmers = [] }) {
                                 <CheckCircle className="w-6 h-6 text-hp-success" />
                             </div>
                             <p className="font-bold text-hp-dark text-base">{t('All caught up!')}</p>
-                            <p className="text-xs text-hp-muted mt-1">{searchQuery ? `${t('No facilities match')} "${searchQuery}".` : t('No facilities currently awaiting administrative approval.')}</p>
+                            <p className="text-xs text-hp-muted mt-1">{searchQuery ? `${t('No properties match')} "${searchQuery}".` : t('No property listings currently awaiting RERA or legal approval.')}</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="hp-table min-w-[760px]">
                                 <thead>
                                     <tr>
-                                        <th>{t('Facility / Client')}</th>
-                                        <th>{t('Contact')}</th>
-                                        <th>{t('Location')}</th>
-                                        <th>{t('Area & Status')}</th>
+                                        <th>{t('Property / Project')}</th>
+                                        <th>{t('Developer Contact')}</th>
+                                        <th>{t('Corridor / Location')}</th>
+                                        <th>{t('Extent & KYC Status')}</th>
                                         <th className="text-right">{t('Actions')}</th>
                                     </tr>
                                 </thead>
@@ -197,11 +197,11 @@ export default function PendingFarmers({ farmers = [] }) {
                                             <td>
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 rounded-xl bg-hp-hover border border-hp-border flex items-center justify-center font-bold text-xs shrink-0 text-hp-dark">
-                                                        {(farmer.name || 'F').charAt(0).toUpperCase()}
+                                                        {(farmer.name || 'P').charAt(0).toUpperCase()}
                                                     </div>
                                                     <div>
                                                         <p className="font-bold text-sm text-hp-dark">{farmer.name}</p>
-                                                        <p className="text-[11px] text-hp-muted">{t('Registered by:')} {farmer.registered_by || 'Field Staff'}</p>
+                                                        <p className="text-[11px] text-hp-muted">{t('Submitted by Advisor:')} {farmer.registered_by || 'Property Advisor'}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -217,9 +217,9 @@ export default function PendingFarmers({ farmers = [] }) {
                                             </td>
                                             <td>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-xs text-hp-dark">{farmer.land_acres || '–'} Sq. Ft</span>
+                                                    <span className="font-bold text-xs text-hp-dark">{farmer.land_acres || '–'} Acres / Plots</span>
                                                     <span className="hp-chip hp-chip-warning !h-5 !text-[10px]">
-                                                        {farmer.kyc_status || 'Pending Review'}
+                                                        {farmer.kyc_status || 'Pending RERA'}
                                                     </span>
                                                 </div>
                                             </td>
@@ -229,14 +229,14 @@ export default function PendingFarmers({ farmers = [] }) {
                                                         href={`/admin/pending-farmers/${farmer.id}`}
                                                         className="hp-btn hp-btn-sm hp-btn-outline"
                                                     >
-                                                        {t('Review')} <ArrowUpRight className="w-3.5 h-3.5" />
+                                                        {t('Inspect Deeds')} <ArrowUpRight className="w-3.5 h-3.5" />
                                                     </Link>
                                                     <button 
                                                         onClick={() => handleApprove(farmer.id, farmer.name)}
                                                         disabled={processing !== null}
                                                         className="hp-btn hp-btn-sm hp-btn-primary"
                                                     >
-                                                        {processing === farmer.id + '_approve' ? t('Approving...') : t('Approve')}
+                                                        {processing === farmer.id + '_approve' ? t('Approving...') : t('Approve Listing')}
                                                     </button>
                                                     <button 
                                                         onClick={() => handleReject(farmer.id, farmer.name)}

@@ -21,10 +21,10 @@ class TasksController extends Controller
             ->get()
             ->map(fn ($t) => [
                 'id' => $t->id,
-                'work_order_code' => $t->work_order_code ?: 'WO-' . str_pad($t->id, 5, '0', STR_PAD_LEFT),
+                'work_order_code' => $t->work_order_code ?: 'SV-' . str_pad($t->id, 5, '0', STR_PAD_LEFT),
                 'title' => $t->title,
                 'description' => $t->description,
-                'industry' => $t->industry ?: 'facility_management',
+                'industry' => $t->industry && !in_array($t->industry, ['facility_management', 'fmcg', 'solar', 'cleaning', 'security', 'logistics']) ? $t->industry : 'site_visit',
                 'assigned_to' => $t->assignedTo ? ['id' => $t->assignedTo->id, 'name' => $t->assignedTo->name] : null,
                 'customer' => $t->customer ? ['id' => $t->customer->id, 'name' => $t->customer->name] : null,
                 'created_by' => $t->createdBy?->name,
@@ -34,12 +34,12 @@ class TasksController extends Controller
                 'status' => $t->status,
                 'ai_suggestions' => $t->ai_suggestions,
                 'checklist' => $t->checklist ?: [
-                    ['id' => 1, 'text' => 'Verify site safety checklist & PPE gear', 'done' => true],
-                    ['id' => 2, 'text' => 'Conduct physical inspection & diagnostics', 'done' => false],
-                    ['id' => 3, 'text' => 'Upload before-and-after work photos', 'done' => false],
-                    ['id' => 4, 'text' => 'Verify customer OTP confirmation (dummy: 4821)', 'done' => false],
+                    ['id' => 1, 'text' => 'Verify GPS check-in inside project site geofence', 'done' => true],
+                    ['id' => 2, 'text' => 'Conduct buyer walkthrough of plot / model villa', 'done' => false],
+                    ['id' => 3, 'text' => 'Upload geo-tagged plot boundary & site progress photos', 'done' => false],
+                    ['id' => 4, 'text' => 'Verify buyer OTP confirmation on site (Code: 4821)', 'done' => false],
                 ],
-                'safety_requirements' => $t->safety_requirements ?: ['High-visibility vest', 'Insulated gloves', 'Safety goggles', 'Hard hat'],
+                'safety_requirements' => $t->safety_requirements ?: ['RERA Project Brochure', 'Laser Distance Meter', 'Plot Layout Map', 'Advisor ID Badge'],
                 'customer_otp' => $t->customer_otp ?: '4821',
                 'otp_verified' => (bool)$t->otp_verified,
                 'points_awarded' => $t->points_awarded ?: 35,
@@ -74,21 +74,21 @@ class TasksController extends Controller
 
         $task = Task::create([
             ...$validated,
-            'industry' => $validated['industry'] ?? 'facility_management',
-            'work_order_code' => 'WO-' . strtoupper(bin2hex(random_bytes(3))),
+            'industry' => $validated['industry'] ?? 'site_visit',
+            'work_order_code' => 'SV-' . strtoupper(bin2hex(random_bytes(3))),
             'created_by' => auth()->id(),
             'status' => 'pending',
             'customer_otp' => '4821',
             'points_awarded' => 40,
             'checklist' => [
-                ['id' => 1, 'text' => 'Verify site safety checklist & PPE gear', 'done' => false],
-                ['id' => 2, 'text' => 'Execute service order & replace components', 'done' => false],
-                ['id' => 3, 'text' => 'Take photo evidence of completed work', 'done' => false],
-                ['id' => 4, 'text' => 'Perform customer OTP sign-off', 'done' => false],
+                ['id' => 1, 'text' => 'Verify GPS check-in inside project site geofence', 'done' => false],
+                ['id' => 2, 'text' => 'Complete buyer site showing & plot/unit walkthrough', 'done' => false],
+                ['id' => 3, 'text' => 'Upload geo-tagged site & boundary stone photos', 'done' => false],
+                ['id' => 4, 'text' => 'Perform buyer OTP sign-off on site', 'done' => false],
             ]
         ]);
 
-        return redirect('/admin/tasks')->with('success', 'Work Order created successfully.');
+        return redirect('/admin/tasks')->with('success', 'Site Task scheduled successfully.');
     }
 
     public function update(Request $request, $id)

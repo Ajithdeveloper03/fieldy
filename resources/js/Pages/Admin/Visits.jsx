@@ -58,10 +58,10 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
 
         const total = visitsData.length || 1;
         const purposes = [
-            { name: t('HVAC Preventive Maintenance'), count: Math.ceil(total * 0.45), percent: 45, color: 'bg-hp-primary' },
-            { name: t('Fire Safety & Hydrant Audit'), count: Math.ceil(total * 0.25), percent: 25, color: 'bg-hp-dark' },
-            { name: t('Electrical Substation Check'), count: Math.ceil(total * 0.20), percent: 20, color: 'bg-hp-info' },
-            { name: t('Sanitation & Pest Control Audit'), count: Math.max(1, Math.floor(total * 0.10)), percent: 10, color: 'bg-hp-success' }
+            { name: t('Buyer Property Site Showings'), count: Math.ceil(total * 0.45), percent: 45, color: 'bg-hp-primary' },
+            { name: t('Plot Boundary & GPS Valuation'), count: Math.ceil(total * 0.25), percent: 25, color: 'bg-hp-dark' },
+            { name: t('Villa / Unit Handover & Snagging'), count: Math.ceil(total * 0.20), percent: 20, color: 'bg-hp-info' },
+            { name: t('RERA & Legal Deed Verification'), count: Math.max(1, Math.floor(total * 0.10)), percent: 10, color: 'bg-hp-success' }
         ];
 
         const weekDays = [
@@ -87,17 +87,17 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                         <div className="max-w-2xl">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
-                                    <Sparkles className="w-3 h-3 mr-1" /> {t('Field Operations')}
+                                    <Sparkles className="w-3 h-3 mr-1" /> {t('Real Estate Site Operations')}
                                 </span>
                                 <span className="hp-chip hp-chip-gray">
-                                    {totalVisits} {t('Inspections Recorded')}
+                                    {totalVisits} {t('Site Showings & Valuations')}
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {t('Facility Visits & Inspection Intelligence')}
+                                {t('Property Site Visits, Showings & Valuation Logs')}
                             </h1>
                             <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                                {t('Track verified preventive maintenance logs, facility compliance audits, GPS arrival coordinates, and field technician routes.')}
+                                {t('Track verified buyer walk-ins, plot boundary inspections, project geofence arrival coordinates, and property advisor routes.')}
                             </p>
 
                             {/* Hostinger Pill Search Bar */}
@@ -111,7 +111,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                         type="text"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder={t('Search by facility, officer name, or audit notes...')}
+                                        placeholder={t('Search by project, plot/villa, advisor name, or buyer notes...')}
                                         className="w-full bg-transparent text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
                                     />
                                     {searchQuery && (
@@ -141,14 +141,14 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                     className={`hp-segmented-item ${activeTab === 'records' ? 'is-active-primary' : ''}`}
                                 >
                                     <FileText className="w-3.5 h-3.5" />
-                                    <span>{t('Inspection Records')}</span>
+                                    <span>{t('Site Visit Logs')}</span>
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('analytics')}
                                     className={`hp-segmented-item ${activeTab === 'analytics' ? 'is-active-primary' : ''}`}
                                 >
                                     <BarChart3 className="w-3.5 h-3.5" />
-                                    <span>{t('Operational Analytics')}</span>
+                                    <span>{t('Showing Analytics')}</span>
                                 </button>
                             </div>
 
@@ -157,7 +157,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                 className="hp-btn hp-btn-primary !rounded-full"
                             >
                                 <Sparkles className="w-4 h-4 mr-1" />
-                                <span>{t('Dispatch Task')}</span>
+                                <span>{t('Schedule Site Visit')}</span>
                             </button>
                         </div>
                     </div>
@@ -167,40 +167,40 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total Audits')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total Site Visits')}</span>
                             <span className="hp-chip hp-chip-primary !h-5 !text-[11px]">{t(dateRange === 'all' ? 'All Time' : `${dateRange}d`)}</span>
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{totalVisits}</div>
                         <p className="text-xs text-hp-success font-medium mt-1 flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" /> 100% {t('Verified GPS')}
+                            <CheckCircle2 className="w-3 h-3" /> 100% {t('Geofence Verified')}
                         </p>
                     </div>
 
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Avg Transit Distance')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Avg Site Transit')}</span>
                             <Navigation className="w-3.5 h-3.5 text-hp-primary" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{avgDistance} <span className="text-sm font-semibold text-hp-muted">km</span></div>
-                        <p className="text-xs text-hp-muted mt-1">{t('Between scheduled sites')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Between project locations')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('SLA Compliance')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Showing Punctuality')}</span>
                             <ShieldCheck className="w-3.5 h-3.5 text-hp-success" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-success">98.2%</div>
-                        <p className="text-xs text-hp-muted mt-1">{t('On-time audit execution')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('On-time buyer reception')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Active Staff on Duty')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Active Advisors')}</span>
                             <span className="w-2 h-2 rounded-full bg-hp-success animate-ping"></span>
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{employees.length || 8}</div>
-                        <p className="text-xs text-hp-muted mt-1">{t('Live tracking operational')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Conducting site tours')}</p>
                     </div>
                 </div>
 
@@ -293,26 +293,26 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                             <div className="space-y-2">
                                                 <div className="flex items-start justify-between gap-2">
                                                     <h3 className="font-bold text-base text-hp-dark group-hover:text-hp-primary transition-colors line-clamp-1">
-                                                        {visit.farmer?.user?.name || visit.farmer_name || 'Facility Client'}
+                                                        {visit.farmer?.user?.name || visit.farmer_name || 'Project Site'}
                                                     </h3>
                                                     <span className="hp-chip hp-chip-gray shrink-0 font-mono text-[11px]">
-                                                        {visit.farmer?.farmer_code || `FAC-${visit.id}`}
+                                                        {visit.farmer?.farmer_code || `PROP-${visit.id}`}
                                                     </span>
                                                 </div>
 
                                                 <p className="text-xs text-hp-muted flex items-center gap-1">
                                                     <MapPin className="w-3.5 h-3.5 text-hp-muted shrink-0" />
-                                                    <span className="truncate">{visit.farmer?.village || 'Verified Site'}, {visit.farmer?.district || 'Sector'}</span>
+                                                    <span className="truncate">{visit.farmer?.village || 'RERA Project Site'}, {visit.farmer?.district || 'Prime Corridor'}</span>
                                                 </p>
 
-                                                {/* Technician pill info */}
+                                                {/* Advisor pill info */}
                                                 <div className="flex items-center gap-2 p-2.5 rounded-xl bg-hp-hover border border-hp-border mt-3">
                                                     <div className="w-7 h-7 rounded-lg bg-hp-primary text-white flex items-center justify-center font-bold text-xs shrink-0">
-                                                        {(visit.employee?.name || 'O').charAt(0)}
+                                                        {(visit.employee?.name || 'A').charAt(0)}
                                                     </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <p className="text-xs font-bold text-hp-dark truncate">{visit.employee?.name || 'Field Officer'}</p>
-                                                        <p className="text-[11px] text-hp-muted truncate">{visit.distance_from_previous_farmer_km || '3.2'} km transit</p>
+                                                        <p className="text-xs font-bold text-hp-dark truncate">{visit.employee?.name || 'Property Advisor'}</p>
+                                                        <p className="text-[11px] text-hp-muted truncate">{visit.distance_from_previous_farmer_km || '3.2'} km site transit</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -324,7 +324,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                                 href={`/admin/visits/${visit.id}`}
                                                 className="hp-btn hp-btn-outline w-full !rounded-xl !h-10 text-sm font-semibold"
                                             >
-                                                <span>{t('View Audit Report')}</span>
+                                                <span>{t('View Site Visit Report')}</span>
                                                 <ArrowUpRight className="w-4 h-4 ml-1" />
                                             </Link>
                                         </div>
@@ -436,8 +436,8 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
 
                         {/* Service Focus Distribution */}
                         <div className="hp-bento-card">
-                            <h3 className="hp-card-title mb-1">{t('Service Scope Breakdown')}</h3>
-                            <p className="text-xs text-hp-muted mb-4">{t('Allocation across FM domains')}</p>
+                            <h3 className="hp-card-title mb-1">{t('Site Activity Breakdown')}</h3>
+                            <p className="text-xs text-hp-muted mb-4">{t('Allocation across Real Estate workflows')}</p>
 
                             <div className="space-y-4">
                                 {analytics.purposes.map((p, idx) => (
@@ -454,9 +454,9 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                             </div>
                         </div>
 
-                        {/* Top Officers Leaderboard */}
+                        {/* Top Advisors Leaderboard */}
                         <div className="lg:col-span-3 hp-bento-card">
-                            <h3 className="hp-card-title mb-4">{t('Top Performing Field Technicians')}</h3>
+                            <h3 className="hp-card-title mb-4">{t('Top Performing Property Advisors')}</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {analytics.topOfficers.map((off, idx) => (
                                     <div key={idx} className="p-4 rounded-xl bg-hp-hover/60 border border-hp-border flex items-center justify-between">
@@ -466,11 +466,11 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                             </span>
                                             <div>
                                                 <p className="font-bold text-sm text-hp-dark">{off.name}</p>
-                                                <p className="text-xs text-hp-muted">{off.distance.toFixed(1)} km total travel</p>
+                                                <p className="text-xs text-hp-muted">{off.distance.toFixed(1)} km site travel</p>
                                             </div>
                                         </div>
                                         <span className="hp-chip hp-chip-success">
-                                            {off.count} {t('audits')}
+                                            {off.count} {t('showings')}
                                         </span>
                                     </div>
                                 ))}

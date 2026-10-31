@@ -41,6 +41,9 @@ Route::prefix('superadmin')->middleware(['auth', 'superadmin'])->group(function 
     // Cross-Company Employee & Activity Monitoring
     Route::get('/employees', [\App\Http\Controllers\Superadmin\SuperadminMonitoringController::class, 'employees'])->name('superadmin.employees');
     Route::get('/analytics', [\App\Http\Controllers\Superadmin\SuperadminMonitoringController::class, 'analytics'])->name('superadmin.analytics');
+
+    // Platform Plans, Editions & Multi-Tenant Add-on Marketplace
+    Route::get('/subscriptions', fn () => inertia('Superadmin/Subscriptions'))->name('superadmin.subscriptions');
 });
 
 Route::prefix('admin')->group(function () {
@@ -104,10 +107,10 @@ Route::prefix('admin')->group(function () {
         Route::get('/monitor', [LiveMonitorController::class, 'index'])->name('monitor.index');
         Route::get('/monitor/live', [LiveMonitorController::class, 'liveData'])->name('monitor.live');
 
-        // Fieldy Editions & Addon Marketplace (Hostinger Plans & Services replica)
-        Route::get('/subscriptions', fn () => inertia('Admin/Subscriptions'))->name('admin.subscriptions');
+        // Redirect legacy /admin/subscriptions to Client Admin Dashboard (Plans & Add-ons moved to Superadmin)
+        Route::get('/subscriptions', fn () => redirect('/admin/dashboard'))->name('admin.subscriptions');
 
-        // Customer Satisfaction & Service Quality Analytics (Hostinger Domain Search & Bento replica)
-        Route::get('/satisfaction', fn () => inertia('Admin/CustomerSatisfaction'))->name('admin.satisfaction');
+        // Redirect legacy /admin/satisfaction to dashboard
+        Route::get('/satisfaction', fn () => redirect('/admin/dashboard'))->name('admin.satisfaction');
     });
 });

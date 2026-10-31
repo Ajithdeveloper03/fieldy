@@ -129,7 +129,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
 
     return (
         <AdminLayout>
-            <Head title="Live Field Monitor - Fieldy" />
+            <Head title="Live Agent GPS Monitor - Fieldy Real Estate" />
 
             <div className="space-y-6 pb-12 hp-animate-in">
 
@@ -139,17 +139,17 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                         <div className="max-w-2xl">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                                 <span className="hp-chip hp-chip-success hp-chip-dot">
-                                    {t('Real-Time Fleet Telemetry Active')}
+                                    {t('Real-Time Property Advisor GPS Active')}
                                 </span>
                                 <span className="hp-chip hp-chip-gray">
                                     {t('Refreshed')} {lastRefreshed}
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {t('Live Officer & Telemetry Command Center')}
+                                {t('Live Agent & Site Showing GPS Command Center')}
                             </h1>
                             <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                                {t('Real-time GPS positioning, battery health, geofence compliance, and live dispatch logs for all field technicians on duty.')}
+                                {t('Real-time GPS positioning, project site geofence compliance, battery health, and live showing routes for all property advisors on duty.')}
                             </p>
 
                             {/* Hostinger Pill Search Bar */}
@@ -158,7 +158,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                                     <Search className="w-4 h-4 text-hp-muted shrink-0" />
                                     <input
                                         type="text"
-                                        placeholder={t('Search officers, regions, or current locations...')}
+                                        placeholder={t('Search property advisors, corridors, or project sites...')}
                                         value={searchQuery}
                                         onChange={e => setSearchQuery(e.target.value)}
                                         className="w-full bg-transparent text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
@@ -184,7 +184,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Staff On Duty')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Advisors On Site Duty')}</span>
                             <span className="w-2 h-2 rounded-full bg-hp-success animate-ping"></span>
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">
@@ -201,29 +201,29 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                         <div className={`text-2xl sm:text-3xl font-bold ${offlineCount > 0 ? 'text-hp-danger' : 'text-hp-dark'}`}>
                             {offlineCount}
                         </div>
-                        <p className="text-xs text-hp-muted mt-1">{offlineCount > 0 ? t('Alert flag active') : t('All nodes normal')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{offlineCount > 0 ? t('Alert flag active') : t('All advisors connected')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Audits Completed Today')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Site Showings Today')}</span>
                             <CheckCircle2 className="w-3.5 h-3.5 text-hp-primary" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">
                             {totalVisits}
                         </div>
-                        <p className="text-xs text-hp-success font-medium mt-1">98.4% {t('On-time SLA')}</p>
+                        <p className="text-xs text-hp-success font-medium mt-1">98.4% {t('On-time buyer reception')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Geofence Heartbeat')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Project Geofence Check')}</span>
                             <Wifi className="w-3.5 h-3.5 text-hp-info" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">
                             100%
                         </div>
-                        <p className="text-xs text-hp-muted mt-1">{t('No perimeter breaches')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Within plot boundaries')}</p>
                     </div>
                 </div>
 
@@ -231,8 +231,8 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="hp-segmented-bar">
                         {[
-                            { id: 'all', label: 'All Staff' },
-                            { id: 'active', label: 'Active on Duty' },
+                            { id: 'all', label: 'All Advisors' },
+                            { id: 'active', label: 'Active on Site' },
                             { id: 'offline', label: 'Offline' },
                         ].map((s) => (
                             <button
@@ -246,14 +246,14 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                     </div>
 
                     <div className="flex items-center gap-1.5 overflow-x-auto">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mr-1">{t('Region')}:</span>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mr-1">{t('Sales Zone')}:</span>
                         {regions.map((r) => (
                             <button
                                 key={r}
                                 onClick={() => setRegionFilter(r)}
                                 className={`hp-pill !h-8 !text-xs ${regionFilter === r ? '!bg-hp-dark !text-white !border-hp-dark' : ''}`}
                             >
-                                {r === 'all' ? t('All Regions') : r}
+                                {r === 'all' ? t('All Zones') : r}
                             </button>
                         ))}
                     </div>
@@ -265,9 +265,9 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                     {/* Left: Officer Directory Roster */}
                     <div className="lg:col-span-1 hp-bento-card !p-0 overflow-hidden flex flex-col max-h-[820px]">
                         <div className="p-4 border-b border-hp-border flex items-center justify-between">
-                            <h3 className="hp-card-title text-sm">{t('Field Technicians')}</h3>
+                            <h3 className="hp-card-title text-sm">{t('Property Advisors & Site Engineers')}</h3>
                             <span className="text-xs text-hp-muted font-medium">
-                                {filteredEmployees.length} {t('Active')}
+                                {filteredEmployees.length} {t('Listed')}
                             </span>
                         </div>
 
@@ -403,7 +403,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                                                     {selectedEmployee.status}
                                                 </span>
                                             </div>
-                                            <p className="text-xs text-hp-muted mt-0.5">{selectedEmployee.role || 'Senior Field Engineer'} • {selectedEmployee.region || 'Assigned Zone'}</p>
+                                            <p className="text-xs text-hp-muted mt-0.5">{selectedEmployee.role || 'Senior Property Advisor'} • {selectedEmployee.region || 'Assigned Sales Corridor'}</p>
                                         </div>
                                     </div>
 
@@ -419,14 +419,14 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
                                     <div className="p-4 bg-hp-hover/60 rounded-xl border border-hp-border">
-                                        <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1">{t('Current Location')}</p>
+                                        <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1">{t('Current Project Site / Coordinates')}</p>
                                         <p className="text-sm font-semibold text-hp-dark flex items-center gap-1.5">
                                             <MapPin className="w-4 h-4 text-hp-primary shrink-0" />
-                                            <span className="truncate">{selectedEmployee.currentLocation || 'Coimbatore Perimeter'}</span>
+                                            <span className="truncate">{selectedEmployee.currentLocation || 'Skyline Villa Layout Zone'}</span>
                                         </p>
                                     </div>
                                     <div className="p-4 bg-hp-hover/60 rounded-xl border border-hp-border">
-                                        <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1">{t('Shift Attendance')}</p>
+                                        <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1">{t('Site Attendance')}</p>
                                         <p className="text-sm font-semibold text-hp-dark flex items-center gap-1.5">
                                             <Clock className="w-4 h-4 text-hp-info shrink-0" />
                                             <span>Check-in: {selectedEmployee.checkInTime || '08:30 AM'}</span>
@@ -437,7 +437,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                                 {/* Target Progress */}
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t("Today's Visit Target")}</span>
+                                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t("Today's Site Showing Target")}</span>
                                         <span className="text-sm font-bold text-hp-dark">{selectedEmployee.visitsDone || 0} / {selectedEmployee.visitsTarget || 6}</span>
                                     </div>
                                     <div className="w-full bg-hp-hover rounded-full h-2.5 overflow-hidden">

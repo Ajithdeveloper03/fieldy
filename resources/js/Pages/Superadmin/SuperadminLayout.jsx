@@ -3,7 +3,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { 
     LayoutDashboard, Building2, Users2, BarChart3, 
     ShieldCheck, LogOut, ExternalLink, Activity, 
-    Layers, ChevronRight, Menu, X, Sparkles, Home
+    Layers, ChevronRight, Menu, X, Sparkles, Home, Crown
 } from 'lucide-react';
 
 export default function SuperadminLayout({ children }) {
@@ -16,6 +16,7 @@ export default function SuperadminLayout({ children }) {
         { label: 'Client Companies', href: '/superadmin/companies', icon: Building2 },
         { label: 'Cross-Company Employees', href: '/superadmin/employees', icon: Users2 },
         { label: 'Platform Analytics', href: '/superadmin/analytics', icon: BarChart3 },
+        { label: 'Plans & Add-ons', href: '/superadmin/subscriptions', icon: Crown },
     ];
 
     const isActive = (path) => url.startsWith(path);

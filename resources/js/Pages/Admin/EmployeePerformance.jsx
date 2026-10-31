@@ -36,15 +36,15 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
 
     const handleExport = () => {
         if (triggerInfo) {
-            triggerInfo(t('Exporting performance report. Download will begin shortly.'));
+            triggerInfo(t('Exporting Property Advisor sales & site showing performance report. Download will begin shortly.'));
         } else {
-            alert('Exporting performance report...');
+            alert('Exporting Property Advisor sales report...');
         }
     };
 
     return (
         <AdminLayout>
-            <Head title="Performance Analytics - Fieldy Admin" />
+            <Head title="Property Advisor Sales & Site Performance - Fieldy Real Estate" />
 
             <div className="space-y-6 pb-12 hp-animate-in">
 
@@ -54,17 +54,17 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                         <div className="max-w-2xl">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
-                                    <Sparkles className="w-3 h-3 mr-1" /> {t('Workforce Intelligence')}
+                                    <Sparkles className="w-3 h-3 mr-1" /> {t('Real Estate Sales Intelligence')}
                                 </span>
                                 <span className="hp-chip hp-chip-gray">
-                                    {period || t('Current Cycle')}
+                                    {period || t('Current Sales Cycle')}
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {t('Field Staff Performance & SLA Scoring')}
+                                {t('Property Advisor Sales & Site Showing Scorecard')}
                             </h1>
                             <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                                {t('Quantitative KPIs, verified check-in speed, customer satisfaction ratings, and monthly audit targets for all field officers.')}
+                                {t('Track buyer site showings, plot & villa booking conversions, geofence check-in accuracy, and buyer satisfaction ratings across all sales corridors.')}
                             </p>
 
                             {/* Hostinger Pill Search Bar */}
@@ -75,7 +75,7 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                                         type="text"
                                         value={searchQuery}
                                         onChange={e => setSearchQuery(e.target.value)}
-                                        placeholder={t('Search by officer name, ID, or zone...')} 
+                                        placeholder={t('Search by Property Advisor name, ID, or sales corridor...')} 
                                         className="w-full bg-transparent text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
                                     />
                                     {searchQuery && (
@@ -93,7 +93,7 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                                 className="hp-btn hp-btn-secondary !rounded-full"
                             >
                                 <Download className="w-4 h-4 mr-1" />
-                                <span>{t('Export Leaderboard')}</span>
+                                <span>{t('Export Sales Leaderboard')}</span>
                             </button>
                         </div>
                     </div>
@@ -105,37 +105,37 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                     <div className="hp-bento-card border-hp-primary-border bg-gradient-to-br from-white to-hp-primary-lighter">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-xs font-bold text-hp-primary uppercase tracking-wider flex items-center gap-1">
-                                <Trophy className="w-3.5 h-3.5" /> {t('Top Performer of the Month')}
+                                <Trophy className="w-3.5 h-3.5" /> {t('Top Closing Advisor of the Month')}
                             </span>
                             <span className="hp-chip hp-chip-warning font-bold">#1 Ranked</span>
                         </div>
                         {topPerformer ? (
                             <div className="flex items-center gap-3.5 mt-2">
                                 <div className="w-13 h-13 rounded-2xl bg-hp-primary text-white flex items-center justify-center font-bold text-xl shadow-md shrink-0">
-                                    {topPerformer.name?.charAt(0) || 'O'}
+                                    {topPerformer.name?.charAt(0) || 'A'}
                                 </div>
                                 <div className="min-w-0">
                                     <h3 className="font-bold text-lg text-hp-dark truncate">{topPerformer.name}</h3>
-                                    <p className="text-xs text-hp-muted">{topPerformer.region || 'Lead Inspector'}</p>
+                                    <p className="text-xs text-hp-muted">{topPerformer.region || 'Senior Property Advisor'}</p>
                                     <div className="flex items-center gap-2 mt-1">
                                         <span className="hp-chip hp-chip-success !h-5 !text-[11px]">
                                             ★ {topPerformer.score || topPerformer.rating || '4.9'} / 5.0
                                         </span>
                                         <span className="text-xs text-hp-muted font-medium">
-                                            {topPerformer.visitsDone || 42} {t('audits done')}
+                                            {topPerformer.visitsDone || 42} {t('site showings')}
                                         </span>
                                     </div>
                                 </div>
                             </div>
                         ) : (
-                            <p className="text-sm text-hp-muted mt-2">{t('Calculating rankings...')}</p>
+                            <p className="text-sm text-hp-muted mt-2">{t('Calculating advisor rankings...')}</p>
                         )}
                     </div>
 
-                    {/* Card 2: Fleet Average Score */}
+                    {/* Card 2: Agency Average Buyer Rating */}
                     <div className="hp-bento-card">
                         <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Fleet Average Rating')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Avg Buyer Site Rating')}</span>
                             <div className="w-10 h-10 rounded-xl bg-hp-primary-light text-hp-primary flex items-center justify-center">
                                 <Star className="w-5 h-5 fill-current" />
                             </div>
@@ -145,14 +145,14 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                         </p>
                         <div className="flex items-center gap-1.5 text-xs text-hp-success font-bold mt-2">
                             <TrendingUp className="w-3.5 h-3.5" />
-                            <span>+4.2% {t('customer satisfaction gain')}</span>
+                            <span>+4.2% {t('buyer conversion lift')}</span>
                         </div>
                     </div>
 
-                    {/* Card 3: Geofence Compliance */}
+                    {/* Card 3: Site Geofence Compliance */}
                     <div className="hp-bento-card">
                         <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('SLA & Geofence Adherence')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Project Site Geofence Adherence')}</span>
                             <div className="w-10 h-10 rounded-xl bg-hp-success-light text-hp-success flex items-center justify-center">
                                 <CheckCircle2 className="w-5 h-5" />
                             </div>
@@ -161,14 +161,14 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                             99.2%
                         </p>
                         <p className="text-xs text-hp-muted mt-2">
-                            {t('Zero unauthorized perimeter breaches')}
+                            {t('Verified GPS arrival at project plots & villas')}
                         </p>
                     </div>
                 </div>
 
                 {/* ══════════ HOSTINGER SEGMENTED REGION PILLS ══════════ */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                    <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mr-1">{t('Region')}:</span>
+                    <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mr-1">{t('Corridor')}:</span>
                     <div className="hp-segmented-bar">
                         {regions.map((r) => (
                             <button
@@ -176,7 +176,7 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                                 onClick={() => setRegionFilter(r)}
                                 className={`hp-segmented-item ${regionFilter === r ? 'is-active-primary' : ''}`}
                             >
-                                {r === 'all' ? t('All Regions') : r}
+                                {r === 'all' ? t('All Sales Corridors') : r}
                             </button>
                         ))}
                     </div>
@@ -187,10 +187,10 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                     <div className="p-5 border-b border-hp-border flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Award className="w-5 h-5 text-hp-primary" />
-                            <h2 className="hp-card-title">{t('Workforce Ranking & Scorecard')}</h2>
+                            <h2 className="hp-card-title">{t('Property Advisor Ranking & Site Showing Scorecard')}</h2>
                         </div>
                         <span className="text-xs text-hp-muted font-medium">
-                            {filteredData.length} {t('officers evaluated')}
+                            {filteredData.length} {t('advisors evaluated')}
                         </span>
                     </div>
 
@@ -199,10 +199,10 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                             <thead>
                                 <tr>
                                     <th>{t('Rank')}</th>
-                                    <th>{t('Officer & Role')}</th>
-                                    <th>{t('Assigned Region')}</th>
-                                    <th>{t('Performance Score')}</th>
-                                    <th>{t('SLA Compliance')}</th>
+                                    <th>{t('Property Advisor & Specialization')}</th>
+                                    <th>{t('Sales Corridor')}</th>
+                                    <th>{t('Buyer Rating')}</th>
+                                    <th>{t('Site Geofence Verification')}</th>
                                     <th className="text-right">{t('Action')}</th>
                                 </tr>
                             </thead>
@@ -213,8 +213,8 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                                             <div className="hp-icon-tile !w-12 !h-12 mx-auto mb-2">
                                                 <UserCheck className="w-5 h-5 text-hp-muted" />
                                             </div>
-                                            <p className="font-bold text-sm text-hp-dark">{t('No officers found')}</p>
-                                            <p className="text-xs text-hp-muted mt-0.5">{t('Try adjusting your search query or region filter.')}</p>
+                                            <p className="font-bold text-sm text-hp-dark">{t('No property advisors found')}</p>
+                                            <p className="text-xs text-hp-muted mt-0.5">{t('Try adjusting your search query or corridor filter.')}</p>
                                         </td>
                                     </tr>
                                 ) : (
@@ -233,17 +233,17 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                                             <td>
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 rounded-xl bg-hp-hover border border-hp-border flex items-center justify-center font-bold text-xs shrink-0 text-hp-dark">
-                                                        {emp.name?.charAt(0) || 'O'}
+                                                        {emp.name?.charAt(0) || 'A'}
                                                     </div>
                                                     <div>
                                                         <p className="font-bold text-sm text-hp-dark">{emp.name}</p>
-                                                        <p className="text-xs text-hp-muted">{emp.designation || 'Field Service Officer'}</p>
+                                                        <p className="text-xs text-hp-muted">{emp.designation && emp.designation !== 'Field Service Officer' ? emp.designation : 'Senior Property Advisor'}</p>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td>
                                                 <span className="text-xs text-hp-dark font-medium flex items-center gap-1">
-                                                    <MapPin className="w-3.5 h-3.5 text-hp-muted" /> {emp.region || 'HQ'}
+                                                    <MapPin className="w-3.5 h-3.5 text-hp-muted" /> {emp.region || 'OMR / ECR Corridor'}
                                                 </span>
                                             </td>
                                             <td>
@@ -263,7 +263,7 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                                             </td>
                                             <td>
                                                 <span className="hp-chip hp-chip-success hp-chip-dot">
-                                                    {emp.compliance || '98.5%'} SLA
+                                                    {emp.compliance || '98.5%'} Verified
                                                 </span>
                                             </td>
                                             <td className="text-right">
@@ -271,7 +271,7 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                                                     href={emp.id ? `/admin/employees/${emp.id}` : '/admin/employees'}
                                                     className="hp-btn hp-btn-sm hp-btn-outline"
                                                 >
-                                                    {t('View Profile')} <ArrowUpRight className="w-3.5 h-3.5" />
+                                                    {t('Advisor Profile')} <ArrowUpRight className="w-3.5 h-3.5" />
                                                 </Link>
                                             </td>
                                         </tr>

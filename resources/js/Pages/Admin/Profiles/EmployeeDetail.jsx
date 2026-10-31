@@ -145,7 +145,7 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                 {/* Back button */}
                 <div>
                     <Link href="/admin/employees" className="hp-pill">
-                        <ArrowLeft className="w-4 h-4 mr-1" /> {t('Back to Directory')}
+                        <ArrowLeft className="w-4 h-4 mr-1" /> {t('Back to Property Advisors')}
                     </Link>
                 </div>
 
@@ -154,18 +154,18 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <div className="flex items-center gap-5">
                             <div className="w-18 h-18 rounded-2xl bg-hp-dark text-white font-bold text-3xl flex items-center justify-center shrink-0 shadow-sm">
-                                {(employee.name || 'O').charAt(0)}
+                                {(employee.name || 'A').charAt(0)}
                             </div>
                             <div>
                                 <div className="flex items-center gap-2 flex-wrap mb-1">
                                     <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">{employee.name}</h1>
-                                    <span className="hp-chip hp-chip-gray font-mono">{employee.employee_code || 'EMP-N/A'}</span>
+                                    <span className="hp-chip hp-chip-gray font-mono">{employee.employee_code || 'ADV-N/A'}</span>
                                     <span className={`hp-chip ${employee.status === 'active' ? 'hp-chip-success hp-chip-dot' : 'hp-chip-gray'}`}>
-                                        {employee.status || 'Active'}
+                                        {employee.status === 'active' ? 'On Site Duty' : (employee.status || 'Active')}
                                     </span>
                                 </div>
                                 <p className="text-sm text-hp-muted flex items-center gap-1.5">
-                                    <MapPin className="w-4 h-4 text-hp-muted" /> {employee.region || 'Assigned Zone'} • {employee.designation || 'Field Service Officer'}
+                                    <MapPin className="w-4 h-4 text-hp-muted" /> {employee.region || 'OMR / ECR Corridor'} • {employee.designation && employee.designation !== 'field_officer' ? employee.designation : 'Senior Property Advisor'}
                                 </p>
                             </div>
                         </div>
@@ -178,14 +178,14 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                                 className="hp-btn hp-btn-secondary !rounded-full"
                             >
                                 <Phone className="w-4 h-4 mr-1 text-hp-primary" />
-                                <span>{t('Call')}</span>
+                                <span>{t('Call Advisor')}</span>
                             </button>
                             <Link 
                                 href="/admin/tasks"
                                 className="hp-btn hp-btn-primary !rounded-full"
                             >
                                 <Sparkles className="w-4 h-4 mr-1" />
-                                <span>{t('Assign Task')}</span>
+                                <span>{t('Assign Site Visit')}</span>
                             </Link>
                         </div>
                     </div>
@@ -194,30 +194,30 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                 {/* ══════════ HOSTINGER BENTO METRIC CARDS ══════════ */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Weekly Inspections')}</span>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Weekly Site Showings')}</span>
                         <p className="font-bold text-2xl text-hp-dark">{visitsThisWeek.length}</p>
-                        <p className="text-xs text-hp-muted mt-1">{t('Completed this cycle')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Buyer site visits completed')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Shift Attendance')}</span>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Site Attendance')}</span>
                         <p className="font-bold text-2xl text-hp-success">{attendance.filter(a => a.status === 'present').length} <span className="text-xs text-hp-muted font-normal">days</span></p>
-                        <p className="text-xs text-hp-muted mt-1">100% {t('On-duty record')}</p>
+                        <p className="text-xs text-hp-muted mt-1">100% {t('Geofence verified')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Audit Rating')}</span>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Buyer Rating')}</span>
                         <p className="font-bold text-2xl text-hp-dark flex items-center gap-1.5">
                             <Star className="w-5 h-5 text-amber-500 fill-current" />
                             <span>{employee.avg_rating || '4.9'}</span>
                         </p>
-                        <p className="text-xs text-hp-muted mt-1">{recentReviews.length} {t('client reviews')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{recentReviews.length} {t('buyer feedbacks')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Managed Facilities')}</span>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Assigned Properties')}</span>
                         <p className="font-bold text-2xl text-hp-primary">{assignedFarmers.length}</p>
-                        <p className="text-xs text-hp-muted mt-1">{t('Active commercial clients')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Active projects & townships')}</p>
                     </div>
                 </div>
 
@@ -227,17 +227,17 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                     <div className={`col-span-1 space-y-6 ${isMapFullscreen ? 'hidden' : 'block'}`}>
                         <div className="hp-bento-card">
                             <h3 className="hp-card-title text-sm pb-3 mb-4 border-b border-hp-border">
-                                {t('Officer Credentials & Contact')}
+                                {t('Advisor Credentials & Sales Corridor')}
                             </h3>
 
                             <div className="space-y-3.5 text-xs">
                                 <div className="flex items-center justify-between py-1">
-                                    <span className="text-hp-muted flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> Designation</span>
-                                    <span className="font-bold text-hp-dark">{employee.designation || 'Field Service Officer'}</span>
+                                    <span className="text-hp-muted flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> Role / Specialization</span>
+                                    <span className="font-bold text-hp-dark">{employee.designation && employee.designation !== 'field_officer' ? employee.designation : 'Senior Property Advisor'}</span>
                                 </div>
                                 <div className="flex items-center justify-between py-1">
-                                    <span className="text-hp-muted flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Assigned Zone</span>
-                                    <span className="font-bold text-hp-dark">{employee.region || 'Unassigned'}</span>
+                                    <span className="text-hp-muted flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Assigned Corridor</span>
+                                    <span className="font-bold text-hp-dark">{employee.region || 'OMR / ECR Corridor'}</span>
                                 </div>
                                 <div className="flex items-center justify-between py-1">
                                     <span className="text-hp-muted flex items-center gap-1.5"><Smartphone className="w-3.5 h-3.5" /> Mobile Contact</span>
@@ -266,13 +266,13 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                     </div>
                 </div>
 
-                {/* ══════════ SUB-TIER BENTO: ASSIGNED CLIENTS & REVIEWS ══════════ */}
+                {/* ══════════ SUB-TIER BENTO: ASSIGNED PROPERTIES & BUYER REVIEWS ══════════ */}
                 <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 ${isMapFullscreen ? 'hidden' : 'block'}`}>
-                    {/* Assigned Farmers */}
+                    {/* Assigned Properties */}
                     <div className="hp-bento-card !p-0 overflow-hidden flex flex-col">
                         <div className="p-4 border-b border-hp-border flex items-center justify-between bg-white">
                             <h3 className="hp-card-title text-sm flex items-center gap-2">
-                                <Building2 className="w-4 h-4 text-hp-primary" /> {t('Assigned Facilities & Clients')}
+                                <Building2 className="w-4 h-4 text-hp-primary" /> {t('Assigned Properties & Projects')}
                             </h3>
                             <span className="hp-chip hp-chip-gray">
                                 {assignedFarmers.length} Total
@@ -293,18 +293,18 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="text-sm font-bold text-hp-dark truncate">{farmer.name}</p>
-                                                <p className="text-[11px] text-hp-muted font-mono">{farmer.farmer_code || `FAC-${i+1}`}</p>
+                                                <p className="text-[11px] text-hp-muted font-mono">{farmer.farmer_code || `PROP-${i+1}`}</p>
                                             </div>
                                         </div>
                                         <div className="text-right shrink-0">
                                             <span className="hp-chip hp-chip-success !h-5 !text-[10px]">
-                                                {farmer.status || 'Active'}
+                                                {farmer.status || 'RERA Active'}
                                             </span>
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <div className="text-center text-hp-muted text-xs py-10">No assigned clients found.</div>
+                                <div className="text-center text-hp-muted text-xs py-10">No assigned properties found.</div>
                             )}
                         </div>
                     </div>
@@ -313,7 +313,7 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                     <div className="hp-bento-card !p-0 overflow-hidden flex flex-col">
                         <div className="p-4 border-b border-hp-border flex items-center justify-between bg-white">
                             <h3 className="hp-card-title text-sm flex items-center gap-2">
-                                <Star className="w-4 h-4 text-hp-primary" /> {t('Client Audits & Feedback')}
+                                <Star className="w-4 h-4 text-hp-primary" /> {t('Buyer Site Visit Feedback')}
                             </h3>
                             <div className="flex items-center gap-1.5">
                                 <span className="text-base font-bold text-hp-dark">{employee.avg_rating || '5.0'}</span>
@@ -328,11 +328,11 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                                             <p className="text-xs font-bold text-hp-dark">{review.farmer_name}</p>
                                             <span className="text-[10px] text-hp-muted">{review.date}</span>
                                         </div>
-                                        <p className="text-xs text-hp-muted italic leading-relaxed">"{review.comment || 'Inspection conducted on-time with thorough checklist verification.'}"</p>
+                                        <p className="text-xs text-hp-muted italic leading-relaxed">"{review.comment || 'Property showing conducted on-time with complete RERA, patta, and plot boundary walkthrough.'}"</p>
                                     </div>
                                 ))
                             ) : (
-                                <div className="text-center text-hp-muted text-xs py-10">No client reviews recorded yet.</div>
+                                <div className="text-center text-hp-muted text-xs py-10">No buyer site visit reviews recorded yet.</div>
                             )}
                         </div>
                     </div>

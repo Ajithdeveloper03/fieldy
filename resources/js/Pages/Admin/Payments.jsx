@@ -10,7 +10,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useAlert } from '../../Components/AlertSystem';
 
-export default function Payments({ farmer_payments = [], officer_payments = [], kpis = {} }) {
+export default function Payments({ farmer_payments = [], officer_payments = [], payments = [], totals = {}, kpis = {} }) {
     const { t } = useTranslation();
     const alertSystem = useAlert ? useAlert() : {};
     const triggerInfo = alertSystem?.triggerInfo;
@@ -20,13 +20,39 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
 
+    const defaultBookings = [
+        { id: 'BKG-2026-841', farmer: 'Casagrand ECR Sea-View Villas (Plot #14)', buyer: 'Dr. RameshSubramanian', region: 'ECR Luxury Corridor', amount: '5,00,000', status: 'completed', mode: 'RTGS Booking Token Advance', date: 'Today, 11:20 AM' },
+        { id: 'BKG-2026-840', farmer: 'GSquare OMR IT City Plots (Plot #42 & #43)', buyer: 'Anitha Krishnan', region: 'OMR Corridor', amount: '2,50,000', status: 'completed', mode: 'NEFT Plot Blocking Advance', date: 'Yesterday' },
+        { id: 'BKG-2026-839', farmer: 'Prestige Pallavaram Gardens (4BHK Villa #08)', buyer: 'Suresh Venkatesan', region: 'GST South Corridor', amount: '12,40,000', status: 'pending', mode: 'Sale Agreement Milestone (20%)', date: '2 days ago' },
+        { id: 'BKG-2026-838', farmer: 'Brigade World Trade Tower (Unit #904)', buyer: 'Apex Ventures Pvt Ltd', region: 'OMR Perungudi', amount: '18,00,000', status: 'completed', mode: 'RTGS Commercial Allotment', date: '4 days ago' },
+    ];
+
+    const defaultAdvisorPayouts = payments.length > 0
+        ? payments.map(p => ({
+            id: `COM-${1000 + p.id}`,
+            officer: p.employee?.name || 'Property Advisor',
+            region: p.payment_type === 'bonus' ? 'Sales Booking Commission (2%)' : p.payment_type === 'reimbursement' ? 'Site Visit Travel Allowance' : 'Monthly Advisor Retainer',
+            amount: Number(p.amount || 0).toLocaleString('en-IN'),
+            status: p.status === 'paid' ? 'completed' : p.status,
+            mode: p.notes || 'NEFT Commission Settlement',
+            date: p.payment_date || p.month_year || 'Current Cycle',
+        }))
+        : [
+            { id: 'COM-2026-109', officer: 'Karthik Sundaram (Senior Advisor)', region: '2% Brokerage — Plot #14 ECR Villa', amount: '1,45,000', status: 'completed', mode: 'IMPS Commission Payout', date: 'Today' },
+            { id: 'COM-2026-108', officer: 'Arun Prakash (Property Advisor)', region: 'Buyer Site Showing Travel & Fuel TA', amount: '14,800', status: 'completed', mode: 'UPI Instant Settlement', date: 'Yesterday' },
+            { id: 'COM-2026-107', officer: 'Divya Bharathi (Luxury Villa Specialist)', region: 'Booking Incentive — OMR Plotted Township', amount: '85,000', status: 'pending', mode: 'Awaiting Sale Deed Registration', date: '3 days ago' },
+        ];
+
+    const effectiveBookings = farmer_payments.length > 0 ? farmer_payments : defaultBookings;
+    const effectiveAdvisorPayouts = officer_payments.length > 0 ? officer_payments : defaultAdvisorPayouts;
+
     const getStatusChip = (status) => {
         const s = String(status || '').toLowerCase();
-        if (s === 'completed') {
+        if (s === 'completed' || s === 'paid') {
             return (
                 <span className="hp-chip hp-chip-success inline-flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3 text-hp-success" />
-                    <span>{t('Completed')}</span>
+                    <span>{t('Settled')}</span>
                 </span>
             );
         }
@@ -34,7 +60,7 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
             return (
                 <span className="hp-chip hp-chip-warning inline-flex items-center gap-1">
                     <Clock className="w-3 h-3 text-hp-warning" />
-                    <span>{t('Pending')}</span>
+                    <span>{t('In Escrow / Pending')}</span>
                 </span>
             );
         }
@@ -47,39 +73,39 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
     };
 
     const filteredFarmerPayments = useMemo(() => {
-        return farmer_payments.filter(p => {
+        return effectiveBookings.filter(p => {
             const matchSearch = String(p.farmer || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
                                 String(p.id || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
                                 String(p.region || '').toLowerCase().includes(searchQuery.toLowerCase());
             const matchStatus = statusFilter === 'all' || String(p.status || '').toLowerCase() === statusFilter.toLowerCase();
             return matchSearch && matchStatus;
         });
-    }, [searchQuery, statusFilter, farmer_payments]);
+    }, [searchQuery, statusFilter, effectiveBookings]);
 
     const filteredOfficerPayments = useMemo(() => {
-        return officer_payments.filter(p => {
+        return effectiveAdvisorPayouts.filter(p => {
             const matchSearch = String(p.officer || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
                                 String(p.id || '').toLowerCase().includes(searchQuery.toLowerCase());
             const matchStatus = statusFilter === 'all' || String(p.status || '').toLowerCase() === statusFilter.toLowerCase();
             return matchSearch && matchStatus;
         });
-    }, [searchQuery, statusFilter, officer_payments]);
+    }, [searchQuery, statusFilter, effectiveAdvisorPayouts]);
 
     const handleExport = () => {
-        if (triggerInfo) triggerInfo('Exporting ledger... Your download will begin shortly.');
-        else alert('Exporting ledger...');
+        if (triggerInfo) triggerInfo('Exporting real estate bookings & commission ledger... Your download will begin shortly.');
+        else alert('Exporting bookings & commission ledger...');
     };
 
     const handleInitiatePayment = () => {
-        if (triggerSuccess) triggerSuccess('Payment initiation form is ready.');
-        else alert('Payment initiation form is ready.');
+        if (triggerSuccess) triggerSuccess('Booking token & advisor commission release form is ready.');
+        else alert('Booking token & advisor commission release form is ready.');
     };
 
     const activeList = activeTab === 'farmers' ? filteredFarmerPayments : filteredOfficerPayments;
 
     return (
         <AdminLayout>
-            <Head title="Payments & Financials - Fieldy Admin" />
+            <Head title="Bookings, Token Advances & Commissions - Fieldy Real Estate" />
             
             <div className="space-y-6 pb-12 hp-animate-in">
 
@@ -89,17 +115,17 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                         <div className="max-w-2xl">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
-                                    <Sparkles className="w-3 h-3 mr-1" /> {t('Financial Ledger')}
+                                    <Sparkles className="w-3 h-3 mr-1" /> {t('Real Estate Financial Ledger')}
                                 </span>
                                 <span className="hp-chip hp-chip-gray">
-                                    {t('Automated Settlement Engine')}
+                                    {t('RERA Escrow & Commission Engine')}
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {t('Disbursements & Financial Settlement')}
+                                {t('Property Bookings, Token Advances & Advisor Commissions')}
                             </h1>
                             <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                                {t('Track automated payouts, contractor fees, equipment disbursements, and technician travel allowances across all active contracts.')}
+                                {t('Track buyer booking token collections, sale agreement milestone receipts, developer payouts, and Property Advisor brokerage & site travel allowances.')}
                             </p>
 
                             {/* Hostinger Pill Search Bar */}
@@ -110,7 +136,7 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                                         type="text"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder={t('Search by payment ID, facility, officer, or UTR...')}
+                                        placeholder={t('Search by Booking ID, Property, Plot No., Advisor, or UTR...')}
                                         className="w-full bg-transparent text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
                                     />
                                     {searchQuery && (
@@ -129,14 +155,14 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                                 className="hp-btn hp-btn-secondary !rounded-full"
                             >
                                 <Download className="w-4 h-4 mr-1" />
-                                <span>{t('Export Ledger')}</span>
+                                <span>{t('Export RERA Ledger')}</span>
                             </button>
                             <button 
                                 onClick={handleInitiatePayment} 
                                 className="hp-btn hp-btn-primary !rounded-full"
                             >
                                 <CreditCard className="w-4 h-4 mr-1" />
-                                <span>{t('Initiate Disbursement')}</span>
+                                <span>{t('Record Booking / Commission')}</span>
                             </button>
                         </div>
                     </div>
@@ -144,52 +170,52 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
 
                 {/* ══════════ HOSTINGER BENTO KPI METRIC CARDS ══════════ */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    {/* Card 1: Total Disbursed */}
+                    {/* Card 1: Total Booking Collections */}
                     <div className="hp-bento-card">
                         <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total Disbursed (MTD)')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Booking & Token Volume (MTD)')}</span>
                             <div className="w-10 h-10 rounded-xl bg-hp-primary-light text-hp-primary flex items-center justify-center">
                                 <Wallet className="w-5 h-5" />
                             </div>
                         </div>
                         <p className="text-3xl font-bold text-hp-dark tracking-tight">
-                            ₹{kpis.total_disbursed || '1,84,500'}
+                            ₹{kpis.total_disbursed || (totals.total ? Number(totals.total).toLocaleString('en-IN') : '37,90,000')}
                         </p>
                         <div className="flex items-center gap-1.5 text-xs text-hp-success font-bold mt-2">
                             <TrendingUp className="w-3.5 h-3.5" />
-                            <span>+12.4% {t('vs last cycle')}</span>
+                            <span>+18.4% {t('plot & villa booking velocity')}</span>
                         </div>
                     </div>
 
-                    {/* Card 2: Pending Clearances */}
+                    {/* Card 2: Pending Registration / Commission */}
                     <div className="hp-bento-card">
                         <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Pending Clearances')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Pending Sale Deed / Escrow')}</span>
                             <div className="w-10 h-10 rounded-xl bg-hp-warning-light text-hp-warning flex items-center justify-center">
                                 <Clock className="w-5 h-5" />
                             </div>
                         </div>
                         <p className="text-3xl font-bold text-hp-dark tracking-tight">
-                            {kpis.pending_count || 14}
+                            {kpis.pending_count || 6}
                         </p>
                         <p className="text-xs text-hp-muted mt-2">
-                            {t('Queued for automated bank release')}
+                            {t('Awaiting Sub-Registrar registration & release')}
                         </p>
                     </div>
 
-                    {/* Card 3: Platform Volume */}
+                    {/* Card 3: Advisor Commissions Settled */}
                     <div className="hp-bento-card">
                         <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total Transactions')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Verified Bookings & Payouts')}</span>
                             <div className="w-10 h-10 rounded-xl bg-hp-hover text-hp-dark flex items-center justify-center">
                                 <IndianRupee className="w-5 h-5" />
                             </div>
                         </div>
                         <p className="text-3xl font-bold text-hp-dark tracking-tight">
-                            {kpis.total_transactions || 128}
+                            {kpis.total_transactions || totals.count || 42}
                         </p>
                         <p className="text-xs text-hp-muted mt-2">
-                            99.8% {t('Settlement success rate')}
+                            100% {t('RERA compliant receipt audit')}
                         </p>
                     </div>
                 </div>
@@ -203,9 +229,9 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                             className={`hp-segmented-item ${activeTab === 'farmers' ? 'is-active-primary' : ''}`}
                         >
                             <Building2 className="w-4 h-4" />
-                            <span>{t('Facility & Contractor Payouts')}</span>
+                            <span>{t('Property Bookings & Token Advances')}</span>
                             <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${activeTab === 'farmers' ? 'bg-white/20 text-white' : 'bg-hp-border text-hp-muted'}`}>
-                                {farmer_payments.length}
+                                {effectiveBookings.length}
                             </span>
                         </button>
                         <button 
@@ -213,9 +239,9 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                             className={`hp-segmented-item ${activeTab === 'officers' ? 'is-active-primary' : ''}`}
                         >
                             <Briefcase className="w-4 h-4" />
-                            <span>{t('Officer Payroll & Travel')}</span>
+                            <span>{t('Advisor Commissions & Site Travel TA')}</span>
                             <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${activeTab === 'officers' ? 'bg-white/20 text-white' : 'bg-hp-border text-hp-muted'}`}>
-                                {officer_payments.length}
+                                {effectiveAdvisorPayouts.length}
                             </span>
                         </button>
                     </div>
@@ -240,7 +266,7 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                         <div className="flex items-center gap-2">
                             <CreditCard className="w-5 h-5 text-hp-primary" />
                             <h2 className="hp-card-title">
-                                {activeTab === 'farmers' ? t('Facility Settlement Ledger') : t('Field Officer Compensation')}
+                                {activeTab === 'farmers' ? t('Buyer Booking Token & Milestone Ledger') : t('Property Advisor Brokerage & Travel Allowances')}
                             </h2>
                         </div>
                         <span className="text-xs text-hp-muted font-medium">
@@ -252,11 +278,11 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                         <table className="hp-table min-w-[750px]">
                             <thead>
                                 <tr>
-                                    <th>{t('Disbursement ID')}</th>
-                                    <th>{activeTab === 'farmers' ? t('Facility / Client') : t('Technician')}</th>
+                                    <th>{t('Reference ID')}</th>
+                                    <th>{activeTab === 'farmers' ? t('Property / Unit & Corridor') : t('Property Advisor & Commission Scope')}</th>
                                     <th>{t('Amount')}</th>
-                                    <th>{t('Status')}</th>
-                                    <th>{t('Payment Mode / Date')}</th>
+                                    <th>{t('Settlement Status')}</th>
+                                    <th>{t('Transaction Mode / Date')}</th>
                                     <th className="text-right">{t('Action')}</th>
                                 </tr>
                             </thead>
@@ -267,7 +293,7 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                                             <div className="hp-icon-tile !w-12 !h-12 mx-auto mb-2">
                                                 <Wallet className="w-5 h-5 text-hp-muted" />
                                             </div>
-                                            <p className="font-bold text-sm text-hp-dark">{t('No payment records found')}</p>
+                                            <p className="font-bold text-sm text-hp-dark">{t('No financial records found')}</p>
                                             <p className="text-xs text-hp-muted mt-0.5">{t('Try adjusting your search query or status filter.')}</p>
                                         </td>
                                     </tr>
@@ -276,7 +302,7 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                                         <tr key={payment.id || i} className="hover:bg-hp-hover/60 transition-colors">
                                             <td>
                                                 <span className="font-mono text-xs font-bold text-hp-dark bg-hp-bg px-2 py-1 rounded border border-hp-border">
-                                                    {payment.id || `TXN-${1000 + i}`}
+                                                    {payment.id || `BKG-${1000 + i}`}
                                                 </span>
                                             </td>
                                             <td>
@@ -288,7 +314,7 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                                                         <p className="font-bold text-sm text-hp-dark">
                                                             {activeTab === 'farmers' ? payment.farmer : payment.officer}
                                                         </p>
-                                                        <p className="text-xs text-hp-muted">{payment.region || 'HQ Region'}</p>
+                                                        <p className="text-xs text-hp-muted">{payment.region || 'OMR / ECR Corridor'}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -302,17 +328,17 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                                             </td>
                                             <td>
                                                 <div className="text-xs">
-                                                    <p className="font-medium text-hp-dark">{payment.mode || 'IMPS / Direct Settlement'}</p>
+                                                    <p className="font-medium text-hp-dark">{payment.mode || 'RTGS / NEFT Escrow'}</p>
                                                     <p className="text-hp-muted mt-0.5">{payment.date || 'Today'}</p>
                                                 </div>
                                             </td>
                                             <td className="text-right">
                                                 <button 
                                                     type="button"
-                                                    onClick={() => alert('Viewing receipt for ' + (payment.id || 'TXN'))}
+                                                    onClick={() => alert('Viewing RERA voucher for ' + (payment.id || 'BKG'))}
                                                     className="hp-btn hp-btn-sm hp-btn-outline"
                                                 >
-                                                    {t('Receipt')} <ArrowUpRight className="w-3.5 h-3.5" />
+                                                    {t('Voucher')} <ArrowUpRight className="w-3.5 h-3.5" />
                                                 </button>
                                             </td>
                                         </tr>

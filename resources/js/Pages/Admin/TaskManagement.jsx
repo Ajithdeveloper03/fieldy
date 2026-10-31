@@ -34,7 +34,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
     const [newTask, setNewTask] = useState({
         title: '',
         description: '',
-        industry: 'facility_management',
+        industry: 'site_visit',
         assigned_to: '',
         customer_id: '',
         priority: 'medium',
@@ -47,7 +47,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
         id: null,
         title: '',
         description: '',
-        industry: 'facility_management',
+        industry: 'site_visit',
         assigned_to: '',
         customer_id: '',
         priority: 'medium',
@@ -113,19 +113,17 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
         setGeneratingAi(true);
         setTimeout(() => {
             const suggestions = {
-                facility_management: "Recommended: Verify AHU filter resistance, check chilled water valve actuator calibration, and test emergency cutoff switch. Estimated resolution time: 45-60 mins. Required PPE: Insulated gloves, safety goggles.",
-                construction: "Recommended: Inspect scaffolding structural anchors, review daily toolbox talk records, verify concrete cure strength test report. Required PPE: Hard hat, safety harness, steel-toe boots.",
-                security: "Recommended: Scan NFC/QR checkpoints at perimeter gates, inspect gate barrier sensors, verify visitor ledger discrepancies. Required PPE: High-visibility vest, baton, communication radio.",
-                fmcg: "Recommended: Audit display shelf facing, verify expiry batches, check competitor promotional pricing, calculate restocking quantity. Priority: High visibility aisles.",
-                logistics: "Recommended: Check delivery vehicle tire tread, verify customer address geofence, confirm seal integrity, obtain customer OTP on handover.",
-                solar: "Recommended: Measure string open-circuit voltage (Voc), check inverter error codes, inspect solar module surface for micro-cracks or hot spots.",
-                cleaning: "Recommended: Check restroom sanitation checklist, refill disinfectant dispensers, audit floor buffer chemical dilution ratios.",
-                pest_control: "Recommended: Inspect bait station tamper seals, record chemical spray batch number, ensure client staff evacuation during misting."
+                site_visit: "Recommended: Confirm buyer pick-up time, carry RERA registration dossier & master layout brochure, walk buyer through corner plot boundary markers, and capture buyer OTP sign-off at project site.",
+                valuation: "Recommended: Verify DTCP/CMDA approval layout, measure plot frontage & road width, inspect soil & drainage readiness, and upload 4 geo-tagged corner photos for valuation audit.",
+                handover: "Recommended: Complete 24-point villa/apartment snagging checklist, test electrical/plumbing fixtures with buyer, record meter readings, and obtain digital possession certificate sign-off.",
+                documentation: "Recommended: Verify encumbrance certificate (EC), patta/chitta transfer status, RERA allotment agreement, and collect buyer KYC originals for sub-registrar registration.",
+                lead_followup: "Recommended: Present updated payment schedule & bank home-loan pre-approval sheet, walk through clubhouse amenities, and log buyer unit preference for token blocking.",
+                plot_survey: "Recommended: Verify GPS survey coordinates against FMB sketch, inspect boundary stones on all 4 corners, and upload high-resolution site access road photos."
             };
-            const text = suggestions[industry] || "Recommended: Conduct initial diagnostic check, verify customer symptom description, wear standard PPE, and obtain customer OTP verification upon completion.";
+            const text = suggestions[industry] || "Recommended: Check in inside the project geofence on arrival, walk the buyer through the property layout, upload geo-tagged site photos, and verify buyer OTP upon completion.";
             setNewTask(prev => ({ ...prev, ai_suggestions: text }));
             setGeneratingAi(false);
-            triggerInfo("AI Suggestions generated successfully.");
+            triggerInfo("Real Estate AI Suggestions generated.");
         }, 600);
     };
 
@@ -254,7 +252,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                 setNewTask({
                     title: '',
                     description: '',
-                    industry: 'facility_management',
+                    industry: 'site_visit',
                     assigned_to: '',
                     customer_id: '',
                     priority: 'medium',
@@ -334,40 +332,30 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
 
     return (
         <AdminLayout>
-            <Head title={`${t('Tasks & Schedule Management')} - Fieldy Admin`} />
+            <Head title={`${t('Daily Tasks')} - Fieldy Real Estate Admin`} />
 
-            <div className="max-w-7xl mx-auto space-y-6 pb-12">
-                {/* Breadcrumbs */}
-                <div className="flex items-center gap-2 text-xs text-[var(--color-hp-gray-600)]">
-                    <Link href="/admin/dashboard" className="hover:text-[var(--color-hp-primary)] flex items-center gap-1 transition-colors">
-                        <Home className="w-3.5 h-3.5" />
-                        <span>Home</span>
-                    </Link>
-                    <ChevronRight className="w-3.5 h-3.5 text-[var(--color-hp-gray-400)]" />
-                    <span className="font-semibold text-[var(--color-hp-dark)]">Tasks & Schedule</span>
-                </div>
-
-                {/* ══════════ HOSTINGER HERO CARD ══════════ */}
-                <div className="hp-hero-card p-6 sm:p-8">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                        <div className="max-w-2xl">
-                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <div className="max-w-7xl mx-auto space-y-5 pb-12">
+                {/* ══════════ HERO CARD ══════════ */}
+                <div className="hp-hero-card p-5 sm:p-7">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                        <div className="max-w-xl">
+                            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
-                                    <Sparkles className="w-3 h-3 mr-1" /> {t('Work Orders & Dispatch')}
+                                    <Sparkles className="w-3 h-3 mr-1" /> {t('Tasks')}
                                 </span>
                                 <span className="hp-chip hp-chip-gray">
-                                    {metrics.total} {t('Tasks Logged')}
+                                    {metrics.total} {t('total')}
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {t('Tasks & Schedule Management')}
+                                {t('Daily Tasks & Visits')}
                             </h1>
-                            <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                                {t('Assign work orders, track preventive maintenance SLAs, and monitor daily progress across field staff.')}
+                            <p className="text-xs sm:text-sm text-hp-muted mt-1">
+                                {t('Create, assign, and track agent visits, meetings, and property showings.')}
                             </p>
                         </div>
 
-                        <div className="flex items-center gap-3 shrink-0 self-start lg:self-center">
+                        <div className="flex items-center gap-2.5 shrink-0 self-start lg:self-center">
                             {/* View Switcher: Segmented Control */}
                             <div className="hp-segmented-bar">
                                 <button
@@ -376,7 +364,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                                     title={t('List View')}
                                 >
                                     <ListFilter className="w-3.5 h-3.5" />
-                                    <span>{t('List View')}</span>
+                                    <span>{t('List')}</span>
                                 </button>
                                 <button
                                     onClick={() => setViewMode('board')}
@@ -384,7 +372,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                                     title={t('Board View')}
                                 >
                                     <LayoutGrid className="w-3.5 h-3.5" />
-                                    <span>{t('Board View')}</span>
+                                    <span>{t('Board')}</span>
                                 </button>
                             </div>
 
@@ -400,8 +388,8 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                     </div>
                 </div>
 
-                {/* ══════════ HOSTINGER BENTO METRIC CARDS ══════════ */}
-                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                {/* ══════════ METRIC CARDS ══════════ */}
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5">
                     {/* Total Tasks */}
                     <div 
                         onClick={() => { setStatusFilter('all'); setShowOverdueOnly(false); }}
@@ -409,12 +397,12 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                             statusFilter === 'all' && !showOverdueOnly ? '!border-hp-primary ring-2 ring-hp-primary/20' : ''
                         }`}
                     >
-                        <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total Tasks')}</span>
+                        <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('All')}</span>
                             <ClipboardList className="w-3.5 h-3.5 text-hp-primary" />
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{metrics.total}</div>
-                        <div className="text-xs text-hp-muted mt-1">{t('Across all staff')}</div>
+                        <div className="text-2xl font-bold text-hp-dark">{metrics.total}</div>
+                        <div className="text-xs text-hp-muted mt-0.5">{t('All tasks')}</div>
                     </div>
 
                     {/* Pending */}
@@ -424,12 +412,12 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                             statusFilter === 'pending' && !showOverdueOnly ? '!border-amber-500 ring-2 ring-amber-500/20' : ''
                         }`}
                     >
-                        <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">{t('Pending')}</span>
                             <Clock className="w-3.5 h-3.5 text-amber-600" />
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{metrics.pending}</div>
-                        <div className="text-xs text-amber-600 mt-1 font-medium">{t('Awaiting commencement')}</div>
+                        <div className="text-2xl font-bold text-hp-dark">{metrics.pending}</div>
+                        <div className="text-xs text-amber-600 mt-0.5">{t('Not started')}</div>
                     </div>
 
                     {/* In Progress */}
@@ -439,12 +427,12 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                             statusFilter === 'in_progress' && !showOverdueOnly ? '!border-sky-500 ring-2 ring-sky-500/20' : ''
                         }`}
                     >
-                        <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-bold text-sky-700 uppercase tracking-wider">{t('In Progress')}</span>
                             <Activity className="w-3.5 h-3.5 text-sky-600" />
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{metrics.inProgress}</div>
-                        <div className="text-xs text-sky-600 mt-1 font-medium">{t('Ongoing field duties')}</div>
+                        <div className="text-2xl font-bold text-hp-dark">{metrics.inProgress}</div>
+                        <div className="text-xs text-sky-600 mt-0.5">{t('Ongoing')}</div>
                     </div>
 
                     {/* Done */}
@@ -478,16 +466,15 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                     </div>
                 </div>
 
-                {/* ══════════ HOSTINGER SEGMENTED INDUSTRY PILL BAR ══════════ */}
+                {/* ══════════ REAL ESTATE ACTIVITY CATEGORY PILL BAR ══════════ */}
                 <div className="hp-segmented-bar overflow-x-auto max-w-full">
                     {[
-                        { id: 'all', label: 'All Industries', icon: LayoutGrid },
-                        { id: 'facility_management', label: 'Facility Management', icon: Building2 },
-                        { id: 'construction', label: 'Construction & Civil', icon: ClipboardList },
-                        { id: 'security', label: 'Security Services', icon: ShieldCheck },
-                        { id: 'fmcg', label: 'FMCG & Retail', icon: Activity },
-                        { id: 'logistics', label: 'Logistics & Delivery', icon: ArrowRight },
-                        { id: 'solar', label: 'Solar & Renewable', icon: Sparkles },
+                        { id: 'all', label: 'All Tasks', icon: LayoutGrid },
+                        { id: 'site_visit', label: 'Site Visits', icon: Building2 },
+                        { id: 'valuation', label: 'Valuations', icon: ClipboardList },
+                        { id: 'handover', label: 'Handovers', icon: ShieldCheck },
+                        { id: 'documentation', label: 'Documents & KYC', icon: Activity },
+                        { id: 'lead_followup', label: 'Follow-ups', icon: ArrowRight },
                     ].map(ind => {
                         const Icon = ind.icon;
                         const isSelected = industryFilter === ind.id;
@@ -514,7 +501,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                                 type="text"
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
-                                placeholder={t('Search by task title, description, or officer...')}
+                                placeholder={t('Search by property, site task, or advisor...')}
                                 className="hp-input pl-9 pr-9"
                             />
                             {searchQuery && (
@@ -529,32 +516,31 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
 
                         {/* Filter Selectors */}
                         <div className="flex flex-wrap items-center gap-2">
-                            {/* Industry Dropdown */}
+                            {/* Activity Type Dropdown */}
                             <div className="relative">
                                 <select
                                     value={industryFilter}
                                     onChange={e => setIndustryFilter(e.target.value)}
                                     className="appearance-none bg-white border border-[var(--color-hp-border)] rounded-lg pl-3 pr-8 py-2 text-xs font-semibold text-[var(--color-hp-dark)] hover:border-[var(--color-hp-gray-400)] focus:outline-none focus:border-[var(--color-hp-primary)] cursor-pointer transition-all"
                                 >
-                                    <option value="all">{t('All Industries')}</option>
-                                    <option value="facility_management">{t('Facility Management')}</option>
-                                    <option value="construction">{t('Construction')}</option>
-                                    <option value="security">{t('Security Services')}</option>
-                                    <option value="fmcg">{t('FMCG & Retail')}</option>
-                                    <option value="logistics">{t('Logistics & Delivery')}</option>
-                                    <option value="solar">{t('Solar & Energy')}</option>
+                                    <option value="all">{t('All Types')}</option>
+                                    <option value="site_visit">{t('Site Visits')}</option>
+                                    <option value="valuation">{t('Valuations')}</option>
+                                    <option value="handover">{t('Handovers')}</option>
+                                    <option value="documentation">{t('Documents & KYC')}</option>
+                                    <option value="lead_followup">{t('Follow-ups')}</option>
                                 </select>
                                 <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-hp-gray-500)] pointer-events-none" />
                             </div>
 
-                            {/* Officer Filter */}
+                            {/* Advisor Filter */}
                             <div className="relative">
                                 <select
                                     value={assigneeFilter}
                                     onChange={e => setAssigneeFilter(e.target.value)}
                                     className="appearance-none bg-white border border-[var(--color-hp-border)] rounded-lg pl-3 pr-8 py-2 text-xs font-semibold text-[var(--color-hp-dark)] hover:border-[var(--color-hp-gray-400)] focus:outline-none focus:border-[var(--color-hp-primary)] cursor-pointer transition-all"
                                 >
-                                    <option value="all">{t('All Officers')}</option>
+                                    <option value="all">{t('All Agents')}</option>
                                     <option value="unassigned">{t('Unassigned')}</option>
                                     {employees.map(emp => (
                                         <option key={emp.id} value={emp.id}>{emp.name}</option>
@@ -966,38 +952,36 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                         </div>
 
                         <form onSubmit={handleCreateTask} className="mt-4 space-y-4">
-                            {/* Industry & Client Site */}
+                            {/* Activity Type & Property Site */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">
-                                        {t('Industry Domain')} <span className="text-[var(--color-hp-primary)]">*</span>
+                                        {t('Real Estate Activity Type')} <span className="text-[var(--color-hp-primary)]">*</span>
                                     </label>
                                     <select
                                         value={newTask.industry}
                                         onChange={e => setNewTask(prev => ({ ...prev, industry: e.target.value }))}
                                         className="hp-input"
                                     >
-                                        <option value="facility_management">Facility Management</option>
-                                        <option value="construction">Construction & Civil</option>
-                                        <option value="security">Security & Guard Patrols</option>
-                                        <option value="fmcg">FMCG & Retail Distribution</option>
-                                        <option value="logistics">Logistics & Express Delivery</option>
-                                        <option value="solar">Solar & Renewable Energy</option>
-                                        <option value="cleaning">Housekeeping & Cleaning</option>
-                                        <option value="pest_control">Pest Control & Sanitation</option>
+                                        <option value="site_visit">Buyer Site Showing & Tour</option>
+                                        <option value="valuation">Property Valuation & Inspection</option>
+                                        <option value="handover">Unit Handover & Snagging</option>
+                                        <option value="documentation">RERA & Legal Title KYC</option>
+                                        <option value="lead_followup">Channel Partner & Booking Closing</option>
+                                        <option value="plot_survey">Plot Boundary & GPS Survey</option>
                                     </select>
                                 </div>
 
                                 <div>
                                     <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">
-                                        {t('Client / Facility Site')}
+                                        {t('Target Property / Project Site')}
                                     </label>
                                     <select
                                         value={newTask.customer_id}
                                         onChange={e => setNewTask(prev => ({ ...prev, customer_id: e.target.value }))}
                                         className="hp-input"
                                     >
-                                        <option value="">{t('No client selected')}</option>
+                                        <option value="">{t('Select Property / Project')}</option>
                                         {customers.map(c => (
                                             <option key={c.id} value={c.id}>{c.name}</option>
                                         ))}
@@ -1009,7 +993,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                             <div>
                                 <div className="flex items-center justify-between mb-1">
                                     <label className="block text-xs font-semibold text-[var(--color-hp-dark)]">
-                                        {t('Task Title')} <span className="text-rose-500">*</span>
+                                        {t('Site Task / Showing Title')} <span className="text-rose-500">*</span>
                                     </label>
                                     <button
                                         type="button"
@@ -1026,7 +1010,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                                     required
                                     value={newTask.title}
                                     onChange={e => setNewTask(prev => ({ ...prev, title: e.target.value }))}
-                                    placeholder="e.g. Chiller Maintenance / HVAC Inspection Floor 3"
+                                    placeholder="e.g. 4BHK Model Villa Tour for Buyer Mr. Ramesh at Skyline ECR"
                                     className="hp-input"
                                 />
                             </div>
@@ -1300,14 +1284,14 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
 
                         {/* Work Order & Domain Badge */}
                         <div className="flex items-center justify-between text-xs font-medium text-[var(--color-hp-gray-600)] bg-[var(--color-hp-gray-50)] px-3 py-2 rounded-lg border border-[var(--color-hp-border)]">
-                            <span>Work Order: <strong className="text-[var(--color-hp-dark)]">{selectedTask.work_order_code || `WO-${selectedTask.id}`}</strong></span>
-                            <span className="capitalize text-[var(--color-hp-primary)] font-semibold bg-[var(--color-hp-primary-light)] px-2 py-0.5 rounded">{String(selectedTask.industry || 'facility_management').replace('_', ' ')}</span>
+                            <span>Site Task Ref: <strong className="text-[var(--color-hp-dark)]">{selectedTask.work_order_code || `ST-${selectedTask.id}`}</strong></span>
+                            <span className="capitalize text-[var(--color-hp-primary)] font-semibold bg-[var(--color-hp-primary-light)] px-2 py-0.5 rounded">{String(selectedTask.industry || 'site_visit').replace('_', ' ')}</span>
                         </div>
 
                         {/* Customer / Client */}
                         {selectedTask.customer && (
                             <div className="flex items-center justify-between text-xs bg-[var(--color-hp-gray-50)] px-3 py-2 rounded-lg border border-[var(--color-hp-border)]">
-                                <span className="text-[var(--color-hp-gray-600)]">{t('Client / Facility')}:</span>
+                                <span className="text-[var(--color-hp-gray-600)]">{t('Property / Project Site')}:</span>
                                 <strong className="text-[var(--color-hp-dark)]">{selectedTask.customer.name}</strong>
                             </div>
                         )}
@@ -1315,7 +1299,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                         {/* Description */}
                         <div>
                             <span className="text-[11px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider block mb-1">
-                                {t('Task Description')}
+                                {t('Site Showing / Inspection Instructions')}
                             </span>
                             <p className="text-xs sm:text-sm text-[var(--color-hp-dark)] bg-[var(--color-hp-gray-50)] p-3 rounded-lg border border-[var(--color-hp-border)] whitespace-pre-wrap leading-relaxed">
                                 {selectedTask.description || 'No detailed instructions provided.'}
@@ -1327,7 +1311,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                             <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-lg space-y-1">
                                 <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
                                     <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                                    <span>Fieldy AI Insights (Advisory)</span>
+                                    <span>Fieldy PropTech AI Insights</span>
                                 </div>
                                 <p className="text-xs text-amber-800 leading-relaxed font-medium">
                                     {selectedTask.ai_suggestions}
@@ -1338,14 +1322,14 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                         {/* Service Checklist & Evidence Verification */}
                         <div className="space-y-2">
                             <span className="text-[11px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider block">
-                                Service Execution & Verification Checklist
+                                Property Site Visit & Handover Checklist
                             </span>
                             <div className="space-y-1.5 bg-[var(--color-hp-gray-50)] p-3 rounded-lg border border-[var(--color-hp-border)]">
                                 {(selectedTask.checklist || [
-                                    { id: 1, text: 'Safety gear & PPE checklist verified', done: true },
-                                    { id: 2, text: 'Inspection diagnostics completed', done: false },
-                                    { id: 3, text: 'Before & after photos attached', done: false },
-                                    { id: 4, text: `Customer OTP verification (Dummy: ${selectedTask.customer_otp || '4821'})`, done: selectedTask.otp_verified }
+                                    { id: 1, text: 'GPS Check-in verified inside project site geofence', done: true },
+                                    { id: 2, text: 'Buyer site walkthrough & plot/villa inspection completed', done: false },
+                                    { id: 3, text: 'Geo-tagged site & boundary stone photos uploaded', done: false },
+                                    { id: 4, text: `Buyer OTP sign-off verified (Code: ${selectedTask.customer_otp || '4821'})`, done: selectedTask.otp_verified }
                                 ]).map((item, idx) => (
                                     <div key={idx} className="flex items-center gap-2 text-xs">
                                         <div className={`w-4 h-4 rounded flex items-center justify-center ${item.done ? 'bg-emerald-600 text-white' : 'border border-[var(--color-hp-border)] bg-white'}`}>

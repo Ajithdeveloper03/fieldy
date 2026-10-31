@@ -54,7 +54,7 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                     </div>
                 )}
 
-                {/* ══════════ HOSTINGER SLA EXPIRY ALERT BANNER (Reference Image 3) ══════════ */}
+                {/* ══════════ HOSTINGER RERA MANDATE EXPIRY ALERT BANNER (Reference Image 3) ══════════ */}
                 {showExpiryAlert && (
                     <div className="hp-alert-banner">
                         <div className="flex items-center gap-3">
@@ -63,10 +63,10 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                             </span>
                             <div className="text-sm">
                                 <span className="font-bold text-rose-950">
-                                    {t('Your SLA contract for Metro Plaza Complex (FAC-004) will expire soon.')}{' '}
+                                    {t('Your RERA marketing mandate for Skyline ECR Sea-View Villas (PROP-004) will expire soon.')}{' '}
                                 </span>
                                 <span className="text-rose-800">
-                                    {t('You have 18 days to renew this SLA contract to maintain uninterrupted technician dispatch and GPS patrol.')}
+                                    {t('You have 18 days to renew the developer sales agreement to maintain uninterrupted buyer site showings and advisor allocations.')}
                                 </span>
                             </div>
                         </div>
@@ -76,7 +76,7 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                 onClick={() => router.visit('/admin/payments')}
                                 className="hp-btn hp-btn-sm !bg-rose-700 hover:!bg-rose-800 !text-white !rounded-full text-xs font-bold shadow-xs"
                             >
-                                {t('Renew SLA')}
+                                {t('Renew Mandate')}
                             </button>
                             <button
                                 type="button"
@@ -90,38 +90,35 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                     </div>
                 )}
 
-                {/* ══════════ HOSTINGER HERO CARD (Soft Lavender/Slate Gradient) ══════════ */}
-                <div className="hp-card-gradient-slate rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-200/80">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                        <div className="max-w-2xl">
-                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                {/* ══════════ HERO CARD ══════════ */}
+                <div className="hp-card-gradient-slate rounded-2xl p-5 sm:p-7 shadow-xs border border-slate-200/80">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                        <div className="max-w-xl">
+                            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
-                                    <Sparkles className="w-3 h-3 mr-1" /> {t('Client Accounts & Sites')}
+                                    <Sparkles className="w-3 h-3 mr-1" /> {t('Properties')}
                                 </span>
                                 <span className="hp-chip hp-chip-gray">
-                                    {farmers.length} {t('Managed Facilities')}
-                                </span>
-                                <span className="hp-chip hp-chip-success">
-                                    {t('99.2% Dispatch Uptime')}
+                                    {farmers.length} {t('total')}
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {t('Facility & Commercial Accounts Directory')}
+                                {t('Properties Directory')}
                             </h1>
-                            <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                                {t('Centralized registry for facility management, construction, security, cleaning, solar, and logistics client accounts.')}
+                            <p className="text-xs sm:text-sm text-hp-muted mt-1 leading-relaxed">
+                                {t('View all plots, villas, apartments, and commercial projects.')}
                             </p>
 
                             {/* Hostinger Pill Search Bar */}
-                            <form onSubmit={handleSearch} className="mt-5 max-w-lg">
+                            <form onSubmit={handleSearch} className="mt-4 max-w-md">
                                 <div className="hp-search-pill-bar !bg-white !shadow-xs">
                                     <Search className="w-4 h-4 text-hp-muted shrink-0" />
                                     <input
                                         type="text"
                                         value={search}
                                         onChange={e => setSearch(e.target.value)}
-                                        placeholder={t('Search by Facility Name, Code, Phone, or District...')}
-                                        className="w-full bg-transparent text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
+                                        placeholder={t('Search by property name, code, or city...')}
+                                        className="w-full bg-transparent text-xs sm:text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
                                     />
                                     {search && (
                                         <button 
@@ -142,7 +139,7 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                             </form>
                         </div>
 
-                        {/* Top Action Buttons (Hostinger Image 3 style) */}
+                        {/* Top Action Buttons */}
                         <div className="flex items-center gap-2.5 shrink-0 self-start lg:self-center">
                             <button
                                 type="button"
@@ -150,113 +147,73 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                 className="hp-btn hp-btn-secondary !rounded-full !bg-white !border-slate-300"
                             >
                                 <Download className="w-4 h-4 mr-1 text-hp-muted" />
-                                <span>{t('Export CSV')}</span>
+                                <span>{t('Export')}</span>
                             </button>
                             <Link 
                                 href="/admin/farmers/register" 
                                 className="hp-btn hp-btn-primary !rounded-full shadow-sm"
                             >
                                 <Plus className="w-4 h-4 mr-1" />
-                                <span>{t('Onboard Facility')}</span>
+                                <span>{t('Add Property')}</span>
                             </Link>
                         </div>
                     </div>
                 </div>
 
-                {/* ══════════ HOSTINGER BENTO METRIC CARDS (With subtle gradient tints) ══════════ */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* ══════════ METRIC CARDS ══════════ */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
                     <div className="hp-metric-pill-card hover:border-slate-300">
-                        <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total Facilities')}</span>
+                        <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total')}</span>
                             <span className="w-7 h-7 rounded-lg bg-orange-50 text-hp-primary flex items-center justify-center">
-                                <Building2 className="w-4 h-4" />
+                                <Building2 className="w-3.5 h-3.5" />
                             </span>
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{farmers.length}</div>
-                        <p className="text-xs text-hp-muted mt-1">{t('Active commercial sites')}</p>
+                        <div className="text-2xl font-bold text-hp-dark">{farmers.length}</div>
+                        <p className="text-xs text-hp-muted mt-0.5">{t('Properties listed')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card hover:border-emerald-200">
-                        <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Verified Contracts')}</span>
+                        <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Approved')}</span>
                             <span className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                                <ShieldCheck className="w-4 h-4" />
+                                <ShieldCheck className="w-3.5 h-3.5" />
                             </span>
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-emerald-600">{verifiedCount}</div>
-                        <p className="text-xs text-hp-muted mt-1">{t('SLA binding agreements')}</p>
+                        <div className="text-2xl font-bold text-emerald-600">{verifiedCount}</div>
+                        <p className="text-xs text-hp-muted mt-0.5">{t('Verified and ready')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card hover:border-amber-200">
-                        <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Pending Verification')}</span>
+                        <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Pending')}</span>
                             <span className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-                                <Clock className="w-4 h-4" />
+                                <Clock className="w-3.5 h-3.5" />
                             </span>
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-amber-600">{pendingCount}</div>
-                        <p className="text-xs text-hp-muted mt-1">{t('In onboarding review')}</p>
+                        <div className="text-2xl font-bold text-amber-600">{pendingCount}</div>
+                        <p className="text-xs text-hp-muted mt-0.5">{t('Needs review')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card hover:border-indigo-200">
-                        <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Avg Audit Score')}</span>
-                            <span className="hp-chip hp-chip-success !h-5 !text-[11px]">4.9 / 5.0</span>
+                        <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Rating')}</span>
+                            <span className="hp-chip hp-chip-success !h-5 !text-[11px]">4.9 / 5</span>
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-hp-dark">99.1%</div>
-                        <p className="text-xs text-hp-muted mt-1">{t('Facility health benchmark')}</p>
+                        <div className="text-2xl font-bold text-hp-dark">98%</div>
+                        <p className="text-xs text-hp-muted mt-0.5">{t('Buyer satisfaction')}</p>
                     </div>
                 </div>
 
-                {/* ══════════ HOSTINGER IMAGE 3: BUSINESS NETWORK CAPACITY HEADER ══════════ */}
-                <div className="bg-white border border-hp-border rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
-                    <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0 font-bold">
-                            <Building2 className="w-5 h-5 text-slate-700" />
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <h3 className="text-base font-bold text-hp-dark">{t('Enterprise Facility Fleet')}</h3>
-                                <span className="hp-chip hp-chip-gray !h-5 !text-[11px]">{t('Live SLA')}</span>
-                            </div>
-                            <p className="text-xs text-hp-muted">{t('Automated dispatch & work order allocation coverage')}</p>
-                        </div>
-                    </div>
-
-                    {/* Progress capacity meter (From Hostinger Image 3: 34% resource usage) */}
-                    <div className="flex items-center gap-4 flex-1 max-w-md">
-                        <div className="w-full">
-                            <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
-                                <span className="text-hp-muted">{t('Network Capacity Allocation')}</span>
-                                <span className="text-hp-dark font-bold">64% {t('Utilized')}</span>
-                            </div>
-                            <div className="hp-meter-track">
-                                <div className="hp-meter-fill" style={{ width: '64%' }}></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
-                        <button
-                            type="button"
-                            onClick={() => router.visit('/admin/pending-farmers')}
-                            className="hp-btn hp-btn-sm hp-btn-secondary !rounded-full"
-                        >
-                            <span>{t('Approval Queue')}</span>
-                            <span className="w-5 h-5 rounded-full bg-hp-primary text-white text-[10px] font-bold flex items-center justify-center">12</span>
-                        </button>
-                    </div>
-                </div>
-
-                {/* ══════════ HOSTINGER SEGMENTED CATEGORIES & CONTROLS ══════════ */}
+                {/* ══════════ CATEGORIES & CONTROLS ══════════ */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     {/* Category Tabs */}
                     <div className="hp-segmented-bar overflow-x-auto max-w-full">
                         {[
-                            { id: 'all', label: 'All Facilities' },
-                            { id: 'crop', label: 'Hard FM (HVAC/Mech)' },
-                            { id: 'fertilizer', label: 'Soft FM (Janitorial)' },
-                            { id: 'both', label: 'Integrated IFM' },
+                            { id: 'all', label: 'All' },
+                            { id: 'crop', label: 'Plots & Villas' },
+                            { id: 'fertilizer', label: 'Commercial' },
+                            { id: 'both', label: 'Apartments' },
                         ].map((cat) => (
                             <button
                                 key={cat.id}
@@ -277,7 +234,7 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                     onChange={(e) => handleDistrictChange(e.target.value)}
                                     className="hp-pill !h-9 text-xs font-semibold appearance-none !pr-8 cursor-pointer"
                                 >
-                                    <option value="">{t('All Districts')}</option>
+                                    <option value="">{t('All Corridors / Districts')}</option>
                                     {districts.map(d => (
                                         <option key={d} value={d}>{d}</option>
                                     ))}
@@ -313,8 +270,8 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                         <div className="hp-icon-tile !w-14 !h-14 mx-auto mb-3">
                             <Building2 className="w-6 h-6 text-hp-muted" />
                         </div>
-                        <h2 className="text-base font-bold text-hp-dark mb-1">{t('No facilities found')}</h2>
-                        <p className="text-sm text-hp-muted max-w-sm mx-auto">{t('Try adjusting your search filters or onboard a new facility.')}</p>
+                        <h2 className="text-base font-bold text-hp-dark mb-1">{t('No properties found')}</h2>
+                        <p className="text-sm text-hp-muted max-w-sm mx-auto">{t('Try adjusting your search filters or onboard a new property project.')}</p>
                     </div>
                 ) : viewMode === 'grid' ? (
                     /* Hostinger 3/4-Column Bento Marketplace Cards Grid (Reference Images 4 & 5) */
@@ -338,34 +295,34 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                         {/* Floating Status Badges */}
                                         <div className="absolute top-3 left-3 flex items-center gap-1.5">
                                             <span className={kycBadge(farm.kyc_status)}>
-                                                {t(farm.kyc_status === 'verified' ? 'Verified' : 'Pending')}
+                                                {t(farm.kyc_status === 'verified' ? 'RERA Verified' : 'Pending KYC')}
                                             </span>
                                         </div>
 
                                         <div className="absolute top-3 right-3">
                                             <span className="hp-chip hp-chip-gray !bg-white/90 font-mono text-[11px] backdrop-blur-sm">
-                                                {farm.farmer_code || `FAC-${farm.id}`}
+                                                {farm.farmer_code || `PROP-${farm.id}`}
                                             </span>
                                         </div>
 
                                         <div className="absolute bottom-3 left-3 right-3 text-white">
                                             <p className="text-xs font-bold text-white/90 truncate">
-                                                {farm.land_acres ? `${farm.land_acres} Sq. Ft / Units` : 'Standard Facility'}
+                                                {farm.land_acres ? `${farm.land_acres} Acres / Plots` : 'Premium Real Estate Project'}
                                             </p>
                                         </div>
                                     </div>
 
-                                    {/* Facility Info */}
+                                    {/* Property Info */}
                                     <div className="space-y-1.5">
                                         <h3 className="font-bold text-base text-hp-dark group-hover:text-hp-primary transition-colors line-clamp-1">
                                             {farm.name}
                                         </h3>
                                         <p className="text-xs text-hp-muted flex items-center gap-1">
                                             <MapPin className="w-3.5 h-3.5 text-hp-muted shrink-0" />
-                                            <span className="truncate">{farm.village || 'Commercial Zone'}, {farm.district || 'Metro'}</span>
+                                            <span className="truncate">{farm.village || 'OMR / ECR Corridor'}, {farm.district || 'Chennai'}</span>
                                         </p>
                                         <p className="text-xs font-medium text-hp-dark pt-1">
-                                            {farm.customer_category === 'fertilizer' ? t('Soft FM (Housekeeping)') : farm.customer_category === 'both' ? t('Integrated IFM') : t('Hard FM (HVAC/MEP)')}
+                                            {farm.customer_category === 'fertilizer' ? t('Commercial & Office Tower') : farm.customer_category === 'both' ? t('Gated Apartments & Township') : t('Residential Plots & Villas')}
                                         </p>
                                     </div>
                                 </div>
@@ -376,7 +333,7 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                         href={`/admin/farmers/${farm.id}`}
                                         className="hp-btn hp-btn-outline w-full !rounded-xl !h-10 text-sm font-semibold"
                                     >
-                                        <span>{t('Manage Facility')}</span>
+                                        <span>{t('Manage Property')}</span>
                                         <ArrowUpRight className="w-4 h-4 ml-1" />
                                     </Link>
                                 </div>
@@ -390,10 +347,10 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                             <table className="hp-table min-w-[700px]">
                                 <thead>
                                     <tr>
-                                        <th>{t('Facility / Client')}</th>
-                                        <th>{t('Service Scope / Area')}</th>
-                                        <th>{t('Location')}</th>
-                                        <th>{t('KYC / SLA Status')}</th>
+                                        <th>{t('Property / Project')}</th>
+                                        <th>{t('Asset Type / Extent')}</th>
+                                        <th>{t('Corridor / Location')}</th>
+                                        <th>{t('RERA / Title Status')}</th>
                                         <th className="text-right">{t('Actions')}</th>
                                     </tr>
                                 </thead>
@@ -406,7 +363,7 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                                         {farm.farmer_photo ? (
                                                             <img src={farm.farmer_photo} alt={farm.name} className="w-full h-full object-cover" />
                                                         ) : (
-                                                            String(farm.name || 'F').charAt(0).toUpperCase()
+                                                            String(farm.name || 'P').charAt(0).toUpperCase()
                                                         )}
                                                     </div>
                                                     <div>
@@ -417,10 +374,10 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                             </td>
                                             <td>
                                                 <span className="text-xs font-bold text-hp-dark">
-                                                    {farm.land_acres || '–'} {t('Sq. Ft / Units')}
+                                                    {farm.land_acres || '–'} {t('Acres / Units')}
                                                 </span>
                                                 <p className="text-[11px] text-hp-muted mt-0.5">
-                                                    {farm.customer_category === 'fertilizer' ? t('Soft FM Services') : 'Hard FM (HVAC/Electrical)'}
+                                                    {farm.customer_category === 'fertilizer' ? t('Commercial & Office Space') : 'Residential Plots & Villas'}
                                                 </p>
                                             </td>
                                             <td>
@@ -430,7 +387,7 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                             </td>
                                             <td>
                                                 <span className={kycBadge(farm.kyc_status)}>
-                                                    {t(farm.kyc_status || 'Pending')}
+                                                    {t(farm.kyc_status === 'verified' ? 'RERA Verified' : (farm.kyc_status || 'Pending'))}
                                                 </span>
                                             </td>
                                             <td className="text-right">

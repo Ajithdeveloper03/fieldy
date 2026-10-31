@@ -27,8 +27,8 @@ export default function EmployeeRegistrationForm() {
                         <ArrowLeft className="w-4 h-4 mr-1" /> {t('Back')}
                     </Link>
                     <div>
-                        <h1 className="hp-page-title">{t('Register Field Officer')}</h1>
-                        <p className="text-sm text-hp-muted mt-0.5">{t('Add a new field technician or inspector to your workforce.')}</p>
+                        <h1 className="hp-page-title">{t('Onboard Property Advisor / Site Executive')}</h1>
+                        <p className="text-sm text-hp-muted mt-0.5">{t('Add a new RERA-certified property advisor, site showing executive, or valuation engineer.')}</p>
                     </div>
                 </div>
 
@@ -41,24 +41,24 @@ export default function EmployeeRegistrationForm() {
                             <div className="mb-4">
                                 <h2 className="hp-card-title flex items-center gap-2">
                                     <User className="w-5 h-5 text-hp-primary" />
-                                    {t('Personal & Contact Information')}
+                                    {t('Advisor Personal & Mobile App Login Info')}
                                 </h2>
-                                <p className="text-xs text-hp-muted mt-0.5">{t('Used for app login and mobile telemetry.')}</p>
+                                <p className="text-xs text-hp-muted mt-0.5">{t('Used for Fieldy Real Estate app login and live site showing GPS telemetry.')}</p>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Full Name')}</label>
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Advisor Full Name')}</label>
                                     <input
                                         type="text"
                                         value={data.name}
                                         onChange={(e) => setData('name', e.target.value)}
-                                        placeholder="e.g. Anand Kumar"
+                                        placeholder="e.g. Karthik Sundaram"
                                         className="hp-input"
                                     />
                                     {errors.name && <p className="text-hp-danger text-xs font-bold mt-1">{errors.name}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Mobile Number (Login ID)')}</label>
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Mobile Number (App Login ID)')}</label>
                                     <input
                                         type="text"
                                         value={data.phone}
@@ -78,29 +78,29 @@ export default function EmployeeRegistrationForm() {
                             <div className="mb-4">
                                 <h2 className="hp-card-title flex items-center gap-2">
                                     <Shield className="w-5 h-5 text-hp-primary" />
-                                    {t('Operational & Zone Assignment')}
+                                    {t('Sales Corridor & Project Assignment')}
                                 </h2>
-                                <p className="text-xs text-hp-muted mt-0.5">{t('Routing boundaries and safety contacts.')}</p>
+                                <p className="text-xs text-hp-muted mt-0.5">{t('Real estate micro-market allocation and field SOS emergency contact.')}</p>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Emergency Contact Phone')}</label>
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Emergency SOS Contact Phone')}</label>
                                     <input
                                         type="text"
                                         value={data.emergency_phone}
                                         onChange={(e) => setData('emergency_phone', e.target.value)}
-                                        placeholder="Alternate contact phone"
+                                        placeholder="Alternate emergency contact phone"
                                         className="hp-input"
                                     />
                                     {errors.emergency_phone && <p className="text-hp-danger text-xs font-bold mt-1">{errors.emergency_phone}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Assigned Region / Zone')}</label>
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Assigned Sales Corridor / Zone')}</label>
                                     <input
                                         type="text"
                                         value={data.assigned_region}
                                         onChange={(e) => setData('assigned_region', e.target.value)}
-                                        placeholder="e.g. Coimbatore South"
+                                        placeholder="e.g. OMR & ECR Luxury Corridor"
                                         className="hp-input"
                                     />
                                     {errors.assigned_region && <p className="text-hp-danger text-xs font-bold mt-1">{errors.assigned_region}</p>}
@@ -112,8 +112,8 @@ export default function EmployeeRegistrationForm() {
                         <div className="bg-hp-primary-light/40 border border-hp-primary-border rounded-lg p-4 flex items-start gap-3">
                             <AlertCircle className="w-5 h-5 text-hp-primary shrink-0 mt-0.5" />
                             <div>
-                                <h4 className="text-xs font-bold text-hp-dark uppercase tracking-wider">{t('Automatic Credentials Provisioning')}</h4>
-                                <p className="text-xs text-hp-muted mt-0.5">{t('A temporary high-entropy password will be generated automatically and displayed upon registration.')}</p>
+                                <h4 className="text-xs font-bold text-hp-dark uppercase tracking-wider">{t('Automatic Advisor App Credentials')}</h4>
+                                <p className="text-xs text-hp-muted mt-0.5">{t('A temporary high-entropy password will be generated automatically so the Property Advisor can sign in to the mobile app immediately.')}</p>
                             </div>
                         </div>
 
@@ -128,7 +128,7 @@ export default function EmployeeRegistrationForm() {
                                 className="hp-btn hp-btn-primary"
                             >
                                 <Save className="w-4 h-4 mr-1.5" />
-                                {processing ? t('Registering...') : t('Register Officer')}
+                                {processing ? t('Onboarding...') : t('Onboard Property Advisor')}
                             </button>
                         </div>
                     </form>

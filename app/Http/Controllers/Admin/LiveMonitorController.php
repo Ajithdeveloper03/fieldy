@@ -53,7 +53,7 @@ class LiveMonitorController extends Controller
                 foreach ($user->farmerVisits as $visit) {
                     $activities->push([
                         'type' => 'visit',
-                        'action' => 'Visited: '.($visit->farmer?->name ?? "Farmer #{$visit->farmer_id}"),
+                        'action' => 'Site Showing: '.($visit->farmer?->name ?? "Property #{$visit->farmer_id}"),
                         'time' => Carbon::parse($visit->check_in_time)->format('h:i A'),
                         'location' => "Lat: {$visit->check_in_latitude}, Lng: {$visit->check_in_longitude}",
                         'timestamp' => Carbon::parse($visit->check_in_time)->timestamp,
@@ -94,8 +94,8 @@ class LiveMonitorController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'phone' => $user->phone,
-                    'role' => 'Field Officer',
-                    'region' => $user->employeeDetail?->assigned_region ?? 'Unknown',
+                    'role' => 'Property Advisor',
+                    'region' => $user->employeeDetail?->assigned_region ?? 'Prime Corridor',
                     'employee_code' => $user->employeeDetail?->employee_code ?? 'N/A',
                     'status' => $isActive ? 'active' : ($attendanceToday ? 'idle' : 'offline'),
                     'gps' => 'enabled', // We assume enabled if we are getting points
