@@ -9,6 +9,7 @@ import {
   Platform,
   Image,
   StatusBar,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -120,7 +121,14 @@ export default function EditProfileScreen() {
             </View>
 
             {/* SAVE BUTTON */}
-            <TouchableOpacity style={{ backgroundColor: "#15803d", borderRadius: 999, paddingVertical: 18, flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 40, shadowColor: "#15803d", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 8 }}>
+            <TouchableOpacity
+              onPress={() => {
+                Alert.alert("Profile Updated", "Your contact details have been saved.", [
+                  { text: "OK", onPress: () => router.canGoBack() ? router.back() : router.replace("/(employee)/profile") }
+                ]);
+              }}
+              style={{ backgroundColor: "#15803d", borderRadius: 999, paddingVertical: 18, flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 40, shadowColor: "#15803d", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 8 }}
+            >
               <Save size={20} color="#ffffff" style={{ marginRight: 8 }} />
               <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>Save Changes</Text>
             </TouchableOpacity>

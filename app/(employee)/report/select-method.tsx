@@ -46,19 +46,28 @@ export default function SelectReportMethodScreen() {
             </TouchableOpacity>
 
             {/* Dotted Outline Button 2 */}
-            <TouchableOpacity style={styles.dottedButton}>
+            <TouchableOpacity
+              onPress={() => router.push("/(employee)/visit/report")}
+              style={styles.dottedButton}
+            >
               <ImageIcon size={20} color="#ffffff" style={{ marginRight: 12 }} />
               <Text style={styles.buttonText}>Import Drone Image</Text>
             </TouchableOpacity>
 
             {/* Dotted Outline Button 3 */}
-            <TouchableOpacity style={styles.dottedButton}>
+            <TouchableOpacity
+              onPress={() => router.push("/(employee)/visit/report")}
+              style={styles.dottedButton}
+            >
               <FileText size={20} color="#ffffff" style={{ marginRight: 12 }} />
               <Text style={styles.buttonText}>Manual Text Only</Text>
             </TouchableOpacity>
 
             {/* Dotted Outline Button 4 */}
-            <TouchableOpacity style={styles.dottedButton}>
+            <TouchableOpacity
+              onPress={() => router.push("/(employee)/visit-history")}
+              style={styles.dottedButton}
+            >
               <History size={20} color="#ffffff" style={{ marginRight: 12 }} />
               <Text style={styles.buttonText}>From Past Reports</Text>
             </TouchableOpacity>

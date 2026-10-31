@@ -38,7 +38,7 @@ export default function EmployeeAttendanceScreen() {
       <StatusBar barStyle="light-content" />
 
       {/* Background ambient glow */}
-      <View style={{ position: "absolute", top: -100, right: -100, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(16, 185, 129, 0.2)", filter: "blur(60px)" }} />
+      <View style={{ position: "absolute", top: -100, right: -100, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(16, 185, 129, 0.2)" }} />
 
       <SafeAreaView style={{ flex: 1 }}>
         

@@ -67,7 +67,6 @@ export default function SOSScreen() {
           right: 0,
           height: 300,
           backgroundColor: sosTriggered ? "rgba(239, 68, 68, 0.25)" : "rgba(220, 38, 38, 0.1)",
-          filter: "blur(60px)",
         }}
       />
 

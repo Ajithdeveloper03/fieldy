@@ -1,270 +1,173 @@
 import React from "react";
-import { Tabs, router } from "expo-router";
+import { Stack, router, usePathname } from "expo-router";
 import { CalendarDays, FileText, Home, Plus, User } from "lucide-react-native";
 import {
   Text,
   TouchableOpacity,
   View,
   StyleSheet,
-  useColorScheme,
 } from "react-native";
 import { BlurView } from "expo-blur";
 import { useLanguage } from "../../context/LanguageContext";
+import { TrackingProvider } from "../../context/TrackingContext";
 
-function CustomTabBar({ state, descriptors, navigation }: any) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
+const TAB_ROUTES = [
+  { name: "dashboard", path: "/(employee)/dashboard", key: "home", defaultLabel: "Home", Icon: Home },
+  { name: "visits", path: "/(employee)/visits", key: "visits", defaultLabel: "Visits", Icon: CalendarDays },
+  { name: "reports", path: "/(employee)/reports", key: "reports", defaultLabel: "Reports", Icon: FileText },
+  { name: "profile", path: "/(employee)/profile", key: "profile", defaultLabel: "Profile", Icon: User },
+];
+
+// Show the floating bottom tab bar on main hub screens
+const MAIN_TAB_SCREENS = ["/dashboard", "/visits", "/reports", "/profile"];
+
+function FloatingEmployeeTabBar() {
+  const pathname = usePathname();
   const { t } = useLanguage();
-  const visibleRoutes = state.routes.filter(
-    (route: any) =>
-      ["dashboard", "visits", "reports", "profile"].includes(route.name)
+
+  const shouldShowTabBar = MAIN_TAB_SCREENS.some(
+    (screen) => pathname === screen || pathname.endsWith(screen)
   );
 
-  const routeTitleMap: Record<string, string> = {
-    dashboard: t("home", "Home"),
-    visits: t("visits", "Visits"),
-    reports: t("reports", "Reports"),
-    profile: t("profile", "Profile"),
-  };
+  if (!shouldShowTabBar) {
+    return null;
+  }
 
   return (
-    <View style={styles.container}>
-      <BlurView
-        intensity={80}
-        tint="light"
-        style={styles.blurView}
-        className="border border-gray-200"
-      >
-        {visibleRoutes.map((route: any, index: number) => {
-          const { options } = descriptors[route.key];
-          const label =
-            routeTitleMap[route.name] ||
-            (options.tabBarLabel !== undefined
-              ? typeof options.tabBarLabel === "string"
-                ? t(options.tabBarLabel)
-                : options.tabBarLabel
-              : options.title !== undefined
-                ? t(options.title)
-                : route.name);
-          const isFocused =
-            state.index ===
-            state.routes.findIndex((r: any) => r.key === route.key);
-          const onPress = () => {
-            const event = navigation.emit({
-              type: "tabPress",
-              target: route.key,
-              canPreventDefault: true,
-            });
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
-            }
-          };
-          const getIcon = () => {
-            const activeColor = "#15803d";
-            const inactiveColor = "#6b7280";
-            const color = isFocused ? activeColor : inactiveColor;
-            switch (route.name) {
-              case "dashboard":
-                return (
-                  <Home
-                    size={24}
-                    color={color}
-                    strokeWidth={isFocused ? 2.5 : 2}
-                  />
-                );
-              case "visits":
-                return (
-                  <CalendarDays
-                    size={24}
-                    color={color}
-                    strokeWidth={isFocused ? 2.5 : 2}
-                  />
-                );
-              case "reports":
-                return (
-                  <FileText
-                    size={24}
-                    color={color}
-                    strokeWidth={isFocused ? 2.5 : 2}
-                  />
-                );
-              case "profile":
-                return (
-                  <User
-                    size={24}
-                    color={color}
-                    strokeWidth={isFocused ? 2.5 : 2}
-                  />
-                );
-              default:
-                return null;
-            }
-          };
-          const TabItem = (
-            <TouchableOpacity
-              key={route.key}
-              accessibilityRole="button"
-              accessibilityState={
-                isFocused
-                  ? {
-                      selected: true,
-                    }
-                  : {}
-              }
-              onPress={onPress}
-              className="flex-1 items-center justify-center pt-1 group h-full"
-            >
-              {getIcon()}
-              <Text
-                className={`text-[10px] mt-1 font-brandon-medium ${isFocused ? "text-green-800 font-brandon-bold" : "text-gray-500"}`}
-              >
-                {label}
-              </Text>
-            </TouchableOpacity>
-          );
-          if (index === 1) {
+    <View style={styles.outerWrap}>
+      {/* Main Frosted Capsule Dock (Inspired by Reference Screens 1 & 4) */}
+      <View style={styles.capsuleContainer}>
+        <BlurView intensity={85} tint="dark" style={styles.blurView}>
+          {TAB_ROUTES.map((tab) => {
+            const isFocused =
+              pathname === `/${tab.name}` || pathname.endsWith(`/${tab.name}`);
+            const label = t(tab.key, tab.defaultLabel);
+            const IconComponent = tab.Icon;
+
             return (
-              <React.Fragment key={route.key + "_fragment"}>
-                {TabItem}
-                <View key="fab" className="flex-1 items-center justify-center">
-                  <TouchableOpacity
-                    onPress={() =>
-                      router.push("/(employee)/register-farmer/step1" as any)
-                    }
-                    className="w-14 h-14 bg-[#15803d] rounded-full items-center justify-center shadow-lg -mt-8 border-4 border-white"
-                  >
-                    <Plus size={32} color="#fff" strokeWidth={2.5} />
-                  </TouchableOpacity>
-                </View>
-              </React.Fragment>
+              <TouchableOpacity
+                key={tab.name}
+                accessibilityRole="button"
+                accessibilityState={isFocused ? { selected: true } : {}}
+                activeOpacity={0.85}
+                onPress={() => {
+                  if (!isFocused) {
+                    router.navigate(tab.path as any);
+                  }
+                }}
+                style={[
+                  styles.tabButton,
+                  isFocused && styles.tabButtonActive,
+                ]}
+              >
+                <IconComponent
+                  size={20}
+                  color={isFocused ? "#4ade80" : "rgba(255,255,255,0.55)"}
+                  strokeWidth={isFocused ? 2.5 : 2}
+                />
+                {isFocused && (
+                  <Text style={styles.activeLabel} numberOfLines={1}>
+                    {label}
+                  </Text>
+                )}
+              </TouchableOpacity>
             );
-          }
-          return TabItem;
-        })}
-      </BlurView>
+          })}
+        </BlurView>
+      </View>
+
+      {/* Detached Glowing Action Orb (Register / Quick Action) */}
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => router.push("/(employee)/register-farmer/step1" as any)}
+        style={styles.fabOrb}
+      >
+        <Plus size={26} color="#062214" strokeWidth={2.8} />
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  outerWrap: {
     position: "absolute",
     bottom: 24,
     left: 20,
     right: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  capsuleContainer: {
+    flex: 1,
+    height: 64,
     borderRadius: 32,
     overflow: "hidden",
+    backgroundColor: "rgba(6, 34, 20, 0.92)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.14)",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 20,
-    },
-    shadowOpacity: 0.5,
-    shadowRadius: 30,
-    elevation: 20,
-    backgroundColor: "#ffffff",
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.35,
+    shadowRadius: 24,
+    elevation: 18,
   },
   blurView: {
+    flex: 1,
     flexDirection: "row",
-    height: 72,
-    paddingHorizontal: 10,
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "rgba(255, 255, 255, 0.85)",
+    paddingHorizontal: 8,
+    backgroundColor: "rgba(6, 34, 20, 0.75)",
+  },
+  tabButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 24,
+  },
+  tabButtonActive: {
+    backgroundColor: "rgba(74, 222, 128, 0.16)",
     borderWidth: 1,
-    borderColor: "rgba(0, 0, 0, 0.05)",
+    borderColor: "rgba(74, 222, 128, 0.35)",
+    paddingHorizontal: 16,
+  },
+  activeLabel: {
+    color: "#ffffff",
+    fontFamily: "Brandon-Bold",
+    fontSize: 13,
+    marginLeft: 8,
+  },
+  fabOrb: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#4ade80",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "rgba(255, 255, 255, 0.5)",
+    shadowColor: "#10b981",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.45,
+    shadowRadius: 18,
+    elevation: 16,
   },
 });
-import { TrackingProvider } from "../../context/TrackingContext";
+
 export default function EmployeeLayout() {
   return (
     <TrackingProvider>
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-        }}
-          tabBar={(props) => <CustomTabBar {...props} />}
-        >
-          <Tabs.Screen
-            name="dashboard"
-            options={{
-              title: "Home",
-            }}
-          />
-          <Tabs.Screen
-            name="visits"
-            options={{
-              title: "Visits",
-            }}
-          />
-          <Tabs.Screen
-            name="reports"
-            options={{
-              title: "Reports",
-            }}
-          />
-          <Tabs.Screen
-            name="profile"
-            options={{
-              title: "Profile",
-            }}
-          />
-          {/* Hidden Screens from Tab Bar */}
-          <Tabs.Screen
-            name="visit"
-            options={{
-              href: null,
-            }}
-          />
-          <Tabs.Screen
-            name="map"
-            options={{
-              href: null,
-            }}
-          />
-          <Tabs.Screen
-            name="edit-profile"
-            options={{
-              href: null,
-            }}
-          />
-          <Tabs.Screen
-            name="attendance"
-            options={{
-              href: null,
-            }}
-          />
-          <Tabs.Screen
-            name="menu"
-            options={{
-              href: null,
-            }}
-          />
-          <Tabs.Screen
-            name="register-farmer"
-            options={{
-              href: null,
-            }}
-          />
-          <Tabs.Screen
-            name="farmer"
-            options={{
-              href: null,
-            }}
-          />
-          <Tabs.Screen
-            name="report"
-            options={{
-              href: null,
-            }}
-          />
-          <Tabs.Screen
-            name="notifications"
-            options={{
-              href: null,
-            }}
-          />
-        </Tabs>
+      <View style={{ flex: 1 }}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+          }}
+        />
+        <FloatingEmployeeTabBar />
+      </View>
     </TrackingProvider>
   );
 }

@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
-  ImageBackground
+  Image
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -28,8 +28,8 @@ export default function FarmerHistoryScreen() {
       <StatusBar barStyle="dark-content" />
 
       {/* STUNNING ORGANIC TEXTURE HEADER */}
-      <View style={{ width: "100%", height: 280, backgroundColor: "#ecfdf5", borderBottomRightRadius: 80 }}>
-        <ImageBackground
+      <View style={{ width: "100%", height: 280, backgroundColor: "#ecfdf5", borderBottomRightRadius: 80, overflow: "hidden" }}>
+        <Image
           source={require("../../assets/images/image10.jpg")}
           style={{ width: "100%", height: "100%", opacity: 0.3 }}
           resizeMode="cover"

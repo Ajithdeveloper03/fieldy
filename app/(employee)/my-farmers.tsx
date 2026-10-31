@@ -7,6 +7,8 @@ import {
   Image,
   StyleSheet,
   StatusBar,
+  Linking,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -129,14 +131,23 @@ export default function EmployeeMyFarmersScreen() {
                 {/* Bottom Action Icons */}
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 1, borderTopColor: "#f1f5f9", paddingTop: 16 }}>
                   <View style={{ flexDirection: "row", gap: 12 }}>
-                    <TouchableOpacity style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "#f1f5f9", alignItems: "center", justifyContent: "center" }}>
+                    <TouchableOpacity
+                      onPress={() => Linking.openURL("tel:+919876543210")}
+                      style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "#f1f5f9", alignItems: "center", justifyContent: "center" }}
+                    >
                       <Phone size={18} color="#0f172a" />
                     </TouchableOpacity>
-                    <TouchableOpacity style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "#f1f5f9", alignItems: "center", justifyContent: "center" }}>
+                    <TouchableOpacity
+                      onPress={() => Alert.alert("Site Chat", `Opening direct dispatch channel with ${farmer.name}...`)}
+                      style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "#f1f5f9", alignItems: "center", justifyContent: "center" }}
+                    >
                       <MessageSquare size={18} color="#0f172a" />
                     </TouchableOpacity>
                   </View>
-                  <TouchableOpacity style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10, backgroundColor: "#0f172a", borderRadius: 12 }}>
+                  <TouchableOpacity
+                    onPress={() => router.push(`/(employee)/farmer/${farmer.id}` as any)}
+                    style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10, backgroundColor: "#0f172a", borderRadius: 12 }}
+                  >
                     <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13, marginRight: 8 }}>View Facility</Text>
                     <ArrowRight size={16} color="#ffffff" />
                   </TouchableOpacity>

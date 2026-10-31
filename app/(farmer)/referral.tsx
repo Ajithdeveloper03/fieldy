@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
-  ImageBackground,
   Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -32,11 +31,12 @@ export default function FarmerReferralScreen() {
       <StatusBar barStyle="light-content" />
 
       {/* Cinematic Golden/Emerald Background */}
-      <ImageBackground
-        source={require("../../assets/images/image4.jpg")}
-        style={StyleSheet.absoluteFill}
-        resizeMode="cover"
-      >
+      <View style={StyleSheet.absoluteFill}>
+        <Image
+          source={require("../../assets/images/image4.jpg")}
+          style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
+          resizeMode="cover"
+        />
         <LinearGradient
           colors={["rgba(2, 44, 34, 0.8)", "rgba(2, 44, 34, 0.95)", "#022c22"]}
           locations={[0, 0.4, 1]}
@@ -44,7 +44,7 @@ export default function FarmerReferralScreen() {
         />
         
         {/* Glow behind the massive reward card */}
-        <View style={{ position: "absolute", top: "15%", left: "50%", marginLeft: -150, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(252, 211, 77, 0.15)", filter: "blur(60px)" }} />
+        <View style={{ position: "absolute", top: "15%", left: "50%", marginLeft: -150, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(252, 211, 77, 0.15)" }} />
 
         <SafeAreaView style={{ flex: 1 }}>
           
@@ -142,7 +142,7 @@ export default function FarmerReferralScreen() {
 
           </ScrollView>
         </SafeAreaView>
-      </ImageBackground>
+      </View>
     </View>
   );
 }

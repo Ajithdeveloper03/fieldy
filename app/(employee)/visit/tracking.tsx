@@ -27,7 +27,7 @@ import { employeeProfile, getVisitWithFarmer } from "../../../data/mockData";
 
 export default function TrackingScreen() {
   const { id } = useLocalSearchParams();
-  const visit = id ? getVisitWithFarmer(id as string) : null;
+  const visit = getVisitWithFarmer((id as string) || "v1");
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

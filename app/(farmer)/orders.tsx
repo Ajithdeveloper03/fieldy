@@ -6,8 +6,7 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
-  StatusBar,
-  ImageBackground
+  StatusBar
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -28,11 +27,12 @@ export default function FarmerOrdersScreen() {
       <StatusBar barStyle="light-content" />
 
       {/* Cinematic Drone Map Background */}
-      <ImageBackground
-        source={require("../../assets/images/image2.jpg")}
-        style={StyleSheet.absoluteFill}
-        resizeMode="cover"
-      >
+      <View style={StyleSheet.absoluteFill}>
+        <Image
+          source={require("../../assets/images/image2.jpg")}
+          style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
+          resizeMode="cover"
+        />
         <LinearGradient
           colors={["rgba(6, 34, 20, 0.8)", "rgba(6, 34, 20, 0.95)", "#062214"]}
           locations={[0, 0.3, 1]}
@@ -40,7 +40,7 @@ export default function FarmerOrdersScreen() {
         />
         
         {/* Glow behind the active order */}
-        <View style={{ position: "absolute", top: "20%", left: "50%", marginLeft: -150, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(16, 185, 129, 0.15)", filter: "blur(60px)" }} />
+        <View style={{ position: "absolute", top: "20%", left: "50%", marginLeft: -150, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(16, 185, 129, 0.15)" }} />
 
         <SafeAreaView style={{ flex: 1 }}>
           
@@ -157,7 +157,7 @@ export default function FarmerOrdersScreen() {
 
           </ScrollView>
         </SafeAreaView>
-      </ImageBackground>
+      </View>
     </View>
   );
 }

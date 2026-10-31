@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
-  ImageBackground
+  Image
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -28,11 +28,12 @@ export default function FarmerRecommendationsScreen() {
       <StatusBar barStyle="dark-content" />
 
       {/* Premium Faint Organic Background */}
-      <ImageBackground
-        source={require("../../assets/images/image10.jpg")}
-        style={StyleSheet.absoluteFill}
-        resizeMode="cover"
-      >
+      <View style={StyleSheet.absoluteFill}>
+        <Image
+          source={require("../../assets/images/image10.jpg")}
+          style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
+          resizeMode="cover"
+        />
         <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(255,255,255,0.85)" }]} />
         <View style={{ position: "absolute", top: -100, right: -50, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(16, 185, 129, 0.1)" }} />
 
@@ -118,7 +119,7 @@ export default function FarmerRecommendationsScreen() {
 
           </ScrollView>
         </SafeAreaView>
-      </ImageBackground>
+      </View>
     </View>
   );
 }

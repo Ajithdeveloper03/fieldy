@@ -119,7 +119,7 @@ export default function EmployeeCalendarScreen() {
       <StatusBar barStyle="light-content" />
 
       {/* Ambient background glow */}
-      <View style={{ position: "absolute", top: -100, right: -100, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(2, 132, 199, 0.15)", filter: "blur(60px)" }} />
+      <View style={{ position: "absolute", top: -100, right: -100, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(2, 132, 199, 0.15)" }} />
 
       <SafeAreaView style={{ flex: 1 }}>
         
@@ -204,7 +204,10 @@ export default function EmployeeCalendarScreen() {
                     </View>
 
                     {visit.status === "Completed" && (
-                       <TouchableOpacity style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.05)", paddingVertical: 12, borderRadius: 12, marginTop: 16 }}>
+                       <TouchableOpacity
+                         onPress={() => router.push("/(employee)/report/1")}
+                         style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.05)", paddingVertical: 12, borderRadius: 12, marginTop: 16 }}
+                       >
                          <Text style={{ color: "#38bdf8", fontFamily: "Brandon-Bold", fontSize: 14 }}>View Submitted Report</Text>
                          <ArrowRight size={16} color="#38bdf8" style={{ marginLeft: 6 }} />
                        </TouchableOpacity>

@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ImageBackground,
   Image,
   StyleSheet,
   StatusBar,
@@ -28,23 +27,24 @@ export default function FarmerVisitReportScreen() {
       <StatusBar barStyle="light-content" />
 
       {/* DRONE VIEW BACKGROUND (From Image 1 Right Panel) */}
-      <ImageBackground
-        source={require("../../../assets/images/image1.jpg")}
-        style={{ flex: 1 }}
-        resizeMode="cover"
-      >
+      <View style={{ flex: 1 }}>
+        <Image
+          source={require("../../../assets/images/image1.jpg")}
+          style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
+          resizeMode="cover"
+        />
         <SafeAreaView style={{ flex: 1, justifyContent: "space-between", paddingBottom: 24 }}>
           
           {/* FLOATING HEADER CONTROLS */}
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 24, paddingTop: 16 }}>
             <TouchableOpacity 
-              style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(0,0,0,0.5)", alignItems: "center", justifyContent: "center", backdropFilter: "blur(10px)" }}
+              style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(0,0,0,0.5)", alignItems: "center", justifyContent: "center" }}
               onPress={() => router.back()}
             >
               <ChevronLeft size={24} color="#ffffff" />
             </TouchableOpacity>
 
-            <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "rgba(0,0,0,0.5)", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999, backdropFilter: "blur(10px)" }}>
+            <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "rgba(0,0,0,0.5)", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 }}>
               <Image source={require("../../../assets/images/image2.jpg")} style={{ width: 24, height: 24, borderRadius: 12, marginRight: 8 }} />
               <View>
                 <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13 }}>North Field</Text>
@@ -56,10 +56,10 @@ export default function FarmerVisitReportScreen() {
 
           {/* FLOATING ZOOM CONTROLS (Right Edge) */}
           <View style={{ position: "absolute", right: 24, top: "25%", gap: 12 }}>
-            <TouchableOpacity style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(0,0,0,0.5)", alignItems: "center", justifyContent: "center", backdropFilter: "blur(10px)" }}>
+            <TouchableOpacity style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(0,0,0,0.5)", alignItems: "center", justifyContent: "center" }}>
               <ZoomIn size={20} color="#ffffff" />
             </TouchableOpacity>
-            <TouchableOpacity style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(0,0,0,0.5)", alignItems: "center", justifyContent: "center", backdropFilter: "blur(10px)" }}>
+            <TouchableOpacity style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(0,0,0,0.5)", alignItems: "center", justifyContent: "center" }}>
               <ZoomOut size={20} color="#ffffff" />
             </TouchableOpacity>
           </View>
@@ -95,7 +95,7 @@ export default function FarmerVisitReportScreen() {
           </View>
 
         </SafeAreaView>
-      </ImageBackground>
+      </View>
     </View>
   );
 }

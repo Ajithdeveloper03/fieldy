@@ -1,4 +1,5 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
@@ -317,6 +318,14 @@ export default function LiveTrackingMapScreen() {
         </Marker>
       </MapView>
 
+      {/* Back Button */}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => (router.canGoBack() ? router.back() : router.replace('/(employee)/dashboard'))}
+      >
+        <Ionicons name="chevron-back" size={24} color="#fff" />
+      </TouchableOpacity>
+
       {/* Floating Controls */}
       <View style={styles.floatingControls}>
         <TouchableOpacity style={styles.controlButton} onPress={recenterCamera}>
@@ -389,13 +398,22 @@ export default function LiveTrackingMapScreen() {
         </View>
 
         <View style={styles.actionRow}>
-          <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#10B981' }]}>
+          <TouchableOpacity
+            onPress={() => router.push('/(employee)/visit/check-in')}
+            style={[styles.actionBtn, { backgroundColor: '#10B981' }]}
+          >
             <Text style={styles.actionBtnText}>Check-in Farm</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#F59E0B' }]}>
+          <TouchableOpacity
+            onPress={() => setShowTraffic(!showTraffic)}
+            style={[styles.actionBtn, { backgroundColor: '#F59E0B' }]}
+          >
             <Text style={styles.actionBtnText}>Traffic</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#EF4444' }]}>
+          <TouchableOpacity
+            onPress={() => router.push('/(employee)/sos')}
+            style={[styles.actionBtn, { backgroundColor: '#EF4444' }]}
+          >
             <Text style={styles.actionBtnText}>SOS</Text>
           </TouchableOpacity>
         </View>
@@ -455,6 +473,19 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 10,
     fontWeight: 'bold',
+  },
+  backButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 60 : 40,
+    left: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(30, 41, 59, 0.8)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#334155',
   },
   floatingControls: {
     position: 'absolute',

@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
-  StatusBar
+  StatusBar,
+  Linking
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -51,7 +52,7 @@ export default function OfficerScreen() {
             <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 15, marginBottom: 16 }}>Senior Agronomy Officer (ID: FO-902)</Text>
 
             <View style={{ flexDirection: "row", gap: 12 }}>
-              <TouchableOpacity style={{ flex: 1, backgroundColor: "#10b981", paddingVertical: 14, borderRadius: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", shadowColor: "#10b981", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6 }}>
+              <TouchableOpacity onPress={() => Linking.openURL("tel:+919876543210")} style={{ flex: 1, backgroundColor: "#10b981", paddingVertical: 14, borderRadius: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", shadowColor: "#10b981", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6 }}>
                 <Phone size={18} color="#ffffff" style={{ marginRight: 8 }} />
                 <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 15 }}>Call Officer</Text>
               </TouchableOpacity>

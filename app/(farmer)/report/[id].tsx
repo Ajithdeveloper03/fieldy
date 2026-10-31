@@ -5,7 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  ImageBackground,
   StyleSheet,
   Share,
 } from "react-native";
@@ -103,10 +102,9 @@ export default function FarmerReportDetailScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
       {/* Background image subtle overlay */}
-      <ImageBackground
+      <Image
         source={require("../../../assets/images/image4.jpg")}
-        style={StyleSheet.absoluteFill}
-        imageStyle={{ opacity: 0.1 }}
+        style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%", opacity: 0.1 }]}
         resizeMode="cover"
       />
 
@@ -145,11 +143,12 @@ export default function FarmerReportDetailScreen() {
           {/* Top Hero Banner */}
           <View className="px-5 mb-5">
             <View className="rounded-3xl overflow-hidden shadow-sm border border-emerald-800/20 bg-slate-900">
-              <ImageBackground
-                source={require("../../../assets/images/image6.jpg")}
-                className="w-full h-44"
-                resizeMode="cover"
-              >
+              <View className="w-full h-44">
+                <Image
+                  source={require("../../../assets/images/image6.jpg")}
+                  style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
+                  resizeMode="cover"
+                />
                 <LinearGradient
                   colors={["transparent", "rgba(6,44,30,0.92)"]}
                   style={StyleSheet.absoluteFill}
@@ -179,7 +178,7 @@ export default function FarmerReportDetailScreen() {
                     </Text>
                   </View>
                 </View>
-              </ImageBackground>
+              </View>
             </View>
           </View>
 

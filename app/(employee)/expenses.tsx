@@ -172,7 +172,7 @@ export default function ExpensesScreen() {
                   style={{ backgroundColor: "rgba(30, 41, 59, 0.7)", borderRadius: 20, padding: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}
                 >
                   <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <div>
+                    <View>
                       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                         <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>{item.category}</Text>
                         <View style={{ backgroundColor: `${item.statusColor}20`, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
@@ -180,7 +180,7 @@ export default function ExpensesScreen() {
                         </View>
                       </View>
                       <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 4 }}>{item.date} • {item.id}</Text>
-                    </div>
+                    </View>
                     <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 18 }}>₹{item.amount}</Text>
                   </View>
                   {item.note && (

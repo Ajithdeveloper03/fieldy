@@ -7,7 +7,6 @@ import {
   Image,
   StyleSheet,
   StatusBar,
-  ImageBackground,
   Dimensions
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -38,11 +37,12 @@ export default function FarmerDashboardScreen() {
         
         {/* HEADER HERO SECTION */}
         <View style={{ width: "100%", height: 340, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, overflow: "hidden", shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 10, backgroundColor: "#064e3b" }}>
-          <ImageBackground
-            source={require("../../assets/images/image4.jpg")}
-            style={{ width: "100%", height: "100%" }}
-            resizeMode="cover"
-          >
+          <View style={{ width: "100%", height: "100%" }}>
+            <Image
+              source={require("../../assets/images/image4.jpg")}
+              style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
+              resizeMode="cover"
+            />
             <LinearGradient
               colors={["rgba(6, 78, 59, 0.9)", "rgba(6, 78, 59, 0.4)", "rgba(0,0,0,0)"]}
               style={StyleSheet.absoluteFill}
@@ -72,7 +72,7 @@ export default function FarmerDashboardScreen() {
               </View>
             </View>
 
-          </ImageBackground>
+          </View>
         </View>
 
         {/* QUICK ACTIONS GRID */}
@@ -156,10 +156,12 @@ export default function FarmerDashboardScreen() {
         <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
           <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 16 }}>Coming Up</Text>
           <TouchableOpacity onPress={() => router.push("/(farmer)/recommendations")} style={{ width: "100%", height: 160, borderRadius: 24, overflow: "hidden", shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.1, shadowRadius: 15, elevation: 5 }}>
-            <ImageBackground
-              source={require("../../assets/images/image14.jpg")}
-              style={{ width: "100%", height: "100%", justifyContent: "flex-end" }}
-            >
+            <View style={{ width: "100%", height: "100%", justifyContent: "flex-end" }}>
+              <Image
+                source={require("../../assets/images/image14.jpg")}
+                style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
+                resizeMode="cover"
+              />
               <LinearGradient
                 colors={["transparent", "rgba(0,0,0,0.8)"]}
                 style={{ position: "absolute", bottom: 0, width: "100%", height: "70%" }}
@@ -176,7 +178,7 @@ export default function FarmerDashboardScreen() {
                   <ChevronRight size={18} color="#0f172a" />
                 </View>
               </View>
-            </ImageBackground>
+            </View>
           </TouchableOpacity>
         </View>
 
