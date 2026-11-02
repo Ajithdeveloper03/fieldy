@@ -54,8 +54,10 @@ return new class extends Migration
             $table->foreignId('company_id')->nullable()->after('id')->constrained('companies')->onDelete('cascade');
         });
 
-        // Modify users role column to support 'superadmin'
-        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('superadmin', 'admin', 'employee', 'farmer') NOT NULL DEFAULT 'employee'");
+        // Modify users role column to support 'superadmin' (MySQL only)
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('superadmin', 'admin', 'employee', 'farmer') NOT NULL DEFAULT 'employee'");
+        }
 
         // Assign existing users to default company
         DB::table('users')->whereNull('company_id')->update(['company_id' => $defaultCompanyId]);
@@ -86,7 +88,9 @@ return new class extends Migration
             $table->dropColumn('company_id');
         });
 
-        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'employee', 'farmer') NOT NULL DEFAULT 'employee'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'employee', 'farmer') NOT NULL DEFAULT 'employee'");
+        }
 
         Schema::dropIfExists('companies');
     }

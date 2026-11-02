@@ -5,12 +5,13 @@ import { router, usePage } from '@inertiajs/react';
 import {
     MapPin, FileCheck2, CheckCircle2, Maximize, Minimize, Briefcase, ArrowRight, ArrowUp,
     FileText, AlertCircle, Building2, Sparkles, ClipboardList, UserPlus, ShieldAlert,
-    Wallet, ChevronRight, Activity, Search, Filter, Clock, TrendingUp, Lightbulb, X
+    Wallet, ChevronRight, Activity, Search, Filter, Clock, TrendingUp, Lightbulb, X, Layers
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useTranslation } from 'react-i18next';
+import { getIndustryById } from '../../data/industriesConfig';
 
 // Fix Leaflet's default icon path issues
 delete L.Icon.Default.prototype._getIconUrl;
@@ -43,14 +44,21 @@ const GROWTH = [
 
 const greetingFor = (h) => (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening');
 
-export default function Dashboard({ locationLogs = [], stats = {}, recentVisits = [], recentFarmers = [], pendingApprovals = [], agriStats = {} }) {
+export default function Dashboard({ currentIndustry: initialIndustry, locationLogs = [], stats = {}, recentVisits = [], recentFarmers = [], pendingApprovals = [], agriStats = {}, growthData = [], telemetry = [] }) {
     const [isMapFullscreen, setIsMapFullscreen] = useState(false);
     const [prompt, setPrompt] = useState('');
     const [showTip, setShowTip] = useState(true);
     const [activeAiTab, setActiveAiTab] = useState('dispatch');
     const { t } = useTranslation();
-    const { props } = usePage();
+    const { props, url } = usePage();
     const firstName = (props.auth?.user?.name || 'Admin').split(' ')[0];
+
+    // Determine current industry from prop, query parameter or page props
+    const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const industryKey = initialIndustry || props.currentIndustry || urlParams?.get('industry') || 'real_estate';
+    const currentIndustry = getIndustryById(industryKey);
+    const labels = currentIndustry.adminLabels;
+    const IndIcon = currentIndustry.icon || Building2;
 
     const [liveLocationLogs, setLiveLocationLogs] = useState(locationLogs);
     
@@ -64,12 +72,11 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
             window.Echo.channel('live-tracking')
                 .listen('LocationUpdated', (e) => {
                     setLiveLocationLogs(prev => {
-                        // Find if log for this employee already exists
                         const newLogs = [...prev];
                         const index = newLogs.findIndex(log => log.employee?.id === e.employeeId || log.employee_id === e.employeeId);
                         
                         const newLog = {
-                            id: Date.now(), // temporary ID
+                            id: Date.now(),
                             latitude: e.latitude,
                             longitude: e.longitude,
                             employee_id: e.employeeId,
@@ -101,44 +108,72 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
     };
 
     const quickActions = [
-        { label: t('New Task'), icon: ClipboardList, href: '/admin/tasks' },
-        { label: t('Add Property'), icon: Building2, href: '/admin/farmers/register' },
-        { label: t('Add Agent'), icon: UserPlus, href: '/admin/employees/create' },
+        { label: t(labels.todayTasksTitle || 'New Task'), icon: ClipboardList, href: '/admin/tasks' },
+        { label: t(labels.addEntityAction || 'Add Property'), icon: IndIcon, href: '/admin/farmers/register' },
+        { label: t(`Add ${labels.navAgents || 'Agent'}`), icon: UserPlus, href: '/admin/employees/create' },
         { label: t('Live Map'), icon: ShieldAlert, href: '/admin/monitor' },
         { label: t('Payments'), icon: Wallet, href: '/admin/payments' },
     ];
 
     const services = [
         {
-            title: t('Properties'), sub: t('Plots, villas and buildings'),
-            value: stats?.totalFarmers ?? 0, icon: Building2, chip: { cls: 'hp-chip-info', label: t('Listed') }, href: '/admin/farmers',
+            title: t(labels.entityTitle),
+            sub: t(labels.entitySub),
+            value: stats?.totalFarmers ?? 0,
+            icon: IndIcon,
+            chip: { cls: 'hp-chip-info', label: t(labels.entityListedChip) },
+            href: '/admin/farmers',
         },
         {
-            title: t('Agents on Duty'), sub: t('Field agents currently working'),
-            value: stats?.activeEmployees ?? 0, icon: Briefcase, chip: { cls: 'hp-chip-success hp-chip-dot', label: t('Online') }, href: '/admin/monitor',
+            title: t(labels.agentDutyTitle),
+            sub: t(labels.agentDutySub),
+            value: stats?.activeEmployees ?? 0,
+            icon: Briefcase,
+            chip: { cls: 'hp-chip-success hp-chip-dot', label: t('Online') },
+            href: '/admin/monitor',
         },
         {
-            title: t('Today Tasks'), sub: t('Visits and customer meetings'),
-            value: stats?.activeWorkOrders ?? 8, icon: FileText, chip: { cls: 'hp-chip-primary', label: `${stats?.slaCompliance || '96%'}` }, href: '/admin/tasks',
+            title: t(labels.todayTasksTitle),
+            sub: t(labels.todayTasksSub),
+            value: stats?.activeWorkOrders ?? 8,
+            icon: FileText,
+            chip: { cls: 'hp-chip-primary', label: `${stats?.slaCompliance || '96.4%'}` },
+            href: '/admin/tasks',
         },
         {
-            title: t('Completed Visits'), sub: t('Finished customer site visits'),
-            value: stats?.totalVisits ?? 0, icon: FileCheck2, chip: { cls: 'hp-chip-gray', label: `${stats?.weeklyVisits ?? 0} ${t('this week')}` }, href: '/admin/visits',
+            title: t(labels.completedTasksTitle),
+            sub: t(labels.completedTasksSub),
+            value: stats?.totalVisits ?? 0,
+            icon: FileCheck2,
+            chip: { cls: 'hp-chip-gray', label: `${stats?.weeklyVisits ?? 0} ${t('this week')}` },
+            href: '/admin/visits',
         },
     ];
 
     const todos = [
         ...(pendingApprovals.length > 0 ? [{
-            icon: AlertCircle, tone: 'warning', title: `${pendingApprovals.length} ${t('properties need approval')}`,
-            sub: t('Check documents and approve new property listings'), cta: t('Review'), href: '/admin/pending-farmers',
+            icon: AlertCircle,
+            tone: 'warning',
+            title: `${pendingApprovals.length} ${t(labels.todosApprovalTitle)}`,
+            sub: t(labels.todosApprovalSub),
+            cta: t('Review'),
+            href: '/admin/pending-farmers',
         }] : []),
         {
-            icon: ClipboardList, tone: 'primary', title: t('Assign upcoming visits'),
-            sub: t('Send agents to scheduled property showings'), cta: t('Assign'), href: '/admin/tasks',
+            icon: ClipboardList,
+            tone: 'primary',
+            title: t(labels.todosAssignTitle),
+            sub: t(labels.todosAssignSub),
+            cta: t('Assign'),
+            href: '/admin/tasks',
         },
         {
-            icon: Activity, tone: 'info', title: `${t('Checked In Today')}: ${stats?.todayAttendance ?? 0}`,
-            sub: t('View agent locations and arrivals on map'), cta: t('View Map'), href: '/admin/monitor',
+            icon: Activity,
+            tone: 'info',
+            title: `${t('Checked In Today')}: ${stats?.todayAttendance ?? 0}`,
+            sub: t('View agent locations and arrivals on map'),
+            cta: t('View Map'),
+            href: '/admin/monitor',
         },
     ];
 
@@ -151,7 +186,7 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
 
     const combinedLogs = [
         ...recentVisits.map(v => ({ time: v.time, user: v.employee, event: `${t('Finished visit at')} ${v.farmer}`, type: 'success', icon: CheckCircle2 })),
-        ...liveLocationLogs.slice(0, 5).map(l => ({ time: 'Just now', user: l.employee?.name || 'Agent', event: t('Arrived at property site'), type: 'info', icon: MapPin }))
+        ...liveLocationLogs.slice(0, 5).map(l => ({ time: 'Just now', user: l.employee?.name || 'Agent', event: t('Arrived at field site'), type: 'info', icon: MapPin }))
     ].slice(0, 6);
 
     const mapContent = (
@@ -187,7 +222,7 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
     );
 
     return (
-        <AdminLayout>
+        <AdminLayout currentIndustry={currentIndustry}>
 
             {/* ══════════ HOME HERO — AI-first, hPanel style ══════════ */}
             <section className="hp-animate-in pt-2 lg:pt-6 pb-8">
@@ -209,7 +244,7 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                                 value={prompt}
                                 onChange={(e) => setPrompt(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askAssistant(); } }}
-                                placeholder={t('Ask anything (e.g. today visits, pending approvals, agent locations)...')}
+                                placeholder={t(labels.searchPlaceholder)}
                                 className="flex-1 resize-none bg-transparent text-[14px] text-hp-dark placeholder:text-hp-muted focus:outline-none"
                             />
                         </div>
@@ -227,8 +262,8 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                     </form>
 
                     <div className="flex flex-wrap justify-center gap-2 mt-4">
-                        {quickActions.map((a) => (
-                            <button key={a.href} type="button" onClick={() => router.visit(a.href)} className="hp-pill text-xs">
+                        {quickActions.map((a, idx) => (
+                            <button key={idx} type="button" onClick={() => router.visit(a.href)} className="hp-pill text-xs">
                                 <a.icon className="w-3.5 h-3.5" /> {a.label}
                             </button>
                         ))}
@@ -244,8 +279,8 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                             <Lightbulb className="w-4 h-4 text-white" />
                         </span>
                         <div>
-                            <p className="font-bold text-sm">{t('Track agents live on the map')}</p>
-                            <p className="text-xs text-white/70">{t('See real-time locations, site visits and daily travel distance.')}</p>
+                            <p className="font-bold text-sm">{t(labels.bannerTitle)}</p>
+                            <p className="text-xs text-white/70">{t(labels.bannerSub)}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 self-start sm:self-auto">
@@ -259,7 +294,7 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                 </div>
             )}
 
-            {/* ══════════ YOUR BUSINESS ══════════ */}
+            {/* ══════════ YOUR BUSINESS OVERVIEW ══════════ */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
                 <section className="xl:col-span-2">
                     <div className="flex items-center justify-between mb-3">
@@ -269,8 +304,8 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                         </button>
                     </div>
                     <div className="hp-card overflow-hidden">
-                        {services.map((s) => (
-                            <div key={s.href} className="hp-row cursor-pointer group" onClick={() => router.visit(s.href)}>
+                        {services.map((s, idx) => (
+                            <div key={idx} className="hp-row cursor-pointer group" onClick={() => router.visit(s.href)}>
                                 <span className="hp-icon-tile"><s.icon className="w-5 h-5" /></span>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
@@ -316,8 +351,8 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                 <section className="xl:col-span-2 hp-card overflow-hidden flex flex-col">
                     <div className="hp-card-header">
                         <div>
-                            <h2 className="hp-card-title">{t('Agent Live Locations')}</h2>
-                            <p className="text-xs text-hp-muted">{liveLocationLogs.length} {t('agents online on map')}</p>
+                            <h2 className="hp-card-title">{t(labels.agentDutyTitle || 'Agent Live Locations')}</h2>
+                            <p className="text-xs text-hp-muted">{liveLocationLogs.length} {t('personnel online on map')}</p>
                         </div>
                         <span className="hp-chip hp-chip-success hp-chip-dot">{t('Live')}</span>
                     </div>
@@ -342,7 +377,7 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                             <div className="flex flex-col items-center justify-center text-center py-14 px-6">
                                 <span className="hp-icon-tile !w-12 !h-12 mb-3"><Clock className="w-6 h-6" /></span>
                                 <p className="text-sm font-bold text-hp-dark">{t('No recent activity')}</p>
-                                <p className="text-xs text-hp-muted mt-1">{t('Agent check-ins will show up here.')}</p>
+                                <p className="text-xs text-hp-muted mt-1">{t('Check-ins will show up here.')}</p>
                             </div>
                         ) : combinedLogs.map((log, i) => (
                             <div key={i} className="flex items-start gap-3 px-5 py-3.5 border-t border-hp-border first:border-t-0 hover:bg-[#FCFBFA] transition-colors">
@@ -362,16 +397,16 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                 </section>
             </div>
 
-            {/* ══════════ PERFORMANCE ══════════ */}
+            {/* ══════════ PERFORMANCE CHART ══════════ */}
             <section className="hp-card mb-8">
                 <div className="hp-card-header flex-wrap">
                     <div>
-                        <h2 className="hp-card-title">{t('Weekly Visits & Bookings')}</h2>
-                        <p className="text-xs text-hp-muted">{t('Number of visits completed and bookings received this week')}</p>
+                        <h2 className="hp-card-title">{t(labels.chartTitle)}</h2>
+                        <p className="text-xs text-hp-muted">{t(labels.chartSub)}</p>
                     </div>
                     <div className="flex items-center gap-4">
-                        <span className="flex items-center gap-1.5 text-xs text-hp-gray"><span className="w-2.5 h-2.5 rounded-sm bg-hp-primary"></span>{t('Visits')}</span>
-                        <span className="flex items-center gap-1.5 text-xs text-hp-gray"><span className="w-2.5 h-2.5 rounded-sm bg-hp-dark"></span>{t('Bookings')}</span>
+                        <span className="flex items-center gap-1.5 text-xs text-hp-gray"><span className="w-2.5 h-2.5 rounded-sm bg-hp-primary"></span>{t(labels.chartMetric1)}</span>
+                        <span className="flex items-center gap-1.5 text-xs text-hp-gray"><span className="w-2.5 h-2.5 rounded-sm bg-hp-dark"></span>{t(labels.chartMetric2)}</span>
                         <span className="hp-chip hp-chip-success"><TrendingUp className="w-3.5 h-3.5" /> +18%</span>
                     </div>
                 </div>
@@ -381,11 +416,11 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                             <div key={g} className="absolute left-0 right-0 border-t border-dashed border-hp-border" style={{ bottom: `${g}%` }} />
                         ))}
                         <div className="relative h-full flex justify-between items-end px-2 sm:px-8">
-                            {GROWTH.map((item) => (
+                            {((growthData && growthData.length > 0) ? growthData : GROWTH).map((item) => (
                                 <div key={item.day} className="flex flex-col items-center h-full group">
                                     <div className="flex-1 flex items-end gap-1.5 relative">
                                         <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-hp-dark text-white text-[11px] font-bold px-2 py-1 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                            {item.val} visits · ₹{item.rev}L
+                                            {item.val} {labels.chartMetric1} · {item.rev} {labels.chartMetric2}
                                         </div>
                                         <div className="w-3.5 sm:w-5 rounded-t-md bg-hp-primary group-hover:bg-hp-primary-hover transition-all duration-300" style={{ height: `${item.val}%` }} />
                                         <div className="w-3.5 sm:w-5 rounded-t-md bg-hp-dark/85 group-hover:bg-hp-dark transition-all duration-300" style={{ height: `${(item.rev / 500) * 100}%` }} />
@@ -398,10 +433,10 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                 </div>
             </section>
 
-            {/* ══════════ RECENT ACTIVITIES ══════════ */}
+            {/* ══════════ RECENT LOGS & VISITS ══════════ */}
             <section className="hp-card overflow-hidden mb-8">
                 <div className="hp-card-header flex-wrap">
-                    <h2 className="hp-card-title">{t('Recent Site Visits')}</h2>
+                    <h2 className="hp-card-title">{t(labels.recentVisitsTitle)}</h2>
                     <button type="button" onClick={() => router.visit('/admin/visits')} className="hp-btn hp-btn-sm hp-btn-text">
                         {t('View All')} <ChevronRight className="w-4 h-4" />
                     </button>
@@ -410,7 +445,7 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                     <table className="hp-table min-w-[560px]">
                         <thead>
                             <tr>
-                                <th>{t('Property & Agent')}</th>
+                                <th>{t('Record & Assignee')}</th>
                                 <th>{t('ID')}</th>
                                 <th>{t('Date')}</th>
                                 <th>{t('Status')}</th>
@@ -425,18 +460,18 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                                             <span className="hp-icon-tile !w-9 !h-9"><FileText className="w-4 h-4" /></span>
                                             <div>
                                                 <span className="font-bold block text-sm">{visit.farmer}</span>
-                                                <span className="text-xs text-hp-muted">Agent: {visit.employee}</span>
+                                                <span className="text-xs text-hp-muted">Assignee: {visit.employee}</span>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="!text-hp-muted font-mono text-xs">SV-{String(visit.id).padStart(4, '0')}</td>
+                                    <td className="!text-hp-muted font-mono text-xs">LOG-{String(visit.id).padStart(4, '0')}</td>
                                     <td className="!text-hp-muted text-xs">{visit.date}</td>
                                     <td><span className="hp-chip hp-chip-success hp-chip-dot">{t('Completed')}</span></td>
                                     <td className="text-right"><ChevronRight className="w-4 h-4 text-hp-muted inline" /></td>
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="5" className="!py-12 text-center !text-hp-muted">{t('No recent site visits recorded yet.')}</td>
+                                    <td colSpan="5" className="!py-12 text-center !text-hp-muted">{t('No activity records found yet.')}</td>
                                 </tr>
                             )}
                         </tbody>
@@ -444,11 +479,11 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                 </div>
             </section>
 
-            {/* ══════════ PROPERTIES & RERA APPROVALS ══════════ */}
+            {/* ══════════ ENTITIES & PENDING APPROVALS ══════════ */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <section className="hp-card overflow-hidden">
                     <div className="hp-card-header">
-                        <h2 className="hp-card-title">{t('Recent Properties')}</h2>
+                        <h2 className="hp-card-title">{t(labels.recentEntityTitle)}</h2>
                         <button type="button" onClick={() => router.visit('/admin/farmers')} className="hp-btn hp-btn-sm hp-btn-text">
                             {t('View All')} <ArrowRight className="w-4 h-4" />
                         </button>
@@ -466,18 +501,18 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                                 <p className="text-xs text-hp-muted font-mono">{farmer.farmer_code}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-xs font-semibold text-hp-dark">{farmer.crop && farmer.crop !== 'Vetiver' ? farmer.crop : 'Plots & Villas'}</p>
+                                <p className="text-xs font-semibold text-hp-dark">{farmer.crop && farmer.crop !== 'Vetiver' ? farmer.crop : currentIndustry.badge}</p>
                                 <p className="text-xs text-hp-muted">{farmer.acres || '1'} {t('Units')}</p>
                             </div>
                         </div>
                     )) : (
-                        <div className="text-center text-hp-muted text-sm py-12">{t('No properties onboarded yet.')}</div>
+                        <div className="text-center text-hp-muted text-sm py-12">{t('No entities onboarded yet.')}</div>
                     )}
                 </section>
 
                 <section className="hp-card overflow-hidden">
                     <div className="hp-card-header">
-                        <h2 className="hp-card-title">{t('Pending Approvals')}</h2>
+                        <h2 className="hp-card-title">{t(labels.pendingTitle)}</h2>
                         <span className="hp-chip hp-chip-warning">{pendingApprovals.length} {t('Pending')}</span>
                     </div>
                     {pendingApprovals.length > 0 ? pendingApprovals.map((approval, i) => (
@@ -498,31 +533,31 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                             <span className="w-10 h-10 rounded-full bg-hp-success-light text-hp-success flex items-center justify-center mb-2">
                                 <CheckCircle2 className="w-5 h-5" />
                             </span>
-                            <p className="text-sm font-bold text-hp-dark">{t('All caught up! No pending properties.')}</p>
+                            <p className="text-sm font-bold text-hp-dark">{t('All caught up! No pending items.')}</p>
                         </div>
                     )}
                 </section>
             </div>
 
-            {/* ══════════ REAL ESTATE AI ASSISTANT ══════════ */}
+            {/* ══════════ INDUSTRY AI ASSISTANT BANNER ══════════ */}
             <div className="hp-card-gradient-dark-violet rounded-2xl p-5 sm:p-7 shadow-lg border border-indigo-500/20 text-white mt-8 relative overflow-hidden">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-bold text-xs">
-                                <Sparkles className="w-3 h-3 text-amber-400" /> AI Assistant
+                                <Sparkles className="w-3 h-3 text-amber-400" /> {currentIndustry.shortName} AI Assistant
                             </span>
                         </div>
                         <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
-                            {t('Need help with site visits or agents?')}
+                            {t(labels.aiHelpTitle)}
                         </h2>
                         <p className="text-xs sm:text-sm text-zinc-300 mt-1">
-                            {t('Ask questions about visits, check who is nearby, or get instant summaries.')}
+                            {t(labels.aiHelpSub)}
                         </p>
                     </div>
                     <button
                         type="button"
-                        onClick={() => askAssistant('Show today visits summary')}
+                        onClick={() => askAssistant(`Show ${currentIndustry.shortName} today summary`)}
                         className="hp-btn hp-btn-primary !rounded-full !h-10 px-5 font-bold text-xs shrink-0 self-start sm:self-auto"
                     >
                         <Sparkles className="w-4 h-4 mr-1.5" />
@@ -533,24 +568,24 @@ export default function Dashboard({ locationLogs = [], stats = {}, recentVisits 
                 <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/10">
                     <button
                         type="button"
-                        onClick={() => askAssistant('Which agents are on duty today?')}
+                        onClick={() => askAssistant(`Which ${labels.navAgents || 'agents'} are on duty today?`)}
                         className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-xs text-zinc-200 transition-colors"
                     >
-                        {t('Who is on duty?')}
+                        {labels.agentDutyTitle || t('Who is on duty?')}
                     </button>
                     <button
                         type="button"
-                        onClick={() => askAssistant('Any pending approvals?')}
+                        onClick={() => askAssistant('Any pending approvals or checklists?')}
                         className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-xs text-zinc-200 transition-colors"
                     >
-                        {t('Pending approvals')}
+                        {labels.pendingTitle || t('Pending approvals')}
                     </button>
                     <button
                         type="button"
-                        onClick={() => askAssistant('Today completed visits')}
+                        onClick={() => askAssistant(`Today ${labels.completedTasksTitle || 'completed visits'}`)}
                         className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-xs text-zinc-200 transition-colors"
                     >
-                        {t('Completed visits today')}
+                        {labels.completedTasksTitle || t('Completed tasks today')}
                     </button>
                 </div>
             </div>

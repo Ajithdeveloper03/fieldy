@@ -4,50 +4,12 @@ import {
     LayoutDashboard, Users, FileCheck2, ShieldAlert,
     Settings, MapPin, Search, Bell, PlusCircle, Globe, Briefcase, Building2,
     ChevronDown, ChevronRight, Wallet, ClipboardList, Menu, X, Star, Sparkles,
-    PanelLeftClose, PanelLeftOpen, LogOut, HelpCircle, User
+    PanelLeftClose, PanelLeftOpen, LogOut, HelpCircle, User, Layers, ArrowLeft, CheckCircle2
 } from 'lucide-react';
 import { useAlert } from '../../Components/AlertSystem';
 import { useTranslation } from 'react-i18next';
 import Chatbot from '../../Components/Chatbot';
-
-/* ─────────────────────────────────────────────────────────────
-   Navigation map — Simple & Clean Real Estate Admin Navigation
-   ───────────────────────────────────────────────────────────── */
-const NAV_GROUPS = [
-    {
-        id: 'operations',
-        label: 'Field Work',
-        items: [
-            { href: '/admin/visits', icon: FileCheck2, label: 'Site Visits' },
-            { href: '/admin/monitor', icon: ShieldAlert, label: 'Live GPS Map', dot: true },
-            { href: '/admin/tasks', icon: ClipboardList, label: 'Daily Tasks' },
-            { href: '/admin/alerts', icon: Bell, label: 'Alerts' },
-        ],
-    },
-    {
-        id: 'directory',
-        label: 'Properties & Team',
-        items: [
-            { href: '/admin/farmers', icon: Building2, label: 'Properties' },
-            { href: '/admin/pending-farmers', icon: PlusCircle, label: 'Pending Approvals', badge: '12' },
-            { href: '/admin/employees', icon: Briefcase, label: 'Agents' },
-        ],
-    },
-    {
-        id: 'business',
-        label: 'Sales & Finance',
-        items: [
-            { href: '/admin/performance', icon: MapPin, label: 'Agent Scores' },
-            { href: '/admin/payments', icon: Wallet, label: 'Payments' },
-        ],
-    },
-];
-
-const ALL_ITEMS = [
-    { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Home' },
-    ...NAV_GROUPS.flatMap(g => g.items),
-    { href: '/admin/settings', icon: Settings, label: 'Settings' },
-];
+import { INDUSTRIES, getIndustryById } from '../../data/industriesConfig';
 
 const readStore = (key, fallback) => {
     try {
@@ -58,10 +20,17 @@ const readStore = (key, fallback) => {
     }
 };
 
-export default function AdminLayout({ children }) {
+export default function AdminLayout({ children, currentIndustry: passedIndustry = null }) {
     const { url, props } = usePage();
     const { triggerCritical } = useAlert();
     const { t, i18n } = useTranslation();
+
+    // Determine current industry from prop, query parameter or page props
+    const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const activeIndustryId = passedIndustry?.id || props.currentIndustry || urlParams?.get('industry') || 'real_estate';
+    const currentIndustry = passedIndustry || getIndustryById(activeIndustryId);
+    const labels = currentIndustry?.adminLabels || {};
+    const ActiveIndIcon = currentIndustry?.icon || Building2;
 
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => readStore('fieldy.sidebarCollapsed', false));
     const [collapsedGroups, setCollapsedGroups] = useState(() => readStore('fieldy.collapsedGroups', {}));
@@ -77,16 +46,57 @@ export default function AdminLayout({ children }) {
     const profileRef = useRef(null);
 
     const user = props.auth?.user;
-    const userName = user?.name || 'Real Estate Admin';
+    const isSuperadmin = user?.role === 'superadmin';
+    const userName = user?.name || (isSuperadmin ? 'Fieldy Platform Owner' : 'Admin');
     const companyName = user?.company?.name || 'Apex Realty & Developers';
 
-    /* Persist hPanel-style preferences across sessions */
+    /* Dynamic navigation groups adapted to the active industry */
+    const navGroups = [
+        {
+            id: 'operations',
+            label: labels.navFieldWork || 'Field Work',
+            items: [
+                { href: '/admin/visits', icon: FileCheck2, label: labels.navVisits || 'Site Visits' },
+                { href: '/admin/monitor', icon: ShieldAlert, label: 'Live GPS Map', dot: true },
+                { href: '/admin/tasks', icon: ClipboardList, label: labels.todayTasksTitle || 'Daily Tasks' },
+                { href: '/admin/alerts', icon: Bell, label: 'Alerts' },
+            ],
+        },
+        {
+            id: 'directory',
+            label: labels.navDirectory || 'Properties & Team',
+            items: [
+                { href: '/admin/farmers', icon: ActiveIndIcon, label: labels.navEntities || 'Properties' },
+                { href: '/admin/pending-farmers', icon: PlusCircle, label: labels.pendingTitle || 'Pending Approvals', badge: '12' },
+                { href: '/admin/employees', icon: Briefcase, label: labels.navAgents || 'Agents' },
+            ],
+        },
+        {
+            id: 'business',
+            label: 'Sales & Finance',
+            items: [
+                { href: '/admin/performance', icon: MapPin, label: 'Agent Scores' },
+                { href: '/admin/payments', icon: Wallet, label: 'Payments' },
+            ],
+        },
+    ];
+
+    const allItems = [
+        { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Home' },
+        ...navGroups.flatMap(g => g.items),
+        { href: '/admin/settings', icon: Settings, label: 'Settings' },
+    ];
+
+    /* Persist preferences */
     useEffect(() => { localStorage.setItem('fieldy.sidebarCollapsed', JSON.stringify(isSidebarCollapsed)); }, [isSidebarCollapsed]);
     useEffect(() => { localStorage.setItem('fieldy.collapsedGroups', JSON.stringify(collapsedGroups)); }, [collapsedGroups]);
     useEffect(() => { localStorage.setItem('fieldy.favorites', JSON.stringify(favorites)); }, [favorites]);
 
-    /* Close mobile drawer on navigation */
-    useEffect(() => { setMobileOpen(false); setProfileOpen(false); }, [url]);
+    /* Close drawers on navigation */
+    useEffect(() => { 
+        setMobileOpen(false); 
+        setProfileOpen(false); 
+    }, [url]);
 
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -133,7 +143,7 @@ export default function AdminLayout({ children }) {
 
     const isActive = (path) => url.startsWith(path);
     const testAlert = () => {
-        triggerCritical("ADVISOR KARTHIK RAJA - GEOFENCE BREACH AT SKYLINE VILLA SITE (OMR ZONE)");
+        triggerCritical("SAFETY ALERT - GEOFENCE BREACH OR TELEMETRY EVENT LOGGED");
     };
     const toggleLanguage = () => {
         const nextLang = i18n.language === 'en' ? 'ta' : 'en';
@@ -149,15 +159,15 @@ export default function AdminLayout({ children }) {
         if (cleanPath === '/admin/dashboard' || cleanPath === '/admin') {
             return [{ label: t('Dashboard'), href: '/admin/dashboard' }];
         }
-        if (cleanPath.startsWith('/admin/tasks')) return [{ label: t('Field Work'), href: '/admin/tasks' }, { label: t('Daily Tasks'), href: '/admin/tasks' }];
-        if (cleanPath.startsWith('/admin/visits')) return [{ label: t('Field Work'), href: '/admin/visits' }, { label: t('Site Visits'), href: '/admin/visits' }];
-        if (cleanPath.startsWith('/admin/monitor')) return [{ label: t('Field Work'), href: '/admin/monitor' }, { label: t('Live GPS Map'), href: '/admin/monitor' }];
-        if (cleanPath.startsWith('/admin/pending-farmers')) return [{ label: t('Properties & Team'), href: '/admin/pending-farmers' }, { label: t('Pending Approvals'), href: '/admin/pending-farmers' }];
-        if (cleanPath.startsWith('/admin/farmers')) return [{ label: t('Properties & Team'), href: '/admin/farmers' }, { label: t('Properties'), href: '/admin/farmers' }];
-        if (cleanPath.startsWith('/admin/employees')) return [{ label: t('Properties & Team'), href: '/admin/employees' }, { label: t('Agents'), href: '/admin/employees' }];
+        if (cleanPath.startsWith('/admin/tasks')) return [{ label: t(labels.navFieldWork || 'Field Work'), href: '/admin/tasks' }, { label: t(labels.todayTasksTitle || 'Daily Tasks'), href: '/admin/tasks' }];
+        if (cleanPath.startsWith('/admin/visits')) return [{ label: t(labels.navFieldWork || 'Field Work'), href: '/admin/visits' }, { label: t(labels.navVisits || 'Site Visits'), href: '/admin/visits' }];
+        if (cleanPath.startsWith('/admin/monitor')) return [{ label: t(labels.navFieldWork || 'Field Work'), href: '/admin/monitor' }, { label: t('Live GPS Map'), href: '/admin/monitor' }];
+        if (cleanPath.startsWith('/admin/pending-farmers')) return [{ label: t(labels.navDirectory || 'Properties & Team'), href: '/admin/pending-farmers' }, { label: t(labels.pendingTitle || 'Pending Approvals'), href: '/admin/pending-farmers' }];
+        if (cleanPath.startsWith('/admin/farmers')) return [{ label: t(labels.navDirectory || 'Properties & Team'), href: '/admin/farmers' }, { label: t(labels.navEntities || 'Properties'), href: '/admin/farmers' }];
+        if (cleanPath.startsWith('/admin/employees')) return [{ label: t(labels.navDirectory || 'Properties & Team'), href: '/admin/employees' }, { label: t(labels.navAgents || 'Agents'), href: '/admin/employees' }];
         if (cleanPath.startsWith('/admin/performance')) return [{ label: t('Sales & Finance'), href: '/admin/performance' }, { label: t('Agent Scores'), href: '/admin/performance' }];
         if (cleanPath.startsWith('/admin/payments')) return [{ label: t('Sales & Finance'), href: '/admin/payments' }, { label: t('Payments'), href: '/admin/payments' }];
-        if (cleanPath.startsWith('/admin/alerts')) return [{ label: t('Field Work'), href: '/admin/alerts' }, { label: t('Alerts'), href: '/admin/alerts' }];
+        if (cleanPath.startsWith('/admin/alerts')) return [{ label: t(labels.navFieldWork || 'Field Work'), href: '/admin/alerts' }, { label: t('Alerts'), href: '/admin/alerts' }];
         if (cleanPath.startsWith('/admin/settings')) return [{ label: t('Settings'), href: '/admin/settings' }];
         return [{ label: t('Dashboard'), href: '/admin/dashboard' }];
     };
@@ -203,12 +213,12 @@ export default function AdminLayout({ children }) {
     };
 
     const SidebarContent = ({ collapsed }) => {
-        const favItems = ALL_ITEMS.filter(i => favorites.includes(i.href));
+        const favItems = allItems.filter(i => favorites.includes(i.href));
         return (
             <div className="flex flex-col h-full">
                 <nav className={`flex-1 overflow-y-auto overflow-x-hidden py-4 ${collapsed ? 'px-3' : 'px-4'}`}>
                     {/* Home */}
-                    <NavItem href="/admin/dashboard" icon={LayoutDashboard} label="Home" collapsed={collapsed} allowFavorite={false} />
+                    <NavItem href={`/admin/dashboard?industry=${currentIndustry.id}`} icon={LayoutDashboard} label="Home" collapsed={collapsed} allowFavorite={false} />
 
                     {/* Favorites */}
                     {favItems.length > 0 && (
@@ -225,7 +235,7 @@ export default function AdminLayout({ children }) {
                     )}
 
                     {/* Collapsible groups */}
-                    {NAV_GROUPS.map(group => {
+                    {navGroups.map(group => {
                         const isClosed = !!collapsedGroups[group.id] && !collapsed;
                         return (
                             <div key={group.id} className="mt-5">
@@ -278,7 +288,7 @@ export default function AdminLayout({ children }) {
                     <button type="button" onClick={() => setMobileOpen(true)} className="hp-icon-btn lg:hidden" aria-label="Open menu">
                         <Menu className="w-5 h-5" />
                     </button>
-                    <Link href="/admin/dashboard" className="flex items-center" aria-label="Fieldy home">
+                    <Link href={`/admin/dashboard?industry=${currentIndustry.id}`} className="flex items-center" aria-label="Fieldy home">
                         {isSidebarCollapsed ? (
                             <>
                                 <img src="/images/logo.png" alt="Fieldy" className="h-9 w-auto object-contain lg:hidden" />
@@ -333,10 +343,10 @@ export default function AdminLayout({ children }) {
                 </div>
 
                 {/* Right actions */}
-                <div className="flex items-center gap-1 lg:pr-6 flex-shrink-0">
-                    <button type="button" onClick={openAssistant} className="hidden sm:inline-flex hp-btn hp-btn-sm hp-btn-secondary !rounded-full !h-9 !px-3.5 mr-1">
+                <div className="flex items-center gap-1.5 lg:pr-6 flex-shrink-0">
+                    <button type="button" onClick={openAssistant} className="hidden xl:inline-flex hp-btn hp-btn-sm hp-btn-secondary !rounded-full !h-9 !px-3.5 mr-0.5">
                         <Sparkles className="w-4 h-4 text-hp-primary" />
-                        <span>{t('Ask Fieldy AI', 'Ask Fieldy AI')}</span>
+                        <span>{t('Ask AI', 'Ask AI')}</span>
                     </button>
                     <button type="button" onClick={() => searchInputRef.current?.focus()} className="hp-icon-btn md:hidden" aria-label="Search">
                         <Search className="w-5 h-5" />
@@ -375,13 +385,18 @@ export default function AdminLayout({ children }) {
                                     <div className="min-w-0">
                                         <p className="text-sm font-bold text-hp-dark truncate">{userName}</p>
                                         <p className="text-xs text-hp-muted truncate">{user?.email || companyName}</p>
-                                        <span className="hp-chip hp-chip-primary !h-5 !text-[11px] mt-1.5">{t('Real Estate Admin', 'Real Estate Admin')}</span>
+                                        <span className="hp-chip hp-chip-primary !h-5 !text-[11px] mt-1.5">{currentIndustry.shortName} Admin</span>
                                     </div>
                                 </div>
                                 <div className="p-1.5">
                                     <div className="px-3 py-2 text-xs text-hp-muted">
-                                        {t('Developer / Agency', 'Developer / Agency')}: <span className="font-bold text-hp-dark">{companyName}</span>
+                                        {t('Tenant Enterprise', 'Tenant Enterprise')}: <span className="font-bold text-hp-dark">{companyName}</span>
                                     </div>
+                                    {isSuperadmin && (
+                                        <Link href="/superadmin/dashboard" className="hp-nav-item font-semibold text-hp-primary">
+                                            <Layers className="w-[18px] h-[18px] text-hp-primary" /> {t('Superadmin Portal', 'Superadmin Portal')}
+                                        </Link>
+                                    )}
                                     <Link href="/admin/settings" className="hp-nav-item"><User className="w-[18px] h-[18px] text-hp-muted" /> {t('Account settings', 'Account settings')}</Link>
                                     <button type="button" onClick={toggleLanguage} className="hp-nav-item w-full">
                                         <Globe className="w-[18px] h-[18px] text-hp-muted" /> {t('Language', 'Language')}
@@ -423,12 +438,12 @@ export default function AdminLayout({ children }) {
                     <div className="max-w-[1320px] mx-auto w-full px-4 sm:px-6 lg:px-10 py-6 lg:py-8 pb-24">
                         {!isHome && (
                             <nav aria-label="Breadcrumb" className="flex items-center flex-wrap gap-1 text-sm mb-4 hp-animate-in">
-                                <Link href="/admin/dashboard" className="text-hp-muted hover:text-hp-primary font-medium transition-colors">{t('Home', 'Home')}</Link>
+                                <Link href={`/admin/dashboard?industry=${currentIndustry.id}`} className="text-hp-muted hover:text-hp-primary font-medium transition-colors">{t('Home', 'Home')}</Link>
                                 {breadcrumbs.map((crumb, idx) => (
                                     <React.Fragment key={idx}>
                                         <ChevronRight className="w-4 h-4 text-hp-border-strong" />
                                         {idx === breadcrumbs.length - 1 ? (
-                                            <span className="text-hp-dark font-bold">{crumb.label}</span>
+                                             <span className="text-hp-dark font-bold">{crumb.label}</span>
                                         ) : (
                                             <Link href={crumb.href} className="text-hp-muted hover:text-hp-primary font-medium transition-colors">{crumb.label}</Link>
                                         )}
