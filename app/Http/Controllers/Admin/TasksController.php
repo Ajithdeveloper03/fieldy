@@ -12,11 +12,15 @@ class TasksController extends Controller
 {
     public function index()
     {
-        $companyId = auth()->user()->company_id;
+        $companyId = auth()->user()?->company_id;
+        $industryKey = \App\Services\Industry\IndustryContext::current();
 
-        $tasks = Task::with(['assignedTo:id,name', 'customer:id,name', 'createdBy:id,name'])
-            ->when($companyId, fn ($q) => $q->whereHas('assignedTo', fn ($u) => $u->where('company_id', $companyId)))
-            ->orderByRaw("CASE status 
+        $query = Task::with(['assignedTo:id,name', 'customer:id,name', 'createdBy:id,name'])
+            ->when($companyId, fn ($q) => $q->whereHas('assignedTo', fn ($u) => $u->where('company_id', $companyId)));
+
+        $query = \App\Services\Industry\IndustryContext::scope($query, $industryKey);
+
+        $tasks = $query->orderByRaw("CASE status 
                 WHEN 'in_progress' THEN 1 
                 WHEN 'pending' THEN 2 
                 WHEN 'done' THEN 3 
@@ -31,10 +35,10 @@ class TasksController extends Controller
             ->get()
             ->map(fn ($t) => [
                 'id' => $t->id,
-                'work_order_code' => $t->work_order_code ?: 'SV-' . str_pad($t->id, 5, '0', STR_PAD_LEFT),
+                'work_order_code' => $t->work_order_code ?: 'WO-' . str_pad($t->id, 5, '0', STR_PAD_LEFT),
                 'title' => $t->title,
                 'description' => $t->description,
-                'industry' => $t->industry ?: 'real_estate',
+                'industry' => $t->industry ?: $industryKey,
                 'assigned_to' => $t->assignedTo ? ['id' => $t->assignedTo->id, 'name' => $t->assignedTo->name] : null,
                 'customer' => $t->customer ? ['id' => $t->customer->id, 'name' => $t->customer->name] : null,
                 'created_by' => $t->createdBy?->name,
@@ -43,19 +47,37 @@ class TasksController extends Controller
                 'priority' => $t->priority,
                 'status' => $t->status,
                 'ai_suggestions' => $t->ai_suggestions,
-                'checklist' => $t->checklist ?: self::getDefaultChecklist($t->industry ?: 'real_estate'),
-                'safety_requirements' => $t->safety_requirements ?: self::getDefaultSafety($t->industry ?: 'real_estate'),
+                'checklist' => $t->checklist ?: self::getDefaultChecklist($t->industry ?: $industryKey),
+                'safety_requirements' => $t->safety_requirements ?: self::getDefaultSafety($t->industry ?: $industryKey),
                 'customer_otp' => $t->customer_otp ?: '4821',
                 'otp_verified' => (bool)$t->otp_verified,
                 'points_awarded' => $t->points_awarded ?: 35,
                 'overdue' => $t->due_date && $t->due_date->isPast() && $t->status !== 'done',
             ]);
 
-        $employees = User::where('role', 'employee')->where('status', 'active')
-            ->select('id', 'name')->orderBy('name')->get();
+        // If no tasks exist for this vertical in DB, load curated catalog work orders
+        if ($tasks->isEmpty()) {
+            $catalogTasks = collect(\App\Services\Industry\IndustryCatalog::tasks($industryKey))->map(fn ($t) => array_merge($t, [
+                'checklist' => self::getDefaultChecklist($industryKey),
+                'safety_requirements' => self::getDefaultSafety($industryKey),
+            ]));
+            $tasks = $catalogTasks;
 
-        $customers = User::where('role', 'farmer')
-            ->select('id', 'name')->orderBy('name')->get();
+            $employees = collect(\App\Services\Industry\IndustryCatalog::staff($industryKey))->map(fn ($s) => [
+                'id' => $s['id'],
+                'name' => $s['name'],
+            ]);
+            $customers = collect(\App\Services\Industry\IndustryCatalog::entities($industryKey))->map(fn ($e) => [
+                'id' => $e['id'],
+                'name' => $e['name'],
+            ]);
+        } else {
+            $employees = User::where('role', 'employee')->where('status', 'active')
+                ->select('id', 'name')->orderBy('name')->get();
+
+            $customers = User::where('role', 'farmer')
+                ->select('id', 'name')->orderBy('name')->get();
+        }
 
         return Inertia::render('Admin/TaskManagement', [
             'tasks' => $tasks,

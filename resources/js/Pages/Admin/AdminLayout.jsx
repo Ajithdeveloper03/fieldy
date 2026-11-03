@@ -1,3 +1,4 @@
+import { asset, withBase } from '../../basePath';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import {
@@ -10,6 +11,7 @@ import { useAlert } from '../../Components/AlertSystem';
 import { useTranslation } from 'react-i18next';
 import Chatbot from '../../Components/Chatbot';
 import { INDUSTRIES, getIndustryById } from '../../data/industriesConfig';
+import { getVocab } from '../../data/industryVocab';
 
 const readStore = (key, fallback) => {
     try {
@@ -25,11 +27,11 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const { triggerCritical } = useAlert();
     const { t, i18n } = useTranslation();
 
-    // Determine current industry from prop, query parameter or page props
-    const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-    const activeIndustryId = passedIndustry?.id || props.currentIndustry || urlParams?.get('industry') || 'real_estate';
+    // Active service vertical: page prop → server-shared (session-persisted) prop → real_estate
+    const activeIndustryId = passedIndustry?.id || props.currentIndustry || 'real_estate';
     const currentIndustry = passedIndustry || getIndustryById(activeIndustryId);
     const labels = currentIndustry?.adminLabels || {};
+    const vocab = getVocab(currentIndustry?.id);
     const ActiveIndIcon = currentIndustry?.icon || Building2;
 
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => readStore('fieldy.sidebarCollapsed', false));
@@ -48,7 +50,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const user = props.auth?.user;
     const isSuperadmin = user?.role === 'superadmin';
     const userName = user?.name || (isSuperadmin ? 'Fieldy Platform Owner' : 'Admin');
-    const companyName = user?.company?.name || 'Apex Realty & Developers';
+    const companyName = user?.company?.name || 'Fieldy Operations';
 
     /* Dynamic navigation groups adapted to the active industry */
     const navGroups = [
@@ -56,27 +58,27 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
             id: 'operations',
             label: labels.navFieldWork || 'Field Work',
             items: [
-                { href: '/admin/visits', icon: FileCheck2, label: labels.navVisits || 'Site Visits' },
-                { href: '/admin/monitor', icon: ShieldAlert, label: 'Live GPS Map', dot: true },
-                { href: '/admin/tasks', icon: ClipboardList, label: labels.todayTasksTitle || 'Daily Tasks' },
-                { href: '/admin/alerts', icon: Bell, label: 'Alerts' },
+                { href: '/admin/visits', icon: FileCheck2, label: labels.navVisits || vocab.visit.plural },
+                { href: '/admin/monitor', icon: ShieldAlert, label: vocab.monitor.title, dot: true },
+                { href: '/admin/tasks', icon: ClipboardList, label: labels.todayTasksTitle || vocab.task.plural },
+                { href: '/admin/alerts', icon: Bell, label: vocab.alerts.title },
             ],
         },
         {
             id: 'directory',
             label: labels.navDirectory || 'Properties & Team',
             items: [
-                { href: '/admin/farmers', icon: ActiveIndIcon, label: labels.navEntities || 'Properties' },
-                { href: '/admin/pending-farmers', icon: PlusCircle, label: labels.pendingTitle || 'Pending Approvals', badge: '12' },
-                { href: '/admin/employees', icon: Briefcase, label: labels.navAgents || 'Agents' },
+                { href: '/admin/farmers', icon: ActiveIndIcon, label: labels.navEntities || vocab.entity.plural },
+                { href: '/admin/pending-farmers', icon: PlusCircle, label: labels.pendingTitle || vocab.approval.plural },
+                { href: '/admin/employees', icon: Briefcase, label: labels.navAgents || vocab.staff.plural },
             ],
         },
         {
             id: 'business',
-            label: 'Sales & Finance',
+            label: vocab.finance.group,
             items: [
-                { href: '/admin/performance', icon: MapPin, label: 'Agent Scores' },
-                { href: '/admin/payments', icon: Wallet, label: 'Payments' },
+                { href: '/admin/performance', icon: MapPin, label: vocab.finance.scores },
+                { href: '/admin/payments', icon: Wallet, label: vocab.finance.payments },
             ],
         },
     ];
@@ -152,22 +154,22 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const toggleGroup = (id) => setCollapsedGroups(prev => ({ ...prev, [id]: !prev[id] }));
     const toggleFavorite = (href) => setFavorites(prev => prev.includes(href) ? prev.filter(h => h !== href) : [...prev, href]);
     const openAssistant = () => window.dispatchEvent(new CustomEvent('fieldy:ask', { detail: {} }));
-    const logout = () => router.post('/admin/logout');
+    const logout = () => router.post(withBase('/admin/logout'));
 
     const getBreadcrumbs = () => {
         const cleanPath = url.split('?')[0];
         if (cleanPath === '/admin/dashboard' || cleanPath === '/admin') {
             return [{ label: t('Dashboard'), href: '/admin/dashboard' }];
         }
-        if (cleanPath.startsWith('/admin/tasks')) return [{ label: t(labels.navFieldWork || 'Field Work'), href: '/admin/tasks' }, { label: t(labels.todayTasksTitle || 'Daily Tasks'), href: '/admin/tasks' }];
-        if (cleanPath.startsWith('/admin/visits')) return [{ label: t(labels.navFieldWork || 'Field Work'), href: '/admin/visits' }, { label: t(labels.navVisits || 'Site Visits'), href: '/admin/visits' }];
-        if (cleanPath.startsWith('/admin/monitor')) return [{ label: t(labels.navFieldWork || 'Field Work'), href: '/admin/monitor' }, { label: t('Live GPS Map'), href: '/admin/monitor' }];
-        if (cleanPath.startsWith('/admin/pending-farmers')) return [{ label: t(labels.navDirectory || 'Properties & Team'), href: '/admin/pending-farmers' }, { label: t(labels.pendingTitle || 'Pending Approvals'), href: '/admin/pending-farmers' }];
-        if (cleanPath.startsWith('/admin/farmers')) return [{ label: t(labels.navDirectory || 'Properties & Team'), href: '/admin/farmers' }, { label: t(labels.navEntities || 'Properties'), href: '/admin/farmers' }];
-        if (cleanPath.startsWith('/admin/employees')) return [{ label: t(labels.navDirectory || 'Properties & Team'), href: '/admin/employees' }, { label: t(labels.navAgents || 'Agents'), href: '/admin/employees' }];
-        if (cleanPath.startsWith('/admin/performance')) return [{ label: t('Sales & Finance'), href: '/admin/performance' }, { label: t('Agent Scores'), href: '/admin/performance' }];
-        if (cleanPath.startsWith('/admin/payments')) return [{ label: t('Sales & Finance'), href: '/admin/payments' }, { label: t('Payments'), href: '/admin/payments' }];
-        if (cleanPath.startsWith('/admin/alerts')) return [{ label: t(labels.navFieldWork || 'Field Work'), href: '/admin/alerts' }, { label: t('Alerts'), href: '/admin/alerts' }];
+        if (cleanPath.startsWith('/admin/tasks')) return [{ label: t(labels.navFieldWork || 'Field Work'), href: '/admin/tasks' }, { label: t(labels.todayTasksTitle || vocab.task.plural), href: '/admin/tasks' }];
+        if (cleanPath.startsWith('/admin/visits')) return [{ label: t(labels.navFieldWork || 'Field Work'), href: '/admin/visits' }, { label: t(labels.navVisits || vocab.visit.plural), href: '/admin/visits' }];
+        if (cleanPath.startsWith('/admin/monitor')) return [{ label: t(labels.navFieldWork || 'Field Work'), href: '/admin/monitor' }, { label: t(vocab.monitor.title), href: '/admin/monitor' }];
+        if (cleanPath.startsWith('/admin/pending-farmers')) return [{ label: t(labels.navDirectory || 'Directory'), href: '/admin/pending-farmers' }, { label: t(labels.pendingTitle || vocab.approval.plural), href: '/admin/pending-farmers' }];
+        if (cleanPath.startsWith('/admin/farmers')) return [{ label: t(labels.navDirectory || 'Directory'), href: '/admin/farmers' }, { label: t(labels.navEntities || vocab.entity.plural), href: '/admin/farmers' }];
+        if (cleanPath.startsWith('/admin/employees')) return [{ label: t(labels.navDirectory || 'Directory'), href: '/admin/employees' }, { label: t(labels.navAgents || vocab.staff.plural), href: '/admin/employees' }];
+        if (cleanPath.startsWith('/admin/performance')) return [{ label: t(vocab.finance.group), href: '/admin/performance' }, { label: t(vocab.finance.scores), href: '/admin/performance' }];
+        if (cleanPath.startsWith('/admin/payments')) return [{ label: t(vocab.finance.group), href: '/admin/payments' }, { label: t(vocab.finance.payments), href: '/admin/payments' }];
+        if (cleanPath.startsWith('/admin/alerts')) return [{ label: t(labels.navFieldWork || 'Field Work'), href: '/admin/alerts' }, { label: t(vocab.alerts.title), href: '/admin/alerts' }];
         if (cleanPath.startsWith('/admin/settings')) return [{ label: t('Settings'), href: '/admin/settings' }];
         return [{ label: t('Dashboard'), href: '/admin/dashboard' }];
     };
@@ -291,13 +293,13 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                     <Link href={`/admin/dashboard?industry=${currentIndustry.id}`} className="flex items-center" aria-label="Fieldy home">
                         {isSidebarCollapsed ? (
                             <>
-                                <img src="/images/logo.png" alt="Fieldy" className="h-9 w-auto object-contain lg:hidden" />
+                                <img src={asset('/images/logo.png')} alt="Fieldy" className="h-9 w-auto object-contain lg:hidden" />
                                 <span className="hidden lg:flex w-10 h-10 rounded-lg overflow-hidden items-center justify-center bg-white border border-hp-border">
-                                    <img src="/images/logo.png" alt="Fieldy" className="h-10 max-w-none object-cover object-left" style={{ width: '88px', marginLeft: '6px' }} />
+                                    <img src={asset('/images/logo.png')} alt="Fieldy" className="h-10 max-w-none object-cover object-left" style={{ width: '88px', marginLeft: '6px' }} />
                                 </span>
                             </>
                         ) : (
-                            <img src="/images/logo.png" alt="Fieldy" className="h-9 w-auto object-contain" />
+                            <img src={asset('/images/logo.png')} alt="Fieldy" className="h-9 w-auto object-contain" />
                         )}
                     </Link>
                 </div>
@@ -397,6 +399,18 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                                             <Layers className="w-[18px] h-[18px] text-hp-primary" /> {t('Superadmin Portal', 'Superadmin Portal')}
                                         </Link>
                                     )}
+                                    {isSuperadmin && (
+                                        <div className="px-3 pt-2 pb-1">
+                                            <label className="block text-[11px] font-bold text-hp-muted mb-1">{t('Switch service', 'Switch service')}</label>
+                                            <select
+                                                value={currentIndustry.id}
+                                                onChange={(e) => router.visit(`${cleanPath}?industry=${e.target.value}`)}
+                                                className="hp-input !h-9 !text-sm w-full"
+                                            >
+                                                {INDUSTRIES.map(ind => <option key={ind.id} value={ind.id}>{ind.shortName}</option>)}
+                                            </select>
+                                        </div>
+                                    )}
                                     <Link href="/admin/settings" className="hp-nav-item"><User className="w-[18px] h-[18px] text-hp-muted" /> {t('Account settings', 'Account settings')}</Link>
                                     <button type="button" onClick={toggleLanguage} className="hp-nav-item w-full">
                                         <Globe className="w-[18px] h-[18px] text-hp-muted" /> {t('Language', 'Language')}
@@ -426,7 +440,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                     <div className="absolute inset-0 bg-hp-dark/40" onClick={() => setMobileOpen(false)} />
                     <aside className={`absolute left-0 top-0 bottom-0 w-[288px] max-w-[85vw] bg-white shadow-[var(--shadow-hp-lg)] flex flex-col transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                         <div className="h-16 flex items-center justify-between px-4 border-b border-hp-border flex-shrink-0">
-                            <img src="/images/logo.png" alt="Fieldy" className="h-9 w-auto object-contain" />
+                            <img src={asset('/images/logo.png')} alt="Fieldy" className="h-9 w-auto object-contain" />
                             <button type="button" onClick={() => setMobileOpen(false)} className="hp-icon-btn" aria-label="Close menu"><X className="w-5 h-5" /></button>
                         </div>
                         <SidebarContent collapsed={false} />

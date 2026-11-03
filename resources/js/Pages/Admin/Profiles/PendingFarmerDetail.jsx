@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import AdminLayout from '../AdminLayout';
 import { Link, router } from '@inertiajs/react';
 import { 
-    ArrowLeft, Map, Smartphone, FileText, CheckCircle2, Leaf, Clock, Navigation, 
-    Image as ImageIcon, Briefcase, FileSignature, CircleDollarSign, Building2,
-    Sparkles, ShieldCheck, ArrowUpRight, XCircle, Check
+    ArrowLeft, Map, Smartphone, Navigation, 
+    Image as ImageIcon, Briefcase, Building2,
+    XCircle, Check
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import useIndustry from '../../../hooks/useIndustry';
 
-export default function PendingFarmerDetail({ farmer = {}, visits = [] }) {
+export default function PendingFarmerDetail({ farmer = {} }) {
     const { t } = useTranslation();
+    const { vocab, industry } = useIndustry();
     const [processing, setProcessing] = useState(false);
 
     const handleApprove = () => {
@@ -22,7 +24,7 @@ export default function PendingFarmerDetail({ farmer = {}, visits = [] }) {
 
     const handleReject = () => {
         if (processing) return;
-        if (!confirm(t('Are you sure you want to reject this application?'))) return;
+        if (!confirm(t('Are you sure you want to reject this record?'))) return;
         setProcessing(true);
         router.post(`/admin/pending-farmers/${farmer.id}/reject`, {}, {
             onFinish: () => setProcessing(false),
@@ -32,37 +34,36 @@ export default function PendingFarmerDetail({ farmer = {}, visits = [] }) {
     return (
         <AdminLayout>
             <div className="space-y-6 pb-12 hp-animate-in">
-                {/* Back button */}
                 <div>
                     <Link href="/admin/pending-farmers" className="hp-pill">
-                        <ArrowLeft className="w-4 h-4 mr-1" /> {t('Back to Pending Listings & KYC')}
+                        <ArrowLeft className="w-4 h-4 mr-1" /> {t(`Back to Pending ${vocab.entity.plural}`)}
                     </Link>
                 </div>
 
-                {/* ══════════ HOSTINGER HERO CARD ══════════ */}
+                {/* HERO CARD */}
                 <div className="hp-hero-card p-6 sm:p-8">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <div className="flex items-center gap-5">
                             <div className="w-18 h-18 rounded-2xl bg-hp-hover border border-hp-border overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
-                                {farmer.farmer_photo ? (
-                                    <img src={farmer.farmer_photo} alt={farmer.name} className="w-full h-full object-cover" />
+                                {farmer.farmer_photo_url ? (
+                                    <img src={farmer.farmer_photo_url} alt={farmer.name} className="w-full h-full object-cover" />
                                 ) : (
-                                    <span className="font-bold text-hp-dark text-3xl">{String(farmer.name || 'P').charAt(0)}</span>
+                                    <span className="font-bold text-hp-dark text-3xl">{String(farmer.name || 'E').charAt(0)}</span>
                                 )}
                             </div>
                             <div>
                                 <div className="flex items-center gap-2 flex-wrap mb-1">
                                     <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">{farmer.name}</h1>
-                                    <span className="hp-chip hp-chip-gray font-mono">{farmer.farmer_code || 'PROP-PENDING'}</span>
-                                    <span className="hp-chip hp-chip-warning hp-chip-dot">{t('Awaiting RERA & Title Approval')}</span>
+                                    <span className="hp-chip hp-chip-gray font-mono">{farmer.farmer_code || `ID-${farmer.id}`}</span>
+                                    <span className="hp-chip hp-chip-warning hp-chip-dot">{t('Awaiting Approval')}</span>
+                                    <span className="hp-chip hp-chip-info">{industry.shortName}</span>
                                 </div>
                                 <p className="text-sm text-hp-muted flex items-center gap-1.5">
-                                    <Map className="w-4 h-4 text-hp-muted" /> {farmer.village}, {farmer.district}
+                                    <Map className="w-4 h-4 text-hp-muted" /> {farmer.village || farmer.district || 'Assigned Beat'}
                                 </p>
                             </div>
                         </div>
 
-                        {/* Direct Action Buttons */}
                         <div className="flex items-center gap-3 shrink-0 self-start lg:self-center">
                             <button 
                                 onClick={handleReject} 
@@ -78,51 +79,52 @@ export default function PendingFarmerDetail({ farmer = {}, visits = [] }) {
                                 className="hp-btn hp-btn-primary !rounded-full"
                             >
                                 <Check className="w-4 h-4 mr-1" />
-                                <span>{processing ? t('Approving...') : t('Approve Property Listing')}</span>
+                                <span>{processing ? t('Approving...') : t(vocab.approval.approve)}</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/* ══════════ HOSTINGER BENTO METRIC CARDS ══════════ */}
+                {/* METRIC CARDS */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Total Project Area')}</span>
-                        <p className="font-bold text-2xl text-hp-dark">{farmer.land_acres || '–'} <span className="text-xs font-normal text-hp-muted">Acres / Plots</span></p>
-                        <p className="text-xs text-hp-muted mt-1">{t('Surveyed by field property advisor')}</p>
-                    </div>
-
-                    <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Property Configuration')}</span>
-                        <p className="font-bold text-lg text-hp-dark truncate">
-                            {farmer.crop_types?.length > 0 ? farmer.crop_types.join(', ') : 'DTCP Plots & Villas'}
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t(`Total ${vocab.entity.size}`)}</span>
+                        <p className="font-bold text-2xl text-hp-dark">
+                            {farmer.land_size_acres || farmer.land_acres || '-'} <span className="text-xs font-normal text-hp-muted">{vocab.entity.sizeUnit}</span>
                         </p>
-                        <p className="text-xs text-hp-muted mt-1">{t('Proposed unit typologies')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Recorded during field audit')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('RERA / Legal Status')}</span>
-                        <p className="font-bold text-lg text-hp-warning capitalize">{farmer.crop_stage || t('Title Under Review')}</p>
-                        <p className="text-xs text-hp-muted mt-1">{t('Requires legal clearance')}</p>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t(vocab.entity.type)}</span>
+                        <p className="font-bold text-lg text-hp-dark truncate">
+                            {farmer.soil_type || farmer.customer_category || vocab.entity.types[0]}
+                        </p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Designated vertical category')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Developer / Owner Contact')}</span>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Audit & QA Status')}</span>
+                        <p className="font-bold text-lg text-hp-warning capitalize">{farmer.kyc_status || t('Under Review')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Requires operations sign-off')}</p>
+                    </div>
+
+                    <div className="hp-metric-pill-card">
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Primary Contact')}</span>
                         <p className="font-bold text-base text-hp-dark flex items-center gap-1.5 truncate">
                             <Smartphone className="w-4 h-4 text-hp-primary shrink-0" />
-                            <span>{farmer.phone || '–'}</span>
+                            <span>{farmer.phone || '-'}</span>
                         </p>
-                        <p className="text-xs text-hp-muted mt-1">{t('Primary project title holder')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Site / Client POC')}</p>
                     </div>
                 </div>
 
-                {/* ══════════ 2-COLUMN BENTO DETAILS ══════════ */}
+                {/* DETAILS */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Left Column: Geolocation & Specs */}
                     <div className="col-span-1 space-y-6">
                         <div className="hp-bento-card">
                             <h3 className="hp-card-title text-sm flex items-center gap-2 mb-4">
-                                <Navigation className="w-4 h-4 text-hp-primary" /> {t('Project Site Coordinates')}
+                                <Navigation className="w-4 h-4 text-hp-primary" /> {t('Geofence Coordinates')}
                             </h3>
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="p-3 bg-hp-hover/60 border border-hp-border rounded-xl text-center">
@@ -138,72 +140,56 @@ export default function PendingFarmerDetail({ farmer = {}, visits = [] }) {
 
                         <div className="hp-bento-card">
                             <h3 className="hp-card-title text-sm flex items-center gap-2 mb-4 pb-3 border-b border-hp-border">
-                                <Briefcase className="w-4 h-4 text-hp-primary" /> {t('Property Specifications')}
+                                <Briefcase className="w-4 h-4 text-hp-primary" /> {t(`${vocab.entity.singular} Specifications`)}
                             </h3>
                             <div className="space-y-3.5 text-xs">
                                 <div className="flex justify-between items-center py-1">
-                                    <span className="text-hp-muted uppercase font-bold">{t('Approval Authority')}</span>
-                                    <span className="font-bold text-hp-dark capitalize">{farmer.soil_type || 'DTCP & RERA Pending'}</span>
+                                    <span className="text-hp-muted uppercase font-bold">{t('Designated Category')}</span>
+                                    <span className="font-bold text-hp-dark capitalize">{farmer.soil_type || vocab.entity.types[0]}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-1">
-                                    <span className="text-hp-muted uppercase font-bold">{t('Civic & Water Infra')}</span>
-                                    <span className="font-bold text-hp-dark capitalize">{farmer.irrigation_type || 'Blacktop Roads & EB'}</span>
+                                    <span className="text-hp-muted uppercase font-bold">{t('Operating Highlights')}</span>
+                                    <span className="font-bold text-hp-dark capitalize">{farmer.irrigation_type || 'Standard Operations'}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-1">
-                                    <span className="text-hp-muted uppercase font-bold">{t('Saleable Plots / Units')}</span>
-                                    <span className="hp-chip hp-chip-primary !h-5 !text-[11px]">{farmer.seed_bags_required || 32} Units</span>
-                                </div>
-                                <div className="flex justify-between items-center pt-3 border-t border-hp-border">
-                                    <span className="text-hp-muted uppercase font-bold">{t('Proposed Project Valuation')}</span>
-                                    <span className="font-bold text-hp-dark text-sm">₹{farmer.planned_investment || '3,20,00,000'}</span>
+                                    <span className="text-hp-muted uppercase font-bold">{t('Compliance Doc')}</span>
+                                    <span className="hp-chip hp-chip-primary !h-5 !text-[11px] truncate max-w-[150px]">{farmer.document || vocab.approval.doc}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Right Column: Verification Documents & Media */}
                     <div className="col-span-1 lg:col-span-2 space-y-6">
                         <div className="hp-bento-card">
                             <div className="flex items-center justify-between pb-4 mb-4 border-b border-hp-border">
                                 <h3 className="hp-card-title flex items-center gap-2">
-                                    <ImageIcon className="w-5 h-5 text-hp-primary" /> {t('RERA, Title Deed & Site Boundary Photographs')}
+                                    <ImageIcon className="w-5 h-5 text-hp-primary" /> {t(`${vocab.approval.doc} & Verification Media`)}
                                 </h3>
                                 <span className="hp-chip hp-chip-warning">
-                                    {farmer.kyc_status || 'Pending'} RERA KYC
+                                    {farmer.kyc_status || 'Pending'}
                                 </span>
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="border border-hp-border rounded-xl p-3 bg-hp-hover/60">
-                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Title Deed & Patta Copy')}</p>
-                                    <div className="aspect-[4/3] rounded-lg overflow-hidden bg-hp-bg border border-hp-border">
-                                        <img 
-                                            src={farmer.aadhaar_image || `https://placehold.co/600x400/f8fafc/94a3b8?text=Title+Deed+KYC`} 
-                                            onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/600x400/f8fafc/94a3b8?text=Title+Deed+KYC`; }}
-                                            className="w-full h-full object-cover" 
-                                            alt="Verification"
-                                        />
+                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Compliance Certificate')}</p>
+                                    <div className="aspect-[4/3] rounded-lg overflow-hidden bg-hp-bg border border-hp-border flex items-center justify-center p-2 text-center text-xs text-hp-muted font-medium">
+                                        <span>{farmer.document || vocab.approval.doc}</span>
                                     </div>
                                 </div>
                                 
                                 <div className="border border-hp-border rounded-xl p-3 bg-hp-hover/60">
-                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Developer / Owner ID')}</p>
-                                    <div className="aspect-[4/3] rounded-lg overflow-hidden bg-hp-bg border border-hp-border">
-                                        <img 
-                                            src={farmer.farmer_photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(farmer.name)}&background=random&size=400`} 
-                                            onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(farmer.name)}&background=random&size=400`; }}
-                                            className="w-full h-full object-cover" 
-                                            alt="Officer"
-                                        />
+                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Site Representative')}</p>
+                                    <div className="aspect-[4/3] rounded-lg overflow-hidden bg-hp-bg border border-hp-border flex items-center justify-center font-bold text-lg text-hp-dark">
+                                        {farmer.name}
                                     </div>
                                 </div>
 
                                 <div className="border border-hp-border rounded-xl p-3 bg-hp-hover/60">
-                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Site Boundary & Road Photo')}</p>
+                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Field Photo')}</p>
                                     <div className="aspect-[4/3] rounded-lg overflow-hidden bg-hp-bg border border-hp-border">
                                         <img 
-                                            src={(farmer.farm_photos && farmer.farm_photos[0]) || "/images/image3.jpg"} 
-                                            onError={(e) => { e.target.onerror = null; e.target.src = `/images/image3.jpg`; }}
+                                            src="/images/image3.jpg" 
                                             className="w-full h-full object-cover" 
                                             alt="Site"
                                         />

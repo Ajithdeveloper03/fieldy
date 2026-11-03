@@ -17,30 +17,43 @@ class EmployeeController extends Controller
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'action' => 'required|in:check_in,check_out',
+            'selfie_image_path' => 'nullable|string',
+            'site_latitude' => 'nullable|numeric',
+            'site_longitude' => 'nullable|numeric',
         ]);
-        $employeeId = $request->user()->id;
-        $today = Carbon::today()->toDateString();
-        $attendance = AttendanceLog::where('employee_id', $employeeId)
-            ->where('date', $today)
-            ->first();
+        $user = $request->user();
+
         if ($validated['action'] === 'check_in') {
-            if (! $attendance) {
-                AttendanceLog::create([
-                    'employee_id' => $employeeId,
-                    'check_in_timestamp' => now(),
-                    'check_in_latitude' => $validated['latitude'],
-                    'check_in_longitude' => $validated['longitude'],
-                    'date' => $today,
-                ]);
-            }
+            $log = \App\Services\Attendance\AttendanceService::recordClockIn(
+                $user,
+                (float) $validated['latitude'],
+                (float) $validated['longitude'],
+                $validated['selfie_image_path'] ?? null,
+                isset($validated['site_latitude']) ? (float) $validated['site_latitude'] : null,
+                isset($validated['site_longitude']) ? (float) $validated['site_longitude'] : null
+            );
+            return response()->json([
+                'status' => 'success',
+                'action' => 'check_in',
+                'is_late' => (bool) $log->is_late,
+                'late_minutes' => (int) $log->late_minutes,
+                'is_within_geofence' => (bool) $log->is_within_geofence,
+                'geofence_deviation_meters' => (int) $log->geofence_deviation_meters,
+            ]);
         } elseif ($validated['action'] === 'check_out') {
-            if ($attendance && ! $attendance->check_out_timestamp) {
-                $attendance->update([
-                    'check_out_timestamp' => now(),
-                    'check_out_latitude' => $validated['latitude'],
-                    'check_out_longitude' => $validated['longitude'],
-                ]);
-            }
+            $log = \App\Services\Attendance\AttendanceService::recordClockOut(
+                $user,
+                (float) $validated['latitude'],
+                (float) $validated['longitude']
+            );
+            return response()->json([
+                'status' => 'success',
+                'action' => 'check_out',
+                'total_hours' => $log ? (float) $log->total_hours : 0,
+                'regular_hours' => $log ? (float) $log->regular_hours : 0,
+                'overtime_hours' => $log ? (float) $log->overtime_hours : 0,
+                'is_early_checkout' => $log ? (bool) $log->is_early_checkout : false,
+            ]);
         }
         return response()->json(['status' => 'success']);
     }
@@ -51,16 +64,31 @@ class EmployeeController extends Controller
             'longitude' => 'required|numeric',
             'is_gps_enabled' => 'required|boolean',
             'battery_level' => 'required|integer',
+            'speed' => 'nullable|numeric',
+            'heading' => 'nullable|numeric',
         ]);
-        $request->user()->locationLogs()->create([
+        $user = $request->user();
+
+        $user->locationLogs()->create([
             'latitude' => $validated['latitude'],
             'longitude' => $validated['longitude'],
             'is_gps_enabled' => $validated['is_gps_enabled'],
             'battery_level' => $validated['battery_level'],
             'recorded_at' => now(),
         ]);
+
+        \App\Services\Tracking\GeofenceTrackingService::logPing(
+            $user,
+            (float) $validated['latitude'],
+            (float) $validated['longitude'],
+            10.0,
+            isset($validated['speed']) ? (float) $validated['speed'] : 0.0,
+            isset($validated['heading']) ? (float) $validated['heading'] : 0.0,
+            (int) $validated['battery_level']
+        );
+
         broadcast(new LocationUpdated(
-            $request->user()->id,
+            $user->id,
             $validated['latitude'],
             $validated['longitude'],
             $validated['is_gps_enabled'],

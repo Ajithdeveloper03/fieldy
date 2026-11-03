@@ -3,9 +3,11 @@ import AdminLayout from '../AdminLayout';
 import { useForm, Link } from '@inertiajs/react';
 import { Shield, User, Phone, MapPin, ArrowLeft, Save, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import useIndustry from '../../../hooks/useIndustry';
 
 export default function EmployeeRegistrationForm() {
     const { t } = useTranslation();
+    const { vocab, industry } = useIndustry();
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         phone: '',
@@ -27,8 +29,8 @@ export default function EmployeeRegistrationForm() {
                         <ArrowLeft className="w-4 h-4 mr-1" /> {t('Back')}
                     </Link>
                     <div>
-                        <h1 className="hp-page-title">{t('Onboard Property Advisor / Site Executive')}</h1>
-                        <p className="text-sm text-hp-muted mt-0.5">{t('Add a new RERA-certified property advisor, site showing executive, or valuation engineer.')}</p>
+                        <h1 className="hp-page-title">{t(`Onboard New ${vocab.staff.singular}`)}</h1>
+                        <p className="text-sm text-hp-muted mt-0.5">{t(`Add a new certified ${vocab.staff.singular.toLowerCase()} to your ${industry.name} field operations workforce.`)}</p>
                     </div>
                 </div>
 
@@ -41,13 +43,13 @@ export default function EmployeeRegistrationForm() {
                             <div className="mb-4">
                                 <h2 className="hp-card-title flex items-center gap-2">
                                     <User className="w-5 h-5 text-hp-primary" />
-                                    {t('Advisor Personal & Mobile App Login Info')}
+                                    {t(`${vocab.staff.singular} Personal & Mobile App Login Info`)}
                                 </h2>
-                                <p className="text-xs text-hp-muted mt-0.5">{t('Used for Fieldy Real Estate app login and live site showing GPS telemetry.')}</p>
+                                <p className="text-xs text-hp-muted mt-0.5">{t(`Used for Fieldy ${industry.name} mobile app login and live duty GPS telemetry.`)}</p>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Advisor Full Name')}</label>
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t(`${vocab.staff.singular} Full Name`)}</label>
                                     <input
                                         type="text"
                                         value={data.name}
@@ -78,9 +80,9 @@ export default function EmployeeRegistrationForm() {
                             <div className="mb-4">
                                 <h2 className="hp-card-title flex items-center gap-2">
                                     <Shield className="w-5 h-5 text-hp-primary" />
-                                    {t('Sales Corridor & Project Assignment')}
+                                    {t(`Operational Beat & Territory Assignment`)}
                                 </h2>
-                                <p className="text-xs text-hp-muted mt-0.5">{t('Real estate micro-market allocation and field SOS emergency contact.')}</p>
+                                <p className="text-xs text-hp-muted mt-0.5">{t(`Territory beat allocation and field emergency contact.`)}</p>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -95,12 +97,12 @@ export default function EmployeeRegistrationForm() {
                                     {errors.emergency_phone && <p className="text-hp-danger text-xs font-bold mt-1">{errors.emergency_phone}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Assigned Sales Corridor / Zone')}</label>
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Assigned Operations Zone / Region')}</label>
                                     <input
                                         type="text"
                                         value={data.assigned_region}
                                         onChange={(e) => setData('assigned_region', e.target.value)}
-                                        placeholder="e.g. OMR & ECR Luxury Corridor"
+                                        placeholder="e.g. Metro Central Beat"
                                         className="hp-input"
                                     />
                                     {errors.assigned_region && <p className="text-hp-danger text-xs font-bold mt-1">{errors.assigned_region}</p>}
@@ -112,8 +114,8 @@ export default function EmployeeRegistrationForm() {
                         <div className="bg-hp-primary-light/40 border border-hp-primary-border rounded-lg p-4 flex items-start gap-3">
                             <AlertCircle className="w-5 h-5 text-hp-primary shrink-0 mt-0.5" />
                             <div>
-                                <h4 className="text-xs font-bold text-hp-dark uppercase tracking-wider">{t('Automatic Advisor App Credentials')}</h4>
-                                <p className="text-xs text-hp-muted mt-0.5">{t('A temporary high-entropy password will be generated automatically so the Property Advisor can sign in to the mobile app immediately.')}</p>
+                                <h4 className="text-xs font-bold text-hp-dark uppercase tracking-wider">{t(`Automatic ${vocab.staff.singular} App Credentials`)}</h4>
+                                <p className="text-xs text-hp-muted mt-0.5">{t(`A temporary secure password will be generated automatically so the ${vocab.staff.singular.toLowerCase()} can sign in to the mobile app immediately.`)}</p>
                             </div>
                         </div>
 
@@ -128,7 +130,7 @@ export default function EmployeeRegistrationForm() {
                                 className="hp-btn hp-btn-primary"
                             >
                                 <Save className="w-4 h-4 mr-1.5" />
-                                {processing ? t('Onboarding...') : t('Onboard Property Advisor')}
+                                {processing ? t('Onboarding...') : t(`Onboard ${vocab.staff.singular}`)}
                             </button>
                         </div>
                     </form>

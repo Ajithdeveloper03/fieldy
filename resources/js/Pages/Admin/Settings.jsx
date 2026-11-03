@@ -7,11 +7,13 @@ import {
 } from 'lucide-react';
 import { useAlert } from '../../Components/AlertSystem';
 import { useTranslation } from 'react-i18next';
+import useIndustry from '../../hooks/useIndustry';
 
 export default function Settings() {
     const alertSystem = useAlert ? useAlert() : {};
     const triggerInfo = alertSystem?.triggerInfo;
     const { t } = useTranslation();
+    const { vocab, labels, industry } = useIndustry();
     const [activeSection, setActiveSection] = useState('all');
 
     const handleSave = () => {
@@ -24,7 +26,7 @@ export default function Settings() {
 
     return (
         <AdminLayout>
-            <Head title="Agency & Site Settings - Fieldy Real Estate" />
+            <Head title={`Settings - Fieldy ${industry.name}`} />
 
             <div className="space-y-6 pb-12 hp-animate-in">
 
@@ -34,17 +36,17 @@ export default function Settings() {
                         <div className="max-w-2xl">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
-                                    <Sparkles className="w-3 h-3 mr-1" /> {t('Real Estate Agency Configuration')}
+                                    <Sparkles className="w-3 h-3 mr-1" /> {industry.name} Configuration
                                 </span>
                                 <span className="hp-chip hp-chip-gray">
-                                    {t('Site Showing & RERA Policies')}
+                                    {t('Field Operational Policies')}
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {t('Real Estate Agency & Site Operations Settings')}
+                                {t(`${industry.name} Operations & Dispatch Settings`)}
                             </h1>
                             <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                                {t('Configure project plot geofence radii, automated buyer showing reminders, site visit duration thresholds, and agency role permissions.')}
+                                {t(`Configure ${vocab.entity.singular.toLowerCase()} geofence radii, automated ${vocab.staff.singular.toLowerCase()} dispatch alerts, shift cutoffs, and regulatory compliance rules.`)}
                             </p>
                         </div>
 
@@ -64,38 +66,42 @@ export default function Settings() {
                 {/* ══════════ HOSTINGER BENTO METRIC CARDS ══════════ */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Site Check-In Buffer')}</span>
-                        <p className="font-bold text-2xl text-hp-dark">100 <span className="text-xs text-hp-muted font-normal">meters</span></p>
-                        <p className="text-xs text-hp-muted mt-1">{t('Plot / project boundary tolerance for check-in')}</p>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Geofence Tolerance')}</span>
+                        <p className="font-bold text-2xl text-hp-dark">150 <span className="text-xs text-hp-muted font-normal">meters</span></p>
+                        <p className="text-xs text-hp-muted mt-1">{t(`${vocab.entity.singular} boundary tolerance for GPS check-in`)}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
                         <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Stationary Alert Timeout')}</span>
-                        <p className="font-bold text-2xl text-hp-warning">45 <span className="text-xs text-hp-muted font-normal">minutes</span></p>
-                        <p className="text-xs text-hp-muted mt-1">{t('Alerts sales desk if advisor halts en route')}</p>
+                        <p className="font-bold text-2xl text-hp-warning">30 <span className="text-xs text-hp-muted font-normal">minutes</span></p>
+                        <p className="text-xs text-hp-muted mt-1">{t(`Alerts dispatcher if ${vocab.staff.singular.toLowerCase()} halts en route`)}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Daily Site Travel Allowance Cap')}</span>
-                        <p className="font-bold text-2xl text-hp-primary">100 <span className="text-xs text-hp-muted font-normal">km / day</span></p>
-                        <p className="text-xs text-hp-muted mt-1">{t('Maximum auto-reimbursed advisor mileage')}</p>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Standard Shift Window')}</span>
+                        <p className="font-bold text-2xl text-hp-primary">9.0 <span className="text-xs text-hp-muted font-normal">hours</span></p>
+                        <p className="text-xs text-hp-muted mt-1">{t('8h regular duty + 1h lunch/rest cutoff')}</p>
                     </div>
                 </div>
 
-                {/* ══════════ HOSTINGER SEGMENTED CATEGORIES ══════════ */}
-                <div className="hp-segmented-bar overflow-x-auto max-w-full">
+                {/* ══════════ NAVIGATION TABS ══════════ */}
+                <div className="flex items-center gap-2 border-b border-hp-border pb-3 overflow-x-auto">
                     {[
-                        { id: 'all', label: 'All Agency Settings' },
-                        { id: 'geofence', label: 'Site Geofence & GPS' },
-                        { id: 'automation', label: 'Buyer Showing Reminders' },
-                        { id: 'rbac', label: 'Agency Team Roles' },
-                    ].map((sec) => (
+                        { id: 'all', label: t('All Settings') },
+                        { id: 'geofence', label: t('Geofence & Tracking') },
+                        { id: 'automation', label: t('Automations & Shifts') },
+                        { id: 'rbac', label: t('Access & Security') },
+                    ].map(tab => (
                         <button
-                            key={sec.id}
-                            onClick={() => setActiveSection(sec.id)}
-                            className={`hp-segmented-item ${activeSection === sec.id ? 'is-active-primary' : ''}`}
+                            key={tab.id}
+                            onClick={() => setActiveSection(tab.id)}
+                            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+                                activeSection === tab.id
+                                    ? 'bg-hp-primary text-white shadow-xs'
+                                    : 'text-hp-muted hover:text-hp-dark hover:bg-hp-hover'
+                            }`}
                         >
-                            {t(sec.label)}
+                            {tab.label}
                         </button>
                     ))}
                 </div>
@@ -111,52 +117,52 @@ export default function Settings() {
                                 </div>
                                 <div>
                                     <h2 className="hp-card-title text-base">
-                                        {t('Project Site Geofence & Telemetry Settings')}
+                                        {t(`${vocab.entity.singular} Geofence & GPS Telemetry Settings`)}
                                     </h2>
-                                    <p className="text-xs text-hp-muted">Configure plot/villa perimeter radius, stationary alerts, and daily travel reimbursement limits</p>
+                                    <p className="text-xs text-hp-muted">{t(`Configure ${vocab.entity.singular.toLowerCase()} perimeter radius, stationary warnings, and daily travel audit limits`)}</p>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
                                     <label className="block text-xs font-bold text-hp-dark mb-1.5">
-                                        {t('Project Site Check-In Radius (Meters)')}
+                                        {t(`${vocab.entity.singular} Check-In Radius (Meters)`)}
                                     </label>
                                     <input 
                                         type="number" 
-                                        defaultValue={100} 
+                                        defaultValue={150} 
                                         className="hp-input" 
                                     />
                                     <p className="text-xs text-hp-muted mt-1">
-                                        {t('Maximum distance allowed from property project coordinates to verify advisor check-in.')}
+                                        {t(`Maximum allowed distance from designated site coordinates to verify ${vocab.staff.singular.toLowerCase()} attendance.`)}
                                     </p>
                                 </div>
 
                                 <div>
                                     <label className="block text-xs font-bold text-hp-dark mb-1.5">
-                                        {t('Stationary Alert Timeout (Minutes)')}
+                                        {t('Stationary Idle Alert Timeout (Minutes)')}
                                     </label>
                                     <input 
                                         type="number" 
-                                        defaultValue={45} 
+                                        defaultValue={30} 
                                         className="hp-input" 
                                     />
                                     <p className="text-xs text-hp-muted mt-1">
-                                        {t('Triggers High Alert if Property Advisor is stationary for longer than this duration.')}
+                                        {t(`Triggers high-priority alert if ${vocab.staff.singular.toLowerCase()} remains static without active work order.`)}
                                     </p>
                                 </div>
 
                                 <div className="md:col-span-2">
                                     <label className="block text-xs font-bold text-hp-dark mb-1.5">
-                                        {t('Daily Site Showing Travel Threshold (KM)')}
+                                        {t('Daily Field Travel Distance Benchmark (KM)')}
                                     </label>
                                     <input 
                                         type="number" 
-                                        defaultValue={100} 
+                                        defaultValue={80} 
                                         className="hp-input" 
                                     />
                                     <p className="text-xs text-hp-muted mt-1">
-                                        {t('Alerts sales manager if an advisor logs travel distance beyond this limit in a single day.')}
+                                        {t(`Standard daily travel allowance baseline for ${industry.name} field beats.`)}
                                     </p>
                                 </div>
                             </div>
@@ -172,9 +178,9 @@ export default function Settings() {
                                 </div>
                                 <div>
                                     <h2 className="hp-card-title text-base">
-                                        {t('Automated Buyer Site Visit Push & Attendance Cutoffs')}
+                                        {t('Automated Shift Rostering & Attendance Cutoffs')}
                                     </h2>
-                                    <p className="text-xs text-hp-muted">Schedule automated mobile notifications for scheduled showings and site experience center check-ins</p>
+                                    <p className="text-xs text-hp-muted">{t(`Schedule automated dispatch notifications, morning check-in reminders, and shift cutoffs`)}</p>
                                 </div>
                             </div>
 
@@ -182,10 +188,10 @@ export default function Settings() {
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-hp-border bg-hp-hover/60 gap-4">
                                     <div>
                                         <p className="text-sm font-bold text-hp-dark">
-                                            {t('Daily Buyer Showing Roster Push (Firebase)')}
+                                            {t(`Daily ${vocab.visit.plural} Schedule Push (Firebase)`)}
                                         </p>
                                         <p className="text-xs text-hp-muted mt-0.5">
-                                            {t('Automatically broadcast scheduled buyer site visits & valuation tasks to Property Advisors.')}
+                                            {t(`Automatically dispatch morning route waypoints to active ${vocab.staff.plural.toLowerCase()}.`)}
                                         </p>
                                     </div>
                                     <div className="flex items-center space-x-3">
@@ -204,15 +210,15 @@ export default function Settings() {
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-hp-border bg-hp-hover/60 gap-4">
                                     <div>
                                         <p className="text-sm font-bold text-hp-dark">
-                                            {t('Site Experience Center Reporting Cutoff')}
+                                            {t('Morning Shift Check-In Cutoff')}
                                         </p>
                                         <p className="text-xs text-hp-muted mt-0.5">
-                                            {t('Advisors checking in at the project site office after this time are marked as late.')}
+                                            {t('Officers checking in after this time are automatically marked as Late in attendance timesheets.')}
                                         </p>
                                     </div>
                                     <input 
                                         type="time" 
-                                        defaultValue="09:30" 
+                                        defaultValue="09:15" 
                                         className="hp-input !w-28 text-xs font-semibold" 
                                     />
                                 </div>
@@ -220,15 +226,15 @@ export default function Settings() {
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-hp-border bg-hp-hover/60 gap-4">
                                     <div>
                                         <p className="text-sm font-bold text-hp-dark">
-                                            {t('Standard Buyer Site Walkthrough Duration (Minutes)')}
+                                            {t(`Standard ${vocab.visit.singular} Dwell Time (Minutes)`)}
                                         </p>
                                         <p className="text-xs text-hp-muted mt-0.5">
-                                            {t('Target duration for a complete plot/villa showing & valuation discussion.')}
+                                            {t(`Target completion window per ${vocab.visit.singular.toLowerCase()} on-site.`)}
                                         </p>
                                     </div>
                                     <input 
                                         type="number" 
-                                        defaultValue={90} 
+                                        defaultValue={45} 
                                         className="hp-input !w-28 text-xs font-semibold" 
                                     />
                                 </div>
@@ -244,11 +250,11 @@ export default function Settings() {
                                     <Lock className="w-4 h-4" />
                                 </div>
                                 <h2 className="text-sm font-bold text-hp-dark">
-                                    {t('Agency Role-Based Access Control (RBAC)')}
+                                    {t('Role-Based Access Control (RBAC) & Multi-Tenant Isolation')}
                                 </h2>
                             </div>
                             <p className="text-xs text-hp-muted leading-relaxed">
-                                {t('Granular access controls for Agency Admin, Corridor Sales Manager, Legal/RERA Verifier, and Field Property Advisors are actively enforced across your real estate workspace.')}
+                                {t(`Granular permissions for Operations Manager, Dispatcher, Quality Auditor, and Field Staff are strictly enforced for ${industry.name}.`)}
                             </p>
                         </div>
                     )}

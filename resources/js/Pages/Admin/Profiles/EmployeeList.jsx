@@ -2,21 +2,26 @@ import React, { useState } from 'react';
 import AdminLayout from '../AdminLayout';
 import { Link, usePage, router } from '@inertiajs/react';
 import { 
-    Shield, MapPin, ChevronRight, Search, Filter, Plus, ChevronDown, CheckCircle2, 
-    Circle, Phone, Briefcase, Sparkles, LayoutGrid, ListFilter, ArrowUpRight, X,
-    Battery, Wifi, UserCheck, ShieldCheck
+    MapPin, Search, Plus, 
+    Briefcase, Sparkles, LayoutGrid, ListFilter, ArrowUpRight, X,
+    Battery, UserCheck, ShieldCheck
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import useIndustry from '../../../hooks/useIndustry';
 
 export default function EmployeeList({ employees = [], regions = [], filters = {} }) {
     const { t } = useTranslation();
     const { flash } = usePage().props;
+    const { vocab, labels, industry } = useIndustry();
+
     const [search, setSearch] = useState(filters.search || '');
     const [region, setRegion] = useState(filters.region || 'all');
     const [viewMode, setViewMode] = useState('grid'); 
 
     const formatDesignation = (designation) => {
-        if (!designation || designation === 'field_officer') return 'Senior Property Advisor';
+        if (!designation || designation === 'field_officer' || designation === 'field_staff') {
+            return vocab.staff.roles[0];
+        }
         return designation.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     };
 
@@ -30,7 +35,7 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
         router.get('/admin/employees', { search, region: r === 'all' ? '' : r }, { preserveState: true, replace: true });
     };
 
-    const activeCount = employees.filter(e => e.status === 'active' || e.isOnline).length;
+    const activeCount = employees.filter(e => e.status === 'active' || e.checked_in).length;
     const totalStaff = employees.length;
 
     return (
@@ -51,26 +56,29 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                     </div>
                 )}
 
-                {/* ══════════ HERO CARD ══════════ */}
+                {/* HERO CARD */}
                 <div className="hp-hero-card p-5 sm:p-7">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
                         <div className="max-w-xl">
                             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
-                                    <Sparkles className="w-3 h-3 mr-1" /> {t('Team')}
+                                    <Sparkles className="w-3 h-3 mr-1" /> {t(vocab.staff.plural)}
                                 </span>
                                 <span className="hp-chip hp-chip-gray">
-                                    {totalStaff} {t('agents')}
+                                    {totalStaff} {t('registered')}
+                                </span>
+                                <span className="hp-chip hp-chip-info">
+                                    {industry.shortName}
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {t('Agents & Field Team')}
+                                {t(labels.navAgents || `${vocab.staff.plural} Directory`)}
                             </h1>
                             <p className="text-xs sm:text-sm text-hp-muted mt-1 leading-relaxed">
-                                {t('Manage your real estate agents, contact numbers, and working areas.')}
+                                {t(labels.agentDutySub || `Manage your ${industry.name.toLowerCase()} field workforce, contact details, and assigned beats.`)}
                             </p>
 
-                            {/* Hostinger Pill Search Bar */}
+                            {/* Search Bar */}
                             <form onSubmit={handleSearch} className="mt-4 max-w-md">
                                 <div className="hp-search-pill-bar">
                                     <Search className="w-4 h-4 text-hp-muted shrink-0" />
@@ -78,7 +86,7 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                         type="text"
                                         value={search}
                                         onChange={e => setSearch(e.target.value)}
-                                        placeholder={t('Search by agent name, ID, or phone...')}
+                                        placeholder={t(`Search by ${vocab.staff.singular.toLowerCase()} name, ID, or phone...`)}
                                         className="w-full bg-transparent text-xs sm:text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
                                     />
                                     {search && (
@@ -107,21 +115,21 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                 className="hp-btn hp-btn-primary !rounded-full"
                             >
                                 <Plus className="w-4 h-4 mr-1" />
-                                <span>{t('Add Agent')}</span>
+                                <span>{t(`Add ${vocab.staff.singular}`)}</span>
                             </Link>
                         </div>
                     </div>
                 </div>
 
-                {/* ══════════ METRIC CARDS ══════════ */}
+                {/* METRIC CARDS */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total Agents')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t(`Total ${vocab.staff.plural}`)}</span>
                             <Briefcase className="w-3.5 h-3.5 text-hp-primary" />
                         </div>
                         <div className="text-2xl font-bold text-hp-dark">{totalStaff}</div>
-                        <p className="text-xs text-hp-muted mt-0.5">{t('In your agency')}</p>
+                        <p className="text-xs text-hp-muted mt-0.5">{t('In your organization')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
@@ -135,26 +143,25 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
 
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Check-In Rate')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Attendance Rate')}</span>
                             <ShieldCheck className="w-3.5 h-3.5 text-hp-primary" />
                         </div>
-                        <div className="text-2xl font-bold text-hp-dark">98.8%</div>
-                        <p className="text-xs text-hp-success font-medium mt-0.5">{t('Arrived on time')}</p>
+                        <div className="text-2xl font-bold text-hp-dark">98.5%</div>
+                        <p className="text-xs text-hp-success font-medium mt-0.5">{t('Clocked in on beat')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Areas')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Zones')}</span>
                             <MapPin className="w-3.5 h-3.5 text-hp-info" />
                         </div>
                         <div className="text-2xl font-bold text-hp-dark">{regions.length || 4}</div>
-                        <p className="text-xs text-hp-muted mt-0.5">{t('Active zones')}</p>
+                        <p className="text-xs text-hp-muted mt-0.5">{t('Active sectors')}</p>
                     </div>
                 </div>
 
-                {/* ══════════ HOSTINGER SEGMENTED REGION PILLS & VIEW CONTROLS ══════════ */}
+                {/* REGION PILLS & VIEW CONTROLS */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    {/* Region Segmented Tabs */}
                     <div className="hp-segmented-bar overflow-x-auto max-w-full">
                         {['all', ...regions].map((r) => (
                             <button
@@ -162,12 +169,11 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                 onClick={() => handleRegionChange(r)}
                                 className={`hp-segmented-item ${region === r ? 'is-active-primary' : ''}`}
                             >
-                                {r === 'all' ? t('All Sales Corridors') : r}
+                                {r === 'all' ? t('All Areas / Beats') : r}
                             </button>
                         ))}
                     </div>
 
-                    {/* View Switcher */}
                     <div className="flex items-center bg-hp-hover border border-hp-border rounded-lg p-0.5 self-start sm:self-auto">
                         <button
                             type="button"
@@ -188,17 +194,16 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                     </div>
                 </div>
 
-                {/* ══════════ DIRECTORY CONTENT ══════════ */}
+                {/* DIRECTORY CONTENT */}
                 {employees.length === 0 ? (
                     <div className="hp-bento-card text-center py-20">
                         <div className="hp-icon-tile !w-14 !h-14 mx-auto mb-3">
                             <UserCheck className="w-6 h-6 text-hp-muted" />
                         </div>
-                        <h2 className="text-base font-bold text-hp-dark mb-1">{t('No property advisors found')}</h2>
-                        <p className="text-sm text-hp-muted max-w-sm mx-auto">{t('Try adjusting your search filters or onboard a new property advisor.')}</p>
+                        <h2 className="text-base font-bold text-hp-dark mb-1">{t(`No ${vocab.staff.plural.toLowerCase()} found`)}</h2>
+                        <p className="text-sm text-hp-muted max-w-sm mx-auto">{t(`Try adjusting your search filters or onboard new ${vocab.staff.singular.toLowerCase()}.`)}</p>
                     </div>
                 ) : viewMode === 'grid' ? (
-                    /* Hostinger 3/4-Column Bento Marketplace Cards Grid (Reference Images 2, 4 & 5) */
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {employees.map((emp) => (
                             <div 
@@ -206,54 +211,46 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                 className="hp-bento-card group flex flex-col justify-between"
                             >
                                 <div>
-                                    {/* Top Visual Box / Avatar Header */}
                                     <div className="hp-card-visual h-32 mb-4 p-4 flex flex-col justify-between relative bg-gradient-to-br from-hp-hover to-hp-bg">
                                         <div className="flex items-start justify-between">
                                             <div className="w-12 h-12 rounded-2xl bg-hp-dark text-white font-bold text-base flex items-center justify-center shadow-md">
-                                                {emp.name?.charAt(0) || 'A'}
+                                                {emp.name?.charAt(0) || 'S'}
                                             </div>
-                                            <span className={`hp-chip !bg-white/90 backdrop-blur-sm ${emp.status === 'active' || emp.isOnline ? 'hp-chip-success hp-chip-dot' : 'hp-chip-gray'}`}>
-                                                {emp.status === 'active' || emp.isOnline ? t('On Site Duty') : t('Offline')}
+                                            <span className={`hp-chip !bg-white/90 backdrop-blur-sm ${emp.status === 'active' || emp.checked_in ? 'hp-chip-success hp-chip-dot' : 'hp-chip-gray'}`}>
+                                                {emp.status === 'active' || emp.checked_in ? t('On Duty') : t('Offline')}
                                             </span>
                                         </div>
 
                                         <div className="flex items-center justify-between text-xs text-hp-muted">
                                             <span className="font-mono font-bold bg-white/80 px-2 py-0.5 rounded border border-hp-border text-hp-dark">
-                                                {emp.employee_code || `ADV-${emp.id}`}
+                                                {emp.employee_code || `STF-${emp.id}`}
                                             </span>
                                             <span className="flex items-center gap-1 font-semibold text-hp-dark">
-                                                <Battery className="w-3.5 h-3.5 text-hp-primary" /> {emp.battery || 90}%
+                                                <Battery className="w-3.5 h-3.5 text-hp-primary" /> {emp.battery || 92}%
                                             </span>
                                         </div>
                                     </div>
 
-                                    {/* Advisor Info */}
                                     <div className="space-y-1.5">
                                         <h3 className="font-bold text-base text-hp-dark group-hover:text-hp-primary transition-colors line-clamp-1">
                                             {emp.name}
                                         </h3>
                                         <p className="text-xs text-hp-muted flex items-center gap-1">
                                             <MapPin className="w-3.5 h-3.5 text-hp-muted shrink-0" />
-                                            <span className="truncate">{emp.region || 'OMR / ECR Corridor'}</span>
+                                            <span className="truncate">{emp.region || 'Assigned Beat'}</span>
                                         </p>
-                                        <p className="text-xs font-medium text-hp-dark pt-1">
+                                        <p className="text-xs font-medium text-hp-dark pt-1 truncate">
                                             {formatDesignation(emp.designation)}
                                         </p>
-                                        {emp.phone && (
-                                            <p className="text-xs text-hp-muted flex items-center gap-1 pt-0.5">
-                                                <Phone className="w-3 h-3 text-hp-muted" /> {emp.phone}
-                                            </p>
-                                        )}
                                     </div>
                                 </div>
 
-                                {/* Hostinger Bottom Outline Action Button */}
                                 <div className="mt-5 pt-3 border-t border-hp-border">
                                     <Link 
                                         href={`/admin/employees/${emp.id}`}
                                         className="hp-btn hp-btn-outline w-full !rounded-xl !h-10 text-sm font-semibold"
                                     >
-                                        <span>{t('View Advisor Profile')}</span>
+                                        <span>{t(`View ${vocab.staff.singular} Profile`)}</span>
                                         <ArrowUpRight className="w-4 h-4 ml-1" />
                                     </Link>
                                 </div>
@@ -261,15 +258,14 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                         ))}
                     </div>
                 ) : (
-                    /* Table View */
                     <div className="hp-bento-card !p-0 overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="hp-table min-w-[700px]">
                                 <thead>
                                     <tr>
-                                        <th>{t('Property Advisor & ID')}</th>
-                                        <th>{t('Role / Specialization')}</th>
-                                        <th>{t('Sales Corridor')}</th>
+                                        <th>{t(vocab.staff.singular)}</th>
+                                        <th>{t('Role / Designation')}</th>
+                                        <th>{t('Assigned Sector')}</th>
                                         <th>{t('Phone')}</th>
                                         <th>{t('Status')}</th>
                                         <th className="text-right">{t('Actions')}</th>
@@ -281,11 +277,11 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                             <td>
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 rounded-xl bg-hp-hover border border-hp-border flex items-center justify-center font-bold text-xs shrink-0 text-hp-dark">
-                                                        {emp.name?.charAt(0) || 'A'}
+                                                        {emp.name?.charAt(0) || 'S'}
                                                     </div>
                                                     <div>
                                                         <p className="font-bold text-sm text-hp-dark">{emp.name}</p>
-                                                        <p className="text-[11px] font-mono text-hp-muted">{emp.employee_code || `ADV-${emp.id}`}</p>
+                                                        <p className="text-[11px] font-mono text-hp-muted">{emp.employee_code || `STF-${emp.id}`}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -296,17 +292,17 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                             </td>
                                             <td>
                                                 <span className="text-xs text-hp-dark flex items-center gap-1 font-medium">
-                                                    <MapPin className="w-3.5 h-3.5 text-hp-muted" /> {emp.region || 'OMR / ECR Corridor'}
+                                                    <MapPin className="w-3.5 h-3.5 text-hp-muted" /> {emp.region || 'Assigned Beat'}
                                                 </span>
                                             </td>
                                             <td>
                                                 <span className="text-xs text-hp-muted font-mono">
-                                                    {emp.phone || '–'}
+                                                    {emp.phone || '-'}
                                                 </span>
                                             </td>
                                             <td>
-                                                <span className={`hp-chip ${emp.status === 'active' || emp.isOnline ? 'hp-chip-success hp-chip-dot' : 'hp-chip-gray'}`}>
-                                                    {emp.status === 'active' || emp.isOnline ? t('On Site Duty') : t('Offline')}
+                                                <span className={`hp-chip ${emp.status === 'active' || emp.checked_in ? 'hp-chip-success hp-chip-dot' : 'hp-chip-gray'}`}>
+                                                    {emp.status === 'active' || emp.checked_in ? t('On Duty') : t('Offline')}
                                                 </span>
                                             </td>
                                             <td className="text-right">

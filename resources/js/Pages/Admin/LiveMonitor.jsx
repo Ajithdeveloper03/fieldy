@@ -21,16 +21,18 @@ function ChangeView({ center, zoom }) {
 }
 
 import {
-    ShieldAlert, MapPin, Clock, Activity, Search,
-    CheckCircle2, AlertTriangle, Wifi, WifiOff, Phone,
-    Battery, Navigation, Calendar, ChevronDown, User,
-    TrendingUp, Filter, RefreshCw, Eye, MessageSquare, Maximize, Minimize,
-    Sparkles, ArrowRight, ShieldCheck, ArrowUpRight
+    ShieldAlert, MapPin, Clock, Search,
+    CheckCircle2, Wifi, WifiOff, Phone,
+    Battery, Navigation, MessageSquare, Maximize, Minimize,
+    RefreshCw
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import useIndustry from '../../hooks/useIndustry';
 
 export default function LiveMonitor({ employees: propEmployees = [] }) {
     const { t } = useTranslation();
+    const { vocab, labels, industry } = useIndustry();
+
     const [employees, setEmployees] = useState(propEmployees);
     
     useEffect(() => {
@@ -41,7 +43,6 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
     const [statusFilter, setStatusFilter] = useState('all');
     const [regionFilter, setRegionFilter] = useState('all');
     const [selectedEmployee, setSelectedEmployee] = useState(employees[0] || null);
-    const [showRegionDropdown, setShowRegionDropdown] = useState(false);
     const [lastRefreshed, setLastRefreshed] = useState(new Date().toLocaleTimeString());
     const [isMapFullscreen, setIsMapFullscreen] = useState(false);
 
@@ -66,52 +67,6 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
         router.reload({ only: ['employees'], preserveScroll: true, preserveState: true, onSuccess: () => setLastRefreshed(new Date().toLocaleTimeString()) });
     };
 
-    useEffect(() => {
-        if (window.Echo) {
-            window.Echo.channel('live-tracking')
-                .listen('.LocationUpdated', (e) => {
-                    setEmployees(prev => {
-                        const newEmps = [...prev];
-                        const index = newEmps.findIndex(emp => emp.id === e.employeeId);
-                        if (index !== -1) {
-                            newEmps[index] = {
-                                ...newEmps[index],
-                                latitude: e.latitude,
-                                longitude: e.longitude,
-                                lastSeen: 'Just now',
-                                battery: e.batteryLevel,
-                                gps: e.isGpsEnabled ? 'enabled' : 'disabled'
-                            };
-                            return newEmps;
-                        }
-                        return prev;
-                    });
-                    
-                    setSelectedEmployee(prev => {
-                        if (prev && prev.id === e.employeeId) {
-                            return {
-                                ...prev,
-                                latitude: e.latitude,
-                                longitude: e.longitude,
-                                lastSeen: 'Just now',
-                                battery: e.batteryLevel,
-                                gps: e.isGpsEnabled ? 'enabled' : 'disabled'
-                            };
-                        }
-                        return prev;
-                    });
-                    
-                    setLastRefreshed(new Date().toLocaleTimeString());
-                });
-        }
-        
-        return () => {
-            if (window.Echo) {
-                window.Echo.leaveChannel('live-tracking');
-            }
-        };
-    }, []);
-
     const mapMarkerIcon = L.divIcon({
         className: 'custom-icon',
         html: `
@@ -129,36 +84,39 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
 
     return (
         <AdminLayout>
-            <Head title="Live Agent GPS Monitor - Fieldy Real Estate" />
+            <Head title={`${vocab.monitor.title} - ${industry.name}`} />
 
             <div className="space-y-6 pb-12 hp-animate-in">
 
-                {/* ══════════ HOSTINGER HERO CARD (Soft Minimal Slate Gradient) ══════════ */}
+                {/* HERO CARD */}
                 <div className="hp-card-gradient-slate rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-200">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <div className="max-w-2xl">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                                 <span className="hp-chip hp-chip-success hp-chip-dot">
-                                    {t('Real-Time Property Advisor GPS Active')}
+                                    {t(`Live ${vocab.staff.singular} GPS Stream`)}
                                 </span>
                                 <span className="hp-chip hp-chip-gray">
                                     {t('Refreshed')} {lastRefreshed}
                                 </span>
+                                <span className="hp-chip hp-chip-info">
+                                    {industry.shortName}
+                                </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {t('Live Agent & Site Showing GPS Command Center')}
+                                {t(labels.bannerTitle || `${industry.shortName} GPS Command Center`)}
                             </h1>
                             <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                                {t('Real-time GPS positioning, project site geofence compliance, battery health, and live showing routes for all property advisors on duty.')}
+                                {t(labels.bannerSub || `Real-time GPS positioning, ${vocab.entity.singular.toLowerCase()} geofence compliance, and route tracking for all on-duty ${vocab.staff.plural.toLowerCase()}.`)}
                             </p>
 
-                            {/* Hostinger Pill Search Bar */}
+                            {/* Search Bar */}
                             <div className="mt-5 max-w-lg">
                                 <div className="hp-search-pill-bar !bg-white !shadow-xs">
                                     <Search className="w-4 h-4 text-hp-muted shrink-0" />
                                     <input
                                         type="text"
-                                        placeholder={t('Search property advisors, corridors, or project sites...')}
+                                        placeholder={t(`Search ${vocab.staff.plural.toLowerCase()}, sectors, or ${vocab.entity.plural.toLowerCase()}...`)}
                                         value={searchQuery}
                                         onChange={e => setSearchQuery(e.target.value)}
                                         className="w-full bg-transparent text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
@@ -167,7 +125,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                             </div>
                         </div>
 
-                        {/* Hostinger Refresh Button */}
+                        {/* Refresh Button */}
                         <div className="shrink-0 self-start lg:self-center">
                             <button
                                 onClick={handleRefresh}
@@ -180,11 +138,11 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                     </div>
                 </div>
 
-                {/* ══════════ HOSTINGER BENTO METRIC CARDS ══════════ */}
+                {/* BENTO METRIC CARDS */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Advisors On Site Duty')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t(labels.agentDutyTitle || vocab.monitor.onDuty)}</span>
                             <span className="w-2 h-2 rounded-full bg-hp-success animate-ping"></span>
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">
@@ -195,44 +153,44 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
 
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Offline / No GPS')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Offline / Standby')}</span>
                             <ShieldAlert className="w-3.5 h-3.5 text-hp-danger" />
                         </div>
                         <div className={`text-2xl sm:text-3xl font-bold ${offlineCount > 0 ? 'text-hp-danger' : 'text-hp-dark'}`}>
                             {offlineCount}
                         </div>
-                        <p className="text-xs text-hp-muted mt-1">{offlineCount > 0 ? t('Alert flag active') : t('All advisors connected')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{offlineCount > 0 ? t('Alert flag active') : t('All crew connected')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Site Showings Today')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t(`Today's ${vocab.visit.plural}`)}</span>
                             <CheckCircle2 className="w-3.5 h-3.5 text-hp-primary" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">
                             {totalVisits}
                         </div>
-                        <p className="text-xs text-hp-success font-medium mt-1">98.4% {t('On-time buyer reception')}</p>
+                        <p className="text-xs text-hp-success font-medium mt-1">{industry.complianceRate || '99%'} {t('On-time arrival')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Project Geofence Check')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Geofence Lock')}</span>
                             <Wifi className="w-3.5 h-3.5 text-hp-info" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">
                             100%
                         </div>
-                        <p className="text-xs text-hp-muted mt-1">{t('Within plot boundaries')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t(`Within ${vocab.entity.singular.toLowerCase()} bounds`)}</p>
                     </div>
                 </div>
 
-                {/* ══════════ HOSTINGER SEGMENTED STATUS & REGION PILLS ══════════ */}
+                {/* STATUS & REGION PILLS */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="hp-segmented-bar">
                         {[
-                            { id: 'all', label: 'All Advisors' },
-                            { id: 'active', label: 'Active on Site' },
+                            { id: 'all', label: `All ${vocab.staff.plural}` },
+                            { id: 'active', label: 'Active on Duty' },
                             { id: 'offline', label: 'Offline' },
                         ].map((s) => (
                             <button
@@ -246,36 +204,35 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                     </div>
 
                     <div className="flex items-center gap-1.5 overflow-x-auto">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mr-1">{t('Sales Zone')}:</span>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mr-1">{t('Sector')}:</span>
                         {regions.map((r) => (
                             <button
                                 key={r}
                                 onClick={() => setRegionFilter(r)}
                                 className={`hp-pill !h-8 !text-xs ${regionFilter === r ? '!bg-hp-dark !text-white !border-hp-dark' : ''}`}
                             >
-                                {r === 'all' ? t('All Zones') : r}
+                                {r === 'all' ? t('All Sectors') : r}
                             </button>
                         ))}
                     </div>
                 </div>
 
-                {/* ══════════ HOSTINGER 2-COLUMN SPLIT BENTO MONITOR ══════════ */}
+                {/* 2-COLUMN SPLIT BENTO MONITOR */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                     {/* Left: Officer Directory Roster */}
                     <div className="lg:col-span-1 hp-bento-card !p-0 overflow-hidden flex flex-col max-h-[820px]">
                         <div className="p-4 border-b border-hp-border flex items-center justify-between">
-                            <h3 className="hp-card-title text-sm">{t('Property Advisors & Site Engineers')}</h3>
+                            <h3 className="hp-card-title text-sm">{t(`${vocab.staff.plural} Roster`)}</h3>
                             <span className="text-xs text-hp-muted font-medium">
                                 {filteredEmployees.length} {t('Listed')}
                             </span>
                         </div>
 
-                        {/* Staff Cards List */}
                         <div className="flex-1 overflow-y-auto divide-y divide-hp-border">
                             {filteredEmployees.length === 0 ? (
                                 <div className="p-8 text-center text-xs text-hp-muted font-medium">
-                                    {t('No field staff matching filter.')}
+                                    {t(`No ${vocab.staff.plural.toLowerCase()} matching filter.`)}
                                 </div>
                             ) : (
                                 filteredEmployees.map(emp => {
@@ -292,7 +249,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                                         >
                                             <div className="flex items-start gap-3">
                                                 <div className="w-10 h-10 rounded-xl bg-hp-dark text-white font-bold text-xs flex items-center justify-center shrink-0">
-                                                    {(emp.name || 'O').charAt(0)}
+                                                    {(emp.name || 'S').charAt(0)}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between gap-1">
@@ -301,7 +258,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                                                             {emp.status}
                                                         </span>
                                                     </div>
-                                                    <p className="text-xs text-hp-muted truncate mt-0.5">{emp.currentLocation || 'Location updating…'}</p>
+                                                    <p className="text-xs text-hp-muted truncate mt-0.5">{emp.currentLocation || 'Location streaming...'}</p>
                                                     
                                                     <div className="flex items-center gap-3 mt-2 text-[11px] text-hp-muted">
                                                         <span className="flex items-center gap-1 font-semibold">
@@ -332,11 +289,9 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                     {selectedEmployee ? (
                         <div className="lg:col-span-2 space-y-6">
 
-                            {/* Interactive Live Map View in Hostinger Card */}
                             {(() => {
                                 const mapComponent = (
                                     <div className={`hp-bento-card !p-0 overflow-hidden relative flex flex-col ${isMapFullscreen ? 'fixed inset-0 z-[99999] w-screen h-screen rounded-none' : 'h-[440px]'}`}>
-                                        {/* Floating Map Controls */}
                                         <div className="absolute top-4 right-4 z-[500] flex items-center gap-2">
                                             <div className="bg-white/95 backdrop-blur-sm border border-hp-border px-3 py-1.5 rounded-full text-xs font-bold text-hp-dark shadow-sm flex items-center gap-1.5">
                                                 <span className="w-2 h-2 rounded-full bg-hp-primary animate-ping"></span>
@@ -389,12 +344,12 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                                 return isMapFullscreen ? createPortal(mapComponent, document.body) : mapComponent;
                             })()}
 
-                            {/* Hostinger-style Officer Profile Card */}
+                            {/* Staff Profile Card */}
                             <div className="hp-bento-card">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-hp-border">
                                     <div className="flex items-center gap-4">
                                         <div className="w-14 h-14 rounded-2xl bg-hp-dark text-white font-bold text-xl flex items-center justify-center shrink-0">
-                                            {(selectedEmployee.name || 'O').charAt(0)}
+                                            {(selectedEmployee.name || 'S').charAt(0)}
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-2 flex-wrap">
@@ -403,30 +358,32 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                                                     {selectedEmployee.status}
                                                 </span>
                                             </div>
-                                            <p className="text-xs text-hp-muted mt-0.5">{selectedEmployee.role || 'Senior Property Advisor'} • {selectedEmployee.region || 'Assigned Sales Corridor'}</p>
+                                            <p className="text-xs text-hp-muted mt-0.5">{selectedEmployee.role || vocab.staff.roles[0]} • {selectedEmployee.region || 'Assigned Beat'}</p>
                                         </div>
                                     </div>
 
                                     <div className="flex items-center gap-2">
-                                        <button className="hp-btn hp-btn-sm hp-btn-outline !rounded-xl" title="Call">
-                                            <Phone className="w-3.5 h-3.5 mr-1 text-hp-primary" /> {t('Call')}
-                                        </button>
-                                        <button className="hp-btn hp-btn-sm hp-btn-secondary !rounded-xl" title="Message">
-                                            <MessageSquare className="w-3.5 h-3.5 mr-1" /> {t('Message')}
-                                        </button>
+                                        {selectedEmployee.phone && (
+                                            <button 
+                                                onClick={() => window.location.href = `tel:${selectedEmployee.phone}`}
+                                                className="hp-btn hp-btn-sm hp-btn-outline !rounded-xl"
+                                            >
+                                                <Phone className="w-3.5 h-3.5 mr-1 text-hp-primary" /> {t('Call')}
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
                                     <div className="p-4 bg-hp-hover/60 rounded-xl border border-hp-border">
-                                        <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1">{t('Current Project Site / Coordinates')}</p>
+                                        <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1">{t(`Current ${vocab.entity.singular} Location`)}</p>
                                         <p className="text-sm font-semibold text-hp-dark flex items-center gap-1.5">
                                             <MapPin className="w-4 h-4 text-hp-primary shrink-0" />
-                                            <span className="truncate">{selectedEmployee.currentLocation || 'Skyline Villa Layout Zone'}</span>
+                                            <span className="truncate">{selectedEmployee.currentLocation || selectedEmployee.current_site || 'Active Beat'}</span>
                                         </p>
                                     </div>
                                     <div className="p-4 bg-hp-hover/60 rounded-xl border border-hp-border">
-                                        <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1">{t('Site Attendance')}</p>
+                                        <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1">{t('Shift Clock-in')}</p>
                                         <p className="text-sm font-semibold text-hp-dark flex items-center gap-1.5">
                                             <Clock className="w-4 h-4 text-hp-info shrink-0" />
                                             <span>Check-in: {selectedEmployee.checkInTime || '08:30 AM'}</span>
@@ -437,7 +394,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                                 {/* Target Progress */}
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t("Today's Site Showing Target")}</span>
+                                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t(`Today's ${vocab.visit.plural} Target`)}</span>
                                         <span className="text-sm font-bold text-hp-dark">{selectedEmployee.visitsDone || 0} / {selectedEmployee.visitsTarget || 6}</span>
                                     </div>
                                     <div className="w-full bg-hp-hover rounded-full h-2.5 overflow-hidden">
@@ -452,7 +409,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                         </div>
                     ) : (
                         <div className="lg:col-span-2 hp-bento-card p-16 text-center text-sm text-hp-muted">
-                            {t('Select an officer from the list to view real-time location telemetry.')}
+                            {t(`Select a ${vocab.staff.singular.toLowerCase()} from the list to view real-time location telemetry.`)}
                         </div>
                     )}
                 </div>

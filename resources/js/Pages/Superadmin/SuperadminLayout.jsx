@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
+import { withBase } from '../../basePath';
 import { 
     LayoutDashboard, Building2, Users2, BarChart3, 
     ShieldCheck, LogOut, ExternalLink, Activity, 
@@ -166,7 +167,7 @@ export default function SuperadminLayout({ children, activeIndustry = null, onSe
                             {user.name}
                         </span>
                         <Link
-                            href="/admin/logout"
+                            href={withBase('/admin/logout')}
                             method="post"
                             as="button"
                             className="p-1.5 rounded-md text-[var(--color-hp-gray-400)] hover:text-rose-400 hover:bg-white/10 transition-colors"

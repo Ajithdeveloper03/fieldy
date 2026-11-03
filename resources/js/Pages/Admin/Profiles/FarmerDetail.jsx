@@ -2,14 +2,16 @@ import React from 'react';
 import AdminLayout from '../AdminLayout';
 import { Link } from '@inertiajs/react';
 import { 
-    ArrowLeft, Map, Smartphone, FileText, CheckCircle2, Leaf, Clock, Navigation, 
-    Image as ImageIcon, Briefcase, FileSignature, CircleDollarSign, Building2,
-    Sparkles, ShieldCheck, ArrowUpRight, Phone, Calendar
+    ArrowLeft, Map, Smartphone, FileText, CheckCircle2, Navigation, 
+    Image as ImageIcon, Briefcase, Building2,
+    Sparkles, Phone, Calendar
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import useIndustry from '../../../hooks/useIndustry';
 
 export default function FarmerDetail({ farmer = {}, visits = [] }) {
     const { t } = useTranslation();
+    const { vocab, industry } = useIndustry();
 
     return (
         <AdminLayout>
@@ -17,11 +19,11 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                 {/* Back button */}
                 <div>
                     <Link href="/admin/farmers" className="hp-pill">
-                        <ArrowLeft className="w-4 h-4 mr-1" /> {t('Back to Properties Directory')}
+                        <ArrowLeft className="w-4 h-4 mr-1" /> {t(`Back to ${vocab.entity.plural} Directory`)}
                     </Link>
                 </div>
 
-                {/* ══════════ HOSTINGER HERO CARD ══════════ */}
+                {/* HERO CARD */}
                 <div className="hp-hero-card p-6 sm:p-8">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <div className="flex items-center gap-5">
@@ -29,90 +31,90 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                                 {farmer.farmer_photo ? (
                                     <img src={farmer.farmer_photo} alt={farmer.name} className="w-full h-full object-cover" />
                                 ) : (
-                                    <span className="font-bold text-hp-dark text-3xl">{String(farmer.name || 'P').charAt(0)}</span>
+                                    <span className="font-bold text-hp-dark text-3xl">{String(farmer.name || 'E').charAt(0)}</span>
                                 )}
                             </div>
                             <div>
                                 <div className="flex items-center gap-2 flex-wrap mb-1">
                                     <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">{farmer.name}</h1>
-                                    <span className="hp-chip hp-chip-gray font-mono">{farmer.farmer_code || 'PROP-N/A'}</span>
-                                    {farmer.kyc_status === 'verified' && (
-                                        <span className="hp-chip hp-chip-success hp-chip-dot">
-                                            {t('RERA & DTCP Verified')}
-                                        </span>
-                                    )}
+                                    <span className="hp-chip hp-chip-gray font-mono">{farmer.farmer_code || `ID-${farmer.id}`}</span>
+                                    <span className="hp-chip hp-chip-success hp-chip-dot">
+                                        {t('Active & Verified')}
+                                    </span>
+                                    <span className="hp-chip hp-chip-info">{industry.shortName}</span>
                                 </div>
                                 <p className="text-sm text-hp-muted flex items-center gap-1.5">
-                                    <Map className="w-4 h-4 text-hp-muted" /> {farmer.village}, {farmer.district}
+                                    <Map className="w-4 h-4 text-hp-muted" /> {farmer.village || farmer.district || 'Main Hub'}
                                 </p>
                                 <div className="flex items-center gap-2 mt-2 flex-wrap">
                                     <span className="hp-chip hp-chip-primary">
-                                        {farmer.customer_category === 'fertilizer' ? t('Commercial & Office Tower') : farmer.customer_category === 'both' ? t('Gated Apartments & Township') : t('Residential Plots & Villas')}
+                                        {farmer.crop_stage || farmer.soil_type || vocab.entity.types[0]}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Hostinger Action Buttons */}
+                        {/* Action Buttons */}
                         <div className="flex items-center gap-3 shrink-0 self-start lg:self-center">
-                            <button 
-                                type="button" 
-                                onClick={() => window.location.href = `tel:${farmer.phone}`}
-                                className="hp-btn hp-btn-secondary !rounded-full"
-                            >
-                                <Phone className="w-4 h-4 mr-1 text-hp-primary" />
-                                <span>{t('Contact Developer / Owner')}</span>
-                            </button>
+                            {farmer.phone && (
+                                <button 
+                                    type="button" 
+                                    onClick={() => window.location.href = `tel:${farmer.phone}`}
+                                    className="hp-btn hp-btn-secondary !rounded-full"
+                                >
+                                    <Phone className="w-4 h-4 mr-1 text-hp-primary" />
+                                    <span>{t('Contact POC')}</span>
+                                </button>
+                            )}
                             <Link 
                                 href="/admin/tasks"
                                 className="hp-btn hp-btn-primary !rounded-full"
                             >
                                 <Sparkles className="w-4 h-4 mr-1" />
-                                <span>{t('Schedule Site Visit')}</span>
+                                <span>{t(vocab.task.newLabel)}</span>
                             </Link>
                         </div>
                     </div>
                 </div>
 
-                {/* ══════════ HOSTINGER BENTO METRIC CARDS ══════════ */}
+                {/* METRIC CARDS */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Total Project Area')}</span>
-                        <p className="font-bold text-2xl text-hp-dark">{farmer.land_acres || '–'} <span className="text-xs font-normal text-hp-muted">{t('Acres / Units')}</span></p>
-                        <p className="text-xs text-hp-muted mt-1">{t('Approved RERA layout extent')}</p>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t(vocab.entity.size)}</span>
+                        <p className="font-bold text-2xl text-hp-dark">{farmer.land_acres || '-'} <span className="text-xs font-normal text-hp-muted">{vocab.entity.sizeUnit}</span></p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Total designated capacity')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Property Configuration')}</span>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t(vocab.entity.type)}</span>
                         <p className="font-bold text-lg text-hp-dark truncate">
-                            {Array.isArray(farmer.crop_types) ? farmer.crop_types.join(', ') : (farmer.crop_types || 'DTCP Plots & 4BHK Villas')}
+                            {farmer.soil_type || farmer.customer_category || vocab.entity.types[0]}
                         </p>
-                        <p className="text-xs text-hp-muted mt-1">{t('Available unit typologies')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Assigned classification')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('RERA / Marketing Stage')}</span>
-                        <p className="font-bold text-lg text-hp-success capitalize">{farmer.crop_stage || t('Ready for Registration')}</p>
-                        <p className="text-xs text-hp-muted mt-1">{t('Open for buyer site showings')}</p>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Operational Status')}</span>
+                        <p className="font-bold text-lg text-hp-success capitalize">{farmer.crop_stage || t('Fully Operational')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Online on platform')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Developer / Site Contact')}</span>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Site Contact')}</span>
                         <p className="font-bold text-base text-hp-dark flex items-center gap-1.5 truncate">
                             <Smartphone className="w-4 h-4 text-hp-primary shrink-0" />
-                            <span>{farmer.phone || '–'}</span>
+                            <span>{farmer.phone || '-'}</span>
                         </p>
-                        <p className="text-xs text-hp-muted mt-1">{t('Designated project sales head')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Primary contact number')}</p>
                     </div>
                 </div>
 
-                {/* ══════════ 2-COLUMN BENTO DETAILS ══════════ */}
+                {/* 2-COLUMN DETAILS */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Left Column: Coordinates & Specs */}
                     <div className="col-span-1 space-y-6">
                         <div className="hp-bento-card">
                             <h3 className="hp-card-title text-sm flex items-center gap-2 mb-4">
-                                <Navigation className="w-4 h-4 text-hp-primary" /> {t('Project Coordinates & Geofence')}
+                                <Navigation className="w-4 h-4 text-hp-primary" /> {t('Geofence Coordinates')}
                             </h3>
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="p-3 bg-hp-hover/60 border border-hp-border rounded-xl text-center">
@@ -128,65 +130,61 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
 
                         <div className="hp-bento-card">
                             <h3 className="hp-card-title text-sm flex items-center gap-2 mb-4 pb-3 border-b border-hp-border">
-                                <Briefcase className="w-4 h-4 text-hp-primary" /> {t('Property Specifications')}
+                                <Briefcase className="w-4 h-4 text-hp-primary" /> {t(`${vocab.entity.singular} Attributes`)}
                             </h3>
                             <div className="space-y-3.5 text-xs">
                                 <div className="flex justify-between items-center py-1">
-                                    <span className="text-hp-muted uppercase font-bold">{t('Approval Authority')}</span>
-                                    <span className="font-bold text-hp-dark capitalize">{farmer.soil_type || 'DTCP & RERA Approved'}</span>
+                                    <span className="text-hp-muted uppercase font-bold">{t('Type')}</span>
+                                    <span className="font-bold text-hp-dark capitalize">{farmer.crop_stage || vocab.entity.types[0]}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-1">
-                                    <span className="text-hp-muted uppercase font-bold">{t('Civic & Water Infra')}</span>
-                                    <span className="font-bold text-hp-dark capitalize">{farmer.irrigation_type || 'Underground EB & Avenue Roads'}</span>
+                                    <span className="text-hp-muted uppercase font-bold">{t('Highlights')}</span>
+                                    <span className="font-bold text-hp-dark capitalize">{farmer.soil_type || 'Standard Operations'}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-1">
-                                    <span className="text-hp-muted uppercase font-bold">{t('Available Units / Plots')}</span>
-                                    <span className="hp-chip hp-chip-primary !h-5 !text-[11px]">{farmer.seed_bags_required || 24} Units</span>
-                                </div>
-                                <div className="flex justify-between items-center pt-3 border-t border-hp-border">
-                                    <span className="text-hp-muted uppercase font-bold">{t('Project Valuation / Guide Value')}</span>
-                                    <span className="font-bold text-hp-dark text-sm">₹{farmer.planned_investment || '4,50,00,000'}</span>
+                                    <span className="text-hp-muted uppercase font-bold">{t('Capacity')}</span>
+                                    <span className="hp-chip hp-chip-primary !h-5 !text-[11px]">{farmer.land_acres || 1} {vocab.entity.sizeUnit}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Right Column: Buyer Site Showings Log & Documents */}
                     <div className="col-span-1 lg:col-span-2 space-y-6">
-                        {/* Buyer Showings Log */}
+                        {/* Visits Log */}
                         <div className="hp-bento-card">
                             <div className="flex items-center justify-between pb-4 mb-4 border-b border-hp-border">
                                 <h3 className="hp-card-title flex items-center gap-2">
-                                    <FileText className="w-5 h-5 text-hp-primary" /> {t('Buyer Site Showings & Valuation Log')}
+                                    <FileText className="w-5 h-5 text-hp-primary" /> {t(`Recent ${vocab.visit.plural} Log`)}
                                 </h3>
                                 <span className="hp-chip hp-chip-gray">
-                                    {visits.length} {t('Showings Logged')}
+                                    {visits.length} {t('Completed')}
                                 </span>
                             </div>
 
                             {visits.length === 0 ? (
-                                <div className="text-center text-hp-muted text-xs py-10">
-                                    {t('No buyer site showings or valuation inspections recorded yet for this property.')}
-                                </div>
+                                <p className="text-xs text-hp-muted text-center py-8">{t(`No ${vocab.visit.plural.toLowerCase()} recorded yet.`)}</p>
                             ) : (
-                                <div className="space-y-4">
+                                <div className="space-y-3">
                                     {visits.map((visit) => (
-                                        <div key={visit.id} className="p-4 bg-hp-hover/60 rounded-xl border border-hp-border">
-                                            <div className="flex items-center justify-between gap-2 mb-2">
-                                                <div>
-                                                    <h4 className="text-sm font-bold text-hp-dark">Buyer Site Showing & Plot Verification</h4>
-                                                    <p className="text-xs text-hp-muted">Conducted by Property Advisor {visit.employee_name || 'Assigned Advisor'}</p>
+                                        <div key={visit.id} className="p-4 rounded-xl border border-hp-border bg-white hover:border-hp-primary/40 transition-colors">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                                                        <CheckCircle2 className="w-4 h-4" />
+                                                    </span>
+                                                    <span className="font-bold text-sm text-hp-dark">{visit.employee_name || 'Staff Member'}</span>
                                                 </div>
-                                                <span className="hp-chip hp-chip-gray">
-                                                    <Clock className="w-3 h-3 mr-1" /> {visit.date}
-                                                </span>
+                                                <div className="flex items-center gap-2 text-xs text-hp-muted">
+                                                    <Calendar className="w-3.5 h-3.5" />
+                                                    <span>{visit.date} ({visit.check_in} – {visit.check_out})</span>
+                                                </div>
                                             </div>
                                             <p className="text-xs text-hp-dark leading-relaxed">
-                                                <strong>{t('Buyer Feedback & Site Notes')}:</strong> {visit.notes || 'Corner plot boundary stones verified; buyer expressed strong interest in East-facing unit.'}
+                                                {visit.notes || 'Service performed and verified.'}
                                             </p>
                                             {visit.recommendations && (
                                                 <p className="text-xs text-hp-muted leading-relaxed mt-2 pt-2 border-t border-hp-border">
-                                                    <strong>{t('Advisor Next Step')}:</strong> {visit.recommendations}
+                                                    <strong>{t(vocab.visit.recommendations)}:</strong> {visit.recommendations}
                                                 </p>
                                             )}
                                         </div>
@@ -195,48 +193,37 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                             )}
                         </div>
 
-                        {/* Documents & Media */}
+                        {/* Media */}
                         <div className="hp-bento-card">
                             <div className="flex items-center justify-between pb-4 mb-4 border-b border-hp-border">
                                 <h3 className="hp-card-title flex items-center gap-2">
-                                    <ImageIcon className="w-5 h-5 text-hp-primary" /> {t('RERA Certificate, Title Deed & Layout Media')}
+                                    <ImageIcon className="w-5 h-5 text-hp-primary" /> {t('Verification Documents & Site Visuals')}
                                 </h3>
-                                <span className={farmer.kyc_status === 'verified' ? 'hp-chip hp-chip-success' : 'hp-chip hp-chip-warning'}>
-                                    {farmer.kyc_status === 'verified' ? 'RERA Verified' : (farmer.kyc_status || 'Pending')} KYC
+                                <span className="hp-chip hp-chip-success">
+                                    {t('Verified')}
                                 </span>
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="border border-hp-border rounded-xl p-3 bg-hp-hover/60">
-                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('RERA & Title Certificate')}</p>
-                                    <div className="aspect-[4/3] rounded-lg overflow-hidden bg-hp-bg border border-hp-border">
-                                        <img 
-                                            src={farmer.aadhaar_image || `https://placehold.co/600x400/f8fafc/94a3b8?text=RERA+Title+Deed`} 
-                                            onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/600x400/f8fafc/94a3b8?text=RERA+Title+Deed`; }}
-                                            className="w-full h-full object-cover" 
-                                            alt="Verification"
-                                        />
+                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Compliance Permit')}</p>
+                                    <div className="aspect-[4/3] rounded-lg overflow-hidden bg-hp-bg border border-hp-border flex items-center justify-center p-2 text-center text-xs text-hp-muted font-medium">
+                                        <span>{vocab.approval.doc}</span>
                                     </div>
                                 </div>
                                 
                                 <div className="border border-hp-border rounded-xl p-3 bg-hp-hover/60">
-                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Developer / Owner Lead')}</p>
-                                    <div className="aspect-[4/3] rounded-lg overflow-hidden bg-hp-bg border border-hp-border">
-                                        <img 
-                                            src={farmer.farmer_photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(farmer.name)}&background=random&size=400`} 
-                                            onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(farmer.name)}&background=random&size=400`; }}
-                                            className="w-full h-full object-cover" 
-                                            alt="Officer"
-                                        />
+                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Lead Officer')}</p>
+                                    <div className="aspect-[4/3] rounded-lg overflow-hidden bg-hp-bg border border-hp-border flex items-center justify-center font-bold text-lg text-hp-dark">
+                                        {farmer.name}
                                     </div>
                                 </div>
 
                                 <div className="border border-hp-border rounded-xl p-3 bg-hp-hover/60">
-                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Project Master Layout & Elevation')}</p>
+                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Field Photo')}</p>
                                     <div className="aspect-[4/3] rounded-lg overflow-hidden bg-hp-bg border border-hp-border">
                                         <img 
-                                            src={(farmer.farm_photos && farmer.farm_photos[0]) || "/images/image2.jpg"} 
-                                            onError={(e) => { e.target.onerror = null; e.target.src = `/images/image2.jpg`; }}
+                                            src="/images/image2.jpg" 
                                             className="w-full h-full object-cover" 
                                             alt="Site"
                                         />

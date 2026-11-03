@@ -14,14 +14,8 @@ class DashboardController extends Controller
         $user = auth()->user();
         $companyId = $user?->company_id;
 
-        // Determine industry: query parameter or company default
-        $rawIndustry = request()->query('industry');
-        if (!$rawIndustry && $companyId) {
-            $company = Company::find($companyId);
-            $rawIndustry = $company?->industry;
-        }
-
-        $industryKey = IndustryService::normalize($rawIndustry ?: 'real_estate');
+        // Active service vertical (query param → session → company default)
+        $industryKey = \App\Services\Industry\IndustryContext::current();
 
         // Fetch industry-specific backend data
         $payload = IndustryService::getDashboardData($industryKey, $companyId);

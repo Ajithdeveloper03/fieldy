@@ -1,5 +1,6 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteRule ^(.*)$ public/$1 [L]
+    RewriteRule ^$ public/index.php [L]
+    RewriteCond %{REQUEST_URI} !^/fieldy/public/
+    RewriteRule ^(.*)$ public/ [L]
 </IfModule>
-

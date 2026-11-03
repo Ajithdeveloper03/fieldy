@@ -6,9 +6,11 @@ import {
     UploadCloud, Smartphone, CreditCard, ShieldCheck, MapPin, Search, Briefcase
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import useIndustry from '../../../hooks/useIndustry';
 
 export default function FarmerRegistrationForm() {
     const { t } = useTranslation();
+    const { vocab, labels, industry } = useIndustry();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
 
@@ -30,11 +32,8 @@ export default function FarmerRegistrationForm() {
         lng: '',
         seed_bags_required: '',
         planned_investment: '',
-        irrigation_type: 'Underground EB & Avenue Roads',
-        soil_type: 'DTCP & RERA Approved',
-        expected_plantation_date: '',
-        customer_category: 'crop',
-        crop_types: ['Residential Plots'],
+        customer_category: 'standard',
+        crop_types: [vocab.entity.singular],
     });
 
     const updateForm = (key, value) => {
@@ -61,10 +60,10 @@ export default function FarmerRegistrationForm() {
             ></div>
             
             {[
-                { num: 1, icon: User, label: 'Developer Contact' },
-                { num: 2, icon: ShieldCheck, label: 'RERA & Title KYC' },
-                { num: 3, icon: Map, label: 'Site & GPS Geofence' },
-                { num: 4, icon: Building2, label: 'Units & Pricing' }
+                { num: 1, icon: User, label: `${labels.primaryContact}` },
+                { num: 2, icon: ShieldCheck, label: `${labels.complianceDoc}` },
+                { num: 3, icon: Map, label: 'GPS Geofence' },
+                { num: 4, icon: Building2, label: 'Service Specs' }
             ].map((s) => (
                 <div key={s.num} className="flex flex-col items-center">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 border-white shadow-[var(--shadow-hp-md)] transition-colors duration-200 ${step >= s.num ? 'bg-hp-primary text-white' : 'bg-white text-hp-muted border-hp-border'}`}>
@@ -78,7 +77,7 @@ export default function FarmerRegistrationForm() {
 
     return (
         <AdminLayout>
-            <Head title="Property & Project Onboarding - Fieldy Real Estate" />
+            <Head title={`${vocab.entity.singular} Onboarding - Fieldy ${industry.name}`} />
             
             <div className="max-w-3xl mx-auto space-y-6 pb-12 hp-animate-in">
                 {/* Header */}
@@ -87,8 +86,8 @@ export default function FarmerRegistrationForm() {
                         <ArrowLeft className="w-4 h-4 mr-1" /> {t('Back')}
                     </Link>
                     <div>
-                        <h1 className="hp-page-title">{t('Property & Project Onboarding Wizard')}</h1>
-                        <p className="text-sm text-hp-muted mt-0.5">{t('Register real estate projects, plotted townships, luxury villas, and RERA marketing mandates.')}</p>
+                        <h1 className="hp-page-title">{t(`${vocab.entity.singular} Onboarding Wizard`)}</h1>
+                        <p className="text-sm text-hp-muted mt-0.5">{t(`Register new ${vocab.entity.plural.toLowerCase()} and configure operational parameters for ${industry.name}.`)}</p>
                     </div>
                 </div>
 
@@ -97,27 +96,27 @@ export default function FarmerRegistrationForm() {
 
                     <form onSubmit={step === 4 ? handleSubmit : (e) => { e.preventDefault(); nextStep(); }}>
                         
-                        {/* STEP 1: Developer / Property Owner Information */}
+                        {/* STEP 1: Primary Contact Information */}
                         <div className={`space-y-6 ${step === 1 ? 'block' : 'hidden'}`}>
                             <div className="border-b border-hp-border pb-3 mb-6">
-                                <h3 className="hp-card-title">{t('Developer / Property Owner Details')}</h3>
-                                <p className="text-xs text-hp-muted mt-0.5">Primary project title holder and sales mandate contact</p>
+                                <h3 className="hp-card-title">{t(`${labels.primaryContact} & Title Details`)}</h3>
+                                <p className="text-xs text-hp-muted mt-0.5">{t(`Primary administrative contact and location authority for this ${vocab.entity.singular.toLowerCase()}.`)}</p>
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Property / Project Name')}</label>
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t(`${vocab.entity.singular} Name / Title`)}</label>
                                     <input 
                                         type="text" 
                                         className="hp-input" 
-                                        placeholder="e.g. Casagrand ECR Sea-View Villas" 
+                                        placeholder={`e.g. Prestige Heights Phase II`} 
                                         value={formData.full_name} 
                                         onChange={e => updateForm('full_name', e.target.value)} 
                                         required 
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Developer / Sales Head Mobile')}</label>
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t(`${labels.primaryContact} Mobile Phone`)}</label>
                                     <div className="flex gap-2">
                                         <input 
                                             type="tel" 
@@ -131,7 +130,7 @@ export default function FarmerRegistrationForm() {
                                     </div>
                                 </div>
                                 <div className="md:col-span-2">
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('OTP Verification')}</label>
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Verification Passcode (OTP)')}</label>
                                     <input 
                                         type="text" 
                                         className="hp-input md:w-1/2 tracking-[0.4em] font-mono text-center text-sm" 
@@ -143,20 +142,20 @@ export default function FarmerRegistrationForm() {
                             </div>
                         </div>
 
-                        {/* STEP 2: RERA & Title KYC Documents */}
+                        {/* STEP 2: Compliance KYC Documents */}
                         <div className={`space-y-6 ${step === 2 ? 'block' : 'hidden'}`}>
                             <div className="border-b border-hp-border pb-3 mb-6">
-                                <h3 className="hp-card-title">{t('RERA, DTCP & Title Deed Verification')}</h3>
-                                <p className="text-xs text-hp-muted mt-0.5">Statutory RERA registration number, patta/chitta, and encumbrance verification</p>
+                                <h3 className="hp-card-title">{t(`${labels.complianceDoc} & Regulatory Documentation`)}</h3>
+                                <p className="text-xs text-hp-muted mt-0.5">{t(`Statutory registration certificates and identity proof.`)}</p>
                             </div>
                             
                             <div className="space-y-4 mb-6">
                                 <div>
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('RERA / DTCP Approval Number')}</label>
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t(`${labels.complianceDoc} Registration Number`)}</label>
                                     <input 
                                         type="text" 
                                         className="hp-input font-mono tracking-wider" 
-                                        placeholder="TN/29/Building/0412/2026" 
+                                        placeholder="REG-TN-2026-0412" 
                                         value={formData.aadhaar_number} 
                                         onChange={e => updateForm('aadhaar_number', e.target.value)} 
                                     />
@@ -165,28 +164,28 @@ export default function FarmerRegistrationForm() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="border border-dashed border-hp-border rounded-lg p-5 flex flex-col items-center justify-center bg-hp-bg hover:border-hp-primary cursor-pointer transition-colors text-center">
                                         <UploadCloud className="w-8 h-8 text-hp-primary mb-2" />
-                                        <p className="font-bold text-hp-dark text-xs">{t('Upload RERA / Title Deed PDF')}</p>
+                                        <p className="font-bold text-hp-dark text-xs">{t(`Upload ${labels.complianceDoc} PDF`)}</p>
                                         <p className="text-[11px] text-hp-muted mt-0.5">PDF, PNG, JPEG up to 10MB</p>
                                     </div>
                                     <div className="border border-dashed border-hp-border rounded-lg p-5 flex flex-col items-center justify-center bg-hp-bg hover:border-hp-primary cursor-pointer transition-colors text-center">
-                                        <User className="w-8 h-8 text-hp-primary mb-2" />
-                                        <p className="font-bold text-hp-dark text-xs">{t('Project Master Layout / Elevation')}</p>
-                                        <p className="text-[11px] text-hp-muted mt-0.5">High-res site layout or 3D render</p>
+                                        <Building2 className="w-8 h-8 text-hp-primary mb-2" />
+                                        <p className="font-bold text-hp-dark text-xs">{t('Site Layout / Blueprint Photo')}</p>
+                                        <p className="text-[11px] text-hp-muted mt-0.5">High-res schematic or floor plan</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="pt-4 border-t border-hp-border">
-                                <h4 className="text-xs font-bold text-hp-dark uppercase tracking-wider mb-3">{t('Property Site Location Address')}</h4>
+                                <h4 className="text-xs font-bold text-hp-dark uppercase tracking-wider mb-3">{t(`${vocab.entity.singular} Physical Address`)}</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <div className="md:col-span-3">
-                                        <input type="text" className="hp-input" placeholder="Survey No. / Plot Layout / Road Address" value={formData.address} onChange={e => updateForm('address', e.target.value)} />
+                                        <input type="text" className="hp-input" placeholder="Street Address / Plot / Suite" value={formData.address} onChange={e => updateForm('address', e.target.value)} />
                                     </div>
-                                    <div><input type="text" className="hp-input" placeholder="Locality / Corridor (e.g. OMR)" value={formData.village} onChange={e => updateForm('village', e.target.value)} /></div>
-                                    <div><input type="text" className="hp-input" placeholder="Taluk / Sub-Registrar Zone" value={formData.taluk} onChange={e => updateForm('taluk', e.target.value)} /></div>
+                                    <div><input type="text" className="hp-input" placeholder="Locality / Sector" value={formData.village} onChange={e => updateForm('village', e.target.value)} /></div>
+                                    <div><input type="text" className="hp-input" placeholder="Sub-District / Zone" value={formData.taluk} onChange={e => updateForm('taluk', e.target.value)} /></div>
                                     <div><input type="text" className="hp-input" placeholder="City / District" value={formData.district} onChange={e => updateForm('district', e.target.value)} /></div>
                                     <div><input type="text" className="hp-input" placeholder="State" value={formData.state} onChange={e => updateForm('state', e.target.value)} /></div>
-                                    <div><input type="text" className="hp-input" placeholder="PIN Code" value={formData.pincode} onChange={e => updateForm('pincode', e.target.value)} /></div>
+                                    <div><input type="text" className="hp-input" placeholder="PIN / Postal Code" value={formData.pincode} onChange={e => updateForm('pincode', e.target.value)} /></div>
                                 </div>
                             </div>
                         </div>
@@ -194,65 +193,65 @@ export default function FarmerRegistrationForm() {
                         {/* STEP 3: Site Mapping & Geofence */}
                         <div className={`space-y-6 ${step === 3 ? 'block' : 'hidden'}`}>
                             <div className="border-b border-hp-border pb-3 mb-6">
-                                <h3 className="hp-card-title">{t('Project Land Extent & Site Geofence')}</h3>
-                                <p className="text-xs text-hp-muted mt-0.5">Specify project boundary coordinates for Property Advisor GPS check-in verification</p>
+                                <h3 className="hp-card-title">{t(`Operational Area & GPS Geofence`)}</h3>
+                                <p className="text-xs text-hp-muted mt-0.5">{t(`Specify coordinates for automated ${vocab.staff.singular.toLowerCase()} GPS check-in verification.`)}</p>
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Total Project Area (Acres / Sq. Ft)')}</label>
-                                    <input type="number" className="hp-input" placeholder="e.g. 12.5" value={formData.total_land_owned} onChange={e => updateForm('total_land_owned', e.target.value)} />
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t(`Total Site Footprint (${labels.areaUnit})`)}</label>
+                                    <input type="number" className="hp-input" placeholder="e.g. 10.5" value={formData.total_land_owned} onChange={e => updateForm('total_land_owned', e.target.value)} />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Saleable Carpet / Plot Area (Sq. Ft)')}</label>
-                                    <input type="number" className="hp-input font-bold" placeholder="e.g. 185000" value={formData.vetiver_land_allocated} onChange={e => updateForm('vetiver_land_allocated', e.target.value)} />
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t(`Active Operational Area (${labels.areaUnit})`)}</label>
+                                    <input type="number" className="hp-input font-bold" placeholder="e.g. 8.2" value={formData.vetiver_land_allocated} onChange={e => updateForm('vetiver_land_allocated', e.target.value)} />
                                 </div>
                                 <div className="md:col-span-2">
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Survey Numbers & Phase / Tower Numbers')}</label>
-                                    <input type="text" className="hp-input" placeholder="e.g. S.F. No. 142/1B, Phase II, Plots 1 to 84" value={formData.survey_number} onChange={e => updateForm('survey_number', e.target.value)} />
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Site Code / Location Reference ID')}</label>
+                                    <input type="text" className="hp-input" placeholder="e.g. LOC-SITE-042, Gate 4" value={formData.survey_number} onChange={e => updateForm('survey_number', e.target.value)} />
                                 </div>
                             </div>
 
                             <div className="p-4 bg-hp-bg rounded-lg border border-hp-border">
                                 <div className="flex justify-between items-center mb-3">
                                     <label className="text-xs font-bold text-hp-dark uppercase tracking-wider flex items-center gap-1.5">
-                                        <MapPin className="w-3.5 h-3.5 text-hp-primary" /> {t('Site Experience Center GPS Coordinates')}
+                                        <MapPin className="w-3.5 h-3.5 text-hp-primary" /> {t('Geofence Center Point GPS Coordinates')}
                                     </label>
                                     <button type="button" className="hp-btn hp-btn-sm hp-btn-secondary !h-7 !text-[11px]">
-                                        <Search className="w-3 h-3 mr-1" /> {t('Auto-Detect Site GPS')}
+                                        <Search className="w-3 h-3 mr-1" /> {t('Auto-Detect Current GPS')}
                                     </button>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
-                                    <input type="text" className="hp-input !bg-white" placeholder="Latitude (e.g. 12.8912)" value={formData.lat} onChange={e => updateForm('lat', e.target.value)} />
-                                    <input type="text" className="hp-input !bg-white" placeholder="Longitude (e.g. 80.2445)" value={formData.lng} onChange={e => updateForm('lng', e.target.value)} />
+                                    <input type="text" className="hp-input !bg-white" placeholder="Latitude (e.g. 13.0827)" value={formData.lat} onChange={e => updateForm('lat', e.target.value)} />
+                                    <input type="text" className="hp-input !bg-white" placeholder="Longitude (e.g. 80.2707)" value={formData.lng} onChange={e => updateForm('lng', e.target.value)} />
                                 </div>
                             </div>
                         </div>
 
-                        {/* STEP 4: Property Typology & Pricing */}
+                        {/* STEP 4: Classification & Details */}
                         <div className={`space-y-6 ${step === 4 ? 'block' : 'hidden'}`}>
                             <div className="border-b border-hp-border pb-3 mb-6">
-                                <h3 className="hp-card-title">{t('Property Typology, Inventory & Guide Valuation')}</h3>
-                                <p className="text-xs text-hp-muted mt-0.5">Configure unit types, available plot/villa inventory, and base project valuation</p>
+                                <h3 className="hp-card-title">{t(`${labels.category} & Service Parameters`)}</h3>
+                                <p className="text-xs text-hp-muted mt-0.5">{t(`Configure SLA, category tier, and service scope.`)}</p>
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Property Segment Classification')}</label>
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Category Tier')}</label>
                                     <select
                                         className="hp-input font-bold"
                                         value={formData.customer_category}
                                         onChange={e => updateForm('customer_category', e.target.value)}
                                     >
-                                        <option value="crop">Residential Plots & Luxury Villas</option>
-                                        <option value="fertilizer">Commercial & Grade-A Office Space</option>
-                                        <option value="both">Gated Apartments & Integrated Township</option>
+                                        <option value="tier_1">Tier 1 - Mission Critical SLA</option>
+                                        <option value="tier_2">Tier 2 - High Priority</option>
+                                        <option value="standard">Standard Recurring Service</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Unit Configurations Available')}</label>
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Service Scope Tags')}</label>
                                     <div className="flex flex-wrap gap-1.5 pt-1">
-                                        {['Residential Plots', 'Luxury Villas', '3BHK / 4BHK Flats', 'Commercial Retail'].map(srv => {
+                                        {[labels.primaryMetric, labels.secondaryMetric, 'Scheduled Audits', 'Emergency SOS'].map(srv => {
                                             const isSelected = formData.crop_types.includes(srv);
                                             return (
                                                 <button
@@ -276,16 +275,12 @@ export default function FarmerRegistrationForm() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Total Saleable Units / Plots')}</label>
-                                    <input type="number" className="hp-input" placeholder="e.g. 64" value={formData.seed_bags_required} onChange={e => updateForm('seed_bags_required', e.target.value)} />
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Target Monthly Visits / Dispatches')}</label>
+                                    <input type="number" className="hp-input" placeholder="e.g. 12" value={formData.seed_bags_required} onChange={e => updateForm('seed_bags_required', e.target.value)} />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Base Unit Price / Project Valuation (₹)')}</label>
-                                    <input type="number" className="hp-input" placeholder="8500000" value={formData.planned_investment} onChange={e => updateForm('planned_investment', e.target.value)} />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Project Launch / Possession Date')}</label>
-                                    <input type="date" className="hp-input" value={formData.expected_plantation_date} onChange={e => updateForm('expected_plantation_date', e.target.value)} />
+                                    <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('Monthly Retainer / Budget Value (₹)')}</label>
+                                    <input type="number" className="hp-input" placeholder="45000" value={formData.planned_investment} onChange={e => updateForm('planned_investment', e.target.value)} />
                                 </div>
                             </div>
                         </div>
@@ -305,7 +300,7 @@ export default function FarmerRegistrationForm() {
                             ) : (
                                 <button type="submit" disabled={loading} className="hp-btn hp-btn-primary">
                                     <CheckCircle2 className="w-4 h-4 mr-1.5" />
-                                    {loading ? t('Listing Property...') : t('Publish Property Listing')}
+                                    {loading ? t(`Registering ${vocab.entity.singular}...`) : t(`Register ${vocab.entity.singular}`)}
                                 </button>
                             )}
                         </div>

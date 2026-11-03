@@ -2,14 +2,16 @@ import React, { useState, useMemo } from 'react';
 import AdminLayout from './AdminLayout';
 import { Head, Link } from '@inertiajs/react';
 import { 
-    UserCheck, Star, Trophy, Search, Filter, ChevronDown, Download, X, CheckCircle2,
-    Home, ChevronRight, Award, TrendingUp, Sparkles, MapPin, Briefcase, ArrowUpRight
+    UserCheck, Star, Trophy, Search, Download, X, CheckCircle2,
+    Award, TrendingUp, Sparkles, MapPin, ArrowUpRight
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAlert } from '../../Components/AlertSystem';
+import useIndustry from '../../hooks/useIndustry';
 
 export default function EmployeePerformance({ employees = [], period = '' }) {
     const { t } = useTranslation();
+    const { vocab, labels, industry } = useIndustry();
     const alertSystem = useAlert ? useAlert() : {};
     const triggerInfo = alertSystem?.triggerInfo;
 
@@ -31,43 +33,43 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
         : null;
 
     const avgScore = employees.length > 0
-        ? (employees.reduce((acc, e) => acc + (parseFloat(e.score || e.rating || 4.5)), 0) / employees.length).toFixed(1)
+        ? (employees.reduce((acc, e) => acc + (parseFloat(e.avg_rating || e.rating || 4.7)), 0) / employees.length).toFixed(1)
         : '4.8';
 
     const handleExport = () => {
         if (triggerInfo) {
-            triggerInfo(t('Exporting Property Advisor sales & site showing performance report. Download will begin shortly.'));
+            triggerInfo(t(`Exporting ${industry.shortName} ${vocab.staff.plural.toLowerCase()} performance report.`));
         } else {
-            alert('Exporting Property Advisor sales report...');
+            alert('Exporting performance report...');
         }
     };
 
     return (
         <AdminLayout>
-            <Head title="Property Advisor Sales & Site Performance - Fieldy Real Estate" />
+            <Head title={`${vocab.finance.scores} - ${industry.name}`} />
 
             <div className="space-y-6 pb-12 hp-animate-in">
 
-                {/* ══════════ HOSTINGER HERO CARD (Soft Minimal Slate Gradient) ══════════ */}
+                {/* HERO CARD */}
                 <div className="hp-card-gradient-slate rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-200">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <div className="max-w-2xl">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
-                                    <Sparkles className="w-3 h-3 mr-1" /> {t('Real Estate Sales Intelligence')}
+                                    <Sparkles className="w-3 h-3 mr-1" /> {industry.shortName}
                                 </span>
                                 <span className="hp-chip hp-chip-gray">
-                                    {period || t('Current Sales Cycle')}
+                                    {period || t('Current Operating Cycle')}
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {t('Property Advisor Sales & Site Showing Scorecard')}
+                                {t(`${industry.shortName} ${vocab.staff.plural} Performance Scorecard`)}
                             </h1>
                             <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                                {t('Track buyer site showings, plot & villa booking conversions, geofence check-in accuracy, and buyer satisfaction ratings across all sales corridors.')}
+                                {t(`Track completed ${vocab.visit.plural.toLowerCase()}, operational punctuality, geofence compliance, and client quality ratings across all sectors.`)}
                             </p>
 
-                            {/* Hostinger Pill Search Bar */}
+                            {/* Search Bar */}
                             <div className="mt-5 max-w-lg">
                                 <div className="hp-search-pill-bar">
                                     <Search className="w-4 h-4 text-hp-muted shrink-0" />
@@ -75,7 +77,7 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                                         type="text"
                                         value={searchQuery}
                                         onChange={e => setSearchQuery(e.target.value)}
-                                        placeholder={t('Search by Property Advisor name, ID, or sales corridor...')} 
+                                        placeholder={t(`Search by ${vocab.staff.singular.toLowerCase()} name or area...`)} 
                                         className="w-full bg-transparent text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
                                     />
                                     {searchQuery && (
@@ -93,49 +95,48 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                                 className="hp-btn hp-btn-secondary !rounded-full"
                             >
                                 <Download className="w-4 h-4 mr-1" />
-                                <span>{t('Export Sales Leaderboard')}</span>
+                                <span>{t('Export Leaderboard')}</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/* ══════════ HOSTINGER BENTO METRIC & SPOTLIGHT GRID ══════════ */}
+                {/* METRIC & SPOTLIGHT GRID */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    {/* Spotlight Card: Top Performer */}
+                    {/* Spotlight Card */}
                     <div className="hp-bento-card border-hp-primary-border bg-gradient-to-br from-white to-hp-primary-lighter">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-xs font-bold text-hp-primary uppercase tracking-wider flex items-center gap-1">
-                                <Trophy className="w-3.5 h-3.5" /> {t('Top Closing Advisor of the Month')}
+                                <Trophy className="w-3.5 h-3.5" /> {t(`Top ${vocab.staff.singular} of the Month`)}
                             </span>
                             <span className="hp-chip hp-chip-warning font-bold">#1 Ranked</span>
                         </div>
                         {topPerformer ? (
                             <div className="flex items-center gap-3.5 mt-2">
                                 <div className="w-13 h-13 rounded-2xl bg-hp-primary text-white flex items-center justify-center font-bold text-xl shadow-md shrink-0">
-                                    {topPerformer.name?.charAt(0) || 'A'}
+                                    {topPerformer.name?.charAt(0) || 'S'}
                                 </div>
                                 <div className="min-w-0">
                                     <h3 className="font-bold text-lg text-hp-dark truncate">{topPerformer.name}</h3>
-                                    <p className="text-xs text-hp-muted">{topPerformer.region || 'Senior Property Advisor'}</p>
+                                    <p className="text-xs text-hp-muted truncate">{topPerformer.region || vocab.staff.roles[0]}</p>
                                     <div className="flex items-center gap-2 mt-1">
                                         <span className="hp-chip hp-chip-success !h-5 !text-[11px]">
-                                            ★ {topPerformer.score || topPerformer.rating || '4.9'} / 5.0
+                                            ★ {topPerformer.avg_rating || '4.9'} / 5.0
                                         </span>
                                         <span className="text-xs text-hp-muted font-medium">
-                                            {topPerformer.visitsDone || 42} {t('site showings')}
+                                            {topPerformer.visits_month || 24} {t(vocab.visit.plural.toLowerCase())}
                                         </span>
                                     </div>
                                 </div>
                             </div>
                         ) : (
-                            <p className="text-sm text-hp-muted mt-2">{t('Calculating advisor rankings...')}</p>
+                            <p className="text-sm text-hp-muted mt-2">{t('Calculating rankings...')}</p>
                         )}
                     </div>
 
-                    {/* Card 2: Agency Average Buyer Rating */}
                     <div className="hp-bento-card">
                         <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Avg Buyer Site Rating')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Avg Quality Rating')}</span>
                             <div className="w-10 h-10 rounded-xl bg-hp-primary-light text-hp-primary flex items-center justify-center">
                                 <Star className="w-5 h-5 fill-current" />
                             </div>
@@ -145,52 +146,48 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                         </p>
                         <div className="flex items-center gap-1.5 text-xs text-hp-success font-bold mt-2">
                             <TrendingUp className="w-3.5 h-3.5" />
-                            <span>+4.2% {t('buyer conversion lift')}</span>
+                            <span>+4.2% {t('quality consistency')}</span>
                         </div>
                     </div>
 
-                    {/* Card 3: Site Geofence Compliance */}
                     <div className="hp-bento-card">
                         <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Project Site Geofence Adherence')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('SLA & Attendance')}</span>
                             <div className="w-10 h-10 rounded-xl bg-hp-success-light text-hp-success flex items-center justify-center">
                                 <CheckCircle2 className="w-5 h-5" />
                             </div>
                         </div>
                         <p className="text-3xl font-bold text-hp-dark tracking-tight">
-                            99.2%
+                            {industry.complianceRate || '99.2%'}
                         </p>
                         <p className="text-xs text-hp-muted mt-2">
-                            {t('Verified GPS arrival at project plots & villas')}
+                            {t(`Verified check-in & ${vocab.visit.singular.toLowerCase()} sign-off`)}
                         </p>
                     </div>
                 </div>
 
-                {/* ══════════ HOSTINGER SEGMENTED REGION PILLS ══════════ */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                    <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mr-1">{t('Corridor')}:</span>
-                    <div className="hp-segmented-bar">
-                        {regions.map((r) => (
-                            <button
-                                key={r}
-                                onClick={() => setRegionFilter(r)}
-                                className={`hp-segmented-item ${regionFilter === r ? 'is-active-primary' : ''}`}
-                            >
-                                {r === 'all' ? t('All Sales Corridors') : r}
-                            </button>
-                        ))}
-                    </div>
+                {/* REGION PILLS */}
+                <div className="flex items-center gap-1.5 overflow-x-auto">
+                    {regions.map((r) => (
+                        <button
+                            key={r}
+                            onClick={() => setRegionFilter(r)}
+                            className={`hp-pill !h-8 !text-xs ${regionFilter === r ? '!bg-hp-dark !text-white !border-hp-dark' : ''}`}
+                        >
+                            {r === 'all' ? t('All Sectors') : r}
+                        </button>
+                    ))}
                 </div>
 
-                {/* ══════════ HOSTINGER BENTO DATA TABLE CARD ══════════ */}
+                {/* TABLE CARD */}
                 <div className="hp-bento-card !p-0 overflow-hidden">
                     <div className="p-5 border-b border-hp-border flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Award className="w-5 h-5 text-hp-primary" />
-                            <h2 className="hp-card-title">{t('Property Advisor Ranking & Site Showing Scorecard')}</h2>
+                            <h2 className="hp-card-title">{t(`${vocab.staff.plural} Ranking Scorecard`)}</h2>
                         </div>
                         <span className="text-xs text-hp-muted font-medium">
-                            {filteredData.length} {t('advisors evaluated')}
+                            {filteredData.length} {t('evaluated')}
                         </span>
                     </div>
 
@@ -199,10 +196,10 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                             <thead>
                                 <tr>
                                     <th>{t('Rank')}</th>
-                                    <th>{t('Property Advisor & Specialization')}</th>
-                                    <th>{t('Sales Corridor')}</th>
-                                    <th>{t('Buyer Rating')}</th>
-                                    <th>{t('Site Geofence Verification')}</th>
+                                    <th>{t(vocab.staff.singular)}</th>
+                                    <th>{t('Assigned Sector')}</th>
+                                    <th>{t(vocab.visit.plural)}</th>
+                                    <th>{t('Rating / Score')}</th>
                                     <th className="text-right">{t('Action')}</th>
                                 </tr>
                             </thead>
@@ -213,8 +210,7 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                                             <div className="hp-icon-tile !w-12 !h-12 mx-auto mb-2">
                                                 <UserCheck className="w-5 h-5 text-hp-muted" />
                                             </div>
-                                            <p className="font-bold text-sm text-hp-dark">{t('No property advisors found')}</p>
-                                            <p className="text-xs text-hp-muted mt-0.5">{t('Try adjusting your search query or corridor filter.')}</p>
+                                            <p className="font-bold text-sm text-hp-dark">{t(`No ${vocab.staff.plural.toLowerCase()} found`)}</p>
                                         </td>
                                     </tr>
                                 ) : (
@@ -233,45 +229,32 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                                             <td>
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 rounded-xl bg-hp-hover border border-hp-border flex items-center justify-center font-bold text-xs shrink-0 text-hp-dark">
-                                                        {emp.name?.charAt(0) || 'A'}
+                                                        {emp.name?.charAt(0) || 'S'}
                                                     </div>
                                                     <div>
                                                         <p className="font-bold text-sm text-hp-dark">{emp.name}</p>
-                                                        <p className="text-xs text-hp-muted">{emp.designation && emp.designation !== 'Field Service Officer' ? emp.designation : 'Senior Property Advisor'}</p>
+                                                        <p className="text-xs text-hp-muted">{emp.employee_code || vocab.staff.roles[0]}</p>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td>
                                                 <span className="text-xs text-hp-dark font-medium flex items-center gap-1">
-                                                    <MapPin className="w-3.5 h-3.5 text-hp-muted" /> {emp.region || 'OMR / ECR Corridor'}
+                                                    <MapPin className="w-3.5 h-3.5 text-hp-muted" /> {emp.region || 'Assigned Beat'}
                                                 </span>
                                             </td>
                                             <td>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-sm text-hp-dark">
-                                                        {emp.score || emp.rating || '4.8'}
-                                                    </span>
-                                                    <div className="flex text-amber-400">
-                                                        {[...Array(5)].map((_, i) => (
-                                                            <Star 
-                                                                key={i} 
-                                                                className={`w-3.5 h-3.5 ${i < Math.floor(emp.score || emp.rating || 5) ? 'fill-current' : 'text-slate-200'}`} 
-                                                            />
-                                                        ))}
-                                                    </div>
-                                                </div>
+                                                <span className="text-xs font-bold text-hp-dark">
+                                                    {emp.visits_month || emp.visitsDone || 18} {t('done')}
+                                                </span>
                                             </td>
                                             <td>
-                                                <span className="hp-chip hp-chip-success hp-chip-dot">
-                                                    {emp.compliance || '98.5%'} Verified
+                                                <span className="hp-chip hp-chip-success !h-5 !text-[11px]">
+                                                    ★ {emp.avg_rating || '4.8'} / 5.0
                                                 </span>
                                             </td>
                                             <td className="text-right">
-                                                <Link 
-                                                    href={emp.id ? `/admin/employees/${emp.id}` : '/admin/employees'}
-                                                    className="hp-btn hp-btn-sm hp-btn-outline"
-                                                >
-                                                    {t('Advisor Profile')} <ArrowUpRight className="w-3.5 h-3.5" />
+                                                <Link href={`/admin/employees/${emp.id}`} className="hp-btn hp-btn-sm hp-btn-outline">
+                                                    {t('Profile')} <ArrowUpRight className="w-3.5 h-3.5" />
                                                 </Link>
                                             </td>
                                         </tr>

@@ -11,10 +11,12 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAlert } from '../../Components/AlertSystem';
+import useIndustry from '../../hooks/useIndustry';
 
 export default function TaskManagement({ tasks = [], employees = [], customers = [] }) {
     const { t } = useTranslation();
     const { triggerInfo, triggerCritical } = useAlert();
+    const { vocab, labels, industry } = useIndustry();
 
     // View mode: 'list' (default) or 'board'
     const [viewMode, setViewMode] = useState('list');
@@ -109,21 +111,25 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
         setShowOverdueOnly(false);
     };
 
-    const handleGenerateAiSuggestions = (title, industry) => {
+    const handleGenerateAiSuggestions = (title, indType) => {
         setGeneratingAi(true);
         setTimeout(() => {
+            const indKey = industry?.id || indType;
             const suggestions = {
-                site_visit: "Recommended: Confirm buyer pick-up time, carry RERA registration dossier & master layout brochure, walk buyer through corner plot boundary markers, and capture buyer OTP sign-off at project site.",
-                valuation: "Recommended: Verify DTCP/CMDA approval layout, measure plot frontage & road width, inspect soil & drainage readiness, and upload 4 geo-tagged corner photos for valuation audit.",
-                handover: "Recommended: Complete 24-point villa/apartment snagging checklist, test electrical/plumbing fixtures with buyer, record meter readings, and obtain digital possession certificate sign-off.",
-                documentation: "Recommended: Verify encumbrance certificate (EC), patta/chitta transfer status, RERA allotment agreement, and collect buyer KYC originals for sub-registrar registration.",
-                lead_followup: "Recommended: Present updated payment schedule & bank home-loan pre-approval sheet, walk through clubhouse amenities, and log buyer unit preference for token blocking.",
-                plot_survey: "Recommended: Verify GPS survey coordinates against FMB sketch, inspect boundary stones on all 4 corners, and upload high-resolution site access road photos."
+                cleaning: "Recommended: Verify PPE & disinfectant dilution MSDS, complete 4-zone sanitation protocol, restock consumables, and capture client manager verification OTP.",
+                construction: "Recommended: Mandatory hard hat & safety harness check, execute structural rebar checklist, upload 4 geo-tagged site photos, and capture site engineer OTP sign-off.",
+                security: "Recommended: Clock-in at guard command post, scan all NFC checkpoint tags along perimeter, test duress alarm beacon, and obtain supervisor shift handover OTP.",
+                facility_fmcg: "Recommended: Verify store shelf replenishment planogram, check restroom air ppm & cleanliness sensor, log restocking count, and capture store manager OTP.",
+                maintenance: "Recommended: Follow Lockout/Tagout (LOTO) electrical protocol, record motor vibration & thermal camera heat map, log preventive maintenance checklist, and capture maintenance lead OTP.",
+                solar: "Recommended: Test DC isolators with high-voltage gloves, clean pyranometer lens, record inverter string voltage & yield W/m², and capture grid supervisor sign-off.",
+                pest_control: "Recommended: Verify chemical MSDS dosage & respirator cartridge, scan tamper-proof bait stations, perform targeted misting/fogging, and issue zero-pest certification.",
+                logistics: "Recommended: Conduct pre-trip OBD diagnostic scan, verify cargo cold-chain temperature (+2 to +8°C), execute waypoint delivery navigation, and collect customer OTP ePOD.",
+                real_estate: "Recommended: Confirm buyer pick-up time, carry project brochure & legal dossier, walk buyer through corner plot boundary markers, and capture buyer OTP sign-off at project site."
             };
-            const text = suggestions[industry] || "Recommended: Check in inside the project geofence on arrival, walk the buyer through the property layout, upload geo-tagged site photos, and verify buyer OTP upon completion.";
+            const text = suggestions[indKey] || suggestions[industry?.id] || suggestions.real_estate;
             setNewTask(prev => ({ ...prev, ai_suggestions: text }));
             setGeneratingAi(false);
-            triggerInfo("Real Estate AI Suggestions generated.");
+            triggerInfo(`${industry.name} AI Suggestions generated.`);
         }, 600);
     };
 
@@ -332,7 +338,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
 
     return (
         <AdminLayout>
-            <Head title={`${t('Daily Tasks')} - Fieldy Real Estate Admin`} />
+            <Head title={`${t(labels.todayTasksTitle || vocab.task.plural)} - ${industry.name}`} />
 
             <div className="max-w-7xl mx-auto space-y-5 pb-12">
                 {/* ══════════ HERO CARD ══════════ */}
@@ -341,17 +347,17 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                         <div className="max-w-xl">
                             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
-                                    <Sparkles className="w-3 h-3 mr-1" /> {t('Tasks')}
+                                    <Sparkles className="w-3 h-3 mr-1" /> {industry.shortName}
                                 </span>
                                 <span className="hp-chip hp-chip-gray">
                                     {metrics.total} {t('total')}
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {t('Daily Tasks & Visits')}
+                                {t(labels.todayTasksTitle || `${vocab.task.plural} & Orders`)}
                             </h1>
                             <p className="text-xs sm:text-sm text-hp-muted mt-1">
-                                {t('Create, assign, and track agent visits, meetings, and property showings.')}
+                                {t(labels.todayTasksSub || `Create, assign, and track ${vocab.staff.plural.toLowerCase()} shifts, duties, and execution checklists.`)}
                             </p>
                         </div>
 
@@ -382,7 +388,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                                 className="hp-btn hp-btn-primary !rounded-full"
                             >
                                 <Plus className="w-4 h-4 mr-1" />
-                                <span>{t('New Task')}</span>
+                                <span>{t(vocab.task.newLabel)}</span>
                             </button>
                         </div>
                     </div>
@@ -952,36 +958,35 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                         </div>
 
                         <form onSubmit={handleCreateTask} className="mt-4 space-y-4">
-                            {/* Activity Type & Property Site */}
+                            {/* Activity Type & Target Site */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">
-                                        {t('Real Estate Activity Type')} <span className="text-[var(--color-hp-primary)]">*</span>
+                                        {t(`${industry.shortName} Activity Type`)} <span className="text-[var(--color-hp-primary)]">*</span>
                                     </label>
                                     <select
                                         value={newTask.industry}
                                         onChange={e => setNewTask(prev => ({ ...prev, industry: e.target.value }))}
                                         className="hp-input"
                                     >
-                                        <option value="site_visit">Buyer Site Showing & Tour</option>
-                                        <option value="valuation">Property Valuation & Inspection</option>
-                                        <option value="handover">Unit Handover & Snagging</option>
-                                        <option value="documentation">RERA & Legal Title KYC</option>
-                                        <option value="lead_followup">Channel Partner & Booking Closing</option>
-                                        <option value="plot_survey">Plot Boundary & GPS Survey</option>
+                                        <option value="routine_service">{vocab.visit.singular} & Field Action</option>
+                                        <option value="inspection">Quality Inspection & Checklist QA</option>
+                                        <option value="emergency_dispatch">Emergency SOS / Urgent Dispatch</option>
+                                        <option value="compliance_audit">Regulatory & Statutory Audit</option>
+                                        <option value="client_handover">Client Sign-off & Token Verification</option>
                                     </select>
                                 </div>
 
                                 <div>
                                     <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">
-                                        {t('Target Property / Project Site')}
+                                        {t(`Target ${vocab.entity.singular}`)}
                                     </label>
                                     <select
                                         value={newTask.customer_id}
                                         onChange={e => setNewTask(prev => ({ ...prev, customer_id: e.target.value }))}
                                         className="hp-input"
                                     >
-                                        <option value="">{t('Select Property / Project')}</option>
+                                        <option value="">{t(`Select ${vocab.entity.singular}`)}</option>
                                         {customers.map(c => (
                                             <option key={c.id} value={c.id}>{c.name}</option>
                                         ))}
@@ -1322,14 +1327,14 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                         {/* Service Checklist & Evidence Verification */}
                         <div className="space-y-2">
                             <span className="text-[11px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider block">
-                                Property Site Visit & Handover Checklist
+                                {industry.name} Work Order Checklist & Verification
                             </span>
                             <div className="space-y-1.5 bg-[var(--color-hp-gray-50)] p-3 rounded-lg border border-[var(--color-hp-border)]">
                                 {(selectedTask.checklist || [
-                                    { id: 1, text: 'GPS Check-in verified inside project site geofence', done: true },
-                                    { id: 2, text: 'Buyer site walkthrough & plot/villa inspection completed', done: false },
-                                    { id: 3, text: 'Geo-tagged site & boundary stone photos uploaded', done: false },
-                                    { id: 4, text: `Buyer OTP sign-off verified (Code: ${selectedTask.customer_otp || '4821'})`, done: selectedTask.otp_verified }
+                                    { id: 1, text: `GPS Check-in verified inside ${vocab.entity.singular.toLowerCase()} geofence`, done: true },
+                                    { id: 2, text: `Mandatory operational protocol & ${vocab.visit.singular.toLowerCase()} inspection completed`, done: false },
+                                    { id: 3, text: 'Geo-tagged site & procedural evidence photos uploaded', done: false },
+                                    { id: 4, text: `Client OTP sign-off verified (Code: ${selectedTask.customer_otp || '4821'})`, done: selectedTask.otp_verified }
                                 ]).map((item, idx) => (
                                     <div key={idx} className="flex items-center gap-2 text-xs">
                                         <div className={`w-4 h-4 rounded flex items-center justify-center ${item.done ? 'bg-emerald-600 text-white' : 'border border-[var(--color-hp-border)] bg-white'}`}>

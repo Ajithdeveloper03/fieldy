@@ -58,6 +58,8 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
+            // Active service vertical — persisted in session so every admin page stays on the selected service.
+            'currentIndustry' => $user ? \App\Services\Industry\IndustryContext::current() : null,
         ];
     }
 }

@@ -1,3 +1,4 @@
+import './basePath'; // must stay first: patches XHR/fetch for sub-folder hosting
 import './bootstrap';
 import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';

@@ -1,3 +1,4 @@
+import { asset, withBase } from '../../basePath';
 import React from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import { ShieldCheck, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
@@ -10,7 +11,7 @@ export default function Login() {
 
     const handleLogin = (e) => {
         e.preventDefault();
-        post('/admin/login');
+        post(withBase('/admin/login'));
     };
 
     return (
@@ -23,7 +24,7 @@ export default function Login() {
                 <div className="flex flex-col items-center mb-6">
                     <div className="w-44 h-16 flex items-center justify-center mb-2">
                         <img 
-                            src="/images/logo.png" 
+                            src={asset('/images/logo.png')} 
                             alt="Fieldy" 
                             className="w-full h-full object-contain" 
                         />

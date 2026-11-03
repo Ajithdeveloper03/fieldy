@@ -1,3 +1,4 @@
+import { asset } from '../../basePath';
 import React, { useState } from 'react';
 import AdminLayout from './AdminLayout';
 import { 
@@ -164,7 +165,7 @@ export default function Subscriptions() {
                         <div className="hp-bento-card relative overflow-hidden group">
                             <div className="h-52 rounded-xl overflow-hidden relative mb-4">
                                 <img 
-                                    src="/images/image1.jpg" 
+                                    src={asset('/images/image1.jpg')} 
                                     alt="Attendance Automation" 
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                                 />
@@ -204,7 +205,7 @@ export default function Subscriptions() {
                         <div className="hp-bento-card relative overflow-hidden group">
                             <div className="h-52 rounded-xl overflow-hidden relative mb-4">
                                 <img 
-                                    src="/images/image2.jpg" 
+                                    src={asset('/images/image2.jpg')} 
                                     alt="Work Orders & CRM" 
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                                 />
@@ -242,7 +243,7 @@ export default function Subscriptions() {
                         <div className="hp-bento-card relative overflow-hidden group">
                             <div className="h-52 rounded-xl overflow-hidden relative mb-4">
                                 <img 
-                                    src="/images/image3.jpg" 
+                                    src={asset('/images/image3.jpg')} 
                                     alt="Live Telemetry" 
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                                 />
@@ -557,7 +558,7 @@ export default function Subscriptions() {
                         </div>
 
                         <div className="w-full md:w-72 h-44 rounded-2xl overflow-hidden relative border border-zinc-700/80 shrink-0">
-                            <img src="/images/image5.jpg" alt="AI Agent Dispatch" className="w-full h-full object-cover" />
+                            <img src={asset('/images/image5.jpg')} alt="AI Agent Dispatch" className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
                             <div className="absolute bottom-3 left-3 bg-white/95 text-hp-dark text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm">
                                 99.4% {t('On-Time Dispatch Rate')}
