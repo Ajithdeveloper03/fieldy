@@ -29,7 +29,7 @@ export default function InventoryScreen() {
   const [items, setItems] = useState([
     {
       id: "SKU-901",
-      name: "Organic Bio-Fertilizer (50kg)",
+      name: "Cement bags (50kg)",
       category: "Nutrients & Soil",
       qty: 14,
       unit: "Bags",
@@ -39,7 +39,7 @@ export default function InventoryScreen() {
     },
     {
       id: "SKU-902",
-      name: "Premium Vetiver Slips (Pack of 100)",
+      name: "Safety helmets (Pack of 10)",
       category: "Planting Stock",
       qty: 48,
       unit: "Bundles",
@@ -49,7 +49,7 @@ export default function InventoryScreen() {
     },
     {
       id: "SKU-903",
-      name: "Digital Soil pH & Moisture Meter",
+      name: "Digital laser distance meter",
       category: "Field Equipment",
       qty: 3,
       unit: "Units",
@@ -59,7 +59,7 @@ export default function InventoryScreen() {
     },
     {
       id: "SKU-904",
-      name: "Neem Seed Oil Extract (1L)",
+      name: "High visibility safety vests (Pack of 10)",
       category: "Pest Protection",
       qty: 6,
       unit: "Bottles",
@@ -69,8 +69,8 @@ export default function InventoryScreen() {
     },
     {
       id: "SKU-905",
-      name: "Drip Irrigation Micro-Nozzle Kits",
-      category: "Irrigation Hardware",
+      name: "Safety barricade kit",
+      category: "Site Safety Equipment",
       qty: 2,
       unit: "Kits",
       threshold: 4,

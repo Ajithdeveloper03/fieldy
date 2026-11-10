@@ -33,34 +33,34 @@ export default function EmployeeCalendarScreen() {
     14: {
       goalsDone: 4,
       visits: [
-        { farmer: "Ramesh Kumar", location: "Annur North", time: "09:30 AM", status: "Completed", note: "Routine health check. No issues found." },
-        { farmer: "Senthil", location: "Coimbatore South", time: "01:15 PM", status: "Flagged Issue", note: "Early signs of leaf spot disease." }
+        { site_contact: "Ramesh Kumar", location: "Annur North", time: "09:30 AM", status: "Completed", note: "Routine health check. No issues found." },
+        { site_contact: "Senthil", location: "Coimbatore South", time: "01:15 PM", status: "Flagged Issue", note: "Unprotected edge found during safety inspection." }
       ]
     },
     15: {
       goalsDone: 6,
       visits: [
-        { farmer: "Muthuvel", location: "Erode East", time: "10:00 AM", status: "Completed", note: "Soil moisture testing completed." },
-        { farmer: "Kumar", location: "Thanjavur West", time: "03:45 PM", status: "Completed", note: "Delivered organic fertilizers." }
+        { site_contact: "Muthuvel", location: "Erode East", time: "10:00 AM", status: "Completed", note: "Structural inspection completed." },
+        { site_contact: "Kumar", location: "Thanjavur West", time: "03:45 PM", status: "Completed", note: "Permit documents reviewed." }
       ]
     },
     16: {
       goalsDone: 2,
       visits: [
-        { farmer: "Rajesh", location: "Salem", time: "11:00 AM", status: "Completed", note: "Initial field mapping." }
+        { site_contact: "Rajesh", location: "Salem", time: "11:00 AM", status: "Completed", note: "Initial field mapping." }
       ]
     },
     17: {
       goalsDone: 5,
       visits: [
-        { farmer: "Vijay", location: "Pollachi", time: "08:30 AM", status: "Completed", note: "Harvest inspection." },
-        { farmer: "Suresh Rajan", location: "Annur South", time: "02:00 PM", status: "Flagged Issue", note: "Pest infestation reported." }
+        { site_contact: "Vijay", location: "Pollachi", time: "08:30 AM", status: "Completed", note: "Foundation inspection." },
+        { site_contact: "Suresh Rajan", location: "Annur South", time: "02:00 PM", status: "Flagged Issue", note: "Required safety signage is missing." }
       ]
     },
     18: {
       goalsDone: 1, // Today
       visits: [
-        { farmer: "Kuppusamy", location: "Tiruppur", time: "11:30 AM", status: "Pending", note: "Scheduled: NPK soil analysis." }
+        { site_contact: "Kuppusamy", location: "Tiruppur", time: "11:30 AM", status: "Pending", note: "Scheduled: NPK soil analysis." }
       ]
     }
   };
@@ -179,7 +179,7 @@ export default function EmployeeCalendarScreen() {
                   <View key={index} style={{ backgroundColor: "#1e293b", borderRadius: 24, padding: 20, borderWidth: 1, borderColor: "rgba(255,255,255,0.05)" }}>
                     <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                       <View>
-                        <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>{visit.farmer}</Text>
+                        <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>{visit.site_contact}</Text>
                         <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
                           <MapPin size={12} color="#94a3b8" />
                           <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 4 }}>{visit.location}</Text>

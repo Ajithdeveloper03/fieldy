@@ -54,7 +54,7 @@ export default function EmployeeVisitPurposeScreen() {
           <View style={{ backgroundColor: "#ffffff", borderRadius: 32, padding: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.05, shadowRadius: 20, elevation: 10, marginBottom: 24 }}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
               <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: "#e2e8f0", overflow: "hidden", marginRight: 16 }}>
-                <Image source={{ uri: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" }} style={{ width: "100%", height: "100%" }} />
+                <Image source={{ uri: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=project&q=80" }} style={{ width: "100%", height: "100%" }} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 22 }}>Ramesh Kumar</Text>

@@ -33,7 +33,7 @@ export default function MenuScreen() {
       items: [
         { icon: ClipboardList, label: "Work Orders & Tasks", route: "/(employee)/tasks", color: "#f97316" },
         { icon: Shield, label: "Daily Attendance & GPS", route: "/(employee)/attendance-hub", color: "#10b981" },
-        { icon: MapPin, label: "Assigned Facilities & Clients", route: "/(employee)/my-farmers", color: "#3b82f6" },
+        { icon: MapPin, label: "Assigned Facilities & Clients", route: "/(employee)/my-sites", color: "#3b82f6" },
         { icon: PhoneCall, label: "Performance & Incentives", route: "/(employee)/performance", color: "#8b5cf6" },
       ],
     },

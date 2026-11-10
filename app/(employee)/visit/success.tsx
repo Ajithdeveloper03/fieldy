@@ -12,7 +12,7 @@ export default function SuccessScreen() {
     setTimeout(() => {
       showToast({
         title: 'Reminder',
-        message: 'Next visit for this farmer is in 5 days. Please be prepared.',
+        message: 'Next visit for this site_contact is in 5 days. Please be prepared.',
         type: 'info',
         duration: 5000
       });
@@ -34,7 +34,7 @@ export default function SuccessScreen() {
         <Text className="text-gray-900 font-brandon-bold text-2xl mb-8 text-center"> Report Submitted{'\n'}Successfully! </Text>
         <View className="bg-gray-50 rounded-2xl p-6 w-full items-center mb-12 border border-gray-100">
           <Text className="text-gray-900 font-brandon-bold text-lg mb-1">Kuppusamy</Text>
-          <Text className="text-gray-500 text-sm mb-2 font-brandon">Vetiver Farm - Block A</Text>
+          <Text className="text-gray-500 text-sm mb-2 font-brandon">Construction Site - Block A</Text>
           <Text className="text-gray-400 text-xs font-brandon">Aug 12, 2025 • 10:45 AM</Text>
         </View>
         <View className="w-full space-y-4">

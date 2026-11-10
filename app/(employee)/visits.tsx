@@ -25,7 +25,7 @@ export default function EmployeeVisitsScreen() {
     {
       id: 1,
       type: "HVAC INSPECTION",
-      farmer: "Metro Plaza Tower A",
+      site_contact: "Metro Plaza Tower A",
       time: "09:00 AM",
       status: "Completed",
       image: require("../../assets/images/image1.jpg"),
@@ -33,7 +33,7 @@ export default function EmployeeVisitsScreen() {
     {
       id: 2,
       type: "FIRE SAFETY AUDIT",
-      farmer: "Apex Logistics Hub",
+      site_contact: "Apex Logistics Hub",
       time: "11:30 AM",
       status: "In Progress",
       image: require("../../assets/images/image2.jpg"),
@@ -41,7 +41,7 @@ export default function EmployeeVisitsScreen() {
     {
       id: 3,
       type: "ELECTRICAL MAINTENANCE",
-      farmer: "Grand City Mall",
+      site_contact: "Grand City Mall",
       time: "02:00 PM",
       status: "Pending",
       image: require("../../assets/images/image5.jpg"),
@@ -49,7 +49,7 @@ export default function EmployeeVisitsScreen() {
     {
       id: 4,
       type: "PLUMBING & SANITATION",
-      farmer: "TechPark Horizon Block",
+      site_contact: "TechPark Horizon Block",
       time: "04:30 PM",
       status: "Pending",
       image: require("../../assets/images/image6.jpg"),
@@ -266,7 +266,7 @@ export default function EmployeeVisitsScreen() {
                         marginLeft: 4,
                       }}
                     >
-                      {visit.farmer}
+                      {visit.site_contact}
                     </Text>
                   </View>
                 </View>
