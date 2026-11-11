@@ -46,6 +46,22 @@ Route::prefix('superadmin')->middleware(['auth', 'superadmin'])->group(function 
     Route::get('/subscriptions', fn () => inertia('Superadmin/Subscriptions'))->name('superadmin.subscriptions');
 });
 
+// Compatibility routes for local installs opened at http://localhost/fieldy.
+// Apache subfolder deployments strip this prefix before Laravel; artisan serve does not.
+Route::prefix('fieldy/superadmin')->middleware(['auth', 'superadmin'])->group(function () {
+    Route::get('/', fn () => redirect('/fieldy/superadmin/dashboard'));
+    Route::get('/dashboard', [\App\Http\Controllers\Superadmin\SuperadminDashboardController::class, 'index']);
+    Route::get('/companies', [\App\Http\Controllers\Superadmin\CompanyManagementController::class, 'index']);
+    Route::post('/companies', [\App\Http\Controllers\Superadmin\CompanyManagementController::class, 'store']);
+    Route::get('/companies/{id}', [\App\Http\Controllers\Superadmin\CompanyManagementController::class, 'show']);
+    Route::put('/companies/{id}', [\App\Http\Controllers\Superadmin\CompanyManagementController::class, 'update']);
+    Route::post('/companies/{id}/toggle-status', [\App\Http\Controllers\Superadmin\CompanyManagementController::class, 'toggleStatus']);
+    Route::post('/companies/{id}/impersonate', [\App\Http\Controllers\Superadmin\CompanyManagementController::class, 'impersonate']);
+    Route::get('/employees', [\App\Http\Controllers\Superadmin\SuperadminMonitoringController::class, 'employees']);
+    Route::get('/analytics', [\App\Http\Controllers\Superadmin\SuperadminMonitoringController::class, 'analytics']);
+    Route::get('/subscriptions', fn () => inertia('Superadmin/Subscriptions'));
+});
+
 Route::prefix('admin')->group(function () {
 
     // ── Protected: All admin routes require auth + admin role ─────────────────
@@ -113,4 +129,10 @@ Route::prefix('admin')->group(function () {
         // Redirect legacy /admin/satisfaction to dashboard
         Route::get('/satisfaction', fn () => redirect('/admin/dashboard'))->name('admin.satisfaction');
     });
+});
+
+// Tenant vertical switches from the Superadmin portal target the admin dashboard.
+Route::prefix('fieldy/admin')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::post('/logout', [LoginController::class, 'destroy']);
 });
