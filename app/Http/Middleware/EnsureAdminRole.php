@@ -16,13 +16,17 @@ class EnsureAdminRole
     public function handle(Request $request, Closure $next): Response
     {
         if (! Auth::check()) {
-            return redirect()->route('login')->with('error', 'Please log in to access the admin panel.');
+            $loginUrl = $request->is('fieldy/*') ? '/fieldy/admin/login' : route('login');
+
+            return redirect($loginUrl)->with('error', 'Please log in to access the admin panel.');
         }
 
         if (! in_array(Auth::user()->role, ['admin', 'superadmin'])) {
             Auth::logout();
 
-            return redirect()->route('login')->with('error', 'Access denied. Admin privileges required.');
+            $loginUrl = $request->is('fieldy/*') ? '/fieldy/admin/login' : route('login');
+
+            return redirect($loginUrl)->with('error', 'Access denied. Admin privileges required.');
         }
 
         return $next($request);

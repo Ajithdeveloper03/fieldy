@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { asset } from '../../basePath';
 import AdminLayout from './AdminLayout';
 import { router, Link } from '@inertiajs/react';
 import {
@@ -13,6 +14,7 @@ import useIndustry from '../../hooks/useIndustry';
 export default function Visits({ visits = {}, employees = [], filters = {} }) {
     const { t } = useTranslation();
     const { vocab, labels, industry } = useIndustry();
+    const isConstruction = industry.id === 'construction';
 
     const [activeTab, setActiveTab] = useState('records');
     const [viewMode, setViewMode] = useState('grid');
@@ -28,7 +30,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
 
     const handleApplyFilters = (newDays, newSearch) => {
         setProcessing(true);
-        router.get('/admin/visits', { search: newSearch !== undefined ? newSearch : searchQuery, days: newDays || dateRange }, {
+        router.get('/admin/visits', { industry: industry.id, search: newSearch !== undefined ? newSearch : searchQuery, days: newDays || dateRange }, {
             preserveState: true,
             preserveScroll: true,
             onFinish: () => setProcessing(false)
@@ -42,7 +44,14 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
         { labelKey: 'All Time', value: 'all' }
     ];
 
-    const getCoverImage = (id) => `/images/image${((id || 1) % 12) + 1}.jpg`;
+    const getCoverImage = (id) => {
+        if (isConstruction) {
+            const scene = (((Number(id) || 1) - 1) % 4) + 1;
+            return asset(`/images/construction-site-${scene}.svg`);
+        }
+
+        return asset(`/images/image${((Number(id) || 1) % 12) + 1}.jpg`);
+    };
 
     const analytics = useMemo(() => {
         const officerStats = {};
@@ -103,7 +112,9 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                 {t(labels.recentVisitsTitle || `${vocab.visit.plural} Logs`)}
                             </h1>
                             <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                                {t(`Track verified ${vocab.visit.plural.toLowerCase()}, check-in timestamps, location arrivals, and ${vocab.staff.singular.toLowerCase()} routes.`)}
+                                {isConstruction
+                                    ? t('Track structural inspections, concrete tests, safety audits, and site engineer visits.')
+                                    : t(`Track verified ${vocab.visit.plural.toLowerCase()}, check-in timestamps, location arrivals, and ${vocab.staff.singular.toLowerCase()} routes.`)}
                             </p>
 
                             {/* Search Bar */}
@@ -159,7 +170,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                             </div>
 
                             <button 
-                                onClick={() => router.visit('/admin/tasks')} 
+                                onClick={() => router.visit(`/admin/tasks?industry=${industry.id}`)}
                                 className="hp-btn hp-btn-primary !rounded-full"
                             >
                                 <Sparkles className="w-4 h-4 mr-1" />
@@ -178,17 +189,17 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{totalVisits}</div>
                         <p className="text-xs text-hp-success font-medium mt-1 flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" /> 100% {t('Verified Check-ins')}
+                            <CheckCircle2 className="w-3 h-3" /> 100% {t(isConstruction ? 'Verified Inspections' : 'Verified Check-ins')}
                         </p>
                     </div>
 
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Avg Transit Distance')}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t(isConstruction ? 'Avg Travel Between Sites' : 'Avg Transit Distance')}</span>
                             <Navigation className="w-3.5 h-3.5 text-hp-primary" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{avgDistance} <span className="text-sm font-semibold text-hp-muted">km</span></div>
-                        <p className="text-xs text-hp-muted mt-1">{t(`Between ${vocab.entity.plural.toLowerCase()}`)}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t(isConstruction ? 'Between project sites' : `Between ${vocab.entity.plural.toLowerCase()}`)}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
@@ -197,7 +208,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                             <ShieldCheck className="w-3.5 h-3.5 text-hp-success" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-success">{industry.complianceRate || '99%'}</div>
-                        <p className="text-xs text-hp-muted mt-1">{t('On-time beat arrival')}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t(isConstruction ? 'On-time site arrival' : 'On-time beat arrival')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
@@ -271,7 +282,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                             <div className="hp-card-visual h-44 mb-4 flex items-center justify-center relative">
                                                 <img 
                                                     src={getCoverImage(visit.id)} 
-                                                    alt="Field" 
+                                                    alt={vocab.entity.singular}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
                                                     onError={(e) => { e.target.style.display = 'none'; }}
                                                 />
@@ -302,7 +313,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
 
                                                 <p className="text-xs text-hp-muted flex items-center gap-1">
                                                     <MapPin className="w-3.5 h-3.5 text-hp-muted shrink-0" />
-                                                    <span className="truncate">{visit.farmer?.village || 'Designated Beat'}</span>
+                                                    <span className="truncate">{visit.farmer?.village || (isConstruction ? 'Project Site' : 'Designated Beat')}</span>
                                                 </p>
 
                                                 <div className="flex items-center gap-2 p-2.5 rounded-xl bg-hp-hover border border-hp-border mt-3">
@@ -311,7 +322,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                                     </div>
                                                     <div className="min-w-0 flex-1">
                                                         <p className="text-xs font-bold text-hp-dark truncate">{visit.employee?.name || vocab.staff.singular}</p>
-                                                        <p className="text-[11px] text-hp-muted truncate">{visit.distance_from_previous_farmer_km || '1.8'} km transit</p>
+                                                        <p className="text-[11px] text-hp-muted truncate">{visit.distance_from_previous_farmer_km || '1.8'} km {t(isConstruction ? 'between sites' : 'transit')}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -319,7 +330,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
 
                                         <div className="mt-5 pt-3 border-t border-hp-border">
                                             <Link 
-                                                href={`/admin/visits/${visit.id}`}
+                                                href={`/admin/visits/${visit.id}?industry=${industry.id}`}
                                                 className="hp-btn hp-btn-outline w-full !rounded-xl !h-10 text-sm font-semibold"
                                             >
                                                 <span>{t(`View ${vocab.visit.singular} Report`)}</span>
@@ -338,7 +349,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                                 <th>{t(vocab.entity.singular)}</th>
                                                 <th>{t(vocab.staff.singular)}</th>
                                                 <th>{t('Date & Time')}</th>
-                                                <th>{t('Transit')}</th>
+                                                <th>{t(isConstruction ? 'Travel Distance' : 'Transit')}</th>
                                                 <th>{t('Status')}</th>
                                                 <th className="text-right">{t('Action')}</th>
                                             </tr>
@@ -355,13 +366,13 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                                                 <p className="font-bold text-sm text-hp-dark">
                                                                     {visit.farmer?.user?.name || visit.farmer_name || vocab.entity.singular}
                                                                 </p>
-                                                                <p className="text-xs text-hp-muted">{visit.farmer?.village || 'Verified Site'}</p>
+                                                                <p className="text-xs text-hp-muted">{visit.farmer?.village || (isConstruction ? 'Project Site' : 'Verified Site')}</p>
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td>
                                                         <p className="font-bold text-sm text-hp-dark">{visit.employee?.name || vocab.staff.singular}</p>
-                                                        <p className="text-xs text-hp-muted">{t('Verified Check-in')}</p>
+                                                        <p className="text-xs text-hp-muted">{t(isConstruction ? 'Inspection Verified' : 'Verified Check-in')}</p>
                                                     </td>
                                                     <td>
                                                         <p className="text-xs font-semibold text-hp-dark">{visit.date}</p>
@@ -378,8 +389,8 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                                         </span>
                                                     </td>
                                                     <td className="text-right">
-                                                        <Link 
-                                                            href={`/admin/visits/${visit.id}`} 
+                                                        <Link
+                                                            href={`/admin/visits/${visit.id}?industry=${industry.id}`}
                                                             className="hp-btn hp-btn-sm hp-btn-outline"
                                                         >
                                                             {t('Details')} <ArrowUpRight className="w-3.5 h-3.5" />
@@ -402,7 +413,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                             <div className="flex items-center justify-between mb-4">
                                 <div>
                                     <h3 className="hp-card-title">{t(`Weekly ${vocab.visit.plural} Volume`)}</h3>
-                                    <p className="text-xs text-hp-muted mt-0.5">{t(`Daily completed ${vocab.visit.plural.toLowerCase()} and logs`)}</p>
+                                                <p className="text-xs text-hp-muted mt-0.5">{t(`Daily completed ${vocab.visit.plural.toLowerCase()} and logs`)}</p>
                                 </div>
                                 <span className="hp-chip hp-chip-primary">
                                     <TrendingUp className="w-3 h-3 mr-1" /> +18% {t('Velocity')}
@@ -460,7 +471,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                             </span>
                                             <div>
                                                 <p className="font-bold text-sm text-hp-dark">{off.name}</p>
-                                                <p className="text-xs text-hp-muted">{off.distance.toFixed(1)} km transit</p>
+                                                <p className="text-xs text-hp-muted">{off.distance.toFixed(1)} km {t(isConstruction ? 'between sites' : 'transit')}</p>
                                             </div>
                                         </div>
                                         <span className="hp-chip hp-chip-success">

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class TasksController extends Controller
@@ -16,7 +17,10 @@ class TasksController extends Controller
         $industryKey = \App\Services\Industry\IndustryContext::current();
 
         $query = Task::with(['assignedTo:id,name', 'customer:id,name', 'createdBy:id,name'])
-            ->when($companyId, fn ($q) => $q->whereHas('assignedTo', fn ($u) => $u->where('company_id', $companyId)));
+            ->when($companyId, fn ($q) => $q->where(function ($tasks) use ($companyId) {
+                $tasks->whereHas('assignedTo', fn ($user) => $user->where('company_id', $companyId))
+                    ->orWhereHas('createdBy', fn ($user) => $user->where('company_id', $companyId));
+            }));
 
         $query = \App\Services\Industry\IndustryContext::scope($query, $industryKey);
 
@@ -62,22 +66,17 @@ class TasksController extends Controller
                 'safety_requirements' => self::getDefaultSafety($industryKey),
             ]));
             $tasks = $catalogTasks;
-
-            $employees = collect(\App\Services\Industry\IndustryCatalog::staff($industryKey))->map(fn ($s) => [
-                'id' => $s['id'],
-                'name' => $s['name'],
-            ]);
-            $customers = collect(\App\Services\Industry\IndustryCatalog::entities($industryKey))->map(fn ($e) => [
-                'id' => $e['id'],
-                'name' => $e['name'],
-            ]);
-        } else {
-            $employees = User::where('role', 'employee')->where('status', 'active')
-                ->select('id', 'name')->orderBy('name')->get();
-
-            $customers = User::where('role', 'farmer')
-                ->select('id', 'name')->orderBy('name')->get();
         }
+
+        // Assignment selects must only contain real database users. Catalog IDs are
+        // display-only demo data and fail the foreign-key/exists validation on submit.
+        $employees = User::where('role', 'employee')->where('status', 'active')
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+            ->select('id', 'name')->orderBy('name')->get();
+
+        $customers = User::where('role', 'farmer')
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+            ->select('id', 'name')->orderBy('name')->get();
 
         return Inertia::render('Admin/TaskManagement', [
             'tasks' => $tasks,
@@ -88,12 +87,20 @@ class TasksController extends Controller
 
     public function store(Request $request)
     {
+        $companyId = auth()->user()?->company_id;
+        $assignedToRule = Rule::exists('users', 'id')->where('role', 'employee')->where('status', 'active');
+        $customerRule = Rule::exists('users', 'id')->where('role', 'farmer');
+        if ($companyId) {
+            $assignedToRule->where('company_id', $companyId);
+            $customerRule->where('company_id', $companyId);
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'industry' => 'nullable|string',
-            'assigned_to' => 'nullable|exists:users,id',
-            'customer_id' => 'nullable|exists:users,id',
+            'assigned_to' => ['nullable', 'integer', $assignedToRule],
+            'customer_id' => ['nullable', 'integer', $customerRule],
             'due_date' => 'nullable|date',
             'priority' => 'required|in:low,medium,high,urgent',
             'ai_suggestions' => 'nullable|string',
@@ -113,17 +120,25 @@ class TasksController extends Controller
             'safety_requirements' => self::getDefaultSafety($industry),
         ]);
 
-        return redirect('/admin/tasks')->with('success', 'Site Task scheduled successfully.');
+        return redirect($this->tasksUrl($request))->with('success', 'Site Task scheduled successfully.');
     }
 
     public function update(Request $request, $id)
     {
+        $companyId = auth()->user()?->company_id;
+        $assignedToRule = Rule::exists('users', 'id')->where('role', 'employee')->where('status', 'active');
+        $customerRule = Rule::exists('users', 'id')->where('role', 'farmer');
+        if ($companyId) {
+            $assignedToRule->where('company_id', $companyId);
+            $customerRule->where('company_id', $companyId);
+        }
+
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
             'industry' => 'nullable|string',
-            'assigned_to' => 'nullable|exists:users,id',
-            'customer_id' => 'nullable|exists:users,id',
+            'assigned_to' => ['nullable', 'integer', $assignedToRule],
+            'customer_id' => ['nullable', 'integer', $customerRule],
             'due_date' => 'nullable|date',
             'priority' => 'sometimes|required|in:low,medium,high,urgent',
             'status' => 'sometimes|required|in:pending,in_progress,done,cancelled',
@@ -133,14 +148,19 @@ class TasksController extends Controller
         $task = Task::findOrFail($id);
         $task->update($validated);
 
-        return redirect('/admin/tasks')->with('success', 'Work order updated successfully.');
+        return redirect($this->tasksUrl($request))->with('success', 'Work order updated successfully.');
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         Task::findOrFail($id)->delete();
 
-        return redirect('/admin/tasks')->with('success', 'Work order removed.');
+        return redirect($this->tasksUrl($request))->with('success', 'Work order removed.');
+    }
+
+    private function tasksUrl(Request $request): string
+    {
+        return $request->is('fieldy/*') ? '/fieldy/admin/tasks' : '/admin/tasks';
     }
 
     public static function getDefaultChecklist(string $industry): array

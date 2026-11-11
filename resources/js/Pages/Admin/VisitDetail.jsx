@@ -1,4 +1,5 @@
 import React from 'react';
+import { asset } from '../../basePath';
 import AdminLayout from './AdminLayout';
 import { Link } from '@inertiajs/react';
 import { 
@@ -11,6 +12,10 @@ import useIndustry from '../../hooks/useIndustry';
 export default function VisitDetail({ visit }) {
     const { t } = useTranslation();
     const { vocab, labels, industry } = useIndustry();
+    const isConstruction = industry.id === 'construction';
+    const evidenceImages = isConstruction
+        ? [asset('/images/construction-site-1.svg'), asset('/images/construction-site-2.svg')]
+        : [asset('/images/image2.jpg'), asset('/images/image3.jpg')];
 
     if (!visit) {
         return (
@@ -26,7 +31,7 @@ export default function VisitDetail({ visit }) {
         <AdminLayout>
             <div className="space-y-6 pb-12 hp-animate-in">
                 <div>
-                    <Link href="/admin/visits" className="hp-pill">
+                    <Link href={`/admin/visits?industry=${industry.id}`} className="hp-pill">
                         <ArrowLeft className="w-4 h-4 mr-1" /> {t(`Back to ${vocab.visit.plural}`)}
                     </Link>
                 </div>
@@ -43,7 +48,7 @@ export default function VisitDetail({ visit }) {
                                     <Calendar className="w-3 h-3 mr-1" /> {visit.date}
                                 </span>
                                 <span className="hp-chip hp-chip-success hp-chip-dot">
-                                    {t('Verified Check-in')}
+                                    {t(isConstruction ? 'Inspection Verified' : 'Verified Check-in')}
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
@@ -93,7 +98,9 @@ export default function VisitDetail({ visit }) {
                             <div className="text-sm text-hp-dark leading-relaxed bg-hp-hover/60 p-5 rounded-xl border border-hp-border">
                                 {visit.farm_condition_notes && visit.farm_condition_notes !== 'No notes provided.'
                                     ? visit.farm_condition_notes
-                                    : t('Field tasks completed successfully within standard operating tolerance. All checklist items cleared.')}
+                                    : t(isConstruction
+                                        ? 'Structural inspection completed; site safety checks and quality measurements were recorded.'
+                                        : 'Field tasks completed successfully within standard operating tolerance. All checklist items cleared.')}
                             </div>
                         </div>
 
@@ -107,7 +114,9 @@ export default function VisitDetail({ visit }) {
                             <div className="text-sm text-hp-dark leading-relaxed bg-hp-warning-light/40 p-5 rounded-xl border border-hp-warning/30">
                                 {visit.recommendations && visit.recommendations !== 'No recommendations.'
                                     ? visit.recommendations
-                                    : t('Schedule next maintenance/visit cycle in platform queue and verify consumables.')}
+                                    : t(isConstruction
+                                        ? 'Schedule the next structural inspection and verify outstanding safety actions.'
+                                        : 'Schedule next maintenance/visit cycle in platform queue and verify consumables.')}
                             </div>
                         </div>
                     </div>
@@ -115,14 +124,14 @@ export default function VisitDetail({ visit }) {
                     <div className="space-y-6">
                         <div className="hp-bento-card">
                             <h3 className="hp-card-title text-sm mb-3 flex items-center gap-2">
-                                <Navigation className="w-4 h-4 text-hp-primary" /> {t('Transit Telemetry')}
+                                <Navigation className="w-4 h-4 text-hp-primary" /> {t(isConstruction ? 'Site Travel Telemetry' : 'Transit Telemetry')}
                             </h3>
                             <div className="p-4 bg-hp-hover/60 rounded-xl border border-hp-border">
-                                <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1">{t('Distance Traveled')}</p>
+                                <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1">{t(isConstruction ? 'Travel Between Sites' : 'Distance Traveled')}</p>
                                 <p className="text-3xl font-bold text-hp-dark">
                                     {visit.distance_from_previous_farmer_km || '1.8'} <span className="text-sm font-semibold text-hp-muted">km</span>
                                 </p>
-                                <p className="text-xs text-hp-muted mt-1">{t('Optimal route followed with zero deviation.')}</p>
+                                <p className="text-xs text-hp-muted mt-1">{t(isConstruction ? 'Engineer route followed with no deviation.' : 'Optimal route followed with zero deviation.')}</p>
                             </div>
                         </div>
 
@@ -132,10 +141,10 @@ export default function VisitDetail({ visit }) {
                             </h3>
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="aspect-square rounded-xl overflow-hidden border border-hp-border">
-                                    <img src="/images/image2.jpg" className="w-full h-full object-cover" alt="Evidence" />
+                                    <img src={evidenceImages[0]} className="w-full h-full object-cover" alt={isConstruction ? 'Construction site inspection' : 'Visit evidence'} />
                                 </div>
                                 <div className="aspect-square rounded-xl overflow-hidden border border-hp-border">
-                                    <img src="/images/image3.jpg" className="w-full h-full object-cover" alt="Evidence" />
+                                    <img src={evidenceImages[1]} className="w-full h-full object-cover" alt={isConstruction ? 'Construction site work' : 'Visit evidence'} />
                                 </div>
                             </div>
                         </div>

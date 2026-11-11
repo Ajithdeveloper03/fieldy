@@ -186,8 +186,8 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                 </div>
 
                 {/* STATUS & REGION PILLS */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="hp-segmented-bar">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="hp-segmented-bar shrink-0">
                         {[
                             { id: 'all', label: `All ${vocab.staff.plural}` },
                             { id: 'active', label: 'Active on Duty' },
@@ -203,13 +203,13 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                         ))}
                     </div>
 
-                    <div className="flex items-center gap-1.5 overflow-x-auto">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mr-1">{t('Sector')}:</span>
+                    <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto whitespace-nowrap pb-1">
+                        <span className="shrink-0 text-xs font-bold text-hp-muted uppercase tracking-wider mr-1">{t('Sector')}:</span>
                         {regions.map((r) => (
                             <button
                                 key={r}
                                 onClick={() => setRegionFilter(r)}
-                                className={`hp-pill !h-8 !text-xs ${regionFilter === r ? '!bg-hp-dark !text-white !border-hp-dark' : ''}`}
+                                className={`hp-pill !h-8 !shrink-0 !whitespace-nowrap !text-xs ${regionFilter === r ? '!bg-hp-dark !text-white !border-hp-dark' : ''}`}
                             >
                                 {r === 'all' ? t('All Sectors') : r}
                             </button>

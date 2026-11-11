@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" fill="none">
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#95b6c9"/><stop offset="1" stop-color="#f1d3a4"/></linearGradient>
+    <linearGradient id="slab" x2="0" y2="1"><stop stop-color="#aeb8bd"/><stop offset="1" stop-color="#747c80"/></linearGradient>
+    <linearGradient id="soil" x2="0" y2="1"><stop stop-color="#957458"/><stop offset="1" stop-color="#443b34"/></linearGradient>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h1200v330H0z"/><circle cx="190" cy="96" r="52" fill="#ffe7b8" opacity=".9"/>
+  <path fill="#647987" opacity=".35" d="M0 260h1200v85H0z"/>
+  <path fill="url(#slab)" d="M115 265h960l-74 89H46z"/><path stroke="#4e5d65" stroke-width="7" d="m84 290 934 1M67 319l919 1M230 266l-52 86m148-86-42 86m138-86-30 86m151-86-18 86m151-86-7 86m149-86 6 86m145-86 18 86"/>
+  <path stroke="#4e5d65" stroke-width="7" d="M150 242v77m70-77v76m70-76v75m70-75v74m70-74v73m70-73v72m70-72v71m70-71v70m70-70v69m70-69v68m70-68v67m70-67v66"/>
+  <path fill="#f58220" d="M102 351h970l-35 45H69z"/><path fill="url(#soil)" d="M0 395h1200v125H0z"/>
+  <path stroke="#d4b99a" stroke-width="3" stroke-dasharray="15 14" d="M40 430h1120" opacity=".65"/>
+  <path fill="#30393e" d="M790 182h44l19 69h-82z"/><path fill="#f0a22c" d="M774 179h69l12 21h-93z"/><path fill="#30393e" d="m804 245-21 65h13l27-57m14-8 35 55h14l-36-62"/>
+  <path fill="#f58220" d="M780 165a25 25 0 0 1 50 0v8h-50z"/><path stroke="#f9d386" stroke-width="5" d="M806 169v75"/>
+</svg>

@@ -10,15 +10,15 @@ use Inertia\Inertia;
 
 class LoginController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         // Redirect already-authenticated users
         if (Auth::check()) {
             if (Auth::user()->role === 'superadmin') {
-                return redirect('/superadmin/dashboard');
+                return redirect($this->withLocalBasePath($request, '/superadmin/dashboard'));
             }
             if (Auth::user()->role === 'admin') {
-                return redirect('/admin/dashboard');
+                return redirect($this->withLocalBasePath($request, '/admin/dashboard'));
             }
         }
 
@@ -64,10 +64,10 @@ class LoginController extends Controller
         $request->session()->regenerate();
 
         if (Auth::user()->role === 'superadmin') {
-            return redirect('/superadmin/dashboard');
+            return redirect($this->withLocalBasePath($request, '/superadmin/dashboard'));
         }
 
-        return redirect('/admin/dashboard');
+        return redirect($this->withLocalBasePath($request, '/admin/dashboard'));
     }
 
     public function destroy(Request $request)
@@ -76,6 +76,11 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/admin/login');
+        return redirect($this->withLocalBasePath($request, '/admin/login'));
+    }
+
+    private function withLocalBasePath(Request $request, string $path): string
+    {
+        return $request->is('fieldy/*') ? '/fieldy' . $path : $path;
     }
 }

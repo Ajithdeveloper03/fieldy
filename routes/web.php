@@ -18,12 +18,32 @@ use Illuminate\Support\Facades\Route;
 // Root redirect
 Route::get('/', fn () => redirect('/admin/login'));
 
-Route::prefix('admin')->group(function () {
-    // ── Public: Auth ─────────────────────────────────────────────────────────
-    Route::get('/login', [LoginController::class, 'index'])->name('login');
-    Route::post('/login', [LoginController::class, 'store'])->name('login.store');
-    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
-});
+// Support both domain-root URLs and local/sub-folder URLs such as /fieldy/admin.
+foreach (['admin', 'fieldy/admin'] as $adminPrefix) {
+    $routeNamePrefix = $adminPrefix === 'admin' ? '' : 'fieldy.';
+
+    Route::prefix($adminPrefix)->name($routeNamePrefix)->group(function () {
+        // ── Public: Auth ─────────────────────────────────────────────────────
+        Route::get('/login', [LoginController::class, 'index'])->name('login');
+        Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+        Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+    });
+}
+
+// The /fieldy base-path helper prefixes image URLs during local `artisan serve`,
+// where Apache's sub-folder rewrite is not available to serve public files.
+Route::get('/fieldy/images/{path}', function (string $path) {
+    $imagesDirectory = realpath(public_path('images'));
+    $imagePath = $imagesDirectory ? realpath($imagesDirectory . DIRECTORY_SEPARATOR . $path) : false;
+
+    abort_unless(
+        $imagesDirectory && $imagePath && is_file($imagePath)
+            && str_starts_with($imagePath, $imagesDirectory . DIRECTORY_SEPARATOR),
+        404
+    );
+
+    return response()->file($imagePath);
+})->where('path', '.*');
 
 // ── Superadmin Portal (Platform Owner) ──────────────────────────────────────────
 Route::prefix('superadmin')->middleware(['auth', 'superadmin'])->group(function () {
@@ -62,14 +82,17 @@ Route::prefix('fieldy/superadmin')->middleware(['auth', 'superadmin'])->group(fu
     Route::get('/subscriptions', fn () => inertia('Superadmin/Subscriptions'));
 });
 
-Route::prefix('admin')->group(function () {
+foreach (['admin', 'fieldy/admin'] as $adminPrefix) {
+    $routeNamePrefix = $adminPrefix === 'admin' ? '' : 'fieldy.';
+
+    Route::prefix($adminPrefix)->name($routeNamePrefix)->group(function () use ($adminPrefix) {
 
     // ── Protected: All admin routes require auth + admin role ─────────────────
     Route::middleware(['auth', 'admin'])->group(function () {
 
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-        Route::get('/', fn () => redirect('/admin/dashboard'));
+        Route::get('/', fn () => redirect('/' . $adminPrefix . '/dashboard'));
 
         // Alerts
         Route::get('/alerts', [AlertsController::class, 'index'])->name('alerts.index');
@@ -124,15 +147,10 @@ Route::prefix('admin')->group(function () {
         Route::get('/monitor/live', [LiveMonitorController::class, 'liveData'])->name('monitor.live');
 
         // Redirect legacy /admin/subscriptions to Client Admin Dashboard (Plans & Add-ons moved to Superadmin)
-        Route::get('/subscriptions', fn () => redirect('/admin/dashboard'))->name('admin.subscriptions');
+        Route::get('/subscriptions', fn () => redirect('/' . $adminPrefix . '/dashboard'))->name('admin.subscriptions');
 
         // Redirect legacy /admin/satisfaction to dashboard
-        Route::get('/satisfaction', fn () => redirect('/admin/dashboard'))->name('admin.satisfaction');
+        Route::get('/satisfaction', fn () => redirect('/' . $adminPrefix . '/dashboard'))->name('admin.satisfaction');
     });
-});
-
-// Tenant vertical switches from the Superadmin portal target the admin dashboard.
-Route::prefix('fieldy/admin')->middleware(['auth', 'admin'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index']);
-    Route::post('/logout', [LoginController::class, 'destroy']);
-});
+    });
+}

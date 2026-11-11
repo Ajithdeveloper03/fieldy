@@ -1,4 +1,4 @@
-import { asset, withBase } from '../../basePath';
+import { asset, withBase, BASE } from '../../basePath';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import {
@@ -143,7 +143,11 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
         return () => clearTimeout(delayDebounceFn);
     }, [searchQuery]);
 
-    const isActive = (path) => url.startsWith(path);
+    const pathWithoutBase = url.split('?')[0];
+    const cleanPath = BASE && pathWithoutBase.startsWith(`${BASE}/`)
+        ? pathWithoutBase.slice(BASE.length)
+        : pathWithoutBase;
+    const isActive = (path) => cleanPath.startsWith(path);
     const testAlert = () => {
         triggerCritical("SAFETY ALERT - GEOFENCE BREACH OR TELEMETRY EVENT LOGGED");
     };
@@ -157,7 +161,6 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const logout = () => router.post(withBase('/admin/logout'));
 
     const getBreadcrumbs = () => {
-        const cleanPath = url.split('?')[0];
         if (cleanPath === '/admin/dashboard' || cleanPath === '/admin') {
             return [{ label: t('Dashboard'), href: '/admin/dashboard' }];
         }
@@ -174,7 +177,6 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
         return [{ label: t('Dashboard'), href: '/admin/dashboard' }];
     };
 
-    const cleanPath = url.split('?')[0];
     const isHome = cleanPath === '/admin/dashboard' || cleanPath === '/admin';
     const breadcrumbs = getBreadcrumbs();
 

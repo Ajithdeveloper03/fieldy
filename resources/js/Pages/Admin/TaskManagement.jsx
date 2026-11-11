@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import AdminLayout from './AdminLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { 
@@ -30,6 +30,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
     const [processing, setProcessing] = useState(false);
+    const createTaskInFlight = useRef(false);
     const [generatingAi, setGeneratingAi] = useState(false);
 
     // Form state for Create Task
@@ -234,11 +235,13 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
 
     const handleCreateTask = (e) => {
         e.preventDefault();
+        if (createTaskInFlight.current) return;
         if (!newTask.title.trim()) {
             triggerCritical('Please enter a task title.');
             return;
         }
 
+        createTaskInFlight.current = true;
         setProcessing(true);
         const payload = {
             title: newTask.title.trim(),
@@ -266,10 +269,13 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                     ai_suggestions: '',
                 });
                 triggerInfo(t('Successfully completed'));
+                createTaskInFlight.current = false;
                 setProcessing(false);
             },
-            onError: () => {
-                triggerCritical('Please check the form inputs.');
+            onError: (errors) => {
+                const firstError = Object.values(errors || {}).flat().find(message => typeof message === 'string');
+                triggerCritical(firstError || 'Please check the form inputs.');
+                createTaskInFlight.current = false;
                 setProcessing(false);
             }
         });

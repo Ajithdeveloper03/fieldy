@@ -483,7 +483,9 @@ class IndustryCatalog
                 'status' => $n % 7 === 6 ? 'flagged' : 'completed',
                 'rating' => [5, 4, 5, 4, 3, 5, 4][$n % 7],
                 'otp_verified' => $n % 5 !== 4,
-                'distance_km' => round(0.05 + (($n * 37) % 90) / 1000, 3),
+                'distance_km' => $key === 'construction'
+                    ? round(1.8 + (($n * 37) % 120) / 10, 1)
+                    : round(0.05 + (($n * 37) % 90) / 1000, 3),
                 'is_sample' => true,
             ];
         }

@@ -7,6 +7,7 @@ use App\Models\FarmerVisit;
 use App\Models\User;
 use App\Services\Industry\IndustryCatalog;
 use App\Services\Industry\IndustryContext;
+use App\Services\IndustryService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,7 +20,7 @@ class VisitController extends Controller
         $days = $request->query('days', '30');
         $employeeId = $request->query('employee_id', '');
         $companyId = auth()->user()?->company_id;
-        $industryKey = IndustryContext::current();
+        $industryKey = $this->industryKey($request);
 
         $query = FarmerVisit::with(['employee:id,name', 'farmer:id,name'])
             ->when($companyId, fn ($q, $cid) => $q->whereHas('employee', fn ($e) => $e->where('company_id', $cid)))
@@ -67,7 +68,11 @@ class VisitController extends Controller
 
             $items = $catalogVisits->map(fn ($v) => [
                 'id' => $v['id'],
-                'farmer' => ['user' => ['name' => $v['entity_name']]],
+                'farmer' => [
+                    'user' => ['name' => $v['entity_name']],
+                    'farmer_code' => $v['entity_code'] ?? null,
+                    'village' => $v['address'] ?? null,
+                ],
                 'employee' => ['name' => $v['staff_name']],
                 'distance_from_previous_farmer_km' => $v['distance_km'],
                 'check_in_time' => $v['check_in'],
@@ -89,31 +94,37 @@ class VisitController extends Controller
                 'links' => [],
             ];
 
-            $employees = collect(IndustryCatalog::staff($industryKey))->map(fn ($s) => [
-                'id' => $s['id'],
-                'name' => $s['name'],
-            ]);
+            $employees = collect(IndustryCatalog::staff($industryKey))
+                ->where('status', 'active')
+                ->map(fn ($s) => ['id' => $s['id'], 'name' => $s['name']])
+                ->values();
         } else {
             $employees = User::where('role', 'employee')->select('id', 'name')->orderBy('name')->get();
         }
 
         return Inertia::render('Admin/Visits', [
+            'currentIndustry' => $industryKey,
             'visits' => $visits,
             'employees' => $employees,
             'filters' => ['search' => $search, 'days' => $days, 'employee_id' => $employeeId],
         ]);
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $industryKey = IndustryContext::current();
+        $industryKey = $this->industryKey($request);
 
         $catalogVisit = IndustryCatalog::visit($industryKey, $id);
         if ($catalogVisit) {
             return Inertia::render('Admin/VisitDetail', [
+                'currentIndustry' => $industryKey,
                 'visit' => [
                     'id' => $catalogVisit['id'],
-                    'farmer' => ['user' => ['name' => $catalogVisit['entity_name']]],
+                    'farmer' => [
+                        'user' => ['name' => $catalogVisit['entity_name']],
+                        'farmer_code' => $catalogVisit['entity_code'] ?? null,
+                        'village' => $catalogVisit['address'] ?? null,
+                    ],
                     'employee' => ['name' => $catalogVisit['staff_name']],
                     'distance_from_previous_farmer_km' => $catalogVisit['distance_km'],
                     'check_in_time' => $catalogVisit['check_in'],
@@ -130,6 +141,7 @@ class VisitController extends Controller
         $visit = FarmerVisit::with(['employee:id,name', 'farmer:id,name'])->findOrFail($id);
 
         return Inertia::render('Admin/VisitDetail', [
+            'currentIndustry' => $industryKey,
             'visit' => [
                 'id' => $visit->id,
                 'farmer' => ['user' => ['name' => $visit->farmer?->name ?? 'Unknown Site']],
@@ -143,5 +155,18 @@ class VisitController extends Controller
                 'media' => [],
             ],
         ]);
+    }
+
+    private function industryKey(Request $request): string
+    {
+        if ($request->filled('industry')) {
+            return IndustryContext::current();
+        }
+
+        $companyIndustry = auth()->user()?->company?->industry;
+
+        return $companyIndustry
+            ? IndustryService::normalize($companyIndustry)
+            : IndustryContext::current();
     }
 }
