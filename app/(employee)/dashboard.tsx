@@ -122,7 +122,7 @@ export default function EmployeeDashboardScreen() {
             >
               <Image
                 source={{
-                  uri: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+                  uri: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=project&q=80",
                 }}
                 style={{ width: "100%", height: "100%" }}
               />
@@ -382,7 +382,7 @@ export default function EmployeeDashboardScreen() {
               }}
             >
               <TouchableOpacity
-                onPress={() => router.push("/(employee)/my-farmers")}
+                onPress={() => router.push("/(employee)/my-sites")}
                 style={{
                   flex: 1,
                   alignItems: "center",
@@ -519,9 +519,9 @@ export default function EmployeeDashboardScreen() {
                 }}
               >
                 {[
-                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80",
-                  "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&auto=format&fit=crop&q=80",
-                  "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&auto=format&fit=crop&q=80",
+                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=project&q=80",
+                  "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&auto=format&fit=project&q=80",
+                  "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&auto=format&fit=project&q=80",
                 ].map((uri, i) => (
                   <Image
                     key={i}
@@ -572,7 +572,7 @@ export default function EmployeeDashboardScreen() {
             {/* Right Bento Card: Assigned Facilities & Reports */}
             <TouchableOpacity
               activeOpacity={0.9}
-              onPress={() => router.push("/(employee)/my-farmers")}
+              onPress={() => router.push("/(employee)/my-sites")}
               style={{
                 flex: 1,
                 backgroundColor: "#ffffff",
@@ -767,7 +767,7 @@ export default function EmployeeDashboardScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => router.push("/(employee)/register-farmer/step1")}
+              onPress={() => router.push("/(employee)/register-site/step1")}
               style={{
                 flex: 1,
                 backgroundColor: "#ffffff",
@@ -808,7 +808,7 @@ export default function EmployeeDashboardScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => router.push("/(employee)/my-farmers")}
+              onPress={() => router.push("/(employee)/my-sites")}
               style={{
                 flex: 1,
                 backgroundColor: "#ffffff",
@@ -1051,7 +1051,7 @@ export default function EmployeeDashboardScreen() {
                 Assigned Facilities
               </Text>
               <TouchableOpacity
-                onPress={() => router.push("/(employee)/my-farmers")}
+                onPress={() => router.push("/(employee)/my-sites")}
               >
                 <Text
                   style={{
@@ -1074,28 +1074,28 @@ export default function EmployeeDashboardScreen() {
                 {
                   id: "1",
                   name: "Metro Tower",
-                  img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=150&auto=format&fit=crop&q=80",
+                  img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=150&auto=format&fit=project&q=80",
                 },
                 {
                   id: "2",
                   name: "Apex Logistics",
-                  img: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=150&auto=format&fit=crop&q=80",
+                  img: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=150&auto=format&fit=project&q=80",
                 },
                 {
                   id: "3",
                   name: "Grand Mall",
-                  img: "https://images.unsplash.com/photo-1519643381401-22c77e60520e?w=150&auto=format&fit=crop&q=80",
+                  img: "https://images.unsplash.com/photo-1519643381401-22c77e60520e?w=150&auto=format&fit=project&q=80",
                 },
                 {
                   id: "4",
                   name: "Horizon Hub",
-                  img: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=150&auto=format&fit=crop&q=80",
+                  img: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=150&auto=format&fit=project&q=80",
                 },
               ].map((facility) => (
                 <TouchableOpacity
                   key={facility.id}
                   onPress={() =>
-                    router.push(`/(employee)/farmer/${facility.id}` as any)
+                    router.push(`/(employee)/site/${facility.id}` as any)
                   }
                   style={{ alignItems: "center", marginRight: 16 }}
                 >
@@ -1560,13 +1560,13 @@ export default function EmployeeDashboardScreen() {
                 title: "Sites & Clients",
                 icon: Users,
                 color: "#3b82f6",
-                route: "/(employee)/my-farmers",
+                route: "/(employee)/my-sites",
               },
               {
                 title: "Onboard Site",
                 icon: UserPlus,
                 color: "#f59e0b",
-                route: "/(employee)/register-farmer/step1",
+                route: "/(employee)/register-site/step1",
               },
               {
                 title: "Service Route",

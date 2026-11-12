@@ -79,7 +79,7 @@ function FloatingEmployeeTabBar() {
       {/* Detached Glowing Action Orb (Register / Quick Action) */}
       <TouchableOpacity
         activeOpacity={0.85}
-        onPress={() => router.push("/(employee)/register-farmer/step1" as any)}
+        onPress={() => router.push("/(employee)/register-site/step1" as any)}
         style={styles.fabOrb}
       >
         <Plus size={26} color="#062214" strokeWidth={2.8} />

@@ -4,7 +4,7 @@ import { MapPin, Calendar, Clock, ChevronRight } from 'lucide-react-native';
 
 interface VisitProps {
   id: string;
-  farmerName: string;
+  site_contactName: string;
   farmLocation: string;
   date: string;
   time: string;
@@ -12,7 +12,7 @@ interface VisitProps {
   onPress: () => void;
 }
 
-export const VisitCard = ({ farmerName, farmLocation, date, time, status, onPress }: VisitProps) => {
+export const VisitCard = ({ site_contactName, farmLocation, date, time, status, onPress }: VisitProps) => {
   let statusColor = 'bg-yellow-100 text-yellow-800';
   if (status === 'completed') statusColor = 'bg-green-100 text-green-800';
   if (status === 'missed') statusColor = 'bg-red-100 text-red-800';
@@ -24,7 +24,7 @@ export const VisitCard = ({ farmerName, farmLocation, date, time, status, onPres
     >
       <View className="flex-row justify-between items-start mb-3">
         <View>
-          <Text className="text-lg font-brandon-bold text-gray-900">{farmerName}</Text>
+          <Text className="text-lg font-brandon-bold text-gray-900">{site_contactName}</Text>
           <View className="flex-row items-center mt-1">
             <MapPin size={14} color="#6b7280" />
             <Text className="text-sm text-gray-500 ml-1 font-brandon">{farmLocation}</Text>

@@ -14,7 +14,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLanguage, LanguageTogglePill } from "../context/LanguageContext";
 
 export default function IntroScreen() {
-  const [role, setRole] = useState<"farmer" | "employee">("employee");
+  const [role, setRole] = useState<"site_contact" | "employee">("employee");
   const { t, language } = useLanguage();
 
   return (
@@ -274,19 +274,19 @@ export default function IntroScreen() {
 
               <TouchableOpacity
                 activeOpacity={0.85}
-                onPress={() => setRole("farmer")}
+                onPress={() => setRole("site_contact")}
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
                   backgroundColor:
-                    role === "farmer"
+                    role === "site_contact"
                       ? "rgba(16, 185, 129, 0.16)"
                       : "rgba(255, 255, 255, 0.05)",
                   borderRadius: 22,
                   padding: 16,
-                  borderWidth: role === "farmer" ? 1.5 : 1,
+                  borderWidth: role === "site_contact" ? 1.5 : 1,
                   borderColor:
-                    role === "farmer"
+                    role === "site_contact"
                       ? "#4ade80"
                       : "rgba(255, 255, 255, 0.1)",
                 }}
@@ -299,13 +299,13 @@ export default function IntroScreen() {
                     borderRadius: 11,
                     borderWidth: 2,
                     borderColor:
-                      role === "farmer" ? "#4ade80" : "rgba(255,255,255,0.35)",
+                      role === "site_contact" ? "#4ade80" : "rgba(255,255,255,0.35)",
                     alignItems: "center",
                     justifyContent: "center",
                     marginRight: 14,
                   }}
                 >
-                  {role === "farmer" && (
+                  {role === "site_contact" && (
                     <View
                       style={{
                         width: 10,
@@ -323,7 +323,7 @@ export default function IntroScreen() {
                     height: 44,
                     borderRadius: 14,
                     backgroundColor:
-                      role === "farmer"
+                      role === "site_contact"
                         ? "rgba(74, 222, 128, 0.2)"
                         : "rgba(255, 255, 255, 0.08)",
                     alignItems: "center",
@@ -332,7 +332,7 @@ export default function IntroScreen() {
                 >
                   <Building2
                     size={22}
-                    color={role === "farmer" ? "#4ade80" : "#94a3b8"}
+                    color={role === "site_contact" ? "#4ade80" : "#94a3b8"}
                   />
                 </View>
 
@@ -367,7 +367,7 @@ export default function IntroScreen() {
                 if (role === "employee") {
                   router.replace("/(auth)/login");
                 } else {
-                  router.replace("/(auth)/farmer-login");
+                  router.replace("/(auth)/site-contact-login");
                 }
               }}
               style={{

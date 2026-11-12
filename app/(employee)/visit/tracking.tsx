@@ -23,11 +23,11 @@ import {
 import { Button } from "../../../components/ui/Button";
 import { Card } from "../../../components/ui/Card";
 import { showToast } from "../../../components/ui/ToastMessage";
-import { employeeProfile, getVisitWithFarmer } from "../../../data/mockData";
+import { employeeProfile, getVisitWithSiteContact } from "../../../data/mockData";
 
 export default function TrackingScreen() {
   const { id } = useLocalSearchParams();
-  const visit = getVisitWithFarmer((id as string) || "v1");
+  const visit = getVisitWithSiteContact((id as string) || "v1");
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -107,13 +107,13 @@ export default function TrackingScreen() {
     }, 1000);
   };
 
-  if (!visit || !visit.farmer) return null;
+  if (!visit || !visit.site_contact) return null;
 
   const displaySpeed = (speed * 3.6).toFixed(1);
   const displayDistance = totalDistanceKm.toFixed(2);
   const endLocation = {
-    latitude: visit.farmer.latitude || 11.6643,
-    longitude: visit.farmer.longitude || 78.146,
+    latitude: visit.site_contact.latitude || 11.6643,
+    longitude: visit.site_contact.longitude || 78.146,
   };
 
   return (
@@ -156,13 +156,13 @@ export default function TrackingScreen() {
                 </View>
                 <View className="flex-1">
                   <Text className="font-brandon-bold text-gray-900 text-base">
-                    {visit.farmer.name}
+                    {visit.site_contact.name}
                   </Text>
                   <Text
                     className="text-gray-500 text-xs font-brandon"
                     numberOfLines={1}
                   >
-                    {visit.farmer.address}
+                    {visit.site_contact.address}
                   </Text>
                 </View>
               </View>

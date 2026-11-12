@@ -204,7 +204,7 @@ export default function EmployeeProfileScreen() {
                     marginTop: 2,
                   }}
                 >
-                  Acres
+                  Site Area
                 </Text>
               </View>
             </View>
@@ -397,7 +397,7 @@ export default function EmployeeProfileScreen() {
             {/* Right Scenic Image Card */}
             <TouchableOpacity
               activeOpacity={0.9}
-              onPress={() => router.push("/(employee)/my-farmers")}
+              onPress={() => router.push("/(employee)/my-sites")}
               style={{
                 flex: 1,
                 borderRadius: 32,
@@ -547,14 +547,14 @@ export default function EmployeeProfileScreen() {
             {[
               {
                 icon: Users,
-                label: "Farmers Managed",
+                label: "SiteContacts Managed",
                 value: "124",
                 color: "#38bdf8",
-                route: "/(employee)/my-farmers",
+                route: "/(employee)/my-sites",
               },
               {
                 icon: Map,
-                label: "Acres Covered",
+                label: "Site Area Covered",
                 value: "4.2k",
                 color: "#4ade80",
                 route: "/(employee)/map",

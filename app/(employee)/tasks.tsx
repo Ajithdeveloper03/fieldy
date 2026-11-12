@@ -325,7 +325,7 @@ export default function EmployeeTasksScreen() {
                     <View style={{ flexDirection: "row", alignItems: "center" }}>
                       <Image
                         source={{
-                          uri: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&auto=format&fit=crop&q=80",
+                          uri: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&auto=format&fit=project&q=80",
                         }}
                         style={{
                           width: 42,
@@ -489,7 +489,7 @@ export default function EmployeeTasksScreen() {
                   >
                     <Image
                       source={{
-                        uri: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=100&auto=format&fit=crop&q=80",
+                        uri: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=100&auto=format&fit=project&q=80",
                       }}
                       style={{
                         width: 44,

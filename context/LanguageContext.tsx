@@ -22,13 +22,13 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     logout: "Logout",
     continue: "Next",
     chooseRole: "Who are you?",
-    farmer: "Facility Client",
+    site_contact: "Site Contact",
     facilityClient: "Facility / Client",
     fieldOfficer: "Facility Officer",
     fieldOfficerRole: "Facility Officer",
-    farmerRole: "Client",
+    site_contactRole: "Client",
     employeeId: "Officer ID",
-    farmerId: "Facility ID",
+    site_contactId: "Facility ID",
 
     // Navigation & Headers
     home: "Home",
@@ -51,10 +51,10 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
 
     // Facility & Client Types
     dualClient: "Hard & Soft FM",
-    cropCultivator: "Technical FM",
-    fertilizerCustomer: "Soft Services",
+    projectCultivator: "Technical FM",
+    fertilizerCustomer: "Construction Services",
     bioInputClient: "Specialized FM",
-    assignedFarmers: "Assigned Facilities",
+    assignedSites: "Assigned Facilities",
     mingleSubtext: "All your assigned facility locations",
 
     // Statuses
@@ -74,20 +74,20 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     soilPh: "pH",
     moisture: "Water",
     rootDepth: "Root",
-    acres: "Acres",
-    cropType: "Crop",
-    primaryCrop: "Main Crop",
-    irrigation: "Watering",
-    dripIrrigation: "Drip",
+    site_area: "Site Area",
+    projectType: "Project",
+    primaryProject: "Main Project",
+    irrigation: "Site Utilities",
+    dripIrrigation: "Power & Water",
     organicCertified: "Organic",
 
-    // Common Crops & Inputs
-    vetiver: "Vetiver",
+    // Common Projects & Inputs
+    vetiver: "Construction",
     turmeric: "Turmeric",
     pepper: "Pepper",
     paddy: "Paddy",
     vermicompost: "Compost",
-    bioFertilizer: "Bio-Fertilizer",
+    bioFertilizer: "Construction Materials",
     neemCake: "Neem Cake",
     panchagavya: "Panchagavya",
 
@@ -101,7 +101,7 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     rateOfficer: "Rate Us",
     submitRating: "Send Rating",
     howWasExperience: "How was it?",
-    callFarmer: "Call",
+    callSiteContact: "Call",
     whatsapp: "WhatsApp",
     downloadPdf: "Get PDF",
     addNote: "Note",
@@ -109,8 +109,8 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     // Quick Advisory Card
     activeAdvisory: "Tips • Growing",
     dueIn3Days: "In 3 Days",
-    bioFertilizerTitle: "Soil Food",
-    bioFertilizerDesc: "Put 50kg compost and neem cake near the roots.",
+    bioFertilizerTitle: "Safety Controls",
+    bioFertilizerDesc: "Keep required protective equipment and safety barriers in place.",
 
     // Menu & Sub-screens
     menu: "Menu",
@@ -130,7 +130,7 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     fieldOfficerId: "Staff ID",
     verifiedOfficer: "Real Staff • EMP-2026",
     visitsLogged: "Visits Done",
-    farmers: "Farmers",
+    site_contacts: "Site Contacts",
     rating: "Stars",
     officialInfo: "Work Info",
     contactMobile: "Phone",
@@ -170,11 +170,11 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     upcomingVisit: "Next Visit",
     todaysVisits: "Today's Visits",
 
-    // Farmer Specific Keys
+    // Site Contact Specific Keys
     docs: "Docs",
     myFarm: "Farm",
-    crops: "Crops",
-    fertilizers: "Fertilizer",
+    projects: "Projects",
+    fertilizers: "Materials",
     farmOverview: "Farm Details",
     registeredFarmDetails: "Farm Info",
     farmName: "Farm Name",
@@ -183,7 +183,7 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     soilType: "Soil Type",
     totalArea: "Area",
     verifiedOrganicLand: "Organic Land",
-    farmerProfile: "Farmer Info",
+    site_contactProfile: "Site Contact Info",
     personal: "Personal",
     kycBank: "Bank",
     landDetails: "Land",
@@ -228,12 +228,12 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     logout: "வெளியேறு",
     continue: "அடுத்து",
     chooseRole: "நீங்கள் யார்?",
-    farmer: "விவசாயி",
+    site_contact: "தள தொடர்பாளர்",
     fieldOfficer: "ஊழியர்",
     fieldOfficerRole: "ஊழியர் • டெல்டா",
-    farmerRole: "விவசாயி",
+    site_contactRole: "தள தொடர்பாளர்",
     employeeId: "ஊழியர் எண்",
-    farmerId: "விவசாயி எண்",
+    site_contactId: "தள எண்",
 
     // Navigation & Headers
     home: "முகப்பு",
@@ -254,12 +254,12 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     viewReport: "ரிப்போர்ட்",
     viewProtocol: "விதி",
 
-    // Farmer & Client Types (Mingle)
+    // Site Contact & Client Types (Mingle)
     dualClient: "பண்ணை & கடை",
-    cropCultivator: "பண்ணை மட்டும்",
-    fertilizerCustomer: "கடை மட்டும்",
+    projectCultivator: "பண்ணை மட்டும்",
+    fertilizerCustomer: "கட்டுமான சேவைகள்",
     bioInputClient: "பயோ கடை",
-    assignedFarmers: "என் விவசாயிகள்",
+    assignedSites: "என் விவசாயிகள்",
     mingleSubtext: "அனைத்து ஆட்கள்",
 
     // Statuses
@@ -279,20 +279,20 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     soilPh: "pH",
     moisture: "தண்ணீர்",
     rootDepth: "வேர்",
-    acres: "ஏக்கர்",
-    cropType: "பயிர்",
-    primaryCrop: "முக்கிய பயிர்",
-    irrigation: "பாசனம்",
-    dripIrrigation: "சொட்டு நீர்",
+    site_area: "ஏக்கர்",
+    projectType: "பயிர்",
+    primaryProject: "முக்கிய பயிர்",
+    irrigation: "தள வசதிகள்",
+    dripIrrigation: "மின்சாரம் மற்றும் நீர்",
     organicCertified: "ஆர்கானிக்",
 
-    // Common Crops & Inputs
-    vetiver: "வெட்டிவேர்",
+    // Common Projects & Inputs
+    vetiver: "கட்டுமானம்",
     turmeric: "மஞ்சள்",
     pepper: "மிளகு",
     paddy: "நெல்",
     vermicompost: "மண்புழு உரம்",
-    bioFertilizer: "பயோ உரம்",
+    bioFertilizer: "கட்டுமானப் பொருட்கள்",
     neemCake: "வேப்பம் பிண்ணாக்கு",
     panchagavya: "பஞ்சகாவ்யா",
 
@@ -306,7 +306,7 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     rateOfficer: "மதிப்பிடு",
     submitRating: "அனுப்பு",
     howWasExperience: "எப்படி இருந்தது?",
-    callFarmer: "கால் செய்",
+    callSiteContact: "கால் செய்",
     whatsapp: "வாட்ஸ்அப்",
     downloadPdf: "PDF எடு",
     addNote: "குறிப்பு",
@@ -314,8 +314,8 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     // Quick Advisory Card
     activeAdvisory: "டிப்ஸ் • வளரும் நிலை",
     dueIn3Days: "3 நாளில்",
-    bioFertilizerTitle: "மண் உணவு",
-    bioFertilizerDesc: "50 கிலோ உரம் வேரில் போடு.",
+    bioFertilizerTitle: "பாதுகாப்பு நடைமுறைகள்",
+    bioFertilizerDesc: "தேவையான பாதுகாப்பு உபகரணங்கள் மற்றும் தடுப்புகளை வைத்திருங்கள்.",
 
     // Menu & Sub-screens
     menu: "பட்டி",
@@ -335,7 +335,7 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     fieldOfficerId: "ஊழியர் எண்",
     verifiedOfficer: "உண்மை ஊழியர் • EMP-2026",
     visitsLogged: "பார்த்தது",
-    farmers: "விவசாயிகள்",
+    site_contacts: "தள தொடர்பாளர்கள்",
     rating: "ஸ்டார்",
     officialInfo: "வேலை விவரம்",
     contactMobile: "போன்",
@@ -375,11 +375,11 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     upcomingVisit: "அடுத்த பார்வை",
     todaysVisits: "இன்றைய பார்வை",
 
-    // Farmer Specific Keys
+    // Site Contact Specific Keys
     docs: "ஆவணம்",
     myFarm: "பண்ணை",
-    crops: "பயிர்",
-    fertilizers: "உரம்",
+    projects: "பயிர்",
+    fertilizers: "கட்டுமானப் பொருட்கள்",
     farmOverview: "பண்ணை விவரம்",
     registeredFarmDetails: "பண்ணை தகவல்",
     farmName: "பண்ணை பெயர்",
@@ -388,7 +388,7 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     soilType: "மண் வகை",
     totalArea: "பரப்பளவு",
     verifiedOrganicLand: "ஆர்கானிக் நிலம்",
-    farmerProfile: "விவசாயி விவரம்",
+    site_contactProfile: "தள தொடர்பாளர் விவரம்",
     personal: "சொந்தம்",
     kycBank: "வங்கி",
     landDetails: "நிலம்",

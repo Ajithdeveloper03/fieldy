@@ -1,6 +1,6 @@
-export type CustomerType = 'both' | 'crop' | 'fertilizer';
+export type CustomerType = 'both' | 'project' | 'service';
 
-export interface Farmer {
+export interface SiteContact {
   id: string;
   name: string;
   phone: string;
@@ -8,17 +8,17 @@ export interface Farmer {
   latitude: number;
   longitude: number;
   farmArea: string;
-  cropType: string;
+  projectType: string;
   customerType: CustomerType;
-  cropDetails?: string;
-  fertilizerDetails?: string;
+  projectDetails?: string;
+  serviceDetails?: string;
   recentOrder?: string;
   photo?: string;
 }
 
 export interface Visit {
   id: string;
-  farmerId: string;
+  site_contactId: string;
   date: string;
   time: string;
   status: 'completed' | 'pending' | 'upcoming';
@@ -26,14 +26,14 @@ export interface Visit {
   previousVisitDate?: string;
   remarks?: string;
   report?: {
-    cropCondition: string;
+    projectCondition: string;
     notes: string;
     photos: string[];
     recommendations: string;
   }
 }
 
-export const mockFarmers: Farmer[] = [
+export const mockSiteContacts: SiteContact[] = [
   {
     id: 'f1',
     name: 'Metro Corporate Tower A',
@@ -42,12 +42,12 @@ export const mockFarmers: Farmer[] = [
     latitude: 10.9930,
     longitude: 76.8220,
     farmArea: '45,000 Sq. Ft',
-    cropType: 'HVAC & Electrical Maintenance',
+    projectType: 'HVAC & Electrical Maintenance',
     customerType: 'both',
-    cropDetails: 'Chilled Water HVAC System (4 AHUs) + High-Tension Substation',
-    fertilizerDetails: 'Quarterly Air Filter Replacement & Refrigerant Top-up',
+    projectDetails: 'Chilled Water HVAC System (4 AHUs) + High-Tension Substation',
+    serviceDetails: 'Quarterly Air Filter Replacement & Refrigerant Top-up',
     recentOrder: 'HVAC Filter Replacements & Sensor Calibration (Completed)',
-    photo: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=150&auto=format&fit=crop&q=80',
+    photo: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=150&auto=format&fit=project&q=80',
   },
   {
     id: 'f2',
@@ -57,12 +57,12 @@ export const mockFarmers: Farmer[] = [
     latitude: 10.6620,
     longitude: 77.0060,
     farmArea: '120,000 Sq. Ft',
-    cropType: 'Fire Safety & Industrial Cleaning',
-    customerType: 'fertilizer',
-    cropDetails: 'Automated Fire Sprinkler Grid & Smoke Detection System',
-    fertilizerDetails: 'Industrial Heavy Duty Scrubber Consumables & Degreasers',
+    projectType: 'Fire Safety & Industrial Cleaning',
+    customerType: 'service',
+    projectDetails: 'Automated Fire Sprinkler Grid & Smoke Detection System',
+    serviceDetails: 'Industrial Heavy Duty Scrubber Consumables & Degreasers',
     recentOrder: 'Fire Extinguisher Hydrostatic Recertification (In Progress)',
-    photo: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=150&auto=format&fit=crop&q=80',
+    photo: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=150&auto=format&fit=project&q=80',
   },
   {
     id: 'f3',
@@ -72,12 +72,12 @@ export const mockFarmers: Farmer[] = [
     latitude: 10.8170,
     longitude: 77.0140,
     farmArea: '85,000 Sq. Ft',
-    cropType: 'Integrated Facility Management',
-    customerType: 'crop',
-    cropDetails: 'Escalators, Elevators, Central Cooling, Security Access Control',
-    fertilizerDetails: 'Housekeeping Chemicals & Restroom Sanitation Supplies',
+    projectType: 'Integrated Facility Management',
+    customerType: 'project',
+    projectDetails: 'Escalators, Elevators, Central Cooling, Security Access Control',
+    serviceDetails: 'Housekeeping Chemicals & Restroom Sanitation Supplies',
     recentOrder: 'Monthly Elevator Safety Inspection (Passed)',
-    photo: 'https://images.unsplash.com/photo-1519643381401-22c77e60520e?w=150&auto=format&fit=crop&q=80',
+    photo: 'https://images.unsplash.com/photo-1519643381401-22c77e60520e?w=150&auto=format&fit=project&q=80',
   },
   {
     id: 'f4',
@@ -87,12 +87,12 @@ export const mockFarmers: Farmer[] = [
     latitude: 11.0260,
     longitude: 77.1260,
     farmArea: '60,000 Sq. Ft',
-    cropType: 'BMS & Energy Management',
+    projectType: 'BMS & Energy Management',
     customerType: 'both',
-    cropDetails: 'Building Management System (BMS) & UPS Power Backup 500kVA',
-    fertilizerDetails: 'Battery Bank Testing & Clean Agent Fire Suppression',
+    projectDetails: 'Building Management System (BMS) & UPS Power Backup 500kVA',
+    serviceDetails: 'Battery Bank Testing & Clean Agent Fire Suppression',
     recentOrder: 'UPS Battery Bank Impedance Testing (Completed)',
-    photo: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=150&auto=format&fit=crop&q=80',
+    photo: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=150&auto=format&fit=project&q=80',
   },
   {
     id: 'f5',
@@ -102,12 +102,12 @@ export const mockFarmers: Farmer[] = [
     latitude: 10.5840,
     longitude: 77.2480,
     farmArea: '90,000 Sq. Ft',
-    cropType: 'Plumbing, Water Treatment & Landscaping',
-    customerType: 'fertilizer',
-    cropDetails: 'Sewage Treatment Plant (STP) & RO Water Purification Grid',
-    fertilizerDetails: 'STP Bio-Cultures & Water Softening Salt Pellets',
+    projectType: 'Plumbing, Water Treatment & Landscaping',
+    customerType: 'service',
+    projectDetails: 'Sewage Treatment Plant (STP) & RO Water Purification Grid',
+    serviceDetails: 'STP Bio-Cultures & Water Softening Salt Pellets',
     recentOrder: 'STP Water Quality Testing & Chlorine Dosing (Delivered)',
-    photo: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=150&auto=format&fit=crop&q=80',
+    photo: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=150&auto=format&fit=project&q=80',
   },
   {
     id: 'f6',
@@ -117,19 +117,19 @@ export const mockFarmers: Farmer[] = [
     latitude: 10.7870,
     longitude: 79.1378,
     farmArea: '35,000 Sq. Ft',
-    cropType: 'Cleanroom HVAC & Bio-Hazard Waste Management',
+    projectType: 'Cleanroom HVAC & Bio-Hazard Waste Management',
     customerType: 'both',
-    cropDetails: 'HEPA Positive Pressure Filtration & Medical Gas Pipeline',
-    fertilizerDetails: 'Hospital Grade Disinfectants & Autoclave Consumables',
+    projectDetails: 'HEPA Positive Pressure Filtration & Medical Gas Pipeline',
+    serviceDetails: 'Hospital Grade Disinfectants & Autoclave Consumables',
     recentOrder: 'HEPA Filter DOP Leak Testing (Certified)',
-    photo: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=150&auto=format&fit=crop&q=80',
+    photo: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=150&auto=format&fit=project&q=80',
   }
 ];
 
 export const mockVisits: Visit[] = [
   {
     id: 'v1',
-    farmerId: 'f1',
+    site_contactId: 'f1',
     date: 'Aug 12, 2025',
     time: '10:30 AM',
     status: 'pending',
@@ -139,7 +139,7 @@ export const mockVisits: Visit[] = [
   },
   {
     id: 'v2',
-    farmerId: 'f2',
+    site_contactId: 'f2',
     date: 'Aug 12, 2025',
     time: '01:00 PM',
     status: 'pending',
@@ -149,7 +149,7 @@ export const mockVisits: Visit[] = [
   },
   {
     id: 'v3',
-    farmerId: 'f3',
+    site_contactId: 'f3',
     date: 'Aug 12, 2025',
     time: '03:30 PM',
     status: 'upcoming',
@@ -159,7 +159,7 @@ export const mockVisits: Visit[] = [
   },
   {
     id: 'v4',
-    farmerId: 'f4',
+    site_contactId: 'f4',
     date: 'Aug 05, 2025',
     time: '11:00 AM',
     status: 'completed',
@@ -167,7 +167,7 @@ export const mockVisits: Visit[] = [
     previousVisitDate: 'Jul 20, 2025',
     remarks: 'UPS load bank test and main electrical breaker thermal scan.',
     report: {
-      cropCondition: 'Optimal / Green',
+      projectCondition: 'Optimal / Green',
       notes: 'Main distribution breaker thermography normal. Temperatures within 38°C SLA limits.',
       photos: ['https://example.com/photo1.jpg'],
       recommendations: 'Replace secondary air intake filters on Floor 2 next week.'
@@ -175,7 +175,7 @@ export const mockVisits: Visit[] = [
   }
 ];
 
-export const getVisitWithFarmer = (visitId: string) => {
+export const getVisitWithSiteContact = (visitId: string) => {
   const cleanId = String(visitId || "");
   const visit =
     mockVisits.find(
@@ -185,17 +185,17 @@ export const getVisitWithFarmer = (visitId: string) => {
         v.id.replace("v", "") === cleanId
     ) || mockVisits[0];
 
-  const farmer =
-    mockFarmers.find((f) => f.id === visit?.farmerId) || mockFarmers[0];
+  const site_contact =
+    mockSiteContacts.find((f) => f.id === visit?.site_contactId) || mockSiteContacts[0];
 
-  return { ...visit, farmer };
+  return { ...visit, site_contact };
 };
 
 export const getTodayVisits = () => {
   const today = 'Aug 12, 2025';
   return mockVisits
     .filter(v => v.date === today)
-    .map(v => ({ ...v, farmer: mockFarmers.find(f => f.id === v.farmerId) }));
+    .map(v => ({ ...v, site_contact: mockSiteContacts.find(f => f.id === v.site_contactId) }));
 };
 
 export const dashboardStats = {

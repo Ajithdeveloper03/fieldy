@@ -27,38 +27,38 @@ export default function EmployeeVisitHistoryScreen() {
     {
       id: "8842",
       date: "Today, 11:30 AM",
-      farmer: "Apex Cyber Tower",
-      crop: "AHU & Chiller System Audit",
+      site_contact: "Apex Cyber Tower",
+      project: "AHU & Chiller System Audit",
       status: "Report Submitted",
       location: "Tidel Park Road, Block B",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=project&q=80",
     },
     {
       id: "8841",
       date: "Yesterday, 09:15 AM",
-      farmer: "Metro Logistics Hub",
-      crop: "Dock Leveler & MEP Check",
+      site_contact: "Metro Logistics Hub",
+      project: "Dock Leveler & MEP Check",
       status: "Report Submitted",
       location: "Outer Ring Road, Zone 3",
-      image: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&auto=format&fit=crop&q=80",
+      image: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&auto=format&fit=project&q=80",
     },
     {
       id: "8840",
       date: "24 Jan 2026, 04:00 PM",
-      farmer: "Grand Horizon Corporate Suites",
-      crop: "Fire Alarm & Sprinkler Audit",
+      site_contact: "Grand Horizon Corporate Suites",
+      project: "Fire Alarm & Sprinkler Audit",
       status: "Flagged Issue",
       location: "Central Business District",
-      image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80",
+      image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=project&q=80",
     },
     {
       id: "8839",
       date: "22 Jan 2026, 10:30 AM",
-      farmer: "Omni Industrial Park",
-      crop: "Solar Inverter Performance",
+      site_contact: "Omni Industrial Park",
+      project: "Solar Inverter Performance",
       status: "Report Submitted",
       location: "SIPCOT Phase II",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
+      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=project&q=80",
     },
   ];
 
@@ -118,13 +118,13 @@ export default function EmployeeVisitHistoryScreen() {
                   </View>
                 </View>
 
-                {/* Farmer Info */}
+                {/* SiteContact Info */}
                 <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
                   <View style={{ width: 56, height: 56, borderRadius: 28, overflow: "hidden", backgroundColor: "#e2e8f0", marginRight: 16 }}>
                     <Image source={{ uri: visit.image }} style={{ width: "100%", height: "100%" }} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 2 }}>{visit.farmer}</Text>
+                    <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 2 }}>{visit.site_contact}</Text>
                     <View style={{ flexDirection: "row", alignItems: "center" }}>
                       <MapPin size={12} color="#94a3b8" />
                       <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 4 }}>{visit.location}</Text>

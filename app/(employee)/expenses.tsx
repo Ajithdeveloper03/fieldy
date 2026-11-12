@@ -51,7 +51,7 @@ export default function ExpensesScreen() {
       date: "Yesterday",
       status: "Pending",
       statusColor: "#f59e0b",
-      note: "Lunch during Pollachi farmer registrations",
+      note: "Lunch during Pollachi site_contact registrations",
     },
     {
       id: "EXP-103",
@@ -60,7 +60,7 @@ export default function ExpensesScreen() {
       date: "12 Oct 2026",
       status: "Reimbursed",
       statusColor: "#3b82f6",
-      note: "Soil moisture meter battery replacement",
+      note: "Site inspection equipment battery replacement",
     },
   ]);
 

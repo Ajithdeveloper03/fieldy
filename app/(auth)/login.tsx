@@ -50,25 +50,6 @@ export default function LoginScreen() {
     setLoading(true);
 
     try {
-      // DUMMY LOGIN BYPASS
-      if (
-        mobile === "8428060946" ||
-        password === "123456" ||
-        password === "Employee@1234"
-      ) {
-        await AsyncStorage.setItem("token", "dummy-token-123");
-        await AsyncStorage.setItem("userName", "Dummy User");
-        await AsyncStorage.setItem("userRole", role);
-        await AsyncStorage.setItem("userPhone", mobile);
-
-        if (role === "farmer") {
-          router.replace("/(farmer)/dashboard");
-        } else {
-          router.replace("/(employee)/attendance/clock-in");
-        }
-        return;
-      }
-
       const res = await api.post("/auth/login", { phone: mobile, password });
       if (res.status === "success" && res.token) {
         await AsyncStorage.setItem("token", res.token);
@@ -76,8 +57,8 @@ export default function LoginScreen() {
         await AsyncStorage.setItem("userRole", res.user?.role || role);
         await AsyncStorage.setItem("userPhone", res.user?.phone || mobile);
 
-        if (res.user?.role === "farmer" || role === "farmer") {
-          router.replace("/(farmer)/dashboard");
+        if (res.user?.role === "site_contact" || role === "site_contact") {
+          router.replace("/(site-contact)/dashboard");
         } else {
           router.replace("/(employee)/attendance/clock-in");
         }
@@ -100,7 +81,7 @@ export default function LoginScreen() {
       />
       <LinearGradient
         colors={
-          role === "farmer"
+          role === "site_contact"
             ? [
                 "rgba(255,255,255,0.7)",
                 "rgba(16, 185, 129, 0.4)",
@@ -188,7 +169,7 @@ export default function LoginScreen() {
                 }}
               >
                 Sign in to your{" "}
-                {role === "farmer" ? "Facility Client" : "Facility Officer"}{" "}
+                {role === "site_contact" ? "Facility Client" : "Facility Officer"}{" "}
                 account
               </Text>
             </View>

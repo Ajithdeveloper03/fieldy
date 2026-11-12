@@ -742,7 +742,7 @@ export default function EmployeePerformanceScreen() {
           }}
         >
           <TouchableOpacity
-            onPress={() => router.push("/(employee)/register-farmer/step1")}
+            onPress={() => router.push("/(employee)/register-site/step1")}
             style={{
               width: 42,
               height: 42,

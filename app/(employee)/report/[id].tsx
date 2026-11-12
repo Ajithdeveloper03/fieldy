@@ -49,11 +49,11 @@ export default function EmployeeReportDetailScreen() {
             
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
               <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#e2e8f0", overflow: "hidden", marginRight: 16 }}>
-                <Image source={{ uri: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" }} style={{ width: "100%", height: "100%" }} />
+                <Image source={{ uri: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=project&q=80" }} style={{ width: "100%", height: "100%" }} />
               </View>
               <View>
                 <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>Ramesh Kumar</Text>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Farmer ID: FMR-201</Text>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>SiteContact ID: SITE-201</Text>
               </View>
               <View style={{ flex: 1, alignItems: "flex-end" }}>
                 <View style={{ backgroundColor: "#dcfce7", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}>
@@ -88,7 +88,7 @@ export default function EmployeeReportDetailScreen() {
               <Text style={{ color: "#ef4444", fontFamily: "Brandon-Bold", fontSize: 16, marginLeft: 8 }}>Observed Issues</Text>
             </View>
             <Text style={{ color: "#334155", fontFamily: "Brandon-Medium", fontSize: 15, lineHeight: 24 }}>
-              Found early signs of leaf spot disease in the southern sector. The humidity levels have been high (78%) which is contributing to the fungal spread. The soil moisture is optimal at 70%, so irrigation should be paused.
+              Found an unguarded floor opening in the southern sector. Install a compliant barrier immediately and record a follow-up safety inspection.
             </Text>
           </View>
 
@@ -99,7 +99,7 @@ export default function EmployeeReportDetailScreen() {
               <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 16, marginLeft: 8 }}>Agronomy Recommendations</Text>
             </View>
             <Text style={{ color: "#334155", fontFamily: "Brandon-Medium", fontSize: 15, lineHeight: 24, marginBottom: 16 }}>
-              1. Pause all drip irrigation for the next 48 hours.{"\n"}
+              1. Barricade the opening and notify the site supervisor immediately.{"\n"}
               2. Apply a 1% Bordeaux mixture spray to the affected leaves immediately.{"\n"}
               3. Proceed with the scheduled Nitrogen top-dressing using organic neem-cake mix next week.
             </Text>
