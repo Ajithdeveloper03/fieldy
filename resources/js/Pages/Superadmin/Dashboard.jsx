@@ -1,6 +1,7 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import SuperadminLayout from './SuperadminLayout';
+import { getIndustryById } from '../../data/industriesConfig';
 import { 
     Building2, Users2, MapPin, Activity, 
     ArrowUpRight, TrendingUp, ShieldCheck, 
@@ -181,7 +182,7 @@ export default function SuperadminDashboard({ stats, companies = [], planBreakdo
                                                     </div>
                                                     <div>
                                                         <p className="font-bold text-xs text-hp-dark leading-snug">{comp.name}</p>
-                                                        <p className="text-[11px] text-hp-muted">{comp.industry || 'Field Ops'}</p>
+                                                        <p className="text-[11px] text-hp-muted">{getIndustryById(comp.industry).shortName}</p>
                                                     </div>
                                                 </div>
                                             </td>

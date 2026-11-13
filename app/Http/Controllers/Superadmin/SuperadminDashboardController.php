@@ -9,6 +9,7 @@ use App\Models\FarmerVisit;
 use App\Models\Task;
 use App\Models\TrackingSession;
 use App\Models\User;
+use App\Services\IndustryService;
 use Carbon\Carbon;
 use Inertia\Inertia;
 
@@ -47,7 +48,7 @@ class SuperadminDashboardController extends Controller
                     'name' => $comp->name,
                     'slug' => $comp->slug,
                     'code' => $comp->code,
-                    'industry' => $comp->industry,
+                    'industry' => IndustryService::normalize($comp->industry),
                     'plan' => $comp->plan,
                     'status' => $comp->status,
                     'max_employees' => $comp->max_employees,

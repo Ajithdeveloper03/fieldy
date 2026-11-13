@@ -23,6 +23,11 @@ class IndustryCatalog
         'maintenance', 'solar', 'pest_control', 'logistics',
     ];
 
+    public const CLIENT_INDUSTRIES = [
+        'real_estate', 'facility_fmcg', 'construction', 'security',
+        'cleaning', 'maintenance', 'solar', 'pest_control',
+    ];
+
     private const FIRST = ['Karthik', 'Priya', 'Arun', 'Divya', 'Senthil', 'Kavitha', 'Ramesh', 'Lakshmi', 'Vignesh', 'Meena', 'Suresh', 'Anitha', 'Manoj', 'Deepa', 'Prakash', 'Revathi'];
     private const LAST = ['Kumar', 'Raja', 'Murugan', 'Subramanian', 'Natarajan', 'Krishnan', 'Pandian', 'Selvam', 'Rajan', 'Ganesh', 'Velu', 'Mani'];
 
@@ -621,4 +626,3 @@ class IndustryCatalog
         return $out;
     }
 }
-

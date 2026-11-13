@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Superadmin;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\User;
+use App\Services\Industry\IndustryCatalog;
+use App\Services\IndustryService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class CompanyManagementController extends Controller
@@ -24,7 +28,7 @@ class CompanyManagementController extends Controller
                     'name' => $comp->name,
                     'slug' => $comp->slug,
                     'code' => $comp->code,
-                    'industry' => $comp->industry,
+                    'industry' => IndustryService::normalize($comp->industry),
                     'email' => $comp->email,
                     'phone' => $comp->phone,
                     'address' => $comp->address,
@@ -52,7 +56,7 @@ class CompanyManagementController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'nullable|string|max:50|unique:companies,code',
-            'industry' => 'nullable|string|max:255',
+            'industry' => ['required', 'string', Rule::in(IndustryCatalog::CLIENT_INDUSTRIES)],
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:500',
@@ -74,30 +78,33 @@ class CompanyManagementController extends Controller
             $slug = $originalSlug . '-' . $counter++;
         }
 
-        $company = Company::create([
-            'name' => $validated['name'],
-            'slug' => $slug,
-            'code' => $validated['code'] ?? strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $validated['name']), 0, 6)),
-            'industry' => $validated['industry'] ?? 'Field Services & Sales',
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
-            'address' => $validated['address'] ?? null,
-            'plan' => $validated['plan'],
-            'status' => 'active',
-            'max_employees' => $validated['max_employees'],
-            'subscription_expires_at' => $validated['subscription_expires_at'] ?? now()->addYear(),
-        ]);
+        $company = DB::transaction(function () use ($validated, $slug) {
+            $company = Company::create([
+                'name' => $validated['name'],
+                'slug' => $slug,
+                'code' => $validated['code'] ?? strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $validated['name']), 0, 6)),
+                'industry' => $validated['industry'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'plan' => $validated['plan'],
+                'status' => 'active',
+                'max_employees' => $validated['max_employees'],
+                'subscription_expires_at' => $validated['subscription_expires_at'] ?? now()->addYear(),
+            ]);
 
-        // Create the company's designated Client Admin user
-        User::create([
-            'company_id' => $company->id,
-            'name' => $validated['admin_name'],
-            'email' => $validated['admin_email'],
-            'phone' => $validated['admin_phone'],
-            'password' => Hash::make($validated['admin_password']),
-            'role' => 'admin',
-            'status' => 'active',
-        ]);
+            User::create([
+                'company_id' => $company->id,
+                'name' => $validated['admin_name'],
+                'email' => $validated['admin_email'],
+                'phone' => $validated['admin_phone'],
+                'password' => Hash::make($validated['admin_password']),
+                'role' => 'admin',
+                'status' => 'active',
+            ]);
+
+            return $company;
+        });
 
         return redirect()->back()->with('success', "Company '{$company->name}' and Client Admin created successfully!");
     }
@@ -242,7 +249,7 @@ class CompanyManagementController extends Controller
                 'name' => $company->name,
                 'slug' => $company->slug,
                 'code' => $company->code,
-                'industry' => $company->industry,
+                'industry' => IndustryService::normalize($company->industry),
                 'email' => $company->email,
                 'phone' => $company->phone,
                 'address' => $company->address,

@@ -7,7 +7,6 @@ use App\Models\FarmerVisit;
 use App\Models\User;
 use App\Services\Industry\IndustryCatalog;
 use App\Services\Industry\IndustryContext;
-use App\Services\IndustryService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -20,7 +19,7 @@ class VisitController extends Controller
         $days = $request->query('days', '30');
         $employeeId = $request->query('employee_id', '');
         $companyId = auth()->user()?->company_id;
-        $industryKey = $this->industryKey($request);
+        $industryKey = IndustryContext::current();
 
         $query = FarmerVisit::with(['employee:id,name', 'farmer:id,name'])
             ->when($companyId, fn ($q, $cid) => $q->whereHas('employee', fn ($e) => $e->where('company_id', $cid)))
@@ -112,7 +111,7 @@ class VisitController extends Controller
 
     public function show(Request $request, $id)
     {
-        $industryKey = $this->industryKey($request);
+        $industryKey = IndustryContext::current();
 
         $catalogVisit = IndustryCatalog::visit($industryKey, $id);
         if ($catalogVisit) {
@@ -155,18 +154,5 @@ class VisitController extends Controller
                 'media' => [],
             ],
         ]);
-    }
-
-    private function industryKey(Request $request): string
-    {
-        if ($request->filled('industry')) {
-            return IndustryContext::current();
-        }
-
-        $companyIndustry = auth()->user()?->company?->industry;
-
-        return $companyIndustry
-            ? IndustryService::normalize($companyIndustry)
-            : IndustryContext::current();
     }
 }

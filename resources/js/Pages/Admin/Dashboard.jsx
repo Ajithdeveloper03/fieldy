@@ -5,7 +5,7 @@ import { router, usePage } from '@inertiajs/react';
 import {
     MapPin, FileCheck2, CheckCircle2, Maximize, Minimize, Briefcase, ArrowRight, ArrowUp,
     FileText, AlertCircle, Building2, Sparkles, ClipboardList, UserPlus, ShieldAlert,
-    Wallet, ChevronRight, Activity, Search, Filter, Clock, TrendingUp, Lightbulb, X, Layers
+    Wallet, ChevronRight, Activity, Search, Filter, Clock, TrendingUp, Lightbulb, X
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
@@ -271,6 +271,28 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                 </div>
             </section>
 
+            {/* ══════════ INDUSTRY-SPECIFIC OPERATIONS SNAPSHOT ══════════ */}
+            <section className="hp-animate-in mb-8">
+                <div className="mb-3">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-hp-primary">{currentIndustry.badge}</p>
+                    <h2 className="hp-section-title mt-1">{currentIndustry.shortName} Operations</h2>
+                    <p className="text-xs text-hp-muted mt-1">{currentIndustry.tagline}</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    {currentIndustry.kpis.map((kpi) => (
+                        <article key={kpi.label} className="hp-card p-4">
+                            <div className="flex items-start justify-between gap-3">
+                                <span className="hp-icon-tile"><kpi.icon className="w-5 h-5" /></span>
+                                <span className="hp-chip hp-chip-success">{kpi.trend}</span>
+                            </div>
+                            <p className="text-xs font-semibold text-hp-muted mt-4">{t(kpi.label)}</p>
+                            <p className="text-xl font-bold text-hp-dark mt-1">{t(kpi.value)}</p>
+                            <p className="text-[11px] text-hp-muted mt-1">{t(kpi.desc)}</p>
+                        </article>
+                    ))}
+                </div>
+            </section>
+
             {/* ══════════ PROMO / TIP BANNER ══════════ */}
             {showTip && (
                 <div className="hp-animate-in relative overflow-hidden rounded-xl mb-6 bg-hp-dark text-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -326,7 +348,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                 {/* To-dos */}
                 <section>
                     <div className="flex items-center justify-between mb-3">
-                        <h2 className="hp-section-title">{t('To-dos', 'To-dos')}</h2>
+                        <h2 className="hp-section-title">{t('Your Tasks', 'Your Tasks')}</h2>
                         <span className="hp-chip hp-chip-primary">{todos.length}</span>
                     </div>
                     <div className="hp-card overflow-hidden">

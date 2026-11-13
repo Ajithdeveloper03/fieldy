@@ -15,14 +15,16 @@ class EnsureSuperAdminRole
      */
     public function handle(Request $request, Closure $next): Response
     {
+        $loginUrl = $request->is('fieldy/*') ? '/fieldy/admin/login' : route('login');
+
         if (! Auth::check()) {
-            return redirect()->route('superadmin.login')->with('error', 'Please log in to access the Superadmin panel.');
+            return redirect($loginUrl)->with('error', 'Please log in to access the Superadmin panel.');
         }
 
         if (Auth::user()->role !== 'superadmin') {
             Auth::logout();
 
-            return redirect()->route('superadmin.login')->with('error', 'Access denied. Superadmin privileges required.');
+            return redirect($loginUrl)->with('error', 'Access denied. Superadmin privileges required.');
         }
 
         return $next($request);

@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\Schema;
  * Resolves and persists the active service vertical ("industry") for the admin panel,
  * and scopes database queries so that every page only shows that vertical's records.
  *
- * Resolution order: ?industry= query param (persisted to session) → session → company default → real_estate.
+ * Tenant users always use their company's saved industry. Platform users can switch via query
+ * parameter or session; users without a company fall back to real_estate.
  */
 class IndustryContext
 {
@@ -32,21 +33,28 @@ class IndustryContext
     public static function current(): string
     {
         $request = request();
+        $user = auth()->user();
 
-        if ($request && $request->filled('industry')) {
-            $key = IndustryService::normalize($request->query('industry', $request->input('industry')));
-            if ($request->hasSession()) {
-                $request->session()->put(self::SESSION_KEY, $key);
+        // The platform owner can switch between service verticals from the admin UI.
+        // Honor that explicit choice before a linked company setting; tenant users do
+        // not get this override and always stay on their company's configured service.
+        if ($user?->role === 'superadmin') {
+            if ($request && $request->filled('industry')) {
+                $key = IndustryService::normalize($request->query('industry', $request->input('industry')));
+                if ($request->hasSession()) {
+                    $request->session()->put(self::SESSION_KEY, $key);
+                }
+
+                return $key;
             }
 
-            return $key;
+            if ($request && $request->hasSession() && $request->session()->has(self::SESSION_KEY)) {
+                return IndustryService::normalize($request->session()->get(self::SESSION_KEY));
+            }
         }
 
-        if ($request && $request->hasSession() && $request->session()->has(self::SESSION_KEY)) {
-            return IndustryService::normalize($request->session()->get(self::SESSION_KEY));
-        }
+        $companyId = $user?->company_id;
 
-        $companyId = auth()->user()?->company_id;
         if ($companyId) {
             $industry = Company::whereKey($companyId)->value('industry');
             if ($industry) {

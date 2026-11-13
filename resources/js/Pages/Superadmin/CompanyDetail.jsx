@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import SuperadminLayout from './SuperadminLayout';
+import { getIndustryById } from '../../data/industriesConfig';
 import { 
     Building2, Users, MapPin, Calendar, 
     ClipboardList, Wallet, ArrowLeft, ExternalLink, 
@@ -64,7 +65,7 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                                 </span>
                             </div>
                             <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--color-hp-gray-600)] mt-1.5">
-                                <span>{company.industry || 'Field Operations'}</span>
+                                <span>{getIndustryById(company.industry).name}</span>
                                 <span>•</span>
                                 <span>{company.email}</span>
                                 {company.phone && (

@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Users, FileCheck2, ShieldAlert,
     Settings, MapPin, Search, Bell, PlusCircle, Globe, Briefcase, Building2,
     ChevronDown, ChevronRight, Wallet, ClipboardList, Menu, X, Star, Sparkles,
-    PanelLeftClose, PanelLeftOpen, LogOut, HelpCircle, User, Layers, ArrowLeft, CheckCircle2
+    PanelLeftClose, PanelLeftOpen, LogOut, HelpCircle, User, Layers
 } from 'lucide-react';
 import { useAlert } from '../../Components/AlertSystem';
 import { useTranslation } from 'react-i18next';
@@ -206,7 +206,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                     <button
                         type="button"
                         onClick={(e) => { e.preventDefault(); toggleFavorite(href); }}
-                        title={isFav ? t('Remove from favorites', 'Remove from favorites') : t('Add to favorites', 'Add to favorites')}
+                        title={isFav ? t('Remove from favorites') : t('Add to favorites')}
                         className={`absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center transition-all opacity-0 group-hover/nav:opacity-100 hover:bg-white ${isFav ? 'text-hp-primary' : 'text-hp-muted hover:text-hp-dark'}`}
                     >
                         <Star className="w-4 h-4" fill={isFav ? 'currentColor' : 'none'} />
@@ -272,10 +272,10 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                         type="button"
                         onClick={() => setIsSidebarCollapsed(!collapsed)}
                         className={`hp-nav-item w-full ${collapsed ? 'justify-center !px-0' : ''}`}
-                        title={collapsed ? t('Expand menu', 'Expand menu') : undefined}
+                        title={collapsed ? t('Expand menu') : undefined}
                     >
                         {collapsed ? <PanelLeftOpen className="w-5 h-5 text-hp-muted" /> : <PanelLeftClose className="w-5 h-5 text-hp-muted" />}
-                        {!collapsed && <span>{t('Collapse menu', 'Collapse menu')}</span>}
+                        {!collapsed && <span>{t('Collapse menu')}</span>}
                     </button>
                 </div>
             </div>
@@ -350,7 +350,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                 <div className="flex items-center gap-1.5 lg:pr-6 flex-shrink-0">
                     <button type="button" onClick={openAssistant} className="hidden xl:inline-flex hp-btn hp-btn-sm hp-btn-secondary !rounded-full !h-9 !px-3.5 mr-0.5">
                         <Sparkles className="w-4 h-4 text-hp-primary" />
-                        <span>{t('Ask AI', 'Ask AI')}</span>
+                        <span>{t('Ask AI')}</span>
                     </button>
                     <button type="button" onClick={() => searchInputRef.current?.focus()} className="hp-icon-btn md:hidden" aria-label="Search">
                         <Search className="w-5 h-5" />
@@ -394,16 +394,16 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                                 </div>
                                 <div className="p-1.5">
                                     <div className="px-3 py-2 text-xs text-hp-muted">
-                                        {t('Tenant Enterprise', 'Tenant Enterprise')}: <span className="font-bold text-hp-dark">{companyName}</span>
+                                        {t('Tenant Enterprise')}: <span className="font-bold text-hp-dark">{companyName}</span>
                                     </div>
                                     {isSuperadmin && (
                                         <Link href="/superadmin/dashboard" className="hp-nav-item font-semibold text-hp-primary">
-                                            <Layers className="w-[18px] h-[18px] text-hp-primary" /> {t('Superadmin Portal', 'Superadmin Portal')}
+                                            <Layers className="w-[18px] h-[18px] text-hp-primary" /> {t('Superadmin Portal')}
                                         </Link>
                                     )}
                                     {isSuperadmin && (
                                         <div className="px-3 pt-2 pb-1">
-                                            <label className="block text-[11px] font-bold text-hp-muted mb-1">{t('Switch service', 'Switch service')}</label>
+                                            <label className="block text-[11px] font-bold text-hp-muted mb-1">{t('Switch service')}</label>
                                             <select
                                                 value={currentIndustry.id}
                                                 onChange={(e) => router.visit(`${cleanPath}?industry=${e.target.value}`)}
@@ -413,16 +413,16 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                                             </select>
                                         </div>
                                     )}
-                                    <Link href="/admin/settings" className="hp-nav-item"><User className="w-[18px] h-[18px] text-hp-muted" /> {t('Account settings', 'Account settings')}</Link>
+                                    <Link href="/admin/settings" className="hp-nav-item"><User className="w-[18px] h-[18px] text-hp-muted" /> {t('Account settings')}</Link>
                                     <button type="button" onClick={toggleLanguage} className="hp-nav-item w-full">
-                                        <Globe className="w-[18px] h-[18px] text-hp-muted" /> {t('Language', 'Language')}
+                                        <Globe className="w-[18px] h-[18px] text-hp-muted" /> {t('Language')}
                                         <span className="ml-auto hp-chip hp-chip-gray">{i18n.language === 'ta' ? 'தமிழ்' : 'English'}</span>
                                     </button>
-                                    <button type="button" onClick={openAssistant} className="hp-nav-item w-full"><HelpCircle className="w-[18px] h-[18px] text-hp-muted" /> {t('Help & support', 'Help & support')}</button>
+                                    <button type="button" onClick={openAssistant} className="hp-nav-item w-full"><HelpCircle className="w-[18px] h-[18px] text-hp-muted" /> {t('Help & support')}</button>
                                 </div>
                                 <div className="p-1.5 border-t border-hp-border">
                                     <button type="button" onClick={logout} className="hp-nav-item w-full hover:!text-hp-danger hover:!bg-hp-danger-light">
-                                        <LogOut className="w-[18px] h-[18px]" /> {t('Log out', 'Log out')}
+                                        <LogOut className="w-[18px] h-[18px]" /> {t('Log out')}
                                     </button>
                                 </div>
                             </div>

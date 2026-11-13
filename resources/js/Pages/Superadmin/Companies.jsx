@@ -1,22 +1,29 @@
 import React, { useState } from 'react';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import SuperadminLayout from './SuperadminLayout';
+import { INDUSTRIES, getIndustryById } from '../../data/industriesConfig';
 import { 
-    Building2, Plus, Search, Shield, 
+    Building2, Plus, Shield,
     Users, Phone, Mail, MapPin, 
     CheckCircle2, XCircle, MoreVertical, 
     X, Edit3, Power, AlertCircle, ShieldAlert,
     Home, ChevronRight
 } from 'lucide-react';
 
+const CLIENT_INDUSTRY_IDS = [
+    'real_estate', 'facility_fmcg', 'construction', 'security',
+    'cleaning', 'maintenance', 'solar', 'pest_control',
+];
+const CLIENT_INDUSTRIES = INDUSTRIES.filter(({ id }) => CLIENT_INDUSTRY_IDS.includes(id));
+
 export default function Companies({ companies = [] }) {
-    const [search, setSearch] = useState('');
+    const [industryFilter, setIndustryFilter] = useState('all');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         code: '',
-        industry: 'Agriculture & Field Operations',
+        industry: 'real_estate',
         email: '',
         phone: '',
         address: '',
@@ -30,11 +37,9 @@ export default function Companies({ companies = [] }) {
         admin_password: '',
     });
 
-    const filteredCompanies = companies.filter((c) => 
-        (c.name || '').toLowerCase().includes(search.toLowerCase()) ||
-        (c.email || '').toLowerCase().includes(search.toLowerCase()) ||
-        (c.code && c.code.toLowerCase().includes(search.toLowerCase()))
-    );
+    const filteredCompanies = industryFilter === 'all'
+        ? companies
+        : companies.filter((c) => c.industry === industryFilter);
 
     const handleCreateCompany = (e) => {
         e.preventDefault();
@@ -89,14 +94,18 @@ export default function Companies({ companies = [] }) {
                 {/* Search and Filters Bar */}
                 <div className="hp-card p-3 sm:p-4 flex items-center justify-between gap-4">
                     <div className="relative flex-1 max-w-md">
-                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-hp-gray-500)]" />
-                        <input
-                            type="text"
-                            placeholder="Search company name, code, email..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="hp-input pl-9"
-                        />
+                        <Building2 className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-hp-gray-500)] pointer-events-none" />
+                        <select
+                            value={industryFilter}
+                            onChange={(e) => setIndustryFilter(e.target.value)}
+                            className="hp-input pl-9 appearance-none cursor-pointer"
+                        >
+                            <option value="all">All Company Types</option>
+                            {CLIENT_INDUSTRIES.map((industry) => (
+                                <option key={industry.id} value={industry.id}>{industry.name}</option>
+                            ))}
+                        </select>
+                        <ChevronRight className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-[var(--color-hp-gray-500)] pointer-events-none" />
                     </div>
                     <div className="text-xs text-[var(--color-hp-gray-600)] font-medium">
                         Total: <span className="font-bold text-[var(--color-hp-dark)]">{filteredCompanies.length}</span> Companies
@@ -149,6 +158,13 @@ export default function Companies({ companies = [] }) {
                                             <span className="truncate">{company.address}</span>
                                         </div>
                                     )}
+                                </div>
+
+                                <div className="mt-2.5 flex items-center gap-2 text-xs text-[var(--color-hp-gray-600)]">
+                                    <Building2 className="w-3.5 h-3.5 text-[var(--color-hp-gray-400)] shrink-0" />
+                                    <span className="font-medium text-[var(--color-hp-dark)]">
+                                        {getIndustryById(company.industry).name}
+                                    </span>
                                 </div>
 
                                 {/* Limits & Tier */}
@@ -254,6 +270,24 @@ export default function Companies({ companies = [] }) {
                                             className="hp-input font-mono"
                                         />
                                     </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Company Type *</label>
+                                    <select
+                                        required
+                                        value={data.industry}
+                                        onChange={(e) => setData('industry', e.target.value)}
+                                        className="hp-input"
+                                    >
+                                        {CLIENT_INDUSTRIES.map((industry) => (
+                                            <option key={industry.id} value={industry.id}>{industry.name}</option>
+                                        ))}
+                                    </select>
+                                    {errors.industry && <p className="text-rose-600 text-xs mt-1">{errors.industry}</p>}
+                                    <p className="text-[11px] text-[var(--color-hp-gray-500)] mt-1">
+                                        This selects the industry dashboard and modules for the client admin.
+                                    </p>
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

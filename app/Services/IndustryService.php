@@ -8,6 +8,7 @@ use App\Models\FarmerVisit;
 use App\Models\LocationPoint;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\Industry\IndustryContext;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 
@@ -89,15 +90,24 @@ class IndustryService
             ]);
         }
 
+        $companyUserIds = $companyId
+            ? User::where('company_id', $companyId)->pluck('id')
+            : collect();
+
         // Industry-specific data providers
         $serviceData = self::getServiceDefinitions($industryKey);
 
-        // Merge DB counts when available
-        $tasksCount = Task::whereIn('status', ['pending', 'in_progress'])
-            ->when($industryKey !== 'real_estate', fn($q) => $q->where('industry', $industryKey))
+        // Keep dashboard work-order counts inside both the active vertical and tenant.
+        $tasksQuery = fn () => IndustryContext::scope(Task::query(), $industryKey)
+            ->when($companyId, fn ($query) => $query->where(function ($tenantQuery) use ($companyUserIds) {
+                $tenantQuery->whereIn('assigned_to', $companyUserIds)
+                    ->orWhereIn('created_by', $companyUserIds)
+                    ->orWhereIn('customer_id', $companyUserIds);
+            }));
+
+        $tasksCount = $tasksQuery()->whereIn('status', ['pending', 'in_progress'])
             ->count();
-        $completedTasks = Task::where('status', 'done')
-            ->when($industryKey !== 'real_estate', fn($q) => $q->where('industry', $industryKey))
+        $completedTasks = $tasksQuery()->where('status', 'done')
             ->count();
 
         $stats = [
