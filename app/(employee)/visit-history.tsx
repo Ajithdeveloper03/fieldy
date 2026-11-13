@@ -28,7 +28,7 @@ export default function EmployeeVisitHistoryScreen() {
       id: "8842",
       date: "Today, 11:30 AM",
       site_contact: "Apex Cyber Tower",
-      project: "AHU & Chiller System Audit",
+      project: "Air and cooling system check",
       status: "Report Submitted",
       location: "Tidel Park Road, Block B",
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=project&q=80",
@@ -46,7 +46,7 @@ export default function EmployeeVisitHistoryScreen() {
       id: "8840",
       date: "24 Jan 2026, 04:00 PM",
       site_contact: "Grand Horizon Corporate Suites",
-      project: "Fire Alarm & Sprinkler Audit",
+      project: "Fire alarm and sprinkler check",
       status: "Flagged Issue",
       location: "Central Business District",
       image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=project&q=80",
@@ -81,7 +81,7 @@ export default function EmployeeVisitHistoryScreen() {
           <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 8, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 999 }}>
             <ChevronLeft size={24} color="#ffffff" />
           </TouchableOpacity>
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20 }}>Visit History</Text>
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20 }}>Past visits</Text>
           <TouchableOpacity style={{ padding: 8, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 999 }}>
             <Filter size={20} color="#ffffff" />
           </TouchableOpacity>
@@ -90,7 +90,7 @@ export default function EmployeeVisitHistoryScreen() {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}>
           
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Medium", fontSize: 16 }}>Showing 44 past visits</Text>
+            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Medium", fontSize: 16 }}>44 past visits</Text>
             <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255,255,255,0.2)", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}>
               <Calendar size={14} color="#ffffff" style={{ marginRight: 6 }} />
               <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13 }}>This Month</Text>

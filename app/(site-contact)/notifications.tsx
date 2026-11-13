@@ -48,7 +48,7 @@ export default function SiteContactNotificationsScreen() {
     {
       id: "3",
       type: "system",
-      user: "Agronomy Bot",
+      user: "Service updates",
       avatar: null,
       message: "Your latest site safety inspection is complete. Review the recorded findings.",
       time: "1d",
@@ -94,13 +94,13 @@ export default function SiteContactNotificationsScreen() {
           <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(site-contact)/dashboard")} style={{ padding: 4 }}>
             <ChevronLeft size={28} color="#000000" />
           </TouchableOpacity>
-          <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 20, letterSpacing: 0.5 }}>{t("notifications", "Notifications")}</Text>
+          <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 20, letterSpacing: 0.5 }}>{t("notifications", "Alerts")}</Text>
           <View style={{ width: 36 }} />
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
           
-          <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 16, marginHorizontal: 16, marginTop: 16, marginBottom: 12 }}>{t("new", "New")}</Text>
+          <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 16, marginHorizontal: 16, marginTop: 16, marginBottom: 12 }}>{t("new", "New alerts")}</Text>
 
           {/* NOTIFICATION LIST */}
           <View>
@@ -108,7 +108,7 @@ export default function SiteContactNotificationsScreen() {
               if (index === 2) {
                 return (
                   <View key="divider">
-                    <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 16, marginHorizontal: 16, marginTop: 24, marginBottom: 12 }}>{t("earlier", "Earlier")}</Text>
+                    <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 16, marginHorizontal: 16, marginTop: 24, marginBottom: 12 }}>{t("earlier", "Earlier alerts")}</Text>
                     {renderNotificationItem(notif)}
                   </View>
                 );

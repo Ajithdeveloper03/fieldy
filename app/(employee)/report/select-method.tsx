@@ -42,7 +42,7 @@ export default function SelectReportMethodScreen() {
               style={styles.dottedButton}
             >
               <Camera size={20} color="#ffffff" style={{ marginRight: 12 }} />
-              <Text style={styles.buttonText}>Add Report via Photo</Text>
+              <Text style={styles.buttonText}>Add a photo report</Text>
             </TouchableOpacity>
 
             {/* Dotted Outline Button 2 */}
@@ -51,7 +51,7 @@ export default function SelectReportMethodScreen() {
               style={styles.dottedButton}
             >
               <ImageIcon size={20} color="#ffffff" style={{ marginRight: 12 }} />
-              <Text style={styles.buttonText}>Import Drone Image</Text>
+              <Text style={styles.buttonText}>Add an aerial photo</Text>
             </TouchableOpacity>
 
             {/* Dotted Outline Button 3 */}
@@ -60,7 +60,7 @@ export default function SelectReportMethodScreen() {
               style={styles.dottedButton}
             >
               <FileText size={20} color="#ffffff" style={{ marginRight: 12 }} />
-              <Text style={styles.buttonText}>Manual Text Only</Text>
+              <Text style={styles.buttonText}>Write a report</Text>
             </TouchableOpacity>
 
             {/* Dotted Outline Button 4 */}
@@ -69,7 +69,7 @@ export default function SelectReportMethodScreen() {
               style={styles.dottedButton}
             >
               <History size={20} color="#ffffff" style={{ marginRight: 12 }} />
-              <Text style={styles.buttonText}>From Past Reports</Text>
+              <Text style={styles.buttonText}>Use an old report</Text>
             </TouchableOpacity>
 
           </View>

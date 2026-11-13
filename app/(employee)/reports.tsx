@@ -30,21 +30,21 @@ export default function EmployeeReportsScreen() {
     {
       month: "October",
       count: "23 reports",
-      subtitle: "Active SLA Cycle • HVAC & Agronomy",
+      subtitle: "Current jobs • Building services",
       image: require("../../assets/images/image10.jpg"),
       reportId: "1",
     },
     {
       month: "September",
       count: "18 reports",
-      subtitle: "Completed • 100% Approved",
+      subtitle: "Completed • 100% approved",
       image: require("../../assets/images/image4.jpg"),
       reportId: "3",
     },
     {
       month: "August",
       count: "29 reports",
-      subtitle: "Quarterly Audit Archive",
+      subtitle: "Past site checks",
       image: require("../../assets/images/image14.jpg"),
       reportId: "4",
     },
@@ -105,7 +105,7 @@ export default function EmployeeReportsScreen() {
       />
 
       <SafeAreaView style={{ flex: 1 }}>
-        {/* TOP HEADER (Reference Image 1: "2026 v" on left, Calendar & New Report on right) */}
+        {/* TOP HEADER (Reference Image 1: "2026 v" on left, Calendar & New alerts Report on right) */}
         <View
           style={{
             flexDirection: "row",
@@ -162,7 +162,7 @@ export default function EmployeeReportsScreen() {
                   marginLeft: 4,
                 }}
               >
-                New Report
+                New alerts Report
               </Text>
             </TouchableOpacity>
             <TouchableOpacity

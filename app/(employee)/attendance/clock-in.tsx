@@ -107,7 +107,7 @@ export default function ClockInScreen() {
               fontSize: 18,
             }}
           >
-            Secure Clock In
+            Secure Start work
           </Text>
           <View style={{ width: 44 }} />
         </View>
@@ -245,7 +245,7 @@ export default function ClockInScreen() {
                       marginTop: 4,
                     }}
                   >
-                    Delta Zone A • Verified
+                    Delta Zone A • Checked
                   </Text>
                 )}
               </View>

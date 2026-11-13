@@ -95,7 +95,7 @@ export default function Step1Mobile() {
             />
           </View>
           <Text className="text-xl font-brandon-bold text-slate-900 mt-3 text-center">
-            Project Site & Contact
+            Work site & Contact
           </Text>
           <Text className="text-slate-500 font-brandon text-xs text-center mt-1 px-4">
             Enter the authorized facility manager&apos;s mobile number & service scope

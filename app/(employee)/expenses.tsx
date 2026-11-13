@@ -158,7 +158,7 @@ export default function ExpensesScreen() {
             style={{ flex: 1, paddingVertical: 10, borderRadius: 12, backgroundColor: activeTab === "new" ? "#10b981" : "transparent", alignItems: "center" }}
           >
             <Text style={{ color: activeTab === "new" ? "#ffffff" : "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 13 }}>
-              + Log New Claim
+              + Log New alerts Claim
             </Text>
           </TouchableOpacity>
         </View>

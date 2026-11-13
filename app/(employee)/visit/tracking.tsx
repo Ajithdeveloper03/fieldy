@@ -123,7 +123,7 @@ export default function TrackingScreen() {
           <Navigation size={48} color="#15803d" />
           <View className="absolute w-32 h-32 rounded-full border-2 border-green-500/30 animate-ping" />
         </View>
-        <Text className="text-gray-900 font-brandon-bold text-2xl mb-2">Recording Visit Route</Text>
+        <Text className="text-gray-900 font-brandon-bold text-2xl mb-2">Tracking your trip</Text>
         <Text className="text-gray-500 font-brandon text-center px-10">
           Your location is being recorded in the background. Keep this app running while you complete the visit.
         </Text>
@@ -224,7 +224,7 @@ export default function TrackingScreen() {
               </View>
             </View>
             <Button
-              title="End Trip & View Report"
+              title="End trip and see report"
               onPress={handleAttemptStop}
               className="bg-[#ea580c]"
             />
@@ -284,7 +284,7 @@ export default function TrackingScreen() {
               />
             </View>
             <Button
-              title="Confirm & End Trip"
+              title="End trip"
               onPress={confirmStop}
               loading={submittingStop}
               className="bg-red-500 py-4"

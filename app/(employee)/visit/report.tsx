@@ -118,7 +118,7 @@ export default function SubmitReportScreen() {
             className="border border-gray-200 rounded-xl px-4 py-4 mb-6 flex-row justify-between items-center bg-gray-50 shadow-sm"
           >
             <Text className="text-gray-900 font-brandon-medium text-base">
-              Completed & Verified (Good)
+              Completed & Checked (Good)
             </Text>
             <ChevronDown size={20} color="#6b7280" />
           </TouchableOpacity>
@@ -135,12 +135,12 @@ export default function SubmitReportScreen() {
               onChangeText={setNotes}
             />
           </View>
-          {/* Customer OTP Verification Section */}
+          {/* Customer code Section */}
           <View className="bg-emerald-50 rounded-2xl p-5 mb-6 border border-emerald-100 shadow-sm">
             <View className="flex-row items-center mb-2">
               <Check size={18} color="#059669" className="mr-2" />
               <Text className="text-gray-900 font-brandon-bold text-base">
-                Customer OTP Verification
+                Customer code
               </Text>
             </View>
             <Text className="text-gray-500 font-brandon text-xs mb-3">
@@ -149,7 +149,7 @@ export default function SubmitReportScreen() {
             <View className="border border-emerald-200 rounded-xl px-4 py-3 bg-white flex-row items-center">
               <TextInput
                 className="flex-1 text-gray-900 font-brandon-bold text-lg tracking-widest text-center"
-                placeholder="Enter 4-Digit OTP"
+                placeholder="Enter the 4-digit code"
                 keyboardType="numeric"
                 maxLength={4}
                 defaultValue="4821"
@@ -186,7 +186,7 @@ export default function SubmitReportScreen() {
                 </Text>
                 <TextInput
                   className="flex-1 text-gray-900 font-brandon-bold text-lg"
-                  placeholder="Amount Collected"
+                  placeholder="Amount paid"
                   keyboardType="numeric"
                   value={amountCollected}
                   onChangeText={setAmountCollected}
@@ -235,7 +235,7 @@ export default function SubmitReportScreen() {
           </View>
           <View className="pb-12 pt-4">
             <Button
-              title="Secure Submit Report"
+              title="Send report"
               onPress={handleSubmit}
               loading={loading}
               className="bg-[#15803d] py-4 rounded-xl shadow-md"

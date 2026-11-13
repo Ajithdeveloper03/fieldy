@@ -233,7 +233,7 @@ export default function SiteContactLoginScreen() {
                       fontSize: 18,
                       color: "#ffffff",
                     }}
-                    placeholder="Enter mobile number"
+                    placeholder="Enter your phone number"
                     placeholderTextColor="rgba(255,255,255,0.3)"
                     keyboardType="phone-pad"
                     value={mobile}
@@ -277,7 +277,7 @@ export default function SiteContactLoginScreen() {
                       fontSize: 18,
                       color: "#ffffff",
                     }}
-                    placeholder="Enter password"
+                    placeholder="Enter your password"
                     placeholderTextColor="rgba(255,255,255,0.3)"
                     secureTextEntry={!showPassword}
                     value={password}

@@ -85,8 +85,8 @@ export default function SiteContactProfileScreen() {
               <MapPin size={22} color="#10b981" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Farm & Land Details</Text>
-              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>View acreage, location, GPS</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Farm and land details</Text>
+              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>See size and location</Text>
             </View>
             <ChevronRight size={20} color="#cbd5e1" />
           </TouchableOpacity>
@@ -96,8 +96,8 @@ export default function SiteContactProfileScreen() {
               <Package size={22} color="#3b82f6" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Purchase History</Text>
-              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Track your orders</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Order history</Text>
+              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>See your orders</Text>
             </View>
             <ChevronRight size={20} color="#cbd5e1" />
           </TouchableOpacity>
@@ -107,7 +107,7 @@ export default function SiteContactProfileScreen() {
               <User size={22} color="#ef4444" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>My Field Officer</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>My service worker</Text>
               <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Contact Robert Walker</Text>
             </View>
             <ChevronRight size={20} color="#cbd5e1" />
@@ -118,8 +118,8 @@ export default function SiteContactProfileScreen() {
               <HeartHandshake size={22} color="#f59e0b" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Help & Support</Text>
-              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>FAQs, Chat, Contact</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Help</Text>
+              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Common questions and contact details</Text>
             </View>
             <ChevronRight size={20} color="#cbd5e1" />
           </TouchableOpacity>

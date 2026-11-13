@@ -64,7 +64,7 @@ export default function MenuScreen() {
           <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 8, backgroundColor: "#ffffff", borderRadius: 999, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}>
             <ChevronLeft size={24} color="#0f172a" />
           </TouchableOpacity>
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>Settings & Menu</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>Settings</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -107,7 +107,7 @@ export default function MenuScreen() {
             style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "#fee2e2", paddingVertical: 16, borderRadius: 999, marginTop: 16 }}
           >
             <LogOut size={20} color="#ef4444" style={{ marginRight: 8 }} />
-            <Text style={{ color: "#ef4444", fontFamily: "Brandon-Bold", fontSize: 16 }}>Log Out Securely</Text>
+            <Text style={{ color: "#ef4444", fontFamily: "Brandon-Bold", fontSize: 16 }}>Log out</Text>
           </TouchableOpacity>
 
           <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, textAlign: "center", marginTop: 24 }}>

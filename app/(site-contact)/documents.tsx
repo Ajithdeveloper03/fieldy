@@ -53,7 +53,7 @@ export default function SiteContactDocumentsScreen() {
             <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
               <ShieldCheck size={16} color="#4ade80" style={{ marginRight: 6 }} />
               <Text style={{ color: "rgba(255,255,255,0.8)", fontFamily: "Brandon-Medium", fontSize: 15 }}>
-                256-bit encrypted & Govt. Verified
+                256-bit encrypted & Govt. Checked
               </Text>
             </View>
           </View>
@@ -63,7 +63,7 @@ export default function SiteContactDocumentsScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 150, paddingTop: 24 }}>
         
         {/* PRIMARY DOCUMENTS - CAROUSEL */}
-        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Identity & Land</Text>
+        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>ID and land papers</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -24, paddingHorizontal: 24, paddingBottom: 24 }}>
           
           {/* Aadhar Card */}
@@ -74,7 +74,7 @@ export default function SiteContactDocumentsScreen() {
               </View>
               <View style={{ backgroundColor: "#dcfce7", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, flexDirection: "row", alignItems: "center" }}>
                 <CheckCircle2 size={12} color="#16a34a" style={{ marginRight: 4 }} />
-                <Text style={{ color: "#16a34a", fontFamily: "Brandon-Bold", fontSize: 11 }}>VERIFIED</Text>
+                <Text style={{ color: "#16a34a", fontFamily: "Brandon-Bold", fontSize: 11 }}>Checked</Text>
               </View>
             </View>
             <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 4 }}>Aadhar Card</Text>
@@ -99,11 +99,11 @@ export default function SiteContactDocumentsScreen() {
               </View>
               <View style={{ backgroundColor: "#dcfce7", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, flexDirection: "row", alignItems: "center" }}>
                 <CheckCircle2 size={12} color="#16a34a" style={{ marginRight: 4 }} />
-                <Text style={{ color: "#16a34a", fontFamily: "Brandon-Bold", fontSize: 11 }}>VERIFIED</Text>
+                <Text style={{ color: "#16a34a", fontFamily: "Brandon-Bold", fontSize: 11 }}>Checked</Text>
               </View>
             </View>
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 4 }}>Land Chitta / Patta</Text>
-            <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, marginBottom: 20 }}>Doc No: 4921/2026</Text>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 4 }}>Land paper</Text>
+            <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, marginBottom: 20 }}>Paper number: 4921/2026</Text>
             
             <View style={{ flexDirection: "row", gap: 12 }}>
               <TouchableOpacity style={{ flex: 1, backgroundColor: "#f8fafc", paddingVertical: 10, borderRadius: 12, flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
@@ -119,7 +119,7 @@ export default function SiteContactDocumentsScreen() {
         </ScrollView>
 
         {/* ORGANIC CERTIFICATES - VERTICAL LIST */}
-        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Farm Certifications</Text>
+        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Farm certificates</Text>
         
         <View style={{ gap: 16 }}>
           {/* Cert 1 */}
@@ -128,7 +128,7 @@ export default function SiteContactDocumentsScreen() {
               <ShieldCheck size={28} color="#10b981" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 2 }}>NPOP Organic Certified</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 2 }}>Organic farm certificate</Text>
               <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Valid till: Dec 2027</Text>
             </View>
             <TouchableOpacity style={{ backgroundColor: "#f8fafc", padding: 10, borderRadius: 12 }}>
@@ -142,7 +142,7 @@ export default function SiteContactDocumentsScreen() {
               <FileCheck2 size={28} color="#8b5cf6" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 2 }}>Soil Quality Test Report</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 2 }}>Soil test report</Text>
               <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Tested: Oct 2026</Text>
             </View>
             <TouchableOpacity style={{ backgroundColor: "#f8fafc", padding: 10, borderRadius: 12 }}>

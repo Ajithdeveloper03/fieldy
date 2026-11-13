@@ -66,7 +66,7 @@ export default function RateOfficerScreen() {
               style={{ width: 80, height: 80, borderRadius: 40, marginBottom: 16 }} 
             />
             <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 4 }}>Robert Walker</Text>
-            <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 14, marginBottom: 32 }}>Routine Inspection • Oct 2, 2026</Text>
+            <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 14, marginBottom: 32 }}>Regular check • Oct 2, 2026</Text>
 
             {/* STAR RATING */}
             <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
@@ -86,7 +86,7 @@ export default function RateOfficerScreen() {
           </View>
 
           {/* FEEDBACK NOTES */}
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 16 }}>Additional Notes</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 16 }}>Notes (optional)</Text>
           <View style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 10, elevation: 2, borderWidth: 1, borderColor: "#f1f5f9", marginBottom: 32 }}>
             <TextInput
               style={{ fontFamily: "Brandon-Medium", fontSize: 16, color: "#0f172a", minHeight: 120, textAlignVertical: "top" }}
@@ -99,7 +99,7 @@ export default function RateOfficerScreen() {
           </View>
 
           {/* TAGS */}
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 16 }}>What stood out?</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 16 }}>What did you like?</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, marginBottom: 40 }}>
             {["Punctual", "Very Knowledgeable", "Friendly", "Solved my issue"].map((tag, idx) => (
               <TouchableOpacity key={idx} style={{ backgroundColor: "#f8fafc", paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, borderWidth: 1, borderColor: "#e2e8f0" }}>
@@ -113,7 +113,7 @@ export default function RateOfficerScreen() {
             disabled={rating === 0}
             style={{ backgroundColor: rating === 0 ? "#cbd5e1" : "#10b981", borderRadius: 20, paddingVertical: 18, alignItems: "center", shadowColor: rating === 0 ? "transparent" : "#10b981", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 6 }}
           >
-            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>Submit Rating</Text>
+            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>Send rating</Text>
           </TouchableOpacity>
 
         </ScrollView>

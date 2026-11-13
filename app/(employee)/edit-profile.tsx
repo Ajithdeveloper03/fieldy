@@ -38,7 +38,7 @@ export default function EditProfileScreen() {
             <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/profile")} style={{ padding: 8, backgroundColor: "#ffffff", borderRadius: 999, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}>
               <ChevronLeft size={24} color="#0f172a" />
             </TouchableOpacity>
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>Edit Details</Text>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>Edit details</Text>
             <View style={{ width: 40 }} />
           </View>
 

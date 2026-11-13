@@ -41,7 +41,7 @@ export default function EmployeeSiteContactProfileScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 }}
       >
-        {/* TOP FULL-BLEED ROUNDED PHOTO CARD WITH OVERLAID PILL & VERIFIED TITLE (Reference Image 2 Left Panel) */}
+        {/* TOP FULL-BLEED ROUNDED PHOTO CARD WITH OVERLAID PILL & Checked TITLE (Reference Image 2 Left Panel) */}
         <View style={{ paddingHorizontal: 14, paddingTop: 12 }}>
           <View
             style={{
@@ -122,7 +122,7 @@ export default function EmployeeSiteContactProfileScreen() {
               </View>
             </SafeAreaView>
 
-            {/* Bottom Overlaid Tag Pill + Verified Facility Title (Reference Image 2 Left Panel) */}
+            {/* Bottom Overlaid Tag Pill + Checked Facility Title (Reference Image 2 Left Panel) */}
             <View
               style={{
                 position: "absolute",
@@ -150,7 +150,7 @@ export default function EmployeeSiteContactProfileScreen() {
                     fontSize: 12,
                   }}
                 >
-                  HVAC & MEP • Tier-1 SLA
+                  Building services • High priority
                 </Text>
               </View>
 
@@ -210,10 +210,10 @@ export default function EmployeeSiteContactProfileScreen() {
               marginBottom: 16,
             }}
           >
-            Select Service Inspection Protocol
+            Choose a site check
           </Text>
 
-          {/* Option 1 with Floating Top-Left Badge ("-40%" style -> "SLA PRIORITY") */}
+          {/* Option 1 with Floating Top-Left Badge ("-40%" style -> "HIGH PRIORITY") */}
           <TouchableOpacity
             activeOpacity={0.9}
             onPress={() => setSelectedService("audit")}
@@ -287,7 +287,7 @@ export default function EmployeeSiteContactProfileScreen() {
                     fontSize: 16,
                   }}
                 >
-                  Routine HVAC & MEP Audit
+                  Regular air and water system check
                 </Text>
                 <Text
                   style={{
@@ -296,7 +296,7 @@ export default function EmployeeSiteContactProfileScreen() {
                     fontSize: 12,
                   }}
                 >
-                  Geofence Check-In & OTP Sign-off
+                  Check location and enter code
                 </Text>
               </View>
             </View>
@@ -384,7 +384,7 @@ export default function EmployeeSiteContactProfileScreen() {
                     fontSize: 12,
                   }}
                 >
-                  Complete Chiller & Ducting Diagnostics
+                  Check the cooling system and air ducts
                 </Text>
               </View>
             </View>
@@ -428,7 +428,7 @@ export default function EmployeeSiteContactProfileScreen() {
               }}
             >
               {selectedService === "audit"
-                ? "Start Routine Audit • Check-In"
+                ? "Start site check • Check in"
                 : "Start Full System Overhaul"}
             </Text>
           </TouchableOpacity>
@@ -512,7 +512,7 @@ export default function EmployeeSiteContactProfileScreen() {
                 fontSize: 20,
               }}
             >
-              Visit History
+              Past visits
             </Text>
             <TouchableOpacity onPress={() => router.push("/(employee)/reports")}>
               <Text
@@ -569,7 +569,7 @@ export default function EmployeeSiteContactProfileScreen() {
                       fontSize: 16,
                     }}
                   >
-                    Routine Inspection
+                    Regular check
                   </Text>
                   <Text
                     style={{

@@ -24,8 +24,8 @@ export default function TaskDetailScreen() {
   const task = {
     id: id || "WO-0891",
     workOrderCode: `WO-${String(id || '10482')}`,
-    industry: "Facility Management",
-    title: "Air Handling Unit (AHU-4) Preventive Maintenance & Valve Service",
+    industry: "Building services",
+    title: "Check the air system and fix the valve",
     facility: "Metro City Centre • Block B Floor 3",
     status: completed ? "Completed" : "In Progress",
     priority: "High Priority",
@@ -65,7 +65,7 @@ export default function TaskDetailScreen() {
             <ChevronLeft size={22} color="#0f172a" />
           </TouchableOpacity>
           <View style={{ alignItems: "center" }}>
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>Work Order Details</Text>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>Job details</Text>
             <Text style={{ color: "#0284c7", fontFamily: "Brandon-Bold", fontSize: 11, letterSpacing: 1 }}>{task.workOrderCode}</Text>
           </View>
           <View style={{ width: 40 }} />
@@ -102,7 +102,7 @@ export default function TaskDetailScreen() {
                 <Award size={18} color="#16a34a" style={{ marginRight: 6 }} />
                 <Text style={{ color: "#16a34a", fontFamily: "Brandon-Bold", fontSize: 13 }}>+{task.points} Performance Points</Text>
               </View>
-              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>On Verified Completion</Text>
+              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>After the job is checked</Text>
             </View>
           </View>
 
@@ -110,7 +110,7 @@ export default function TaskDetailScreen() {
           <View style={{ backgroundColor: "#fefce8", borderRadius: 20, padding: 18, borderWidth: 1, borderColor: "#fef08a", marginBottom: 20 }}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
               <Sparkles size={18} color="#ca8a04" style={{ marginRight: 6 }} />
-              <Text style={{ color: "#854d0e", fontFamily: "Brandon-Bold", fontSize: 14 }}>Fieldy AI Diagnostics (Advisory)</Text>
+              <Text style={{ color: "#854d0e", fontFamily: "Brandon-Bold", fontSize: 14 }}>Job help</Text>
             </View>
             <Text style={{ color: "#713f12", fontFamily: "Brandon-Medium", fontSize: 13, lineHeight: 20 }}>
               {task.aiSuggestions}
@@ -124,7 +124,7 @@ export default function TaskDetailScreen() {
           <View style={{ backgroundColor: "#ffffff", borderRadius: 20, padding: 20, marginBottom: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
               <ShieldCheck size={20} color="#0284c7" style={{ marginRight: 8 }} />
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Mandatory Safety & PPE Checklist</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Safety check</Text>
             </View>
             <View style={{ gap: 10 }}>
               {safetyChecklist.map((item) => (
@@ -144,7 +144,7 @@ export default function TaskDetailScreen() {
 
           {/* BEFORE & AFTER PHOTO EVIDENCE */}
           <View style={{ backgroundColor: "#ffffff", borderRadius: 20, padding: 20, marginBottom: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 14 }}>Before & After Work Evidence</Text>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 14 }}>Before and after photos</Text>
             <View style={{ flexDirection: "row", gap: 12 }}>
               <TouchableOpacity 
                 onPress={() => setBeforePhotoTaken(true)}
@@ -170,7 +170,7 @@ export default function TaskDetailScreen() {
           <View style={{ backgroundColor: "#ffffff", borderRadius: 20, padding: 20, marginBottom: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
               <KeyRound size={20} color="#ea580c" style={{ marginRight: 8 }} />
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Customer OTP Verification</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Customer code</Text>
             </View>
             <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12, marginBottom: 14 }}>
               Ask the client representative for the verification code (Testing Dummy Code: 4821)
@@ -181,7 +181,7 @@ export default function TaskDetailScreen() {
                 <TextInput
                   value={otpValue}
                   onChangeText={setOtpValue}
-                  placeholder="Enter 4-digit OTP"
+                  placeholder="Enter the 4-digit code"
                   keyboardType="numeric"
                   maxLength={4}
                   style={{ fontSize: 18, fontFamily: "Brandon-Bold", color: "#0f172a", letterSpacing: 4, textAlign: "center" }}
@@ -192,7 +192,7 @@ export default function TaskDetailScreen() {
                 style={{ backgroundColor: otpVerified ? "#16a34a" : "#0f172a", paddingHorizontal: 20, paddingVertical: 14, borderRadius: 14, alignItems: "center", justifyContent: "center" }}
               >
                 <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13 }}>
-                  {otpVerified ? "Verified ✓" : "Verify OTP"}
+                  {otpVerified ? "Checked ✓" : "Verify OTP"}
                 </Text>
               </TouchableOpacity>
             </View>

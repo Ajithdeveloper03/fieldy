@@ -143,7 +143,7 @@ export default function EmployeePerformanceScreen() {
                   fontSize: 20,
                 }}
               >
-                SLA Efficiency Quota
+                On-time work goal
               </Text>
               <Switch
                 value={autoRouting}
@@ -211,7 +211,7 @@ export default function EmployeePerformanceScreen() {
                     fontSize: 13,
                   }}
                 >
-                  Auto-Dispatch
+                  Auto-assign
                 </Text>
                 <Text
                   style={{
@@ -311,7 +311,7 @@ export default function EmployeePerformanceScreen() {
                     fontSize: 11,
                   }}
                 >
-                  Optimal SLA
+                  On-time goal
                 </Text>
               </View>
             </View>
@@ -474,7 +474,7 @@ export default function EmployeePerformanceScreen() {
               </View>
             </View>
 
-            {/* Incentive Payout Breakdown (Reference Image 5 "Energy Cost" Rows) */}
+            {/* Incentive Payout Vehicle problem (Reference Image 5 "Energy Cost" Rows) */}
             <View
               style={{
                 borderTopWidth: 1,
@@ -515,7 +515,7 @@ export default function EmployeePerformanceScreen() {
                     fontSize: 13,
                   }}
                 >
-                  Weekly Verified Bonus
+                  Weekly Checked Bonus
                 </Text>
                 <Text
                   style={{
@@ -691,7 +691,7 @@ export default function EmployeePerformanceScreen() {
                   fontSize: 15,
                 }}
               >
-                Fire Safety Audit
+                Fire safety check
               </Text>
               <Text
                 style={{

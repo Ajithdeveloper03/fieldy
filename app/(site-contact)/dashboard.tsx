@@ -80,7 +80,7 @@ export default function SiteContactDashboardScreen() {
           <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 20 }}>Quick Actions</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" }}>
             {[
-              { label: "Project Site", icon: MapPin, route: "/(site-contact)/site-inspections", bg: "#dbeafe", color: "#2563eb" },
+              { label: "Work site", icon: MapPin, route: "/(site-contact)/site-inspections", bg: "#dbeafe", color: "#2563eb" },
               { label: "Permits", icon: Package, route: "/(site-contact)/documents", bg: "#f1f5f9", color: "#475569" },
               { label: "Site Inspections", icon: TrendingUp, route: "/(site-contact)/site-inspections", bg: "#fee2e2", color: "#dc2626" },
               { label: "Helpdesk", icon: HelpCircle, route: "/(site-contact)/support", bg: "#e0e7ff", color: "#4f46e5" },
@@ -127,11 +127,11 @@ export default function SiteContactDashboardScreen() {
 
         {/* FINANCIAL & SLA OVERVIEW */}
         <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 16 }}>SLA & Service Billing</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 16 }}>Service costs</Text>
           <View style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 10, elevation: 2, borderWidth: 1, borderColor: "#f1f5f9" }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <View>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Annual SLA Contract Value</Text>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Yearly service cost</Text>
                 <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 24 }}>₹ 4,80,000</Text>
               </View>
               <View style={{ backgroundColor: "#f8fafc", padding: 12, borderRadius: 16 }}>
@@ -145,7 +145,7 @@ export default function SiteContactDashboardScreen() {
                 <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>₹ 40,000</Text>
               </View>
               <View>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>Next Audit Date</Text>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>Next site check</Text>
                 <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Oct 22, 2026</Text>
               </View>
             </View>

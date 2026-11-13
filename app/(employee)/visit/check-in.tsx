@@ -119,7 +119,7 @@ export default function CheckInScreen() {
               fontSize: 20,
             }}
           >
-            Field Check-In
+            Field Check in
           </Text>
           <View style={{ width: 40 }} />
         </View>
@@ -181,7 +181,7 @@ export default function CheckInScreen() {
                 marginBottom: 8,
               }}
             >
-              Geofence Verified
+              Location checked
             </Text>
 
             <View
@@ -270,7 +270,7 @@ export default function CheckInScreen() {
                     marginBottom: 4,
                   }}
                 >
-                  {photoTaken ? "Identity Verified ✓" : "Take Field Selfie"}
+                  {photoTaken ? "Identity Checked ✓" : "Take Field Selfie"}
                 </Text>
                 <Text
                   style={{

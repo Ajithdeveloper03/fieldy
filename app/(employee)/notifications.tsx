@@ -87,13 +87,13 @@ export default function EmployeeNotificationsScreen() {
           <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 4 }}>
             <ChevronLeft size={28} color="#000000" />
           </TouchableOpacity>
-          <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 20, letterSpacing: 0.5 }}>Notifications</Text>
+          <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 20, letterSpacing: 0.5 }}>Alerts</Text>
           <View style={{ width: 36 }} />
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
           
-          <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 16, marginHorizontal: 16, marginTop: 16, marginBottom: 12 }}>New</Text>
+          <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 16, marginHorizontal: 16, marginTop: 16, marginBottom: 12 }}>New alerts</Text>
 
           {/* NOTIFICATION LIST */}
           <View>
@@ -101,7 +101,7 @@ export default function EmployeeNotificationsScreen() {
               if (index === 2) {
                 return (
                   <View key="divider">
-                    <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 16, marginHorizontal: 16, marginTop: 24, marginBottom: 12 }}>Earlier</Text>
+                    <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 16, marginHorizontal: 16, marginTop: 24, marginBottom: 12 }}>Earlier alerts</Text>
                     {renderNotificationItem(notif)}
                   </View>
                 );

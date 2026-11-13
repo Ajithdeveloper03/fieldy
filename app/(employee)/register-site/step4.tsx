@@ -64,7 +64,7 @@ export default function RegisterStep4Screen() {
             Facility Onboarding
           </Text>
           <Text className="text-slate-500 font-brandon text-xs">
-            Step 3 of 4 • Compliance & Site Agreement
+            Step 3 of 4 • Safety and site papers
           </Text>
         </View>
       </View>
@@ -95,7 +95,7 @@ export default function RegisterStep4Screen() {
 
         {/* Section Heading */}
         <Text className="text-slate-900 font-brandon-bold text-base mt-2 mb-4">
-          Compliance & Site Verification Documents
+          Safety and site papers
         </Text>
 
         {/* 1. Status Approval Card matching Design */}

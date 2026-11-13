@@ -29,8 +29,8 @@ export default function EmployeeAttendanceScreen() {
   const getStatusColor = (day: number) => {
     if (day > 26) return "rgba(255,255,255,0.1)"; // Future
     if (day === 26) return isCheckedIn ? "#10b981" : "#3b82f6"; // Today
-    if (day % 7 === 0) return "#ef4444"; // Absent/Sunday
-    return "#10b981"; // Present
+    if (day % 7 === 0) return "#ef4444"; // Not at work/Sunday
+    return "#10b981"; // At work
   };
 
   return (
@@ -47,7 +47,7 @@ export default function EmployeeAttendanceScreen() {
           <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 8, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 999 }}>
             <ChevronLeft size={24} color="#ffffff" />
           </TouchableOpacity>
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20 }}>Attendance Hub</Text>
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20 }}>Work time</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -71,7 +71,7 @@ export default function EmployeeAttendanceScreen() {
             
             <View style={{ flexDirection: "row", alignItems: "center", marginTop: 24, backgroundColor: "rgba(255,255,255,0.05)", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 }}>
               <MapPin size={14} color="#94a3b8" />
-              <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 8 }}>HQ Geofence • Connected</Text>
+              <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 8 }}>Office location • Connected</Text>
             </View>
           </View>
 
@@ -104,11 +104,11 @@ export default function EmployeeAttendanceScreen() {
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 24, paddingTop: 16, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.1)" }}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#10b981", marginRight: 6 }} />
-                <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12 }}>Present</Text>
+                <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12 }}>At work</Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#ef4444", marginRight: 6 }} />
-                <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12 }}>Absent</Text>
+                <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12 }}>Not at work</Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#3b82f6", marginRight: 6 }} />
@@ -118,7 +118,7 @@ export default function EmployeeAttendanceScreen() {
           </View>
 
           {/* TIMELINE OF TODAY */}
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Today's Log</Text>
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Today's time</Text>
           <View style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 32, padding: 24, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" }}>
             
             <View style={{ flexDirection: "row", marginBottom: 20 }}>
@@ -127,8 +127,8 @@ export default function EmployeeAttendanceScreen() {
                 <View style={{ width: 2, height: 40, backgroundColor: "rgba(255,255,255,0.1)" }} />
               </View>
               <View style={{ flex: 1, paddingBottom: 20 }}>
-                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>{isCheckedIn ? "Clocked In" : "Pending Clock In"}</Text>
-                <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 4 }}>{isCheckedIn ? "09:01 AM • Headquarters Geofence" : "Ensure you are within HQ radius."}</Text>
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>{isCheckedIn ? "Checked in" : "Not checked in yet"}</Text>
+                <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 4 }}>{isCheckedIn ? "09:01 AM • Office location" : "Move closer to the office to check in."}</Text>
               </View>
             </View>
 
@@ -137,7 +137,7 @@ export default function EmployeeAttendanceScreen() {
                 <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: "rgba(255,255,255,0.2)" }} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>Clock Out</Text>
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>End work</Text>
                 <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 4 }}>Expected at 06:00 PM</Text>
               </View>
             </View>

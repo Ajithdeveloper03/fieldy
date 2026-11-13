@@ -209,7 +209,7 @@ export default function EmployeeProfileScreen() {
               </View>
             </View>
 
-            {/* Name + Verified Badge */}
+            {/* Name + Checked Badge */}
             <View
               style={{
                 flexDirection: "row",
@@ -273,7 +273,7 @@ export default function EmployeeProfileScreen() {
                     fontSize: 14,
                   }}
                 >
-                  Edit Credentials
+                  Edit account details
                 </Text>
               </TouchableOpacity>
 
@@ -368,7 +368,7 @@ export default function EmployeeProfileScreen() {
                     marginTop: 6,
                   }}
                 >
-                  892 Verified Field Audits & 98% SLA Resolution Rate
+                  892 site checks done • 98% jobs finished on time
                 </Text>
               </View>
 
@@ -489,7 +489,7 @@ export default function EmployeeProfileScreen() {
                   lineHeight: 22,
                 }}
               >
-                How is your SLA efficiency trending?
+                Are you finishing jobs on time?
               </Text>
 
               <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -535,7 +535,7 @@ export default function EmployeeProfileScreen() {
               marginBottom: 14,
             }}
           >
-            Operational Impact
+            Work results
           </Text>
           <View
             style={{

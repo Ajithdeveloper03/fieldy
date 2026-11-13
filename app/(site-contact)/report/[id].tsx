@@ -34,14 +34,14 @@ const reportsData: Record<string, any> = {
     officer: "Harish",
     officerRole: "Certified Delta Agronomist",
     officerPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=project&q=80",
-    status: "Optimal Growth",
+    status: "Looking good",
     statusColor: "#34d399",
     statusBg: "bg-emerald-500/20",
     farm: "Kuppusamy Organic Estate",
     block: "Sector A • Foundation Works",
     projectCondition: "Excellent Rhizosphere Vigor",
     rootLength: "45 cm (Deep Root Formation)",
-    soilMoisture: "38% Optimal",
+    soilMoisture: "38% • Good",
     soilPh: "6.8 (Neutral Alkaline Balance)",
     recommendation:
       "Rhizosphere development is in prime condition. Continue standard drip cycle of 45 mins every morning. Bio-tonic applied successfully. Prepare for sector 2 mulch layer next week.",
@@ -56,7 +56,7 @@ const reportsData: Record<string, any> = {
     id: "102",
     date: "Jul 28, 2026 • 11:15 AM",
     officer: "Hemath",
-    officerRole: "Senior Agronomy Inspector",
+    officerRole: "Senior Site Inspector",
     officerPhoto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=project&q=80",
     status: "Action Suggested",
     statusColor: "#fbbf24",
@@ -66,7 +66,7 @@ const reportsData: Record<string, any> = {
     projectCondition: "Moderate Weed Density",
     rootLength: "32 cm (Healthy Growth)",
     soilMoisture: "32% Normal",
-    soilPh: "6.6 (Optimal)",
+    soilPh: "6.6 • Good",
     recommendation:
       "Minor broadleaf weed density observed along the southern boundary ridge. Recommended organic manual inter-row weeding before next drip cycle to avoid nitrogen competition.",
     safetyControls: "Reinforce barricades and update the safety log",
@@ -93,8 +93,8 @@ export default function SiteContactReportDetailScreen() {
 
   const handleDownload = () => {
     showToast({
-      title: "PDF Dossier Downloaded",
-      message: `Agronomy Audit Certificate #${report.id} saved to device.`,
+      title: "PDF saved",
+      message: `Site Check Report #${report.id} saved to device.`,
       type: "success",
     });
   };
@@ -123,7 +123,7 @@ export default function SiteContactReportDetailScreen() {
           </TouchableOpacity>
 
           <Text className="text-slate-900 text-lg font-brandon-bold">
-            Audit Dossier #{report.id}
+            Site Check Report #{report.id}
           </Text>
 
           <TouchableOpacity
@@ -246,11 +246,11 @@ export default function SiteContactReportDetailScreen() {
             </View>
           </View>
 
-          {/* Scientific Agronomy Protocol Card */}
+          {/* Work steps */}
           <View className="px-5 mb-4">
             <View className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
               <Text className="text-emerald-800 font-brandon-bold text-xs uppercase tracking-wider mb-2">
-                Prescribed Agronomy Protocol
+                Suggested work steps
               </Text>
               <Text className="text-slate-800 font-brandon-medium text-xs leading-relaxed mb-4">
                 {report.recommendation}
@@ -303,7 +303,7 @@ export default function SiteContactReportDetailScreen() {
               >
                 <Download size={18} color="#fff" className="mr-2" />
                 <Text className="text-white font-brandon-bold text-sm tracking-wide">
-                  Download Official PDF Dossier
+                  Download report PDF
                 </Text>
               </LinearGradient>
             </TouchableOpacity>

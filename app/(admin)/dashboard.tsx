@@ -54,17 +54,17 @@ export default function AdminDashboardScreen() {
   const handleApprove = async (id: number) => {
     Alert.alert(
       "Confirm Approval",
-      "Approve this project site and activate its site contact?",
+      "Accept this project site and activate its site contact?",
       [
         { text: "Cancel", style: "cancel" },
         {
-          text: "Approve",
+          text: "Accept",
           style: "default",
           onPress: async () => {
             try {
               const response = await apiClient.post(`/admin/sites/${id}/approve`);
               setPendingSiteContacts((prev) => prev.filter((site) => site.id !== id));
-              Alert.alert("Approved", response.site_code ? `Project site approved. Site code: ${response.site_code}` : "Project site approved.");
+              Alert.alert("Accepted", response.site_code ? `Project site approved. Site code: ${response.site_code}` : "Project site approved.");
             } catch (e) {
               Alert.alert("Approval failed", e instanceof Error ? e.message : "Please try again.");
             }
@@ -117,7 +117,7 @@ export default function AdminDashboardScreen() {
           </TouchableOpacity>
           <View className="flex-row items-center bg-white/20 px-4 py-2 rounded-full backdrop-blur-md">
             <Activity size={16} color="#34d399" className="mr-2" />
-            <Text className="text-white text-sm font-bold tracking-wider uppercase">Live CRM</Text>
+            <Text className="text-white text-sm font-bold tracking-wider uppercase">Live updates</Text>
           </View>
           <TouchableOpacity className="w-10 h-10 rounded-full bg-white/20 items-center justify-center relative backdrop-blur-md">
             <Bell size={20} color="#ffffff" />
@@ -126,8 +126,8 @@ export default function AdminDashboardScreen() {
         </View>
 
         <View>
-          <Text className="text-emerald-100 text-sm font-semibold tracking-widest uppercase mb-1">Overview</Text>
-          <Text className="text-white text-3xl font-black tracking-tight">Admin Intelligence</Text>
+          <Text className="text-emerald-100 text-sm font-semibold tracking-widest uppercase mb-1">Summary</Text>
+          <Text className="text-white text-3xl font-black tracking-tight">Admin dashboard</Text>
         </View>
       </LinearGradient>
 
@@ -136,7 +136,7 @@ export default function AdminDashboardScreen() {
         {/* Pending Approvals Feed */}
         <Animated.View style={{ opacity: fadeAnim }} className="mb-10">
           <View className="flex-row justify-between items-center mb-4 px-2">
-            <Text className="text-slate-800 text-xl font-black">Action Required</Text>
+            <Text className="text-slate-800 text-xl font-black">Needs your attention</Text>
             <TouchableOpacity>
               <Text className="text-emerald-600 font-bold text-sm">View All</Text>
             </TouchableOpacity>
@@ -147,8 +147,8 @@ export default function AdminDashboardScreen() {
           ) : pendingSiteContacts.length === 0 ? (
             <View className="bg-white rounded-3xl p-8 items-center border border-slate-100">
               <CheckCircle size={48} color="#10b981" />
-              <Text className="text-slate-800 font-bold text-lg mt-4">Inbox Zero</Text>
-              <Text className="text-slate-400 text-center mt-2">All project site registrations have been reviewed.</Text>
+              <Text className="text-slate-800 font-bold text-lg mt-4">You are all caught up</Text>
+              <Text className="text-slate-400 text-center mt-2">All new site requests have been checked.</Text>
             </View>
           ) : (
             pendingSiteContacts.map((site_contact, index) => (
@@ -182,14 +182,14 @@ export default function AdminDashboardScreen() {
                     className="flex-1 bg-slate-100 py-3.5 rounded-2xl items-center"
                     onPress={() => Alert.alert("Review", "Opening detailed CRM profile...")}
                   >
-                    <Text className="text-slate-700 font-bold">Review Profile</Text>
+                    <Text className="text-slate-700 font-bold">Check details</Text>
                   </TouchableOpacity>
                   <TouchableOpacity 
                     className="flex-1 bg-[#059669] py-3.5 rounded-2xl items-center flex-row justify-center"
                     onPress={() => handleApprove(site_contact.id)}
                   >
                     <CheckCircle size={18} color="#ffffff" className="mr-2" />
-                    <Text className="text-white font-bold">Approve</Text>
+                    <Text className="text-white font-bold">Accept</Text>
                   </TouchableOpacity>
                 </View>
               </View>

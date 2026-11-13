@@ -42,7 +42,7 @@ export default function EmployeeMySiteContactsScreen() {
           <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 8, backgroundColor: "#ffffff", borderRadius: 999, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 }}>
             <ChevronLeft size={24} color="#0f172a" />
           </TouchableOpacity>
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>My Project Sites</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>My work sites</Text>
           <TouchableOpacity style={{ padding: 8, backgroundColor: "#ffffff", borderRadius: 999, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 }}>
             <Filter size={20} color="#0f172a" />
           </TouchableOpacity>
@@ -52,7 +52,7 @@ export default function EmployeeMySiteContactsScreen() {
         <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
           <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#ffffff", borderRadius: 16, paddingHorizontal: 16, paddingVertical: 14, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4 }}>
             <Search size={20} color="#94a3b8" />
-            <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 16, marginLeft: 12, flex: 1 }}>Search by project name or location...</Text>
+            <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 16, marginLeft: 12, flex: 1 }}>Search by site name or area...</Text>
           </View>
         </View>
 
@@ -117,7 +117,7 @@ export default function EmployeeMySiteContactsScreen() {
                     onPress={() => router.push(`/(employee)/site/${site.site_contact_id}` as any)}
                     style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10, backgroundColor: "#0f172a", borderRadius: 12 }}
                   >
-                    <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13, marginRight: 8 }}>View Project Site</Text>
+                    <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13, marginRight: 8 }}>View site</Text>
                     <ArrowRight size={16} color="#ffffff" />
                   </TouchableOpacity>
                 </View>

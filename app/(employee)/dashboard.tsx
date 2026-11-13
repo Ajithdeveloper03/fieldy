@@ -273,7 +273,7 @@ export default function EmployeeDashboardScreen() {
                     fontSize: 11,
                   }}
                 >
-                  480 PTS • SLA
+                  480 points • Service goal
                 </Text>
               </TouchableOpacity>
             </View>
@@ -365,7 +365,7 @@ export default function EmployeeDashboardScreen() {
                     fontSize: 14,
                   }}
                 >
-                  {isClockedIn ? "End Shift • Clock Out" : "Start Shift • Clock In"}
+                  {isClockedIn ? "End Shift • End work" : "Start Shift • Start work"}
                 </Text>
                 <ArrowRight size={15} color="#ffffff" style={{ marginLeft: 6 }} />
               </TouchableOpacity>
@@ -496,7 +496,7 @@ export default function EmployeeDashboardScreen() {
                   fontSize: 12,
                 }}
               >
-                Active SLA Queue
+                Jobs to do
               </Text>
               <Text
                 style={{
@@ -565,7 +565,7 @@ export default function EmployeeDashboardScreen() {
                   lineHeight: 15,
                 }}
               >
-                2 Urgent HVAC & Fire Audits due today
+                2 urgent air and fire safety checks today
               </Text>
             </TouchableOpacity>
 
@@ -635,7 +635,7 @@ export default function EmployeeDashboardScreen() {
                       fontSize: 11,
                     }}
                   >
-                    📋 112 Audits
+                    📋 112 site checks
                   </Text>
                   <Text
                     style={{
@@ -644,7 +644,7 @@ export default function EmployeeDashboardScreen() {
                       fontSize: 11,
                     }}
                   >
-                    ✓ 98% SLA
+                    ✓ 98% on time
                   </Text>
                 </View>
               </View>
@@ -710,7 +710,7 @@ export default function EmployeeDashboardScreen() {
               >
                 Transform site photos & drone scans into{" "}
                 <Text style={{ fontFamily: "Brandon-Bold" }}>
-                  verified SLA audit reports
+                  checked service reports
                 </Text>{" "}
                 instantly.
               </Text>
@@ -1411,7 +1411,7 @@ export default function EmployeeDashboardScreen() {
                         marginLeft: 4,
                       }}
                     >
-                      Audit Complete at 09:45 AM
+                      Site check finished at 09:45 AM
                     </Text>
                   </View>
                 </View>

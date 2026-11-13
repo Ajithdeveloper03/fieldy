@@ -100,7 +100,7 @@ export default function SiteContactHistoryScreen() {
             </View>
             <View style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 24, padding: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 12, elevation: 2, borderWidth: 1, borderColor: "#f1f5f9", marginTop: 4 }}>
               <Text style={{ color: "#3b82f6", fontFamily: "Brandon-Bold", fontSize: 12, letterSpacing: 1, marginBottom: 4 }}>FEB 2026</Text>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 8 }}>NPOP Organic Certification</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 8 }}>Organic farm certificate</Text>
               <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 14, lineHeight: 20 }}>Officer Robert Walker completed the final audit. Farm officially certified 100% organic by government standard.</Text>
             </View>
           </View>

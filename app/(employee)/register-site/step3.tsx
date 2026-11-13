@@ -98,16 +98,16 @@ export default function RegisterStep3Screen() {
 
           {/* Form Fields matching Design */}
           <View className="space-y-4">
-            {/* Full Name */}
+            {/* Your name */}
             <View className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm mb-3">
               <Text className="text-slate-400 text-[11px] font-brandon-medium mb-1">
-                Full Name
+                Your name
               </Text>
               <TextInput
                 className="text-base font-brandon-bold text-slate-900 p-0 m-0"
                 value={form.fullName}
                 onChangeText={(t) => setForm({ ...form, fullName: t })}
-                placeholder="Full Name"
+                placeholder="Your name"
                 placeholderTextColor="#94a3b8"
               />
             </View>
@@ -121,7 +121,7 @@ export default function RegisterStep3Screen() {
                 className="text-base font-brandon-bold text-slate-900 p-0 m-0"
                 value={form.email}
                 onChangeText={(t) => setForm({ ...form, email: t })}
-                placeholder="Email Address"
+                placeholder="Email"
                 placeholderTextColor="#94a3b8"
                 keyboardType="email-address"
                 autoCapitalize="none"

@@ -182,7 +182,7 @@ export default function EmployeeTasksScreen() {
                   marginBottom: 4,
                 }}
               >
-                SLA COMPLETION
+                ON-TIME GOAL
               </Text>
               <Text
                 style={{
@@ -434,7 +434,7 @@ export default function EmployeeTasksScreen() {
                           marginTop: 2,
                         }}
                       >
-                        File Size: 3.2 MB • +40 SLA Points
+                        File size: 3.2 MB • +40 points
                       </Text>
                     </View>
                   </View>
@@ -515,7 +515,7 @@ export default function EmployeeTasksScreen() {
                           fontSize: 17,
                         }}
                       >
-                        Fire Sprinkler & Alarm Audit
+                        Fire sprinkler and alarm check
                       </Text>
                     </View>
                   </View>
@@ -581,7 +581,7 @@ export default function EmployeeTasksScreen() {
                       textDecorationLine: "line-through",
                     }}
                   >
-                    Elevator Safety Audit & Grease Service
+                    Elevator safety check and service
                   </Text>
                   <CheckCircle2 size={22} color="#10b981" />
                 </View>
@@ -593,7 +593,7 @@ export default function EmployeeTasksScreen() {
                     marginBottom: 16,
                   }}
                 >
-                  Completed at 09:15 AM • OTP Verified (Code: 4821)
+                  Completed at 09:15 AM • OTP Checked (Code: 4821)
                 </Text>
                 <TouchableOpacity
                   onPress={() => router.push("/(employee)/task/10480" as any)}

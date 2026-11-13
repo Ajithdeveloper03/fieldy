@@ -229,7 +229,7 @@ export default function AttendanceScreen() {
                     fontSize: 16,
                   }}
                 >
-                  Clock In Now
+                  Start work Now
                 </Text>
               </TouchableOpacity>
             ) : (
@@ -257,7 +257,7 @@ export default function AttendanceScreen() {
                     fontSize: 16,
                   }}
                 >
-                  Clock Out Securely
+                  End work Securely
                 </Text>
               </TouchableOpacity>
             )}
@@ -357,7 +357,7 @@ export default function AttendanceScreen() {
                         marginBottom: 2,
                       }}
                     >
-                      Clock In
+                      Start work
                     </Text>
                     <Text
                       style={{
@@ -378,7 +378,7 @@ export default function AttendanceScreen() {
                         marginBottom: 2,
                       }}
                     >
-                      Clock Out
+                      End work
                     </Text>
                     <Text
                       style={{

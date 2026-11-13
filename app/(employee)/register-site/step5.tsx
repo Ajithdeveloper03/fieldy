@@ -126,7 +126,7 @@ export default function RegisterStep5Screen() {
         <View className="space-y-3 mb-6">
           <View className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm mb-3">
             <Text className="text-slate-400 text-[11px] font-brandon-medium mb-1">
-              Project Site Area (Sq. Ft.)
+              Work site Area (Sq. Ft.)
             </Text>
             <TextInput
               className="text-base font-brandon-bold text-slate-900 p-0 m-0"
@@ -236,10 +236,10 @@ export default function RegisterStep5Screen() {
           <View className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm mb-3 flex-row items-center justify-between">
             <View className="flex-1">
               <Text className="text-slate-400 text-[11px] font-brandon-medium mb-1">
-                SLA Tier
+                Service level
               </Text>
               <Text className="text-base font-brandon-bold text-slate-900">
-                Premium 24x7 SLA
+                24-hour service
               </Text>
             </View>
             <ChevronDown size={18} color="#64748b" />
@@ -321,7 +321,7 @@ export default function RegisterStep5Screen() {
               </View>
 
               <Text className="text-slate-600 font-brandon text-center text-sm leading-relaxed my-3">
-                {params.fullName || "Facility Client"} has been successfully onboarded into Fieldy Facility Services under the selected service agreement.
+                {params.fullName || "Building Client"} has been successfully onboarded into Fieldy Facility Services under the selected service agreement.
               </Text>
 
               <TouchableOpacity

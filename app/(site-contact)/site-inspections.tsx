@@ -40,7 +40,7 @@ export default function ProjectHealthScreen() {
             <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(site-contact)/dashboard")} style={{ padding: 10, backgroundColor: "#f1f5f9", borderRadius: 16 }}>
               <ChevronLeft size={24} color="#0f172a" />
             </TouchableOpacity>
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>Project Intelligence</Text>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>Site overview</Text>
             <View style={{ width: 44 }} />
           </View>
 
@@ -99,7 +99,7 @@ export default function ProjectHealthScreen() {
         </View>
 
         {/* PRIORITY ALERTS */}
-        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Project Alerts</Text>
+        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Site alerts</Text>
         
         <View style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 20, marginBottom: 32, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 10, elevation: 2, borderWidth: 1, borderColor: "#f1f5f9" }}>
           {activeTab === "construction" ? (
@@ -108,8 +108,8 @@ export default function ProjectHealthScreen() {
                 <Sprout size={24} color="#10b981" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 4 }}>Project is perfectly optimal</Text>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 14, lineHeight: 20 }}>No immediate action required. Continue current watering schedule.</Text>
+                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 4 }}>Everything looks good</Text>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 14, lineHeight: 20 }}>No action is needed now. Keep following the current care plan.</Text>
               </View>
             </View>
           ) : (
@@ -118,10 +118,10 @@ export default function ProjectHealthScreen() {
                 <AlertTriangle size={24} color="#ef4444" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 4 }}>Drought Stress Detected</Text>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 14, lineHeight: 20 }}>A guardrail is missing near the stairwell. Restrict access and log a corrective work order.</Text>
+                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 4 }}>A safety problem was found</Text>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 14, lineHeight: 20 }}>A safety rail is missing by the stairs. Keep people away and report it for repair.</Text>
                 <TouchableOpacity onPress={() => router.push("/(site-contact)/documents" as any)} style={{ backgroundColor: "#fef2f2", paddingVertical: 10, paddingHorizontal: 16, borderRadius: 12, marginTop: 12, alignSelf: "flex-start" }}>
-                  <Text style={{ color: "#ef4444", fontFamily: "Brandon-Bold", fontSize: 14 }}>View Rescue Guide</Text>
+                  <Text style={{ color: "#ef4444", fontFamily: "Brandon-Bold", fontSize: 14 }}>See what to do</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -130,7 +130,7 @@ export default function ProjectHealthScreen() {
 
         {/* RECENT INSPECTIONS - DYNAMIC CARDS */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>Officer Inspections</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>Service checks</Text>
           <TouchableOpacity onPress={() => router.push("/(site-contact)/history")}>
             <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 14 }}>See All</Text>
           </TouchableOpacity>

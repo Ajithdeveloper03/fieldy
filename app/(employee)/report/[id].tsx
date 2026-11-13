@@ -73,19 +73,19 @@ export default function EmployeeReportDetailScreen() {
               </View>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <ShieldCheck size={16} color="#64748b" style={{ width: 24 }} />
-                <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 14 }}>Auditor: Field Officer (FO-902)</Text>
+                <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 14 }}>Checked by: Service worker (FO-902)</Text>
               </View>
             </View>
 
           </View>
 
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Advisory Details</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Advice details</Text>
 
           {/* Issue Section */}
           <View style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, marginBottom: 16, borderWidth: 1, borderColor: "#fee2e2" }}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
               <AlertTriangle size={20} color="#ef4444" />
-              <Text style={{ color: "#ef4444", fontFamily: "Brandon-Bold", fontSize: 16, marginLeft: 8 }}>Observed Issues</Text>
+              <Text style={{ color: "#ef4444", fontFamily: "Brandon-Bold", fontSize: 16, marginLeft: 8 }}>Problems found</Text>
             </View>
             <Text style={{ color: "#334155", fontFamily: "Brandon-Medium", fontSize: 15, lineHeight: 24 }}>
               Found an unguarded floor opening in the southern sector. Install a compliant barrier immediately and record a follow-up safety inspection.
@@ -96,7 +96,7 @@ export default function EmployeeReportDetailScreen() {
           <View style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, marginBottom: 16, borderWidth: 1, borderColor: "#dcfce7" }}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
               <Beaker size={20} color="#10b981" />
-              <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 16, marginLeft: 8 }}>Agronomy Recommendations</Text>
+              <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 16, marginLeft: 8 }}>Farm advice</Text>
             </View>
             <Text style={{ color: "#334155", fontFamily: "Brandon-Medium", fontSize: 15, lineHeight: 24, marginBottom: 16 }}>
               1. Barricade the opening and notify the site supervisor immediately.{"\n"}

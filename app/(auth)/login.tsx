@@ -169,7 +169,7 @@ export default function LoginScreen() {
                 }}
               >
                 Sign in to your{" "}
-                {role === "site_contact" ? "Facility Client" : "Facility Officer"}{" "}
+                {role === "site_contact" ? "Building Client" : "Service Worker"}{" "}
                 account
               </Text>
             </View>
@@ -247,7 +247,7 @@ export default function LoginScreen() {
                       fontSize: 18,
                       color: "#ffffff",
                     }}
-                    placeholder="Enter mobile number"
+                    placeholder="Enter your phone number"
                     placeholderTextColor="rgba(255,255,255,0.3)"
                     keyboardType="phone-pad"
                     value={mobile}
@@ -291,7 +291,7 @@ export default function LoginScreen() {
                       fontSize: 18,
                       color: "#ffffff",
                     }}
-                    placeholder="Enter password"
+                    placeholder="Enter your password"
                     placeholderTextColor="rgba(255,255,255,0.3)"
                     secureTextEntry={!showPassword}
                     value={password}

@@ -44,7 +44,7 @@ export default function EmployeeVisitPurposeScreen() {
           <TouchableOpacity onPress={() => router.back()} style={{ padding: 8, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 999 }}>
             <ChevronLeft size={24} color="#ffffff" />
           </TouchableOpacity>
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20 }}>Visit Details</Text>
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20 }}>Visit details</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -69,17 +69,17 @@ export default function EmployeeVisitPurposeScreen() {
               <CalendarDays size={20} color="#0284c7" style={{ marginRight: 12 }} />
               <View>
                 <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Today, 11:30 AM</Text>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Scheduled Appointment</Text>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Planned visit</Text>
               </View>
             </View>
           </View>
 
           {/* VISIT PURPOSE */}
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Service Purpose</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Job</Text>
           <View style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, marginBottom: 24, borderWidth: 1, borderColor: "#e0f2fe" }}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
               <Target size={24} color="#0284c7" />
-              <Text style={{ color: "#0284c7", fontFamily: "Brandon-Bold", fontSize: 18, marginLeft: 12 }}>HVAC & Preventive Maintenance Audit</Text>
+              <Text style={{ color: "#0284c7", fontFamily: "Brandon-Bold", fontSize: 18, marginLeft: 12 }}>Air conditioning check</Text>
             </View>
             <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 15, lineHeight: 24 }}>
               The client reported an airflow irregularity in Air Handling Unit 4 (Floor 3). You are required to physically inspect the chilled water valves, verify thermostat calibration, record refrigerant pressures, and check air filter cleanliness.
@@ -87,10 +87,10 @@ export default function EmployeeVisitPurposeScreen() {
           </View>
 
           {/* REQUIRED TASKS CHECKLIST */}
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Required Action Items</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Things to do</Text>
           <View style={{ gap: 12, marginBottom: 32 }}>
             {[
-              { text: "Verify Geofence On-Site Check-in", icon: MapPin, color: "#10b981" },
+              { text: "Check your location before you check in", icon: MapPin, color: "#10b981" },
               { text: "Take photos of equipment condition & serial plates", icon: Camera, color: "#8b5cf6" },
               { text: "Log AHU pressure & temperature readings", icon: ClipboardList, color: "#f59e0b" },
               { text: "Inspect electrical panel & circuit breakers", icon: AlertTriangle, color: "#ef4444" },
@@ -108,11 +108,11 @@ export default function EmployeeVisitPurposeScreen() {
           <View style={{ flexDirection: "row", gap: 16 }}>
             <TouchableOpacity onPress={() => router.push("/(employee)/visit/tracking")} style={{ flex: 1, backgroundColor: "#0f172a", borderRadius: 16, paddingVertical: 16, flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
               <Navigation size={18} color="#ffffff" style={{ marginRight: 8 }} />
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>Start GPS</Text>
+              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>Start location tracking</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push("/(employee)/visit/check-in")} style={{ flex: 1, backgroundColor: "#10b981", borderRadius: 16, paddingVertical: 16, flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
               <Camera size={18} color="#ffffff" style={{ marginRight: 8 }} />
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>Check-In</Text>
+              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>Check in</Text>
             </TouchableOpacity>
           </View>
 

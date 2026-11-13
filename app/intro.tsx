@@ -153,7 +153,7 @@ export default function IntroScreen() {
               }}
             >
               Field staff & technician workspace for real-time facility
-              inspections, attendance, and SLA execution.
+              site checks, work hours, and service updates.
             </Text>
 
             {/* ROLE SELECTION PILLS (Inspired by Reference Image 2 Radio Cards) */}
@@ -267,7 +267,7 @@ export default function IntroScreen() {
                       marginTop: 2,
                     }}
                   >
-                    GPS Tracking, Attendance, Audits & Work Orders
+                    Location, work time, site checks, and jobs
                   </Text>
                 </View>
               </TouchableOpacity>

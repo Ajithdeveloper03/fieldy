@@ -27,7 +27,7 @@ export default function SOSScreen() {
   const [sosTriggered, setSosTriggered] = useState(false);
 
   const emergencyContacts = [
-    { role: "Central HQ Security & Dispatch", phone: "+91 800-456-7890", available: "24/7 Monitored" },
+    { role: "Office safety team", phone: "+91 800-456-7890", available: "Help is open all day" },
     { role: "Regional Supervisor (RM Delta)", phone: "+91 8428060946", available: "On Duty" },
     { role: "Local Emergency Services (Police/Medical)", phone: "112", available: "Immediate Govt" },
   ];
@@ -79,7 +79,7 @@ export default function SOSScreen() {
           >
             <ChevronLeft size={24} color="#ffffff" />
           </TouchableOpacity>
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>Worker Safety & SOS</Text>
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>Safety and emergency help</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -110,7 +110,7 @@ export default function SOSScreen() {
                 {sosTriggered ? "ALARM ACTIVE" : "PRESS SOS"}
               </Text>
               <Text style={{ color: "rgba(255,255,255,0.8)", fontFamily: "Brandon-Medium", fontSize: 11, marginTop: 4 }}>
-                Instant Dispatch
+                Get help now
               </Text>
             </TouchableOpacity>
 
@@ -132,7 +132,7 @@ export default function SOSScreen() {
               style={{ flex: 1, backgroundColor: "rgba(30, 41, 59, 0.8)", padding: 14, borderRadius: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)", alignItems: "center", gap: 6 }}
             >
               <Ambulance size={24} color="#38bdf8" />
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12 }}>Medical Injury</Text>
+              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12 }}>Medical help</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -140,15 +140,15 @@ export default function SOSScreen() {
               style={{ flex: 1, backgroundColor: "rgba(30, 41, 59, 0.8)", padding: 14, borderRadius: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)", alignItems: "center", gap: 6 }}
             >
               <Flame size={24} color="#f97316" />
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12 }}>Fire / Hazard</Text>
+              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12 }}>Fire or danger</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => Alert.alert("Vehicle Breakdown", "Roadside assistance ticket raised.")}
+              onPress={() => Alert.alert("Vehicle problem", "Roadside assistance ticket raised.")}
               style={{ flex: 1, backgroundColor: "rgba(30, 41, 59, 0.8)", padding: 14, borderRadius: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)", alignItems: "center", gap: 6 }}
             >
               <ShieldAlert size={24} color="#a855f7" />
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12 }}>Breakdown</Text>
+              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12 }}>Vehicle problem</Text>
             </TouchableOpacity>
           </View>
 
