@@ -118,7 +118,7 @@ export default function EmployeeAttendanceScreen() {
           </View>
 
           {/* TIMELINE OF TODAY */}
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Today's Log</Text>
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Today&apos;s Log</Text>
           <View style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 32, padding: 24, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" }}>
             
             <View style={{ flexDirection: "row", marginBottom: 20 }}>

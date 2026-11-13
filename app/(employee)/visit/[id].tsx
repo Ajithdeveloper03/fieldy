@@ -19,15 +19,28 @@ import {
   ClipboardList,
   Navigation,
   Camera,
-  AlertTriangle
+  AlertTriangle,
+  ShieldCheck
 } from "lucide-react-native";
+import { useService } from "../../../context/ServiceContext";
 
 export default function EmployeeVisitPurposeScreen() {
   const { id } = useLocalSearchParams();
+  const { serviceConfig } = useService();
+
+  const matchedVisit = serviceConfig.sampleVisits.find(v => String(v.id) === String(id)) || serviceConfig.sampleVisits[0];
+  const matchedEntity = serviceConfig.sampleEntities[0];
+
+  const actionItems = [
+    { text: `Verify Geofence On-Site Check-in at ${serviceConfig.vocab.entitySingular}`, icon: MapPin, color: "#10b981" },
+    { text: `Capture standard photo evidence of ${serviceConfig.vocab.entitySingular.toLowerCase()}`, icon: Camera, color: serviceConfig.color },
+    { text: `Log ${serviceConfig.shortName} telemetry and diagnostic readings`, icon: ClipboardList, color: "#f59e0b" },
+    { text: `Run ${serviceConfig.vocab.customerRole} validation and sign-off`, icon: ShieldCheck, color: "#6366f1" },
+  ];
 
   return (
     <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="light-content" />
 
       {/* Hero Header Gradient */}
       <View style={{ position: "absolute", top: 0, left: 0, right: 0, height: 250 }}>
@@ -44,7 +57,7 @@ export default function EmployeeVisitPurposeScreen() {
           <TouchableOpacity onPress={() => router.back()} style={{ padding: 8, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 999 }}>
             <ChevronLeft size={24} color="#ffffff" />
           </TouchableOpacity>
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20 }}>Visit Details</Text>
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20 }}>{serviceConfig.vocab.visitSingular} Details</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -57,44 +70,45 @@ export default function EmployeeVisitPurposeScreen() {
                 <Image source={{ uri: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=project&q=80" }} style={{ width: "100%", height: "100%" }} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 22 }}>Ramesh Kumar</Text>
+                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 22 }}>
+                  {matchedVisit?.site || matchedEntity?.name || "Client Location"}
+                </Text>
                 <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
                   <MapPin size={14} color="#64748b" />
-                  <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 4 }}>Annur North • 12km away</Text>
+                  <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 4 }}>
+                    {matchedEntity?.address || "Active Sector • 3.2km away"}
+                  </Text>
                 </View>
               </View>
             </View>
 
             <View style={{ flexDirection: "row", backgroundColor: "#f8fafc", padding: 16, borderRadius: 16, alignItems: "center" }}>
-              <CalendarDays size={20} color="#0284c7" style={{ marginRight: 12 }} />
+              <CalendarDays size={20} color={serviceConfig.color} style={{ marginRight: 12 }} />
               <View>
-                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Today, 11:30 AM</Text>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Scheduled Appointment</Text>
+                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>{matchedVisit?.time || "Today, 11:30 AM"}</Text>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Scheduled {serviceConfig.label} {serviceConfig.vocab.visitSingular}</Text>
               </View>
             </View>
           </View>
 
           {/* VISIT PURPOSE */}
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Service Purpose</Text>
-          <View style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, marginBottom: 24, borderWidth: 1, borderColor: "#e0f2fe" }}>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>{serviceConfig.label} Protocol</Text>
+          <View style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, marginBottom: 24, borderWidth: 1, borderColor: `${serviceConfig.color}25` }}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-              <Target size={24} color="#0284c7" />
-              <Text style={{ color: "#0284c7", fontFamily: "Brandon-Bold", fontSize: 18, marginLeft: 12 }}>HVAC & Preventive Maintenance Audit</Text>
+              <Target size={24} color={serviceConfig.color} />
+              <Text style={{ color: serviceConfig.color, fontFamily: "Brandon-Bold", fontSize: 18, marginLeft: 12 }}>
+                {matchedVisit?.type || `${serviceConfig.label} Operation Audit`}
+              </Text>
             </View>
             <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 15, lineHeight: 24 }}>
-              The client reported an airflow irregularity in Air Handling Unit 4 (Floor 3). You are required to physically inspect the chilled water valves, verify thermostat calibration, record refrigerant pressures, and check air filter cleanliness.
+              Execute standard {serviceConfig.vocab.taskSingular.toLowerCase()} protocol on this {serviceConfig.vocab.entitySingular.toLowerCase()}. Ensure all compliance checklist items, sensor readings, and {serviceConfig.vocab.customerRole.toLowerCase()} sign-offs are submitted to cloud telemetry.
             </Text>
           </View>
 
           {/* REQUIRED TASKS CHECKLIST */}
           <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Required Action Items</Text>
           <View style={{ gap: 12, marginBottom: 32 }}>
-            {[
-              { text: "Verify Geofence On-Site Check-in", icon: MapPin, color: "#10b981" },
-              { text: "Take photos of equipment condition & serial plates", icon: Camera, color: "#8b5cf6" },
-              { text: "Log AHU pressure & temperature readings", icon: ClipboardList, color: "#f59e0b" },
-              { text: "Inspect electrical panel & circuit breakers", icon: AlertTriangle, color: "#ef4444" },
-            ].map((task, idx) => (
+            {actionItems.map((task, idx) => (
               <View key={idx} style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#ffffff", padding: 16, borderRadius: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8 }}>
                 <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: `${task.color}15`, alignItems: "center", justifyContent: "center", marginRight: 16 }}>
                   <task.icon size={18} color={task.color} />
@@ -110,7 +124,7 @@ export default function EmployeeVisitPurposeScreen() {
               <Navigation size={18} color="#ffffff" style={{ marginRight: 8 }} />
               <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>Start GPS</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push("/(employee)/visit/check-in")} style={{ flex: 1, backgroundColor: "#10b981", borderRadius: 16, paddingVertical: 16, flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+            <TouchableOpacity onPress={() => router.push("/(employee)/visit/check-in")} style={{ flex: 1, backgroundColor: serviceConfig.color, borderRadius: 16, paddingVertical: 16, flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
               <Camera size={18} color="#ffffff" style={{ marginRight: 8 }} />
               <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>Check-In</Text>
             </TouchableOpacity>

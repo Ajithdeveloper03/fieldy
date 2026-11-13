@@ -4,11 +4,9 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  StyleSheet,
   StatusBar,
-  Dimensions
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import {
   ChevronLeft,
@@ -20,15 +18,14 @@ import {
   LockKeyhole,
   FileCheck2
 } from "lucide-react-native";
-
-const { width } = Dimensions.get("window");
+import { useService } from "../../context/ServiceContext";
 
 export default function SiteContactDocumentsScreen() {
-  const insets = useSafeAreaInsets();
+  const { serviceConfig } = useService();
 
   return (
     <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="light-content" />
 
       {/* SECURE VAULT HEADER */}
       <View style={{ width: "100%", height: 260, backgroundColor: "#064e3b", borderBottomLeftRadius: 32, borderBottomRightRadius: 32 }}>
@@ -48,12 +45,12 @@ export default function SiteContactDocumentsScreen() {
 
           <View style={{ paddingHorizontal: 24, marginTop: 24 }}>
             <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 32, lineHeight: 38 }}>
-              Digital Vault
+              {serviceConfig.label} Vault
             </Text>
             <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
               <ShieldCheck size={16} color="#4ade80" style={{ marginRight: 6 }} />
               <Text style={{ color: "rgba(255,255,255,0.8)", fontFamily: "Brandon-Medium", fontSize: 15 }}>
-                256-bit encrypted & Govt. Verified
+                256-bit encrypted & Compliance Verified
               </Text>
             </View>
           </View>
@@ -63,21 +60,25 @@ export default function SiteContactDocumentsScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 150, paddingTop: 24 }}>
         
         {/* PRIMARY DOCUMENTS - CAROUSEL */}
-        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Identity & Land</Text>
+        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>
+          Identity & {serviceConfig.vocab.entitySingular} Deeds
+        </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -24, paddingHorizontal: 24, paddingBottom: 24 }}>
           
-          {/* Aadhar Card */}
+          {/* Identity Card */}
           <View style={{ width: 260, backgroundColor: "#ffffff", borderRadius: 24, padding: 20, marginRight: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.05, shadowRadius: 16, elevation: 5, borderWidth: 1, borderColor: "#f1f5f9" }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
               <View style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: "#eff6ff", alignItems: "center", justifyContent: "center" }}>
-                <FileText size={24} color="#3b82f6" />
+                <FileText size={24} color={serviceConfig.color} />
               </View>
               <View style={{ backgroundColor: "#dcfce7", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, flexDirection: "row", alignItems: "center" }}>
                 <CheckCircle2 size={12} color="#16a34a" style={{ marginRight: 4 }} />
                 <Text style={{ color: "#16a34a", fontFamily: "Brandon-Bold", fontSize: 11 }}>VERIFIED</Text>
               </View>
             </View>
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 4 }}>Aadhar Card</Text>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 4 }}>
+              {serviceConfig.vocab.customerRole} Credential
+            </Text>
             <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, marginBottom: 20 }}>XXXX-XXXX-8942</Text>
             
             <View style={{ flexDirection: "row", gap: 12 }}>
@@ -91,7 +92,7 @@ export default function SiteContactDocumentsScreen() {
             </View>
           </View>
 
-          {/* Patta Card */}
+          {/* Site Blueprint / Deed Card */}
           <View style={{ width: 260, backgroundColor: "#ffffff", borderRadius: 24, padding: 20, marginRight: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.05, shadowRadius: 16, elevation: 5, borderWidth: 1, borderColor: "#f1f5f9" }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
               <View style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: "#fffbeb", alignItems: "center", justifyContent: "center" }}>
@@ -102,7 +103,9 @@ export default function SiteContactDocumentsScreen() {
                 <Text style={{ color: "#16a34a", fontFamily: "Brandon-Bold", fontSize: 11 }}>VERIFIED</Text>
               </View>
             </View>
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 4 }}>Land Chitta / Patta</Text>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 4 }}>
+              {serviceConfig.vocab.entitySingular} Blueprint
+            </Text>
             <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, marginBottom: 20 }}>Doc No: 4921/2026</Text>
             
             <View style={{ flexDirection: "row", gap: 12 }}>
@@ -118,8 +121,10 @@ export default function SiteContactDocumentsScreen() {
 
         </ScrollView>
 
-        {/* ORGANIC CERTIFICATES - VERTICAL LIST */}
-        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Farm Certifications</Text>
+        {/* COMPLIANCE & CERTIFICATIONS - VERTICAL LIST */}
+        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>
+          {serviceConfig.label} Accreditations & Audits
+        </Text>
         
         <View style={{ gap: 16 }}>
           {/* Cert 1 */}
@@ -128,7 +133,7 @@ export default function SiteContactDocumentsScreen() {
               <ShieldCheck size={28} color="#10b981" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 2 }}>NPOP Organic Certified</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 2 }}>ISO 9001 / Safety Compliance</Text>
               <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Valid till: Dec 2027</Text>
             </View>
             <TouchableOpacity style={{ backgroundColor: "#f8fafc", padding: 10, borderRadius: 12 }}>
@@ -138,12 +143,14 @@ export default function SiteContactDocumentsScreen() {
 
           {/* Cert 2 */}
           <TouchableOpacity style={{ backgroundColor: "#ffffff", borderRadius: 20, padding: 16, flexDirection: "row", alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 10, elevation: 2, borderWidth: 1, borderColor: "#f1f5f9" }}>
-            <View style={{ width: 56, height: 56, borderRadius: 16, backgroundColor: "#f5f3ff", alignItems: "center", justifyContent: "center", marginRight: 16 }}>
-              <FileCheck2 size={28} color="#8b5cf6" />
+            <View style={{ width: 56, height: 56, borderRadius: 16, backgroundColor: `${serviceConfig.color}15`, alignItems: "center", justifyContent: "center", marginRight: 16 }}>
+              <FileCheck2 size={28} color={serviceConfig.color} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 2 }}>Soil Quality Test Report</Text>
-              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Tested: Oct 2026</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 2 }}>
+                {serviceConfig.label} SLA Audit Certificate
+              </Text>
+              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Audited: Oct 2026</Text>
             </View>
             <TouchableOpacity style={{ backgroundColor: "#f8fafc", padding: 10, borderRadius: 12 }}>
               <Eye size={20} color="#0f172a" />

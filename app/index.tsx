@@ -1,12 +1,12 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { View, Animated, StyleSheet, Text } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 export default function IndexScreen() {
-  const scaleAnim = useRef(new Animated.Value(0.3)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
-  const textOpacityAnim = useRef(new Animated.Value(0)).current;
+  const [scaleAnim] = useState(() => new Animated.Value(0.3));
+  const [opacityAnim] = useState(() => new Animated.Value(0));
+  const [textOpacityAnim] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     // 1. Bouncy Logo Reveal

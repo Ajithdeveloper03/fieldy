@@ -24,9 +24,11 @@ import {
   Clock,
 } from "lucide-react-native";
 import { useLanguage } from "../../context/LanguageContext";
+import { useService, ServiceSelectorPill } from "../../context/ServiceContext";
 
 export default function EmployeeTasksScreen() {
   const { t, language } = useLanguage();
+  const { serviceConfig } = useService();
   const [activeTab, setActiveTab] = useState("Pending");
   const [selectedDateIdx, setSelectedDateIdx] = useState(3);
 
@@ -80,28 +82,31 @@ export default function EmployeeTasksScreen() {
               style={{
                 color: "#0f172a",
                 fontFamily: "Brandon-Bold",
-                fontSize: 26,
+                fontSize: 22,
               }}
             >
-              Work Orders
+              {serviceConfig.vocab.tasks}
             </Text>
           </View>
 
-          <TouchableOpacity
-            onPress={() => router.push("/(employee)/calendar")}
-            style={{
-              width: 42,
-              height: 42,
-              borderRadius: 21,
-              backgroundColor: "#ffffff",
-              alignItems: "center",
-              justifyContent: "center",
-              borderWidth: 1,
-              borderColor: "#e2e8f0",
-            }}
-          >
-            <Calendar size={19} color="#0f172a" />
-          </TouchableOpacity>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <ServiceSelectorPill compact />
+            <TouchableOpacity
+              onPress={() => router.push("/(employee)/calendar")}
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 21,
+                backgroundColor: "#ffffff",
+                alignItems: "center",
+                justifyContent: "center",
+                borderWidth: 1,
+                borderColor: "#e2e8f0",
+              }}
+            >
+              <Calendar size={19} color="#0f172a" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* HORIZONTAL DATE PILL STRIP (Reference Screen 4: "12 Jul | 12 Jul | Today (black pill) | 12 Jul") */}
@@ -294,266 +299,180 @@ export default function EmployeeTasksScreen() {
             ))}
           </View>
 
-          {/* WORK ORDER CARDS (Reference Screen 4 Right Panel: Featured Card with PDF Attachment & Black Pill CTA) */}
+          {/* WORK ORDER CARDS */}
           <View style={{ gap: 18 }}>
             {activeTab === "Pending" ? (
               <>
-                {/* Work Order 1: Featured Card with PDF Spec Attachment */}
-                <View
-                  style={{
-                    backgroundColor: "#ffffff",
-                    borderRadius: 32,
-                    padding: 22,
-                    borderWidth: 1,
-                    borderColor: "#e2e8f0",
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 6 },
-                    shadowOpacity: 0.05,
-                    shadowRadius: 16,
-                    elevation: 4,
-                  }}
-                >
-                  {/* Top Author / Facility Row */}
+                {serviceConfig.sampleTasks.map((task) => (
                   <View
+                    key={task.id}
                     style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginBottom: 14,
+                      backgroundColor: "#ffffff",
+                      borderRadius: 32,
+                      padding: 22,
+                      borderWidth: 1,
+                      borderColor: "#e2e8f0",
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 6 },
+                      shadowOpacity: 0.05,
+                      shadowRadius: 16,
+                      elevation: 4,
                     }}
                   >
-                    <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      <Image
-                        source={{
-                          uri: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&auto=format&fit=project&q=80",
-                        }}
+                    {/* Top Author / Facility Row */}
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: 14,
+                      }}
+                    >
+                      <View style={{ flexDirection: "row", alignItems: "center", flex: 1, marginRight: 8 }}>
+                        <Image
+                          source={{
+                            uri: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&auto=format&fit=project&q=80",
+                          }}
+                          style={{
+                            width: 42,
+                            height: 42,
+                            borderRadius: 21,
+                            marginRight: 12,
+                          }}
+                        />
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={{
+                              color: "#64748b",
+                              fontFamily: "Brandon-Medium",
+                              fontSize: 11,
+                            }}
+                          >
+                            {task.workOrderCode} • {task.targetEntity}
+                          </Text>
+                          <Text
+                            style={{
+                              color: "#0f172a",
+                              fontFamily: "Brandon-Bold",
+                              fontSize: 15,
+                            }}
+                          >
+                            {task.title}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View
                         style={{
-                          width: 42,
-                          height: 42,
-                          borderRadius: 21,
-                          marginRight: 12,
+                          backgroundColor: task.priority === "Urgent" ? "#fee2e2" : "#fef3c7",
+                          paddingHorizontal: 10,
+                          paddingVertical: 5,
+                          borderRadius: 999,
                         }}
-                      />
-                      <View>
+                      >
                         <Text
                           style={{
-                            color: "#64748b",
-                            fontFamily: "Brandon-Medium",
-                            fontSize: 11,
-                          }}
-                        >
-                          WO-10482 • Metro City Centre
-                        </Text>
-                        <Text
-                          style={{
-                            color: "#0f172a",
+                            color: task.priority === "Urgent" ? "#ef4444" : "#b45309",
                             fontFamily: "Brandon-Bold",
-                            fontSize: 15,
+                            fontSize: 10,
                           }}
                         >
-                          HVAC — Chiller Valve Service
+                          {task.due}
                         </Text>
                       </View>
                     </View>
 
-                    <View
+                    {/* Description Text */}
+                    <Text
                       style={{
-                        backgroundColor: "#fee2e2",
-                        paddingHorizontal: 10,
-                        paddingVertical: 5,
-                        borderRadius: 999,
+                        color: "#0f172a",
+                        fontFamily: "Brandon-Medium",
+                        fontSize: 15,
+                        lineHeight: 22,
+                        marginBottom: 16,
                       }}
                     >
-                      <Text
-                        style={{
-                          color: "#ef4444",
-                          fontFamily: "Brandon-Bold",
-                          fontSize: 10,
-                        }}
-                      >
-                        DUE 2:00 PM
-                      </Text>
-                    </View>
-                  </View>
+                      {task.description}
+                    </Text>
 
-                  {/* Editorial Description Text */}
-                  <Text
-                    style={{
-                      color: "#0f172a",
-                      fontFamily: "Brandon-Medium",
-                      fontSize: 16,
-                      lineHeight: 24,
-                      marginBottom: 16,
-                    }}
-                  >
-                    Perform scheduled coil chemical wash, verify thermostat
-                    calibration on Floor 3, and obtain customer OTP sign-off.
-                  </Text>
-
-                  {/* Embedded PDF Attachment Box (Reference Screen 4: "Cell_Biology_Revision_Notes.pdf") */}
-                  <View
-                    style={{
-                      backgroundColor: "#f8fafc",
-                      borderRadius: 18,
-                      padding: 14,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      marginBottom: 18,
-                      borderWidth: 1,
-                      borderColor: "#f1f5f9",
-                    }}
-                  >
+                    {/* AI Diagnostic Spec Box */}
                     <View
                       style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 12,
-                        backgroundColor: "#fee2e2",
+                        backgroundColor: "#f8fafc",
+                        borderRadius: 18,
+                        padding: 14,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginBottom: 18,
+                        borderWidth: 1,
+                        borderColor: "#f1f5f9",
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 12,
+                          backgroundColor: `${serviceConfig.themeColor}20`,
+                          alignItems: "center",
+                          justifyContent: "center",
+                          marginRight: 12,
+                        }}
+                      >
+                        <FileText size={20} color={serviceConfig.themeColor} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={{
+                            color: "#0f172a",
+                            fontFamily: "Brandon-Bold",
+                            fontSize: 13,
+                          }}
+                        >
+                          {task.aiDiagnostic}
+                        </Text>
+                        <Text
+                          style={{
+                            color: "#94a3b8",
+                            fontFamily: "Brandon-Medium",
+                            fontSize: 11,
+                            marginTop: 2,
+                          }}
+                        >
+                          +{task.points} SLA Points • Verification Required
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* CTA Button */}
+                    <TouchableOpacity
+                      onPress={() => router.push(`/(employee)/task/${task.id}` as any)}
+                      style={{
+                        backgroundColor: "#062214",
+                        borderRadius: 999,
+                        paddingVertical: 15,
+                        flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "center",
-                        marginRight: 12,
                       }}
                     >
-                      <FileText size={20} color="#ef4444" />
-                    </View>
-                    <View style={{ flex: 1 }}>
+                      <ListTodo
+                        size={16}
+                        color="#4ade80"
+                        style={{ marginRight: 8 }}
+                      />
                       <Text
                         style={{
-                          color: "#0f172a",
+                          color: "#ffffff",
                           fontFamily: "Brandon-Bold",
-                          fontSize: 13,
+                          fontSize: 14,
                         }}
                       >
-                        AHU4_Maintenance_Protocol.pdf
+                        Execute Work Order
                       </Text>
-                      <Text
-                        style={{
-                          color: "#94a3b8",
-                          fontFamily: "Brandon-Medium",
-                          fontSize: 11,
-                          marginTop: 2,
-                        }}
-                      >
-                        File Size: 3.2 MB • +40 SLA Points
-                      </Text>
-                    </View>
+                    </TouchableOpacity>
                   </View>
-
-                  {/* Full-Width Black/Forest Pill Button ("Play Now" style) */}
-                  <TouchableOpacity
-                    onPress={() => router.push("/(employee)/task/10482" as any)}
-                    style={{
-                      backgroundColor: "#062214",
-                      borderRadius: 999,
-                      paddingVertical: 15,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <ListTodo
-                      size={16}
-                      color="#4ade80"
-                      style={{ marginRight: 8 }}
-                    />
-                    <Text
-                      style={{
-                        color: "#ffffff",
-                        fontFamily: "Brandon-Bold",
-                        fontSize: 14,
-                      }}
-                    >
-                      Execute Work Order
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                {/* Work Order 2: Gradient Tinted Challenge Card (Reference Screen 4 Bottom Card) */}
-                <LinearGradient
-                  colors={["#ffffff", "#f0fdf4", "#e0f2fe"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={{
-                    borderRadius: 32,
-                    padding: 22,
-                    borderWidth: 1,
-                    borderColor: "#cbd5e1",
-                  }}
-                >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      marginBottom: 14,
-                    }}
-                  >
-                    <Image
-                      source={{
-                        uri: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=100&auto=format&fit=project&q=80",
-                      }}
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 22,
-                        marginRight: 12,
-                      }}
-                    />
-                    <View style={{ flex: 1 }}>
-                      <Text
-                        style={{
-                          color: "#64748b",
-                          fontFamily: "Brandon-Medium",
-                          fontSize: 11,
-                        }}
-                      >
-                        WO-10483 • Due 5:00 PM
-                      </Text>
-                      <Text
-                        style={{
-                          color: "#0f172a",
-                          fontFamily: "Brandon-Bold",
-                          fontSize: 17,
-                        }}
-                      >
-                        Fire Sprinkler & Alarm Audit
-                      </Text>
-                    </View>
-                  </View>
-
-                  <Text
-                    style={{
-                      color: "#475569",
-                      fontFamily: "Brandon-Medium",
-                      fontSize: 13,
-                      lineHeight: 20,
-                      marginBottom: 16,
-                    }}
-                  >
-                    Apex Logistics Hub • Inspect main riser valves, test
-                    pressure sensors, and capture safety photo evidence.
-                  </Text>
-
-                  <TouchableOpacity
-                    onPress={() => router.push("/(employee)/task/10483" as any)}
-                    style={{
-                      backgroundColor: "#0f172a",
-                      borderRadius: 999,
-                      paddingVertical: 14,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "#ffffff",
-                        fontFamily: "Brandon-Bold",
-                        fontSize: 14,
-                      }}
-                    >
-                      Open Work Order
-                    </Text>
-                  </TouchableOpacity>
-                </LinearGradient>
+                ))}
               </>
             ) : (
               <View
@@ -581,7 +500,7 @@ export default function EmployeeTasksScreen() {
                       textDecorationLine: "line-through",
                     }}
                   >
-                    Elevator Safety Audit & Grease Service
+                    {serviceConfig.sampleTasks[0]?.title || "Periodic Inspection Complete"}
                   </Text>
                   <CheckCircle2 size={22} color="#10b981" />
                 </View>
@@ -596,7 +515,7 @@ export default function EmployeeTasksScreen() {
                   Completed at 09:15 AM • OTP Verified (Code: 4821)
                 </Text>
                 <TouchableOpacity
-                  onPress={() => router.push("/(employee)/task/10480" as any)}
+                  onPress={() => router.push("/(employee)/task/1" as any)}
                   style={{
                     backgroundColor: "#f1f5f9",
                     borderRadius: 999,

@@ -5,9 +5,16 @@ const getApiUrl = () => {
   if (Platform.OS === 'web') {
     return 'http://localhost:8000/api/v1';
   }
-  return process.env.EXPO_PUBLIC_API_URL || (Platform.OS === 'android'
+  const envUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (envUrl && !envUrl.includes(':8081')) {
+    if (Platform.OS === 'android' && (envUrl.includes('localhost') || envUrl.includes('127.0.0.1'))) {
+      return envUrl.replace('localhost', '10.0.2.2').replace('127.0.0.1', '10.0.2.2');
+    }
+    return envUrl;
+  }
+  return Platform.OS === 'android'
     ? 'http://10.0.2.2:8000/api/v1'
-    : 'http://127.0.0.1:8000/api/v1');
+    : 'http://127.0.0.1:8000/api/v1';
 };
 
 const TOKEN_KEY = 'token';

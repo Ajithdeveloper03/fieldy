@@ -11,8 +11,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { ChevronLeft, Phone, Tag, ArrowRight } from "lucide-react-native";
 import { showToast } from "../../../components/ui/ToastMessage";
+import { useService } from "../../../context/ServiceContext";
 
 export default function Step1Mobile() {
+  const { serviceConfig } = useService();
   const [mobile, setMobile] = useState("");
   const [category, setCategory] = useState<"Residential" | "Commercial" | "Industrial">("Commercial");
   const [projects, setProjects] = useState("");
@@ -51,10 +53,10 @@ export default function Step1Mobile() {
 
         <View className="items-center">
           <Text className="text-lg font-brandon-bold text-slate-900">
-            Onboard Client & Site
+            Onboard {serviceConfig.vocab.entitySingular}
           </Text>
           <Text className="text-slate-500 font-brandon text-xs">
-            Step 1 of 4 • Facility Identity & Scope
+            Step 1 of 4 • {serviceConfig.label} Identity & Scope
           </Text>
         </View>
 
@@ -68,7 +70,7 @@ export default function Step1Mobile() {
       >
         {/* 4-Step Stepper */}
         <View className="flex-row items-center justify-center my-4 px-6">
-          <View className="w-8 h-8 rounded-full bg-[#0284c7] items-center justify-center shadow-sm">
+          <View style={{ backgroundColor: serviceConfig.color }} className="w-8 h-8 rounded-full items-center justify-center shadow-sm">
             <Text className="text-white font-brandon-bold text-xs">1</Text>
           </View>
           <View className="flex-1 h-0.5 bg-slate-200 mx-2" />
@@ -95,20 +97,20 @@ export default function Step1Mobile() {
             />
           </View>
           <Text className="text-xl font-brandon-bold text-slate-900 mt-3 text-center">
-            Project Site & Contact
+            {serviceConfig.vocab.entitySingular} & Contact
           </Text>
           <Text className="text-slate-500 font-brandon text-xs text-center mt-1 px-4">
-            Enter the authorized facility manager&apos;s mobile number & service scope
+            Enter the authorized {serviceConfig.vocab.customerRole.toLowerCase()}&apos;s mobile number & service scope
           </Text>
         </View>
 
         {/* Mobile Input Card */}
         <View className="bg-sky-50/70 rounded-2xl p-4 border border-sky-200/90 shadow-sm mb-4">
           <Text className="text-sky-900 text-xs font-brandon-bold uppercase tracking-wider mb-2">
-            Facility Manager / Contact Mobile
+            {serviceConfig.vocab.customerRole} / Contact Mobile
           </Text>
           <View className="flex-row items-center bg-white rounded-xl px-3.5 py-3 border border-slate-200">
-            <Phone size={18} color="#0284c7" />
+            <Phone size={18} color={serviceConfig.color} />
             <Text className="text-slate-900 font-brandon-bold text-base ml-2.5 mr-1.5">
               +91
             </Text>
@@ -127,7 +129,7 @@ export default function Step1Mobile() {
         {/* Facility Service Scope Selection Card */}
         <View className="bg-slate-50/70 rounded-2xl p-4 border border-slate-200/90 shadow-sm mb-4">
           <Text className="text-slate-950 text-xs font-brandon-bold uppercase tracking-wider mb-2.5">
-            Project Type
+            {serviceConfig.label} Classification
           </Text>
           <View className="flex-row justify-between">
             {(["Residential", "Commercial", "Industrial"] as const).map((cat) => {
@@ -137,8 +139,9 @@ export default function Step1Mobile() {
                   key={cat}
                   onPress={() => setCategory(cat as any)}
                   activeOpacity={0.8}
+                  style={selected ? { backgroundColor: serviceConfig.color, borderColor: serviceConfig.color } : {}}
                   className={`flex-1 py-3 px-2 rounded-xl mx-1 border items-center shadow-sm ${selected
-                      ? "bg-[#0284c7] border-[#0284c7]"
+                      ? ""
                       : "bg-white border-slate-200"
                     }`}
                 >
@@ -157,13 +160,13 @@ export default function Step1Mobile() {
         {/* Facility Asset / Key Systems Focus */}
         <View className="bg-slate-50/70 rounded-2xl p-4 border border-slate-200/90 shadow-sm mb-6">
           <Text className="text-slate-950 text-xs font-brandon-bold uppercase tracking-wider mb-2">
-            Primary Assets / Systems
+            Scope / Specification
           </Text>
           <View className="flex-row items-center bg-white rounded-xl px-3.5 py-3 border border-slate-200">
-            <Tag size={18} color="#0284c7" />
+            <Tag size={18} color={serviceConfig.color} />
             <TextInput
               className="flex-1 ml-2.5 text-base font-brandon-bold text-slate-900 p-0 m-0"
-              placeholder="Project name or work scope (e.g. Tower A foundation)"
+              placeholder={`e.g. Primary ${serviceConfig.vocab.entitySingular.toLowerCase()} block`}
               placeholderTextColor="#94a3b8"
               value={projects}
               onChangeText={setProjects}
@@ -175,10 +178,11 @@ export default function Step1Mobile() {
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={handleNext}
-          className="w-full bg-[#0284c7] py-4 rounded-2xl items-center justify-center shadow-md shadow-sky-900/20 flex-row mt-2"
+          style={{ backgroundColor: serviceConfig.color }}
+          className="w-full py-4 rounded-2xl items-center justify-center shadow-md flex-row mt-2"
         >
           <Text className="text-white font-brandon-bold text-base tracking-wide mr-2">
-            Continue to Facility Details
+            Continue to {serviceConfig.vocab.entitySingular} Details
           </Text>
           <ArrowRight size={18} color="#ffffff" />
         </TouchableOpacity>

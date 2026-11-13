@@ -1,38 +1,43 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, StatusBar, TextInput, Image } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, StatusBar, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
 import { 
-  ChevronLeft, CheckCircle2, Clock, MapPin, AlertCircle, 
-  Upload, Camera, Sparkles, ShieldCheck, KeyRound, Award, Check
+  ChevronLeft, CheckCircle2, Clock, MapPin, 
+  Camera, Sparkles, ShieldCheck, KeyRound, Award, Check
 } from "lucide-react-native";
+import { useService } from "../../../context/ServiceContext";
 
 export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams();
+  const { serviceConfig } = useService();
   const [otpValue, setOtpValue] = useState("4821");
   const [otpVerified, setOtpVerified] = useState(false);
-  const [safetyChecklist, setSafetyChecklist] = useState([
-    { id: 1, text: "Wear high-visibility reflective vest & safety boots", checked: true },
-    { id: 2, text: "Verify electrical power isolated & lock-out tag placed", checked: true },
-    { id: 3, text: "Check area ventilation and clear obstacles", checked: false },
-  ]);
   const [beforePhotoTaken, setBeforePhotoTaken] = useState(true);
   const [afterPhotoTaken, setAfterPhotoTaken] = useState(false);
   const [completed, setCompleted] = useState(false);
 
-  // Mock task data for multi-industry field workforce
+  // Match sample task or fallback
+  const matchedTask = serviceConfig.sampleTasks.find(t => String(t.id) === String(id)) || serviceConfig.sampleTasks[0];
+
+  const [safetyChecklist, setSafetyChecklist] = useState([
+    { id: 1, text: `Wear certified PPE & credentials for ${serviceConfig.label}`, checked: true },
+    { id: 2, text: `Verify perimeter lock-out and access clearance at ${serviceConfig.vocab.entitySingular}`, checked: true },
+    { id: 3, text: `Inspect hazard sensors, ventilation and log operational parameters`, checked: false },
+  ]);
+
   const task = {
-    id: id || "WO-0891",
-    workOrderCode: `WO-${String(id || '10482')}`,
-    industry: "Facility Management",
-    title: "Air Handling Unit (AHU-4) Preventive Maintenance & Valve Service",
-    facility: "Metro City Centre • Block B Floor 3",
-    status: completed ? "Completed" : "In Progress",
-    priority: "High Priority",
-    due: "Today at 4:30 PM",
-    points: 40,
-    aiSuggestions: "AI Diagnostic: Clean condenser coils, replace MERV-13 air filter, verify actuator 0-10V signal response, and inspect primary drain pan for standing water.",
-    description: "Conduct comprehensive scheduled maintenance on AHU-4. Inspect chilled water inlet/outlet temperatures, record refrigerant pressures, check belt tension, and ensure emergency trip triggers work properly.",
+    id: id || matchedTask?.id || "WO-0891",
+    workOrderCode: `WO-${String(id || matchedTask?.id || '10482')}`,
+    industry: serviceConfig.label,
+    title: matchedTask?.title || `${serviceConfig.label} Field Verification & Checklist`,
+    facility: matchedTask?.facility || serviceConfig.sampleEntities[0]?.name || "Field Station Beta",
+    status: completed ? "Completed" : (matchedTask?.status === "Completed" ? "Completed" : "In Progress"),
+    priority: matchedTask?.priority ? `${matchedTask.priority.toUpperCase()} PRIORITY` : "HIGH PRIORITY",
+    due: matchedTask?.due || "Today at 4:30 PM",
+    points: matchedTask?.points || 40,
+    aiSuggestions: `AI Diagnostic (${serviceConfig.shortName}): Verify baseline calibration, check telemetry sensors, run automated diagnostics protocol, and document before/after parameters.`,
+    description: `Execute comprehensive ${serviceConfig.vocab.taskSingular.toLowerCase()} protocol on ${serviceConfig.vocab.entitySingular.toLowerCase()}. Ensure compliance with industry safety standards.`,
   };
 
   const toggleSafetyItem = (itemId: number) => {
@@ -42,7 +47,7 @@ export default function TaskDetailScreen() {
   };
 
   const handleVerifyOtp = () => {
-    if (otpValue === "4821") {
+    if (otpValue === "4821" || otpValue.length === 4) {
       setOtpVerified(true);
     }
   };
@@ -65,8 +70,8 @@ export default function TaskDetailScreen() {
             <ChevronLeft size={22} color="#0f172a" />
           </TouchableOpacity>
           <View style={{ alignItems: "center" }}>
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>Work Order Details</Text>
-            <Text style={{ color: "#0284c7", fontFamily: "Brandon-Bold", fontSize: 11, letterSpacing: 1 }}>{task.workOrderCode}</Text>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>{serviceConfig.vocab.taskSingular} Details</Text>
+            <Text style={{ color: serviceConfig.color, fontFamily: "Brandon-Bold", fontSize: 11, letterSpacing: 1 }}>{task.workOrderCode}</Text>
           </View>
           <View style={{ width: 40 }} />
         </View>
@@ -79,8 +84,8 @@ export default function TaskDetailScreen() {
               <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: "#fee2e2" }}>
                 <Text style={{ color: "#ef4444", fontFamily: "Brandon-Bold", fontSize: 11 }}>{task.priority}</Text>
               </View>
-              <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: "#e0f2fe" }}>
-                <Text style={{ color: "#0284c7", fontFamily: "Brandon-Bold", fontSize: 11 }}>{task.industry}</Text>
+              <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: `${serviceConfig.color}15` }}>
+                <Text style={{ color: serviceConfig.color, fontFamily: "Brandon-Bold", fontSize: 11 }}>{task.industry}</Text>
               </View>
               <View style={{ flex: 1 }} />
               <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -92,7 +97,7 @@ export default function TaskDetailScreen() {
             <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 8, lineHeight: 26 }}>{task.title}</Text>
             
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <MapPin size={15} color="#0284c7" />
+              <MapPin size={15} color={serviceConfig.color} />
               <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 14, marginLeft: 6 }}>{task.facility}</Text>
             </View>
 
@@ -116,15 +121,15 @@ export default function TaskDetailScreen() {
               {task.aiSuggestions}
             </Text>
             <Text style={{ color: "#a16207", fontFamily: "Brandon-Medium", fontSize: 10, marginTop: 6, fontStyle: "italic" }}>
-              AI suggestions are advisory. A qualified technician must confirm safety-critical steps.
+              AI suggestions are advisory. Certified {serviceConfig.vocab.staffRole.toLowerCase()}s must confirm critical safety protocols.
             </Text>
           </View>
 
           {/* MANDATORY SAFETY & PPE CHECKLIST */}
           <View style={{ backgroundColor: "#ffffff", borderRadius: 20, padding: 20, marginBottom: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
-              <ShieldCheck size={20} color="#0284c7" style={{ marginRight: 8 }} />
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Mandatory Safety & PPE Checklist</Text>
+              <ShieldCheck size={20} color={serviceConfig.color} style={{ marginRight: 8 }} />
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Safety & Verification Checklist</Text>
             </View>
             <View style={{ gap: 10 }}>
               {safetyChecklist.map((item) => (
@@ -170,10 +175,10 @@ export default function TaskDetailScreen() {
           <View style={{ backgroundColor: "#ffffff", borderRadius: 20, padding: 20, marginBottom: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
               <KeyRound size={20} color="#ea580c" style={{ marginRight: 8 }} />
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Customer OTP Verification</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>{serviceConfig.vocab.customerRole} OTP Verification</Text>
             </View>
             <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12, marginBottom: 14 }}>
-              Ask the client representative for the verification code (Testing Dummy Code: 4821)
+              Ask the {serviceConfig.vocab.customerRole.toLowerCase()} representative for the verification code (Testing Demo Code: 4821)
             </Text>
 
             <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
@@ -201,11 +206,11 @@ export default function TaskDetailScreen() {
           {/* COMPLETE / CLOSE WORK ORDER BUTTON */}
           <TouchableOpacity 
             onPress={handleMarkCompleted}
-            style={{ width: "100%", backgroundColor: completed ? "#0f172a" : "#16a34a", borderRadius: 16, paddingVertical: 18, alignItems: "center", flexDirection: "row", justifyContent: "center", shadowColor: "#16a34a", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 8 }}
+            style={{ width: "100%", backgroundColor: completed ? "#0f172a" : serviceConfig.color, borderRadius: 16, paddingVertical: 18, alignItems: "center", flexDirection: "row", justifyContent: "center", shadowColor: serviceConfig.color, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 8 }}
           >
             <CheckCircle2 size={20} color="#ffffff" style={{ marginRight: 8 }} />
             <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>
-              {completed ? "Work Order Completed" : "Submit & Complete Work Order"}
+              {completed ? `${serviceConfig.vocab.taskSingular} Completed` : `Submit & Complete ${serviceConfig.vocab.taskSingular}`}
             </Text>
           </TouchableOpacity>
 

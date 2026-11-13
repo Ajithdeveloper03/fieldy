@@ -6,70 +6,73 @@ import {
   StyleSheet,
   StatusBar,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { X, Camera, Image as ImageIcon, FileText, History } from "lucide-react-native";
+import { X, Camera, ClipboardCheck, FileText, History } from "lucide-react-native";
+import { useService } from "../../../context/ServiceContext";
 
 export default function SelectReportMethodScreen() {
+  const insets = useSafeAreaInsets();
+  const { serviceConfig } = useService();
+
   return (
     <View style={{ flex: 1 }}>
       <StatusBar barStyle="light-content" />
 
-      {/* Smooth Emerald/Blue-ish Gradient Background like Image 1 */}
       <LinearGradient
-        colors={["#0ea5e9", "#10b981", "#047857"]}
+        colors={["#062214", serviceConfig.themeColor || "#10b981", "#04140b"]}
         style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
       />
 
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}>
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24 }}>
           
           <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 28, marginBottom: 8 }}>
-            Select a Method
+            New {serviceConfig.vocab.report}
           </Text>
-          <Text style={{ color: "rgba(255,255,255,0.8)", fontFamily: "Brandon-Medium", fontSize: 16, marginBottom: 60, textAlign: "center" }}>
-            Add your field report in the most convenient way
+          <Text style={{ color: "rgba(255,255,255,0.8)", fontFamily: "Brandon-Medium", fontSize: 16, marginBottom: 48, textAlign: "center" }}>
+            {serviceConfig.shortName} • Pick how to add
           </Text>
 
-          <View style={{ gap: 20, width: "100%", alignItems: "center" }}>
+          <View style={{ gap: 18, width: "100%", alignItems: "center" }}>
             
-            {/* Dotted Outline Button 1 */}
+            {/* Button 1: Photo Report */}
             <TouchableOpacity 
-              onPress={() => router.push("/(employee)/visit/report")}
+              onPress={() => router.push("/(employee)/visit/report?method=photo")}
               style={styles.dottedButton}
             >
               <Camera size={20} color="#ffffff" style={{ marginRight: 12 }} />
-              <Text style={styles.buttonText}>Add Report via Photo</Text>
+              <Text style={styles.buttonText}>{serviceConfig.shortName} Photo</Text>
             </TouchableOpacity>
 
-            {/* Dotted Outline Button 2 */}
+            {/* Button 2: Service Checklist */}
             <TouchableOpacity
-              onPress={() => router.push("/(employee)/visit/report")}
+              onPress={() => router.push("/(employee)/visit/report?method=checklist")}
               style={styles.dottedButton}
             >
-              <ImageIcon size={20} color="#ffffff" style={{ marginRight: 12 }} />
-              <Text style={styles.buttonText}>Import Drone Image</Text>
+              <ClipboardCheck size={20} color="#ffffff" style={{ marginRight: 12 }} />
+              <Text style={styles.buttonText}>{serviceConfig.vocab.taskSingular} Check</Text>
             </TouchableOpacity>
 
-            {/* Dotted Outline Button 3 */}
+            {/* Button 3: Quick Notes */}
             <TouchableOpacity
-              onPress={() => router.push("/(employee)/visit/report")}
+              onPress={() => router.push("/(employee)/visit/report?method=notes")}
               style={styles.dottedButton}
             >
               <FileText size={20} color="#ffffff" style={{ marginRight: 12 }} />
-              <Text style={styles.buttonText}>Manual Text Only</Text>
+              <Text style={styles.buttonText}>Quick Notes</Text>
             </TouchableOpacity>
 
-            {/* Dotted Outline Button 4 */}
+            {/* Button 4: Past Reports */}
             <TouchableOpacity
               onPress={() => router.push("/(employee)/visit-history")}
               style={styles.dottedButton}
             >
               <History size={20} color="#ffffff" style={{ marginRight: 12 }} />
-              <Text style={styles.buttonText}>From Past Reports</Text>
+              <Text style={styles.buttonText}>Past {serviceConfig.vocab.report}s</Text>
             </TouchableOpacity>
 
           </View>
@@ -82,7 +85,7 @@ export default function SelectReportMethodScreen() {
         {/* Floating Cancel Button at Bottom */}
         <View style={{ paddingBottom: 40, alignItems: "center" }}>
           <TouchableOpacity 
-            onPress={() => router.back()}
+            onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")}
             style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 5 }}
           >
             <X size={24} color="#0f172a" style={{ marginBottom: -4 }} />
@@ -90,7 +93,7 @@ export default function SelectReportMethodScreen() {
           </TouchableOpacity>
         </View>
 
-      </SafeAreaView>
+      </View>
     </View>
   );
 }

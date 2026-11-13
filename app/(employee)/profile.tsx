@@ -32,16 +32,11 @@ export default function EmployeeProfileScreen() {
     <View style={{ flex: 1, backgroundColor: "#062214" }}>
       <StatusBar barStyle="light-content" />
 
-      {/* Cinematic Drone Map Background (View + Absolute Image) */}
-      <Image
-        source={require("../../assets/images/image2.jpg")}
-        style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
-        resizeMode="cover"
-      />
+      {/* Cinematic Gradient Background */}
       <LinearGradient
         colors={[
-          "rgba(6, 34, 20, 0.82)",
-          "rgba(6, 34, 20, 0.96)",
+          "#042616",
+          "#0a331c",
           "#062214",
         ]}
         locations={[0, 0.35, 1]}

@@ -9,25 +9,30 @@ import {
   StatusBar,
   Dimensions
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   MapPin,
-  Sprout,
   Package,
   TrendingUp,
   Sun,
   ShieldAlert,
   ChevronRight,
   Bell,
-  HelpCircle
+  HelpCircle,
+  Activity,
+  FileText
 } from "lucide-react-native";
+import { useService, ServiceSelectorPill } from "../../context/ServiceContext";
 
 const { width } = Dimensions.get("window");
 
 export default function SiteContactDashboardScreen() {
   const insets = useSafeAreaInsets();
+  const { serviceConfig } = useService();
+
+  const primaryEntity = serviceConfig.sampleEntities[0];
 
   return (
     <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
@@ -36,54 +41,65 @@ export default function SiteContactDashboardScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
         
         {/* HEADER HERO SECTION */}
-        <View style={{ width: "100%", height: 340, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, overflow: "hidden", shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 10, backgroundColor: "#064e3b" }}>
-          <View style={{ width: "100%", height: "100%" }}>
-            <Image
-              source={require("../../assets/images/image4.jpg")}
-              style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
-              resizeMode="cover"
-            />
-            <LinearGradient
-              colors={["rgba(6, 78, 59, 0.9)", "rgba(6, 78, 59, 0.4)", "rgba(0,0,0,0)"]}
-              style={StyleSheet.absoluteFill}
-            />
-            
+        <View style={{ width: "100%", height: 350, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, overflow: "hidden", shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 10, backgroundColor: "#064e3b" }}>
+          <Image
+            source={{
+              uri:
+                serviceConfig.heroImage ||
+                "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=900&auto=format&fit=crop&q=80",
+            }}
+            style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={["rgba(6, 78, 59, 0.72)", "rgba(4, 61, 46, 0.88)", "rgba(2, 36, 27, 0.98)"]}
+            style={{ width: "100%", height: "100%" }}
+          >
             {/* Header Content Top */}
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 24, paddingTop: Math.max(insets.top, 20) + 10 }}>
               <View>
-                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 26, letterSpacing: 0.5 }}>Good morning,</Text>
-                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 26, letterSpacing: 0.5, marginTop: -4 }}>Muthuvel</Text>
-                <Text style={{ color: "rgba(255,255,255,0.85)", fontFamily: "Brandon-Medium", fontSize: 15, marginTop: 4 }}>You've got a great day ahead.</Text>
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 26, letterSpacing: 0.5 }}>Welcome,</Text>
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 26, letterSpacing: 0.5, marginTop: -4 }}>{serviceConfig.vocab.customerRole}</Text>
+                <Text style={{ color: "rgba(255,255,255,0.85)", fontFamily: "Brandon-Medium", fontSize: 14, marginTop: 4 }}>
+                  All systems good
+                </Text>
               </View>
-              <TouchableOpacity onPress={() => router.push("/(site-contact)/notifications")} style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.3)" }}>
-                <Bell size={22} color="#ffffff" />
-                <View style={{ position: "absolute", top: 12, right: 12, width: 10, height: 10, borderRadius: 5, backgroundColor: "#ef4444", borderWidth: 2, borderColor: "rgba(255,255,255,0.5)" }} />
-              </TouchableOpacity>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <ServiceSelectorPill compact dark />
+                <TouchableOpacity onPress={() => router.push("/(site-contact)/notifications")} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.3)" }}>
+                  <Bell size={20} color="#ffffff" />
+                  <View style={{ position: "absolute", top: 10, right: 10, width: 9, height: 9, borderRadius: 5, backgroundColor: "#ef4444", borderWidth: 2, borderColor: "rgba(255,255,255,0.5)" }} />
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Weather Overlay inside header */}
-            <View style={{ position: "absolute", bottom: 30, left: 24, right: 24, backgroundColor: "rgba(255,255,255,0.9)", borderRadius: 24, padding: 20, flexDirection: "row", alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 15, elevation: 8 }}>
-              <View style={{ width: 56, height: 56, borderRadius: 16, backgroundColor: "#fffbeb", alignItems: "center", justifyContent: "center", marginRight: 16 }}>
-                <Sun size={28} color="#f59e0b" />
+            <View style={{ position: "absolute", bottom: 26, left: 24, right: 24, backgroundColor: "rgba(255,255,255,0.92)", borderRadius: 24, padding: 18, flexDirection: "row", alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 15, elevation: 8 }}>
+              <View style={{ width: 50, height: 50, borderRadius: 16, backgroundColor: `${serviceConfig.color}15`, alignItems: "center", justifyContent: "center", marginRight: 14 }}>
+                <Activity size={26} color={serviceConfig.color} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 22 }}>28°C Clear</Text>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 14 }}>Coimbatore South, TN</Text>
+                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>
+                  {primaryEntity?.name || `${serviceConfig.label} Site`}
+                </Text>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>
+                  {primaryEntity?.address || "Active Sector Operations"}
+                </Text>
               </View>
             </View>
 
-          </View>
+          </LinearGradient>
         </View>
 
         {/* QUICK ACTIONS GRID */}
         <View style={{ paddingHorizontal: 24, paddingTop: 32, paddingBottom: 16 }}>
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 20 }}>Quick Actions</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 20 }}>Quick Tools</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" }}>
             {[
-              { label: "Project Site", icon: MapPin, route: "/(site-contact)/site-inspections", bg: "#dbeafe", color: "#2563eb" },
-              { label: "Permits", icon: Package, route: "/(site-contact)/documents", bg: "#f1f5f9", color: "#475569" },
-              { label: "Site Inspections", icon: TrendingUp, route: "/(site-contact)/site-inspections", bg: "#fee2e2", color: "#dc2626" },
-              { label: "Helpdesk", icon: HelpCircle, route: "/(site-contact)/support", bg: "#e0e7ff", color: "#4f46e5" },
+              { label: "Sites", icon: MapPin, route: "/(site-contact)/site-inspections", bg: `${serviceConfig.color}15`, color: serviceConfig.color },
+              { label: "Files", icon: FileText, route: "/(site-contact)/documents", bg: "#f1f5f9", color: "#475569" },
+              { label: "Visits", icon: TrendingUp, route: "/(site-contact)/site-inspections", bg: "#fee2e2", color: "#dc2626" },
+              { label: "Help", icon: HelpCircle, route: "/(site-contact)/support", bg: "#e0e7ff", color: "#4f46e5" },
             ].map((item, idx) => (
               <TouchableOpacity key={idx} onPress={() => router.push(item.route as any)} style={{ width: "23%", alignItems: "center", marginBottom: 20 }}>
                 <View style={{ width: 64, height: 64, borderRadius: 24, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 3, marginBottom: 12, borderWidth: 1, borderColor: "#f1f5f9" }}>
@@ -91,35 +107,45 @@ export default function SiteContactDashboardScreen() {
                     <item.icon size={20} color={item.color} />
                   </View>
                 </View>
-                <Text style={{ color: "#334155", fontFamily: "Brandon-Bold", fontSize: 12, textAlign: "center" }}>{item.label}</Text>
+                <Text style={{ color: "#334155", fontFamily: "Brandon-Bold", fontSize: 11, textAlign: "center" }} numberOfLines={1}>{item.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
-        {/* LIVE ASSET / HVAC STATUS (Horizontal Cards) */}
+        {/* LIVE ASSET / TELEMETRY STATUS (Horizontal Cards) */}
         <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 16 }}>Live Asset & Facility Status</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 16 }}>
+            Live {serviceConfig.label} Telemetry
+          </Text>
           <View style={{ flexDirection: "row", gap: 16 }}>
             <View style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 24, padding: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 10, elevation: 2, borderWidth: 1, borderColor: "#f1f5f9" }}>
               <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-                <Package size={16} color="#3b82f6" style={{ marginRight: 6 }} />
-                <Text style={{ color: "#3b82f6", fontFamily: "Brandon-Bold", fontSize: 12, textTransform: "uppercase" }}>CHILLER UNIT #1</Text>
+                <Package size={16} color={serviceConfig.color} style={{ marginRight: 6 }} />
+                <Text style={{ color: serviceConfig.color, fontFamily: "Brandon-Bold", fontSize: 11, textTransform: "uppercase" }}>
+                  {serviceConfig.telemetryCard.primaryTitle}
+                </Text>
               </View>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 12 }}>AHU Plant (Tower A)</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 12 }}>
+                {serviceConfig.telemetryCard.primaryMetric}
+              </Text>
               <View style={{ backgroundColor: "#dcfce7", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12, alignSelf: "flex-start" }}>
-                <Text style={{ color: "#16a34a", fontFamily: "Brandon-Bold", fontSize: 11 }}>Active • 52 psi</Text>
+                <Text style={{ color: "#16a34a", fontFamily: "Brandon-Bold", fontSize: 11 }}>Active • Normal</Text>
               </View>
             </View>
 
             <View style={{ flex: 1, backgroundColor: "#ffffff", borderRadius: 24, padding: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 10, elevation: 2, borderWidth: 1, borderColor: "#f1f5f9" }}>
               <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
                 <Sun size={16} color="#f59e0b" style={{ marginRight: 6 }} />
-                <Text style={{ color: "#f59e0b", fontFamily: "Brandon-Bold", fontSize: 12, textTransform: "uppercase" }}>DG BACKUP 500KVA</Text>
+                <Text style={{ color: "#f59e0b", fontFamily: "Brandon-Bold", fontSize: 11, textTransform: "uppercase" }}>
+                  {serviceConfig.telemetryCard.secondaryTitle}
+                </Text>
               </View>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 12 }}>Basement Substation</Text>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 12 }}>
+                {serviceConfig.telemetryCard.secondaryMetric}
+              </Text>
               <View style={{ backgroundColor: "#ecfdf5", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12, alignSelf: "flex-start" }}>
-                <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 11 }}>Standby • Fuel 92%</Text>
+                <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 11 }}>Optimal Sync</Text>
               </View>
             </View>
           </View>
@@ -146,7 +172,7 @@ export default function SiteContactDashboardScreen() {
               </View>
               <View>
                 <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>Next Audit Date</Text>
-                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Oct 22, 2026</Text>
+                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Nov 25, 2026</Text>
               </View>
             </View>
           </View>
@@ -155,58 +181,60 @@ export default function SiteContactDashboardScreen() {
         {/* COMING UP BANNER */}
         <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
           <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 16 }}>Coming Up</Text>
-          <TouchableOpacity onPress={() => router.push("/(site-contact)/documents" as any)} style={{ width: "100%", height: 160, borderRadius: 24, overflow: "hidden", shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.1, shadowRadius: 15, elevation: 5 }}>
-            <View style={{ width: "100%", height: "100%", justifyContent: "flex-end" }}>
-              <Image
-                source={require("../../assets/images/image14.jpg")}
-                style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
-                resizeMode="cover"
-              />
-              <LinearGradient
-                colors={["transparent", "rgba(0,0,0,0.8)"]}
-                style={{ position: "absolute", bottom: 0, width: "100%", height: "70%" }}
-              />
+          <TouchableOpacity onPress={() => router.push("/(site-contact)/documents" as any)} style={{ width: "100%", height: 150, borderRadius: 24, overflow: "hidden", shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.1, shadowRadius: 15, elevation: 5 }}>
+            <LinearGradient
+              colors={["#064e3b", "#0f172a"]}
+              style={{ width: "100%", height: "100%", justifyContent: "flex-end" }}
+            >
               <View style={{ padding: 20, flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" }}>
                 <View style={{ flex: 1, marginRight: 16 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
                     <ShieldAlert size={14} color="#fcd34d" style={{ marginRight: 6 }} />
                     <Text style={{ color: "#fcd34d", fontFamily: "Brandon-Bold", fontSize: 11, letterSpacing: 1 }}>PRIORITY ADVISORY</Text>
                   </View>
-                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16, lineHeight: 22 }}>Construction safety inspection due tomorrow</Text>
+                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16, lineHeight: 22 }}>
+                    {serviceConfig.label} routine verification scheduled tomorrow
+                  </Text>
                 </View>
                 <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" }}>
                   <ChevronRight size={18} color="#0f172a" />
                 </View>
               </View>
-            </View>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
 
-        {/* RECENT FARM ACTIVITY */}
+        {/* RECENT SERVICE ACTIVITY */}
         <View style={{ paddingHorizontal: 24, marginBottom: 16 }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
             <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>Recent Activity</Text>
             <TouchableOpacity onPress={() => router.push("/(site-contact)/history")}>
-              <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 14 }}>View Log</Text>
+              <Text style={{ color: serviceConfig.color, fontFamily: "Brandon-Bold", fontSize: 14 }}>View Log</Text>
             </TouchableOpacity>
           </View>
           <View style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 10, elevation: 2, borderWidth: 1, borderColor: "#f1f5f9", gap: 16 }}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: "#10b981", marginRight: 12 }} />
-              <Text style={{ flex: 1, color: "#0f172a", fontFamily: "Brandon-Medium", fontSize: 14 }}>Officer Robert completed a routine check.</Text>
+              <Text style={{ flex: 1, color: "#0f172a", fontFamily: "Brandon-Medium", fontSize: 14 }}>
+                Lead {serviceConfig.vocab.staffRole.toLowerCase()} completed {serviceConfig.vocab.taskSingular.toLowerCase()} routine.
+              </Text>
               <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12 }}>2h ago</Text>
             </View>
             <View style={{ height: 1, width: "100%", backgroundColor: "#f1f5f9" }} />
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: "#3b82f6", marginRight: 12 }} />
-              <Text style={{ flex: 1, color: "#0f172a", fontFamily: "Brandon-Medium", fontSize: 14 }}>Order #4921 delivered successfully.</Text>
+              <Text style={{ flex: 1, color: "#0f172a", fontFamily: "Brandon-Medium", fontSize: 14 }}>
+                Monthly {serviceConfig.vocab.report} generated & verified.
+              </Text>
               <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12 }}>Yesterday</Text>
             </View>
             <View style={{ height: 1, width: "100%", backgroundColor: "#f1f5f9" }} />
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: "#f59e0b", marginRight: 12 }} />
-              <Text style={{ flex: 1, color: "#0f172a", fontFamily: "Brandon-Medium", fontSize: 14 }}>Weather alert: Heavy rain expected.</Text>
-              <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12 }}>Oct 7</Text>
+              <Text style={{ flex: 1, color: "#0f172a", fontFamily: "Brandon-Medium", fontSize: 14 }}>
+                Telemetry sensors calibrated successfully.
+              </Text>
+              <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12 }}>Nov 10</Text>
             </View>
           </View>
         </View>

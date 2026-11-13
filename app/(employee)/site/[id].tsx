@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { useService, ServiceSelectorPill } from "../../../context/ServiceContext";
 import {
   ChevronLeft,
   MapPin,
@@ -29,9 +30,14 @@ import {
 
 export default function EmployeeSiteContactProfileScreen() {
   const { id } = useLocalSearchParams();
+  const { serviceConfig } = useService();
   const [selectedService, setSelectedService] = useState<"audit" | "full">(
     "audit"
   );
+
+  const matchedEntity =
+    serviceConfig.sampleEntities.find((e) => e.id === String(id) || e.code === String(id)) ||
+    serviceConfig.sampleEntities[0];
 
   return (
     <View style={{ flex: 1, backgroundColor: "#e2e8f0" }}>
@@ -122,7 +128,7 @@ export default function EmployeeSiteContactProfileScreen() {
               </View>
             </SafeAreaView>
 
-            {/* Bottom Overlaid Tag Pill + Verified Facility Title (Reference Image 2 Left Panel) */}
+            {/* Bottom Overlaid Tag Pill + Verified Facility Title */}
             <View
               style={{
                 position: "absolute",
@@ -150,7 +156,7 @@ export default function EmployeeSiteContactProfileScreen() {
                     fontSize: 12,
                   }}
                 >
-                  HVAC & MEP • Tier-1 SLA
+                  {matchedEntity.type} • {serviceConfig.badge}
                 </Text>
               </View>
 
@@ -159,20 +165,20 @@ export default function EmployeeSiteContactProfileScreen() {
                   style={{
                     color: "#ffffff",
                     fontFamily: "Brandon-Bold",
-                    fontSize: 30,
+                    fontSize: 28,
                   }}
                 >
-                  Apex Cyber Tower
+                  {matchedEntity.name}
                 </Text>
                 <View
                   style={{
-                    backgroundColor: "#4ade80",
+                    backgroundColor: serviceConfig.themeColor,
                     borderRadius: 12,
                     padding: 4,
                     marginLeft: 10,
                   }}
                 >
-                  <ShieldCheck size={15} color="#062214" />
+                  <ShieldCheck size={15} color="#ffffff" />
                 </View>
               </View>
 
@@ -192,14 +198,14 @@ export default function EmployeeSiteContactProfileScreen() {
                     marginLeft: 6,
                   }}
                 >
-                  Tidel Park Road, Block B • 4.2km away
+                  {matchedEntity.address} • {matchedEntity.size} {matchedEntity.sizeUnit}
                 </Text>
               </View>
             </View>
           </View>
         </View>
 
-        {/* RADIO SELECTION CARDS + PRIMARY BLACK PILL CTA (Reference Image 2 Bottom Sheet) */}
+        {/* RADIO SELECTION CARDS + PRIMARY BLACK PILL CTA */}
         <View style={{ paddingHorizontal: 20, paddingTop: 22 }}>
           <Text
             style={{
@@ -210,10 +216,10 @@ export default function EmployeeSiteContactProfileScreen() {
               marginBottom: 16,
             }}
           >
-            Select Service Inspection Protocol
+            Select {serviceConfig.name} Inspection Protocol
           </Text>
 
-          {/* Option 1 with Floating Top-Left Badge ("-40%" style -> "SLA PRIORITY") */}
+          {/* Option 1 with Floating Top-Left Badge */}
           <TouchableOpacity
             activeOpacity={0.9}
             onPress={() => setSelectedService("audit")}
@@ -224,7 +230,7 @@ export default function EmployeeSiteContactProfileScreen() {
               paddingHorizontal: 18,
               paddingVertical: 18,
               borderWidth: selectedService === "audit" ? 1.8 : 1,
-              borderColor: selectedService === "audit" ? "#0f172a" : "#cbd5e1",
+              borderColor: selectedService === "audit" ? serviceConfig.themeColor : "#cbd5e1",
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",
@@ -262,7 +268,7 @@ export default function EmployeeSiteContactProfileScreen() {
                   borderRadius: 11,
                   borderWidth: 2,
                   borderColor:
-                    selectedService === "audit" ? "#0f172a" : "#94a3b8",
+                    selectedService === "audit" ? serviceConfig.themeColor : "#94a3b8",
                   alignItems: "center",
                   justifyContent: "center",
                   marginRight: 12,
@@ -274,7 +280,7 @@ export default function EmployeeSiteContactProfileScreen() {
                       width: 10,
                       height: 10,
                       borderRadius: 5,
-                      backgroundColor: "#0f172a",
+                      backgroundColor: serviceConfig.themeColor,
                     }}
                   />
                 )}
@@ -287,7 +293,7 @@ export default function EmployeeSiteContactProfileScreen() {
                     fontSize: 16,
                   }}
                 >
-                  Routine HVAC & MEP Audit
+                  Routine {serviceConfig.vocab.visit}
                 </Text>
                 <Text
                   style={{
@@ -335,7 +341,7 @@ export default function EmployeeSiteContactProfileScreen() {
               paddingHorizontal: 18,
               paddingVertical: 18,
               borderWidth: selectedService === "full" ? 1.8 : 1,
-              borderColor: selectedService === "full" ? "#0f172a" : "#cbd5e1",
+              borderColor: selectedService === "full" ? serviceConfig.themeColor : "#cbd5e1",
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",
@@ -350,7 +356,7 @@ export default function EmployeeSiteContactProfileScreen() {
                   borderRadius: 11,
                   borderWidth: 2,
                   borderColor:
-                    selectedService === "full" ? "#0f172a" : "#94a3b8",
+                    selectedService === "full" ? serviceConfig.themeColor : "#94a3b8",
                   alignItems: "center",
                   justifyContent: "center",
                   marginRight: 12,
@@ -362,7 +368,7 @@ export default function EmployeeSiteContactProfileScreen() {
                       width: 10,
                       height: 10,
                       borderRadius: 5,
-                      backgroundColor: "#0f172a",
+                      backgroundColor: serviceConfig.themeColor,
                     }}
                   />
                 )}
@@ -375,7 +381,7 @@ export default function EmployeeSiteContactProfileScreen() {
                     fontSize: 16,
                   }}
                 >
-                  Full Deep-System Overhaul
+                  Full {serviceConfig.vocab.entitySingular} Overhaul
                 </Text>
                 <Text
                   style={{
@@ -384,7 +390,7 @@ export default function EmployeeSiteContactProfileScreen() {
                     fontSize: 12,
                   }}
                 >
-                  Complete Chiller & Ducting Diagnostics
+                  Complete SLA Quality & Sensor Audit
                 </Text>
               </View>
             </View>
@@ -400,7 +406,7 @@ export default function EmployeeSiteContactProfileScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* Primary Black Pill CTA Button */}
+          {/* Primary CTA Button */}
           <TouchableOpacity
             activeOpacity={0.9}
             onPress={() => router.push(`/(employee)/visit/${id || "1"}` as any)}
@@ -428,15 +434,15 @@ export default function EmployeeSiteContactProfileScreen() {
               }}
             >
               {selectedService === "audit"
-                ? "Start Routine Audit • Check-In"
-                : "Start Full System Overhaul"}
+                ? `Start Routine ${serviceConfig.vocab.visit} • Check-In`
+                : `Start Full ${serviceConfig.vocab.entitySingular} Overhaul`}
             </Text>
           </TouchableOpacity>
 
           {/* Quick Contact Row */}
           <View style={{ flexDirection: "row", gap: 12, marginBottom: 28 }}>
             <TouchableOpacity
-              onPress={() => Linking.openURL("tel:+919876543210")}
+              onPress={() => Linking.openURL(`tel:${matchedEntity.contactPhone || '+919876543210'}`)}
               style={{
                 flex: 1,
                 backgroundColor: "#ffffff",
@@ -457,14 +463,14 @@ export default function EmployeeSiteContactProfileScreen() {
                   fontSize: 14,
                 }}
               >
-                Call Facility Head
+                Call {serviceConfig.vocab.customerRole}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() =>
                 Alert.alert(
-                  "Site Chat",
-                  "Connecting to Facility Manager on-site chat..."
+                  `${serviceConfig.vocab.entitySingular} Chat`,
+                  `Connecting to ${matchedEntity.contactName} (${serviceConfig.vocab.customerRole})...`
                 )
               }
               style={{
@@ -491,7 +497,7 @@ export default function EmployeeSiteContactProfileScreen() {
                   fontSize: 14,
                 }}
               >
-                Site Chat
+                Direct Chat
               </Text>
             </TouchableOpacity>
           </View>

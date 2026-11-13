@@ -180,7 +180,7 @@ export default function InventoryScreen() {
                     <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Bold", fontSize: 14 }}>
                       {item.qty} {item.unit} in Van
                     </Text>
-                    <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 11 }}>{item.reserved} allocated for today's visits</Text>
+                    <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 11 }}>{item.reserved} allocated for today&apos;s visits</Text>
                   </View>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                     <TouchableOpacity

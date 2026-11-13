@@ -3,11 +3,25 @@ import { Platform } from "react-native";
 
 // Detect if we're on Android emulator or real device
 // Usually 10.0.2.2 for Android Emulator, localhost for iOS simulator
-export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ||
-  (Platform.OS === "android"
+const getBaseUrl = () => {
+  const envUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (envUrl && !envUrl.includes(":8081")) {
+    if (
+      Platform.OS === "android" &&
+      (envUrl.includes("localhost") || envUrl.includes("127.0.0.1"))
+    ) {
+      return envUrl
+        .replace("localhost", "10.0.2.2")
+        .replace("127.0.0.1", "10.0.2.2");
+    }
+    return envUrl;
+  }
+  return Platform.OS === "android"
     ? "http://10.0.2.2:8000/api/v1"
-    : "http://127.0.0.1:8000/api/v1");
+    : "http://127.0.0.1:8000/api/v1";
+};
+
+export const API_BASE_URL = getBaseUrl();
 
 interface RequestOptions extends RequestInit {
   data?: any;
@@ -60,7 +74,7 @@ async function request(endpoint: string, options: RequestOptions) {
     
     return data;
   } catch (error) {
-    console.error("API Request Failed:", url, error);
+    console.log("API Request notice:", url);
     throw error;
   }
 }

@@ -58,14 +58,9 @@ export default function ClockOutScreen() {
     <View style={{ flex: 1, backgroundColor: "#062214" }}>
       <StatusBar barStyle="light-content" />
 
-      {/* DRONE MAP BACKGROUND - TINTED DARK FOR EVENING/CLOCKOUT */}
-      <Image
-        source={require("../../../assets/images/image1.jpg")}
-        style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
-        resizeMode="cover"
-      />
+      {/* GRADIENT BACKGROUND */}
       <LinearGradient
-        colors={["rgba(6, 34, 20, 0.7)", "rgba(0, 0, 0, 0.9)", "#000000"]}
+        colors={["#062214", "#0a331c", "#000000"]}
         style={StyleSheet.absoluteFillObject}
       />
 

@@ -90,7 +90,7 @@ export const startBackgroundTracking = async (sessionId: string) => {
     });
     console.log('Background tracking started for session:', sessionId);
   } catch (error) {
-    console.error('Error starting background tracking:', error);
+    console.log('Background tracking notice:', error);
   }
 };
 

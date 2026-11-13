@@ -19,10 +19,14 @@ import {
   CheckCircle2,
 } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
+import { useService } from "../../../context/ServiceContext";
 
 export default function CheckInScreen() {
   const { id } = useLocalSearchParams();
+  const { serviceConfig } = useService();
   const [photoTaken, setPhotoTaken] = useState(false);
+
+  const matchedEntity = serviceConfig.sampleEntities[0];
 
   const handleCapture = async () => {
     try {
@@ -56,17 +60,12 @@ export default function CheckInScreen() {
     <View style={{ flex: 1, backgroundColor: "#062214" }}>
       <StatusBar barStyle="light-content" />
 
-      {/* Cinematic Background */}
-      <Image
-        source={require("../../../assets/images/image4.jpg")}
-        style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
-        resizeMode="cover"
-      />
+      {/* Gradient Background */}
       <LinearGradient
         colors={[
-          "rgba(6, 34, 20, 0.8)",
-          "rgba(15, 23, 42, 0.95)",
           "#062214",
+          "#0b3d22",
+          "#04140b",
         ]}
         locations={[0, 0.4, 1]}
         style={StyleSheet.absoluteFillObject}
@@ -82,7 +81,7 @@ export default function CheckInScreen() {
           width: 300,
           height: 300,
           borderRadius: 150,
-          backgroundColor: "rgba(16, 185, 129, 0.2)",
+          backgroundColor: `${serviceConfig.color}33`,
         }}
       />
 
@@ -119,7 +118,7 @@ export default function CheckInScreen() {
               fontSize: 20,
             }}
           >
-            Field Check-In
+            {serviceConfig.label} Check-In
           </Text>
           <View style={{ width: 40 }} />
         </View>
@@ -145,13 +144,13 @@ export default function CheckInScreen() {
                 width: 140,
                 height: 140,
                 borderRadius: 70,
-                backgroundColor: "rgba(16, 185, 129, 0.1)",
+                backgroundColor: `${serviceConfig.color}20`,
                 alignItems: "center",
                 justifyContent: "center",
                 borderWidth: 2,
-                borderColor: "#10b981",
+                borderColor: serviceConfig.color,
                 marginBottom: 24,
-                shadowColor: "#10b981",
+                shadowColor: serviceConfig.color,
                 shadowOffset: { width: 0, height: 0 },
                 shadowOpacity: 0.5,
                 shadowRadius: 20,
@@ -165,11 +164,11 @@ export default function CheckInScreen() {
                   height: 100,
                   borderRadius: 50,
                   borderWidth: 1,
-                  borderColor: "rgba(16, 185, 129, 0.4)",
+                  borderColor: `${serviceConfig.color}66`,
                   borderStyle: "dashed",
                 }}
               />
-              <MapPin size={48} color="#10b981" />
+              <MapPin size={48} color={serviceConfig.color} />
             </View>
 
             <Text
@@ -188,7 +187,7 @@ export default function CheckInScreen() {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                backgroundColor: "rgba(16, 185, 129, 0.15)",
+                backgroundColor: `${serviceConfig.color}25`,
                 paddingHorizontal: 12,
                 paddingVertical: 6,
                 borderRadius: 8,
@@ -197,12 +196,12 @@ export default function CheckInScreen() {
             >
               <CheckCircle2
                 size={14}
-                color="#10b981"
+                color={serviceConfig.color}
                 style={{ marginRight: 6 }}
               />
               <Text
                 style={{
-                  color: "#10b981",
+                  color: serviceConfig.color,
                   fontFamily: "Brandon-Bold",
                   fontSize: 12,
                   letterSpacing: 1,
@@ -223,7 +222,7 @@ export default function CheckInScreen() {
                 marginBottom: 32,
               }}
             >
-              You have securely arrived at Kuppusamy Organic Estate. Please
+              You have securely arrived at {matchedEntity?.name || serviceConfig.vocab.entitySingular}. Please
               verify your physical presence with a selfie.
             </Text>
 
@@ -236,9 +235,9 @@ export default function CheckInScreen() {
                 borderRadius: 20,
                 borderWidth: 1,
                 backgroundColor: photoTaken
-                  ? "rgba(16, 185, 129, 0.1)"
+                  ? `${serviceConfig.color}20`
                   : "rgba(255,255,255,0.05)",
-                borderColor: photoTaken ? "#10b981" : "rgba(255,255,255,0.1)",
+                borderColor: photoTaken ? serviceConfig.color : "rgba(255,255,255,0.1)",
                 flexDirection: "row",
                 alignItems: "center",
                 marginBottom: 32,
@@ -249,7 +248,7 @@ export default function CheckInScreen() {
                   width: 48,
                   height: 48,
                   borderRadius: 16,
-                  backgroundColor: photoTaken ? "#10b981" : "#15803d",
+                  backgroundColor: photoTaken ? serviceConfig.color : "#15803d",
                   alignItems: "center",
                   justifyContent: "center",
                   marginRight: 16,
@@ -281,7 +280,7 @@ export default function CheckInScreen() {
                 >
                   {photoTaken
                     ? "Geotagged timestamp logged"
-                    : "Required for audit compliance"}
+                    : `Required for ${serviceConfig.shortName} compliance`}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -294,7 +293,7 @@ export default function CheckInScreen() {
               style={{
                 width: "100%",
                 backgroundColor: photoTaken
-                  ? "#10b981"
+                  ? serviceConfig.color
                   : "rgba(255,255,255,0.1)",
                 borderRadius: 999,
                 paddingVertical: 18,

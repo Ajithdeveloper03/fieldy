@@ -40,14 +40,9 @@ export default function AttendanceScreen() {
     <View style={{ flex: 1, backgroundColor: "#0f172a" }}>
       <StatusBar barStyle="light-content" />
 
-      {/* IMMERSIVE BACKGROUND */}
-      <Image
-        source={require("../../../assets/images/image12.jpg")}
-        style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
-        resizeMode="cover"
-      />
+      {/* GRADIENT BACKGROUND */}
       <LinearGradient
-        colors={["rgba(15,23,42,0.6)", "rgba(15,23,42,0.9)", "#0f172a"]}
+        colors={["#0f172a", "#1e293b", "#0f172a"]}
         style={StyleSheet.absoluteFillObject}
       />
 

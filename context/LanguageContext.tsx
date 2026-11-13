@@ -504,17 +504,32 @@ export const LanguageTogglePill: React.FC<{
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={toggleLanguage}
-      className={`flex-row items-center justify-center w-14 h-8 rounded-full border shadow-xs ${
-        dark
-          ? "bg-slate-900/80 border-slate-700/80"
-          : "bg-white/95 border-slate-200"
-      } ${className}`}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 9,
+        height: 30,
+        borderRadius: 999,
+        borderWidth: 1.2,
+        borderColor: dark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.12)",
+        backgroundColor: dark
+          ? "rgba(15, 23, 42, 0.85)"
+          : "rgba(255, 255, 255, 0.95)",
+      }}
+      className={className}
     >
-      <Globe size={14} color={dark ? "#34d399" : "#059669"} className="mr-1.5" />
+      <View style={{ marginRight: 5 }}>
+        <Globe size={13} color={dark ? "#34d399" : "#059669"} />
+      </View>
       <Text
-        className={`font-brandon-bold text-[11px] uppercase tracking-wider ${
-          dark ? "text-white" : "text-slate-900"
-        }`}
+        style={{
+          fontFamily: "Brandon-Bold",
+          fontSize: 11,
+          letterSpacing: 0.8,
+          color: dark ? "#ffffff" : "#0f172a",
+          textTransform: "uppercase",
+        }}
       >
         {language === "en" ? "EN" : "TA"}
       </Text>
