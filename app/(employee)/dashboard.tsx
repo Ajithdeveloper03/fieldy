@@ -674,7 +674,7 @@ export default function EmployeeDashboardScreen() {
           </View>
 
           {/* SWIGGY-STYLE COLORED BENTO CARDS WITH TRANSLUCENT IMAGES */}
-          <View style={{ flexDirection: "row", gap: 12, marginBottom: 24, height: 176 }}>
+          <View style={{ flexDirection: "row", gap: 12, marginBottom: 24, height: 210 }}>
             {/* Left Tall Card: AI Reports */}
             <TouchableOpacity
               activeOpacity={0.9}
@@ -795,96 +795,6 @@ export default function EmployeeDashboardScreen() {
               </TouchableOpacity>
             </View>
           </View>
-
-          {/* SWIGGY-STYLE HORIZONTAL SLIDER WITH BIG CARDS */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 14, paddingRight: 12 }}
-            style={{ marginBottom: 24 }}
-          >
-            {[
-              {
-                tag: "START OF DAY",
-                title: "Attendance & Selfie",
-                sub: "Mark GPS check-in now",
-                bg: "#0f766e",
-                img: require("../../assets/images/image14.jpg"),
-                route: "/(employee)/attendance-hub",
-              },
-              {
-                tag: "ASSIGNED WORK",
-                title: `Today ${serviceConfig.vocab.tasks}`,
-                sub: "View & start field visits",
-                bg: "#ea580c",
-                img: require("../../assets/images/image15.jpg"),
-                route: "/(employee)/tasks",
-              },
-              {
-                tag: "HISTORY",
-                title: "Past Visit Logs",
-                sub: "All saved reports & proof",
-                bg: "#7c3aed",
-                img: require("../../assets/images/image16.jpg"),
-                route: "/(employee)/visit-history",
-              },
-              {
-                tag: "CLAIMS",
-                title: "Travel & Expenses",
-                sub: "Submit fuel & meal bills",
-                bg: "#0369a1",
-                img: require("../../assets/images/image17.jpg"),
-                route: "/(employee)/expenses",
-              },
-            ].map((slide, idx) => (
-              <TouchableOpacity
-                key={idx}
-                activeOpacity={0.9}
-                onPress={() => router.push(slide.route as any)}
-                style={{
-                  width: 272,
-                  height: 128,
-                  backgroundColor: slide.bg,
-                  borderRadius: 24,
-                  padding: 18,
-                  overflow: "hidden",
-                  justifyContent: "space-between",
-                  elevation: 4,
-                }}
-              >
-                <Image
-                  source={slide.img}
-                  style={{
-                    position: "absolute",
-                    right: -14,
-                    bottom: -14,
-                    width: 105,
-                    height: 105,
-                    borderRadius: 52,
-                    opacity: 0.28,
-                  }}
-                  resizeMode="cover"
-                />
-                <View style={{ maxWidth: "74%" }}>
-                  <Text style={{ color: "#fde047", fontFamily: "Brandon-Bold", fontSize: 10, letterSpacing: 0.8 }}>
-                    {slide.tag}
-                  </Text>
-                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18, marginTop: 2 }}>
-                    {slide.title}
-                  </Text>
-                  <Text style={{ color: "rgba(255,255,255,0.8)", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 2 }}>
-                    {slide.sub}
-                  </Text>
-                </View>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12, marginRight: 4 }}>
-                    Open
-                  </Text>
-                  <ArrowRight size={14} color="#ffffff" />
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
 
           {/* QUICK ACTIONS ROW */}
           <View
@@ -1084,7 +994,97 @@ export default function EmployeeDashboardScreen() {
 
           {/* ASSIGNED ENTITIES (Horizontal List) */}
           <View style={{ marginBottom: 28 }}>
-            <View
+                      {/* SWIGGY-STYLE HORIZONTAL SLIDER WITH BIG CARDS */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 14, paddingHorizontal: 16 }}
+            style={{ marginHorizontal: -22, marginBottom: 24 }}
+          >
+            {[
+              {
+                tag: "START OF DAY",
+                title: "Attendance & Selfie",
+                sub: "Mark GPS check-in now",
+                bg: "#0f766e",
+                img: require("../../assets/images/image14.jpg"),
+                route: "/(employee)/attendance-hub",
+              },
+              {
+                tag: "ASSIGNED WORK",
+                title: `Today ${serviceConfig.vocab.tasks}`,
+                sub: "View & start field visits",
+                bg: "#ea580c",
+                img: require("../../assets/images/image15.jpg"),
+                route: "/(employee)/tasks",
+              },
+              {
+                tag: "HISTORY",
+                title: "Past Visit Logs",
+                sub: "All saved reports & proof",
+                bg: "#7c3aed",
+                img: require("../../assets/images/image16.jpg"),
+                route: "/(employee)/visit-history",
+              },
+              {
+                tag: "CLAIMS",
+                title: "Travel & Expenses",
+                sub: "Submit fuel & meal bills",
+                bg: "#0369a1",
+                img: require("../../assets/images/image17.jpg"),
+                route: "/(employee)/expenses",
+              },
+            ].map((slide, idx) => (
+              <TouchableOpacity
+                key={idx}
+                activeOpacity={0.9}
+                onPress={() => router.push(slide.route as any)}
+                style={{
+                  width: 300,
+                  height: 168,
+                  backgroundColor: slide.bg,
+                  borderRadius: 24,
+                  padding: 20,
+                  overflow: "hidden",
+                  justifyContent: "space-between",
+                  elevation: 4,
+                }}
+              >
+                <Image
+                  source={slide.img}
+                  style={{
+                    position: "absolute",
+                    right: -14,
+                    bottom: -14,
+                    width: 105,
+                    height: 105,
+                    borderRadius: 52,
+                    opacity: 0.28,
+                  }}
+                  resizeMode="cover"
+                />
+                <View style={{ maxWidth: "74%" }}>
+                  <Text style={{ color: "#fde047", fontFamily: "Brandon-Bold", fontSize: 10, letterSpacing: 0.8 }}>
+                    {slide.tag}
+                  </Text>
+                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18, marginTop: 2 }}>
+                    {slide.title}
+                  </Text>
+                  <Text style={{ color: "rgba(255,255,255,0.8)", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 2 }}>
+                    {slide.sub}
+                  </Text>
+                </View>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12, marginRight: 4 }}>
+                    Open
+                  </Text>
+                  <ArrowRight size={14} color="#ffffff" />
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+<View
               style={{
                 flexDirection: "row",
                 alignItems: "center",
