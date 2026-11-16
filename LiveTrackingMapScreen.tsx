@@ -95,7 +95,7 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
 
 // --- Components ---
 const SmoothMarker = ({ coordinate }: { coordinate: Coordinate }) => {
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const [pulseAnim] = useState(() => new Animated.Value(1));
 
   useEffect(() => {
     Animated.loop(

@@ -47,15 +47,16 @@ export default function TrackingScreen() {
     let locationSubscription: Location.LocationSubscription;
 
     (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") return;
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") return;
 
-      locationSubscription = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.BestForNavigation,
-          timeInterval: 2000,
-          distanceInterval: 1,
-        },
+        locationSubscription = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.Balanced,
+            timeInterval: 2000,
+            distanceInterval: 1,
+          },
         (location) => {
           setCurrentLocation(location);
           setRouteCoordinates((prev) => [
@@ -74,6 +75,9 @@ export default function TrackingScreen() {
       timerRef.current = setInterval(() => {
         setDuration((prev) => prev + 1);
       }, 1000);
+      } catch (e) {
+        console.log("Location watch notice:", e);
+      }
     })();
 
     return () => {

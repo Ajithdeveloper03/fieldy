@@ -29,24 +29,24 @@ export default function MenuScreen() {
 
   const menuGroups = [
     {
-      title: "Field Operations & Services",
+      title: "Field Work",
       items: [
-        { icon: ClipboardList, label: "Work Orders & Tasks", route: "/(employee)/tasks", color: "#f97316" },
-        { icon: Shield, label: "Daily Attendance & GPS", route: "/(employee)/attendance-hub", color: "#10b981" },
-        { icon: MapPin, label: "Assigned Facilities & Clients", route: "/(employee)/my-sites", color: "#3b82f6" },
-        { icon: PhoneCall, label: "Performance & Incentives", route: "/(employee)/performance", color: "#8b5cf6" },
+        { icon: ClipboardList, label: "Today Tasks", route: "/(employee)/tasks", color: "#f97316" },
+        { icon: Shield, label: "Attendance & GPS", route: "/(employee)/attendance-hub", color: "#10b981" },
+        { icon: MapPin, label: "My Sites", route: "/(employee)/my-sites", color: "#3b82f6" },
+        { icon: PhoneCall, label: "Scores & KPIs", route: "/(employee)/performance", color: "#8b5cf6" },
       ],
     },
     {
-      title: "Field Kit, Claims & Safety",
+      title: "Pay, Kit & Safety",
       items: [
-        { icon: Database, label: "Field Expenses & Travel Claims", route: "/(employee)/expenses", color: "#10b981" },
-        { icon: CloudOff, label: "Boot Stock & Materials Inventory", route: "/(employee)/inventory", color: "#38bdf8" },
-        { icon: Shield, label: "Emergency SOS & Lone Worker Safety", route: "/(employee)/sos", color: "#ef4444" },
+        { icon: Database, label: "Expenses", route: "/(employee)/expenses", color: "#10b981" },
+        { icon: CloudOff, label: "Kit Stock", route: "/(employee)/inventory", color: "#38bdf8" },
+        { icon: Shield, label: "Emergency SOS", route: "/(employee)/sos", color: "#ef4444" },
       ],
     },
     {
-      title: "Account & Preferences",
+      title: "Account",
       items: [
         { icon: User, label: "Edit Profile", route: "/(employee)/edit-profile", color: "#f59e0b" },
       ],
@@ -64,7 +64,7 @@ export default function MenuScreen() {
           <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 8, backgroundColor: "#ffffff", borderRadius: 999, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}>
             <ChevronLeft size={24} color="#0f172a" />
           </TouchableOpacity>
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>Settings & Menu</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>Menu</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -107,11 +107,11 @@ export default function MenuScreen() {
             style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "#fee2e2", paddingVertical: 16, borderRadius: 999, marginTop: 16 }}
           >
             <LogOut size={20} color="#ef4444" style={{ marginRight: 8 }} />
-            <Text style={{ color: "#ef4444", fontFamily: "Brandon-Bold", fontSize: 16 }}>Log Out Securely</Text>
+            <Text style={{ color: "#ef4444", fontFamily: "Brandon-Bold", fontSize: 16 }}>Log Out</Text>
           </TouchableOpacity>
 
           <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, textAlign: "center", marginTop: 24 }}>
-            Infinity Organics v2.0.1
+            Fieldy v2.0.1
           </Text>
 
         </ScrollView>

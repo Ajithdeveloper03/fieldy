@@ -21,6 +21,8 @@ import {
 } from "lucide-react-native";
 import { showToast } from "../../../components/ui/ToastMessage";
 import { useService } from "../../../context/ServiceContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiClient } from "../../../api/client";
 
 export default function SubmitReportScreen() {
   const insets = useSafeAreaInsets();
@@ -40,7 +42,7 @@ export default function SubmitReportScreen() {
     ]);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (notes.trim().length < 5) {
       showToast({
         title: "Missing Notes",
@@ -63,7 +65,28 @@ export default function SubmitReportScreen() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
+    const newReport = {
+      id: `REP-${Date.now()}`,
+      service: serviceConfig.shortName,
+      method: method || "report",
+      notes: notes.trim(),
+      paymentMode,
+      amountCollected: paymentMode !== "None" ? Number(amountCollected) : 0,
+      photos,
+      recommendations: recommendations.trim(),
+      createdAt: new Date().toISOString(),
+      status: "Submitted",
+    };
+
+    try {
+      const existing = await AsyncStorage.getItem("@fieldy_reports");
+      const list = existing ? JSON.parse(existing) : [];
+      list.unshift(newReport);
+      await AsyncStorage.setItem("@fieldy_reports", JSON.stringify(list));
+      await apiClient.post("/employee/reports", newReport).catch(() => null);
+    } catch {
+      // Offline fallback already saved
+    } finally {
       setLoading(false);
       showToast({
         title: "Report Saved",
@@ -71,7 +94,7 @@ export default function SubmitReportScreen() {
         type: "success",
       });
       router.push("/(employee)/visit/success");
-    }, 1000);
+    }
   };
 
   const headerTitle =

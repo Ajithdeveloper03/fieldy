@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Animated, Text, View, StyleSheet, Dimensions, DeviceEventEmitter } from 'react-native';
 import { AlertCircle, CheckCircle2, Info } from 'lucide-react-native';
 
@@ -20,7 +20,7 @@ export const showToast = (data: ToastData) => {
 
 export function ToastMessage() {
   const [toast, setToast] = useState<ToastData | null>(null);
-  const translateY = useRef(new Animated.Value(-150)).current;
+  const [translateY] = useState(() => new Animated.Value(-150));
 
   useEffect(() => {
     const subscription = DeviceEventEmitter.addListener('SHOW_TOAST', (data: ToastData) => {
