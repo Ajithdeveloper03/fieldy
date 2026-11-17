@@ -156,6 +156,17 @@ class CompanyManagementController extends Controller
         return redirect()->back()->with('success', "Company updated successfully!");
     }
 
+    public function toggleStatus($id)
+    {
+        $company = Company::findOrFail($id);
+        $newStatus = $company->status === 'active' ? 'inactive' : 'active';
+
+        $company->update(['status' => $newStatus]);
+        User::where('company_id', $company->id)->update(['status' => $newStatus]);
+
+        return redirect()->back()->with('success', "Company '{$company->name}' is now {$newStatus}.");
+    }
+
     public function show($id)
     {
         $company = Company::with(['admins', 'employees.employeeDetail'])->findOrFail($id);
