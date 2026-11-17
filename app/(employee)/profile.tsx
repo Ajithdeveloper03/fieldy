@@ -241,7 +241,7 @@ export default function EmployeeProfileScreen() {
                 marginBottom: 22,
               }}
             >
-              Senior Field Agronomist • ID: FO-902
+              Senior Field Officer • ID: FO-902
             </Text>
 
             {/* Dual Outlined Pill Buttons (Reference Image 2: "Подписаться" | "Написать") */}

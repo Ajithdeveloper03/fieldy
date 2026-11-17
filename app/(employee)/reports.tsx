@@ -30,7 +30,7 @@ export default function EmployeeReportsScreen() {
     {
       month: "October",
       count: "23 reports",
-      subtitle: "Active SLA Cycle • HVAC & Agronomy",
+      subtitle: "Active SLA Cycle • Field Audit",
       image: require("../../assets/images/image10.jpg"),
       reportId: "1",
     },
@@ -53,7 +53,7 @@ export default function EmployeeReportsScreen() {
   const documents = [
     {
       id: "1",
-      title: "Soil Analysis - Farm A",
+      title: "Site Audit - Tidel Park Chennai",
       date: "Oct 8, 2026",
       size: "2.4 MB",
       type: "PDF",
@@ -61,7 +61,7 @@ export default function EmployeeReportsScreen() {
     },
     {
       id: "2",
-      title: "Monthly Yield Forecast",
+      title: "Monthly SLA Summary",
       date: "Oct 5, 2026",
       size: "1.1 MB",
       type: "DOCX",
@@ -69,7 +69,7 @@ export default function EmployeeReportsScreen() {
     },
     {
       id: "3",
-      title: "Pesticide Usage Log",
+      title: "Material & Safety Log",
       date: "Sep 28, 2026",
       size: "4.8 MB",
       type: "XLSX",
@@ -77,7 +77,7 @@ export default function EmployeeReportsScreen() {
     },
     {
       id: "4",
-      title: "Muthuvel Farm Inspection",
+      title: "Guindy Tech Hub Inspection",
       date: "Sep 15, 2026",
       size: "3.2 MB",
       sizeLabel: "3.2 MB",

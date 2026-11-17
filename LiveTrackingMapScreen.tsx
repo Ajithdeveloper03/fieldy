@@ -1,8 +1,7 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
-import * as TaskManager from 'expo-task-manager';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     Animated,
@@ -15,6 +14,8 @@ import {
     View,
 } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
+import { useTracking } from './context/TrackingContext';
+import { saveLocationLocally } from './utils/trackingManager';
 import { employeeProfile } from './data/mockData';
 
 // --- Constants & Types ---
@@ -30,68 +31,19 @@ interface TelemetryData {
   isOnline: boolean;
 }
 
-const GEOFENCE_RADIUS = 100; // meters
-const MAX_ACCEPTABLE_ACCURACY_METERS = 25;
-const MIN_MOVEMENT_METERS = 5;
-const LOCATION_TASK_NAME = 'background-location-task';
+const MIN_MOVEMENT_METERS = 1;
+const LIGHT_MAP_STYLE = [
+  { elementType: 'geometry', stylers: [{ color: '#f5f5f5' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#616161' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#ffffff' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#c9e6f2' }] },
+];
 
 const farmLocation: Coordinate = {
   latitude: 12.9786,
   longitude: 77.5996,
 };
-
-// --- Helper Functions ---
-const haversineMeters = (a: Coordinate, b: Coordinate) => {
-  const radius = 6371000;
-  const dLat = ((b.latitude - a.latitude) * Math.PI) / 180;
-  const dLon = ((b.longitude - a.longitude) * Math.PI) / 180;
-  const lat1 = (a.latitude * Math.PI) / 180;
-  const lat2 = (b.latitude * Math.PI) / 180;
-  const sinLat = Math.sin(dLat / 2);
-  const sinLon = Math.sin(dLon / 2);
-  const value =
-    sinLat * sinLat + Math.cos(lat1) * Math.cos(lat2) * sinLon * sinLon;
-
-  return radius * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
-};
-
-// --- Background Task Definition ---
-TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
-  if (error) {
-    console.error("Background Location Error:", error);
-    return;
-  }
-  if (data) {
-    const { locations } = data as { locations: Location.LocationObject[] };
-    const location = locations[0];
-
-    if (location) {
-      const { latitude, longitude, accuracy, speed, heading } = location.coords;
-      
-      // --- SEND REAL-TIME PING TO BACKEND FOR ADMIN DASHBOARD ---
-      // This runs even when the app is in the background!
-      try {
-        fetch('http://10.0.2.2:8000/api/v1/employee/tracking/sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({
-            points: [{
-              session_id: 'live_tracking_session',
-              latitude: latitude,
-              longitude: longitude,
-              accuracy: accuracy,
-              speed: speed,
-              heading: heading,
-              timestamp: location.timestamp,
-            }]
-          })
-        }).catch(e => console.log('Silent sync error:', e));
-      } catch (e) {
-        // Ignore fetch errors to not block background task
-      }
-    }
-  }
-});
 
 // --- Components ---
 const SmoothMarker = ({ coordinate }: { coordinate: Coordinate }) => {
@@ -146,6 +98,7 @@ const SmoothMarker = ({ coordinate }: { coordinate: Coordinate }) => {
 };
 
 export default function LiveTrackingMapScreen() {
+  const { sessionId, isTracking, startSession } = useTracking();
   const mapRef = useRef<MapView>(null);
   const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
   const [telemetry, setTelemetry] = useState<TelemetryData>({
@@ -154,7 +107,6 @@ export default function LiveTrackingMapScreen() {
     battery: null,
     isOnline: false,
   });
-  const [inGeofence, setInGeofence] = useState(false);
   const [is3D, setIs3D] = useState(true);
   const [showTraffic, setShowTraffic] = useState(false);
 
@@ -172,20 +124,8 @@ export default function LiveTrackingMapScreen() {
         return;
       }
 
-      // Request background permissions for secure live tracking
-      const { status: backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
-      if (backgroundStatus === 'granted') {
-        await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-          accuracy: Location.Accuracy.BestForNavigation,
-          timeInterval: 2000,
-          distanceInterval: MIN_MOVEMENT_METERS,
-          showsBackgroundLocationIndicator: true,
-          foregroundService: {
-            notificationTitle: "Live Tracking Active",
-            notificationBody: "Your location is being securely shared with the admin.",
-            notificationColor: "#10B981",
-          }
-        });
+      if (!isTracking || !sessionId) {
+        await startSession(`map_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
       }
 
       // UI Update Subscription (Foreground)
@@ -195,28 +135,17 @@ export default function LiveTrackingMapScreen() {
           timeInterval: 2000,
           distanceInterval: MIN_MOVEMENT_METERS,
         },
-        (location) => {
+        async (location) => {
           if (!isMounted) return;
 
           const { latitude, longitude, accuracy, speed, heading } = location.coords;
           const newCoord = { latitude, longitude };
           const lastAccepted = lastAcceptedRef.current;
 
-          if (accuracy != null && accuracy > MAX_ACCEPTABLE_ACCURACY_METERS) {
-            setTelemetry((prev) => ({ ...prev, accuracy, isOnline: false }));
-            return;
-          }
-
           if (lastAccepted && location.timestamp <= lastAccepted.timestamp) return;
 
-          if (
-            lastAccepted &&
-            haversineMeters(lastAccepted.coordinate, newCoord) <
-              Math.max(MIN_MOVEMENT_METERS, accuracy ?? MIN_MOVEMENT_METERS)
-          ) {
-            setTelemetry((prev) => ({ ...prev, speed: 0, accuracy, isOnline: true }));
-            return;
-          }
+          const activeSessionId = sessionId ?? await AsyncStorage.getItem('@current_tracking_session');
+          if (activeSessionId) void saveLocationLocally([location], activeSessionId);
 
           setCurrentLocation(newCoord);
           setBreadcrumbRoute((prev) => [...prev, newCoord]);
@@ -235,20 +164,6 @@ export default function LiveTrackingMapScreen() {
             heading: heading != null && heading >= 0 ? heading : 0,
           }, { duration: 700 });
 
-          // Geofence check
-          const latDiff = Math.abs(farmLocation.latitude - newCoord.latitude);
-          const lngDiff = Math.abs(farmLocation.longitude - newCoord.longitude);
-          const approxDistance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) * 111000;
-
-          setInGeofence((prevInGeofence) => {
-            if (approxDistance < GEOFENCE_RADIUS && !prevInGeofence) {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-              return true;
-            } else if (approxDistance >= GEOFENCE_RADIUS && prevInGeofence) {
-              return false;
-            }
-            return prevInGeofence;
-          });
         }
       );
 
@@ -268,7 +183,7 @@ export default function LiveTrackingMapScreen() {
       // Note: We deliberately do NOT stop the background task (Location.stopLocationUpdatesAsync)
       // here because we want tracking to continue securely when the user leaves this screen or apps.
     };
-  }, []);
+  }, [isTracking, sessionId, startSession]);
 
   const recenterCamera = () => {
     if (!currentLocation) return;
@@ -290,6 +205,8 @@ export default function LiveTrackingMapScreen() {
       <MapView
         ref={mapRef}
         style={styles.map}
+        userInterfaceStyle="light"
+        customMapStyle={LIGHT_MAP_STYLE}
         showsUserLocation={false} // Custom marker handles this
         showsTraffic={showTraffic}
         showsCompass={false}
@@ -391,9 +308,7 @@ export default function LiveTrackingMapScreen() {
 
         <View style={styles.geofenceCounter}>
           <Text style={styles.geofenceText}>
-            {inGeofence
-              ? 'Arrived at Farm'
-              : 'Approaching Selvam Vetiver Farm'}
+            Approaching Selvam Vetiver Farm
           </Text>
         </View>
 
