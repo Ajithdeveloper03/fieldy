@@ -53,7 +53,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
             } else {
                 localStorage.setItem('fieldy_admin_tutorial_step', String(nextStep));
             }
-        } catch {}
+        } catch { }
     };
 
     const closeTutorial = () => advanceTutorial(-1);
@@ -111,7 +111,6 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
             label: vocab.finance.group,
             items: [
                 { href: '/admin/performance', icon: MapPin, label: vocab.finance.scores },
-                ...(isConstruction ? [] : [{ href: '/admin/payments', icon: Wallet, label: vocab.finance.payments }]),
             ],
         },
     ];
@@ -119,7 +118,6 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const allItems = [
         { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Home' },
         ...navGroups.flatMap(g => g.items),
-        ...(isConstruction ? [] : [{ href: '/admin/settings', icon: Settings, label: 'Settings' }]),
     ];
 
     /* Persist preferences */
@@ -128,9 +126,9 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     useEffect(() => { localStorage.setItem('fieldy.favorites', JSON.stringify(favorites)); }, [favorites]);
 
     /* Close drawers on navigation */
-    useEffect(() => { 
-        setMobileOpen(false); 
-        setProfileOpen(false); 
+    useEffect(() => {
+        setMobileOpen(false);
+        setProfileOpen(false);
     }, [url]);
 
     useEffect(() => {
@@ -291,13 +289,6 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                             </div>
                         );
                     })}
-
-                    {!isConstruction && (
-                        <div className="mt-5">
-                            {collapsed && <div className="h-px bg-hp-border mx-2 mb-3" />}
-                            <NavItem href="/admin/settings" icon={Settings} label="Settings" collapsed={collapsed} />
-                        </div>
-                    )}
                 </nav>
 
                 {/* Footer: collapse control (desktop) */}
@@ -447,7 +438,6 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                                             </select>
                                         </div>
                                     )}
-                                    {!isConstruction && <Link href="/admin/settings" className="hp-nav-item"><User className="w-[18px] h-[18px] text-hp-muted" /> {t('Account settings')}</Link>}
                                     <button type="button" onClick={toggleLanguage} className="hp-nav-item w-full">
                                         <Globe className="w-[18px] h-[18px] text-hp-muted" /> {t('Language')}
                                         <span className="ml-auto hp-chip hp-chip-gray">{i18n.language === 'ta' ? 'தமிழ்' : 'English'}</span>
@@ -493,7 +483,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                                     <React.Fragment key={idx}>
                                         <ChevronRight className="w-4 h-4 text-hp-border-strong" />
                                         {idx === breadcrumbs.length - 1 ? (
-                                             <span className="text-hp-dark font-bold">{crumb.label}</span>
+                                            <span className="text-hp-dark font-bold">{crumb.label}</span>
                                         ) : (
                                             <Link href={crumb.href} className="text-hp-muted hover:text-hp-primary font-medium transition-colors">{crumb.label}</Link>
                                         )}

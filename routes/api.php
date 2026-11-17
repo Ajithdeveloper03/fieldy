@@ -39,12 +39,16 @@ Route::prefix('v1')->group(function () {
         // Employee endpoints
         Route::prefix('employee')->group(function () {
             Route::get('/dashboard', [EmployeeController::class, 'dashboard']);
+            Route::get('/tasks', [EmployeeController::class, 'tasks']);
+            Route::post('/tasks/{id}/status', [EmployeeController::class, 'updateTaskStatus']);
+            Route::get('/sites', [EmployeeController::class, 'sites']);
             Route::get('/farmers', [EmployeeController::class, 'myFarmers']);
             Route::get('/visits', [EmployeeController::class, 'visits']);
             Route::post('/attendance', [EmployeeController::class, 'attendance']);
             Route::post('/location-ping', [EmployeeController::class, 'locationPing']);
             Route::post('/farmer/register', [EmployeeController::class, 'registerFarmer']);
             Route::post('/visit/submit', [EmployeeController::class, 'submitVisit']);
+            Route::post('/reports', [EmployeeController::class, 'submitVisit']);
             Route::post('/visit/{id}/checkout', [EmployeeController::class, 'checkoutVisit']);
 
             // Tracking endpoints

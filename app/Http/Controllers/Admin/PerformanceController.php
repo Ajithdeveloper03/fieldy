@@ -25,7 +25,9 @@ class PerformanceController extends Controller
             ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
             ->with('employeeDetail');
 
-        $query = IndustryContext::scope($query, $industryKey);
+        if (IndustryContext::hasColumn('users')) {
+            $query = IndustryContext::scope($query, $industryKey);
+        }
 
         $employees = $query->orderBy('name')->get()->map(function ($user) use ($monthStart, $weekStart) {
             $visitsThisMonth = FarmerVisit::where('employee_id', $user->id)

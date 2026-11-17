@@ -233,22 +233,28 @@ class FarmerDirectoryController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|unique:users,phone|max:20',
-            'village' => 'nullable|string',
-            'district' => 'nullable|string',
-            'state' => 'nullable|string',
+            'phone' => 'nullable|string|max:20',
+            'village' => 'nullable|string|max:255',
+            'district' => 'nullable|string|max:255',
+            'state' => 'nullable|string|max:255',
+            'land_address' => 'nullable|string|max:500',
             'land_size_acres' => 'nullable|numeric',
-            'soil_type' => 'nullable|string',
-            'irrigation_type' => 'nullable|string',
-            'farmer_photo' => 'nullable|image|max:4096',
-            'aadhaar_image' => 'nullable|image|max:4096',
+            'soil_type' => 'nullable|string|max:100',
+            'irrigation_type' => 'nullable|string|max:50',
+            'farmer_photo' => 'nullable|file|max:10240',
+            'aadhaar_image' => 'nullable|file|max:10240',
         ]);
+
+        $phone = $validated['phone'] ?: ('9' . str_pad((string) random_int(100000000, 999999999), 9, '0', STR_PAD_LEFT));
+        while (User::where('phone', $phone)->exists()) {
+            $phone = '9' . str_pad((string) random_int(100000000, 999999999), 9, '0', STR_PAD_LEFT);
+        }
 
         $userAttributes = [
             'name' => $validated['name'],
-            'phone' => $validated['phone'],
-            'email' => $validated['phone'].'@fieldy.io',
-            'password' => Hash::make($validated['phone']),
+            'phone' => $phone,
+            'email' => $phone . '@fieldy.io',
+            'password' => Hash::make($phone),
             'role' => 'farmer',
             'status' => 'active',
             'company_id' => auth()->user()?->company_id,
@@ -264,20 +270,21 @@ class FarmerDirectoryController extends Controller
             : null;
 
         $district = $validated['district'] ?? '';
-        $prefix = $district ? strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $district), 0, 3)) : 'FLD';
+        $prefix = $district ? strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $district), 0, 3)) : 'SIT';
 
         $profileAttributes = [
             'user_id' => $farmerUser->id,
             'created_by_employee_id' => auth()->id(),
             'approval_status' => 'approved',
-            'farmer_code' => $prefix.'-REC-'.str_pad($farmerUser->id, 4, '0', STR_PAD_LEFT),
+            'farmer_code' => $prefix . '-SITE-' . str_pad($farmerUser->id, 4, '0', STR_PAD_LEFT),
             'land_size_acres' => $validated['land_size_acres'] ?? null,
-            'mobile_number' => $validated['phone'],
+            'land_address' => $validated['land_address'] ?? $validated['village'] ?? null,
+            'mobile_number' => $phone,
             'village' => $validated['village'] ?? null,
             'district' => $validated['district'] ?? null,
-            'state' => $validated['state'] ?? null,
+            'state' => $validated['state'] ?? 'Tamil Nadu',
             'soil_type' => $validated['soil_type'] ?? null,
-            'irrigation_type' => $validated['irrigation_type'] ?? null,
+            'irrigation_type' => $validated['irrigation_type'] ?? 'Sq.ft',
             'kyc_status' => 'verified',
             'farmer_photo_path' => $farmerPhotoPath,
             'aadhaar_image_path' => $aadhaarPath,
@@ -285,6 +292,6 @@ class FarmerDirectoryController extends Controller
         $profileAttributes = IndustryContext::tag($profileAttributes, 'farmer_profiles', $industryKey);
         FarmerProfile::create($profileAttributes);
 
-        return redirect('/admin/farmers')->with('success', 'Entity registered successfully.');
+        return redirect('/admin/farmers')->with('success', $validated['name'] . ' added successfully.');
     }
 }

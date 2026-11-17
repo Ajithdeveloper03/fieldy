@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import AdminLayout from './AdminLayout';
 import { router, usePage } from '@inertiajs/react';
 import {
     MapPin, FileCheck2, CheckCircle2, Briefcase, ArrowRight, ArrowUp,
     FileText, AlertCircle, Building2, Sparkles, ClipboardList, UserPlus, ShieldAlert,
-    Wallet, ChevronRight, Activity, Search, Filter, Clock, TrendingUp, Lightbulb, X
+    Wallet, ChevronRight, Activity, Search, Filter, Clock, TrendingUp, Lightbulb, X, Maximize, Minimize
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useTranslation } from 'react-i18next';
 import { getIndustryById } from '../../data/industriesConfig';
+import { createFieldEmployeeIcon } from '../../lib/mapIcons';
 
 // Fix Leaflet's default icon path issues
 delete L.Icon.Default.prototype._getIconUrl;
@@ -20,16 +22,7 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const markerIcon = L.divIcon({
-    className: 'custom-icon',
-    html: `
-        <div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="white"/><circle cx="12" cy="12" r="7.5" fill="#F26A10"/><circle cx="12" cy="12" r="3" fill="white"/></svg>
-        </div>
-    `,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-});
+const markerIcon = createFieldEmployeeIcon('');
 
 const GROWTH = [
     { day: 'Mon', val: 30, rev: 120 },
@@ -46,6 +39,7 @@ const greetingFor = (h) => (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' 
 export default function Dashboard({ currentIndustry: initialIndustry, locationLogs = [], stats = {}, recentVisits = [], recentFarmers = [], pendingApprovals = [], agriStats = {}, growthData = [], telemetry = [] }) {
     const [prompt, setPrompt] = useState('');
     const [showTip, setShowTip] = useState(true);
+    const [isFullScreenMap, setIsFullScreenMap] = useState(false);
     const [activeAiTab, setActiveAiTab] = useState('dispatch');
     const { t } = useTranslation();
     const { props, url } = usePage();
@@ -109,8 +103,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
         { label: t(labels.todayTasksTitle || 'New Task'), icon: ClipboardList, href: '/admin/tasks' },
         { label: t(labels.addEntityAction || 'Add Property'), icon: IndIcon, href: '/admin/farmers/register' },
         { label: t(`Add ${labels.navAgents || 'Agent'}`), icon: UserPlus, href: '/admin/employees/create' },
-        { label: t('Live Map'), icon: ShieldAlert, href: '/admin/monitor' },
-        ...(industryKey === 'construction' ? [] : [{ label: t('Payments'), icon: Wallet, href: '/admin/payments' }]),
+        { label: t('Open Map'), icon: MapPin, onClick: () => setIsFullScreenMap(true) },
     ];
 
     const services = [
@@ -243,7 +236,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
 
                     <div className="flex flex-wrap justify-center gap-2 mt-4">
                         {quickActions.map((a, idx) => (
-                            <button key={idx} type="button" onClick={() => router.visit(a.href)} className="hp-pill text-xs">
+                            <button key={idx} type="button" onClick={() => a.onClick ? a.onClick() : router.visit(a.href)} className="hp-pill text-xs">
                                 <a.icon className="w-3.5 h-3.5" /> {a.label}
                             </button>
                         ))}
@@ -260,7 +253,11 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                     {currentIndustry.kpis.map((kpi) => (
-                        <article key={kpi.label} className="hp-card p-4">
+                        <article
+                            key={kpi.label}
+                            onClick={() => kpi.href && router.visit(kpi.href)}
+                            className={`hp-card p-4 ${kpi.href ? 'cursor-pointer hover:border-hp-primary transition-colors' : ''}`}
+                        >
                             <div className="flex items-start justify-between gap-3">
                                 <span className="hp-icon-tile"><kpi.icon className="w-5 h-5" /></span>
                                 <span className="hp-chip hp-chip-success">{kpi.trend}</span>
@@ -286,7 +283,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                         </div>
                     </div>
                     <div className="flex items-center gap-2 self-start sm:self-auto">
-                        <button type="button" onClick={() => router.visit('/admin/monitor')} className="hp-btn hp-btn-sm hp-btn-primary !h-8 text-xs">
+                        <button type="button" onClick={() => setIsFullScreenMap(true)} className="hp-btn hp-btn-sm hp-btn-primary !h-8 text-xs">
                             {t('Open Map')}
                         </button>
                         <button type="button" onClick={() => setShowTip(false)} className="w-8 h-8 rounded-md flex items-center justify-center text-white/60 hover:text-white" aria-label="Dismiss">
@@ -399,42 +396,6 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                 </section>
             </div>
 
-            {/* ══════════ PERFORMANCE CHART (hidden on construction) ══════════ */}
-            {industryKey !== 'construction' && (<section className="hp-card mb-8">
-                <div className="hp-card-header flex-wrap">
-                    <div>
-                        <h2 className="hp-card-title">{t(labels.chartTitle)}</h2>
-                        <p className="text-xs text-hp-muted">{t(labels.chartSub)}</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <span className="flex items-center gap-1.5 text-xs text-hp-gray"><span className="w-2.5 h-2.5 rounded-sm bg-hp-primary"></span>{t(labels.chartMetric1)}</span>
-                        <span className="flex items-center gap-1.5 text-xs text-hp-gray"><span className="w-2.5 h-2.5 rounded-sm bg-hp-dark"></span>{t(labels.chartMetric2)}</span>
-                        <span className="hp-chip hp-chip-success"><TrendingUp className="w-3.5 h-3.5" /> +18%</span>
-                    </div>
-                </div>
-                <div className="hp-card-body">
-                    <div className="relative h-52">
-                        {[0, 25, 50, 75, 100].map(g => (
-                            <div key={g} className="absolute left-0 right-0 border-t border-dashed border-hp-border" style={{ bottom: `${g}%` }} />
-                        ))}
-                        <div className="relative h-full flex justify-between items-end px-2 sm:px-8">
-                            {((growthData && growthData.length > 0) ? growthData : GROWTH).map((item) => (
-                                <div key={item.day} className="flex flex-col items-center h-full group">
-                                    <div className="flex-1 flex items-end gap-1.5 relative">
-                                        <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-hp-dark text-white text-[11px] font-bold px-2 py-1 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                            {item.val} {labels.chartMetric1} · {item.rev} {labels.chartMetric2}
-                                        </div>
-                                        <div className="w-3.5 sm:w-5 rounded-t-md bg-hp-primary group-hover:bg-hp-primary-hover transition-all duration-300" style={{ height: `${item.val}%` }} />
-                                        <div className="w-3.5 sm:w-5 rounded-t-md bg-hp-dark/85 group-hover:bg-hp-dark transition-all duration-300" style={{ height: `${(item.rev / 500) * 100}%` }} />
-                                    </div>
-                                    <span className="text-xs font-semibold text-hp-muted mt-3">{item.day}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </section>)}
-
             {/* ══════════ RECENT LOGS & VISITS ══════════ */}
             <section className="hp-card overflow-hidden mb-8">
                 <div className="hp-card-header flex-wrap">
@@ -481,8 +442,8 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                 </div>
             </section>
 
-            {/* ══════════ ENTITIES & PENDING APPROVALS ══════════ */}
-            <div className={`grid grid-cols-1 gap-6 ${industryKey === 'construction' ? '' : 'lg:grid-cols-2'}`}>
+            {/* ══════════ PROJECT SITES OVERVIEW ══════════ */}
+            <div className="grid grid-cols-1 gap-6">
                 <section className="hp-card overflow-hidden">
                     <div className="hp-card-header">
                         <h2 className="hp-card-title">{t(labels.recentEntityTitle)}</h2>
@@ -511,32 +472,6 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                         <div className="text-center text-hp-muted text-sm py-12">{t('No entities onboarded yet.')}</div>
                     )}
                 </section>
-
-                {industryKey !== 'construction' && (<section className="hp-card overflow-hidden">
-                    <div className="hp-card-header">
-                        <h2 className="hp-card-title">{t(labels.pendingTitle)}</h2>
-                        <span className="hp-chip hp-chip-warning">{pendingApprovals.length} {t('Pending')}</span>
-                    </div>
-                    {pendingApprovals.length > 0 ? pendingApprovals.map((approval, i) => (
-                        <div key={i} className="hp-row">
-                            <span className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 bg-hp-warning-light text-hp-warning">
-                                <AlertCircle className="w-4 h-4" />
-                            </span>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-hp-dark truncate">{approval.name}</p>
-                                <p className="text-xs text-hp-muted">{approval.farmer_code} · {approval.district}</p>
-                            </div>
-                            <span className="hp-chip hp-chip-warning">{t('Pending Review')}</span>
-                        </div>
-                    )) : (
-                        <div className="flex flex-col items-center text-center py-12 px-6">
-                            <span className="w-10 h-10 rounded-full bg-hp-success-light text-hp-success flex items-center justify-center mb-2">
-                                <CheckCircle2 className="w-5 h-5" />
-                            </span>
-                            <p className="text-sm font-bold text-hp-dark">{t('All caught up! No pending items.')}</p>
-                        </div>
-                    )}
-                </section>)}
             </div>
 
             {/* ══════════ INDUSTRY AI ASSISTANT BANNER ══════════ */}
@@ -590,6 +525,32 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                 </div>
             </div>
             
+            {isFullScreenMap && typeof document !== 'undefined' && createPortal(
+                <div className="fixed inset-0 z-[99999] w-screen h-screen bg-white flex flex-col">
+                    <div className="px-5 py-3.5 border-b border-hp-border flex items-center justify-between bg-white shadow-xs">
+                        <div className="flex items-center gap-3">
+                            <span className="w-8 h-8 rounded-lg bg-hp-primary-light text-hp-primary flex items-center justify-center">
+                                <MapPin className="w-4 h-4" />
+                            </span>
+                            <div>
+                                <h2 className="text-sm font-bold text-hp-dark">{t(labels.agentDutyTitle || 'Live Map View')}</h2>
+                                <p className="text-xs text-hp-muted">{liveLocationLogs.length} {t('personnel online on map')}</p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setIsFullScreenMap(false)}
+                            className="hp-btn hp-btn-sm hp-btn-secondary"
+                        >
+                            <Minimize className="w-4 h-4 mr-1" /> {t('Exit Full Map')}
+                        </button>
+                    </div>
+                    <div className="flex-1 relative">
+                        {mapContent}
+                    </div>
+                </div>,
+                document.body
+            )}
         </AdminLayout>
     );
 }

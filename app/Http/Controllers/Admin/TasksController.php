@@ -120,7 +120,7 @@ class TasksController extends Controller
             'safety_requirements' => self::getDefaultSafety($industry),
         ]);
 
-        return redirect($this->tasksUrl($request))->with('success', 'Site Task scheduled successfully.');
+        return redirect()->back()->with('success', 'Site Task scheduled successfully.');
     }
 
     public function update(Request $request, $id)
@@ -148,14 +148,14 @@ class TasksController extends Controller
         $task = Task::findOrFail($id);
         $task->update($validated);
 
-        return redirect($this->tasksUrl($request))->with('success', 'Work order updated successfully.');
+        return redirect()->back()->with('success', 'Work order updated successfully.');
     }
 
     public function destroy(Request $request, $id)
     {
         Task::findOrFail($id)->delete();
 
-        return redirect($this->tasksUrl($request))->with('success', 'Work order removed.');
+        return redirect()->back()->with('success', 'Work order removed.');
     }
 
     private function tasksUrl(Request $request): string

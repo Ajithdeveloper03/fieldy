@@ -57,6 +57,9 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
+                'generated_password' => fn () => $request->session()->get('generated_password'),
+                'generated_login_id' => fn () => $request->session()->get('generated_login_id'),
+                'generated_name' => fn () => $request->session()->get('generated_name'),
             ],
             // Active service vertical — persisted in session so every admin page stays on the selected service.
             'currentIndustry' => $user ? \App\Services\Industry\IndustryContext::current() : null,

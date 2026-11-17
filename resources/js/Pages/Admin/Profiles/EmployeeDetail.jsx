@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import AdminLayout from '../AdminLayout';
-import { Link, router } from '@inertiajs/react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
 import { 
     ArrowLeft, MapPin, Navigation, Clock, Smartphone, ShieldCheck, Activity, 
     Maximize, Minimize, Star, Users, Map, CheckCircle2, Sparkles, Phone, MessageSquare,
-    ArrowUpRight, Building2, Battery, Wifi, TrendingUp
+    ArrowUpRight, Building2, Battery, Wifi, TrendingUp, KeyRound, X, Save
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import useIndustry from '../../../hooks/useIndustry';
@@ -29,8 +29,31 @@ function ChangeView({ center, zoom }) {
 
 export default function EmployeeDetail({ employee = {}, attendance = [], visitsThisWeek = [], assignedFarmers = [], recentReviews = [], performanceHistory = [] }) {
     const { t } = useTranslation();
+    const { flash } = usePage().props;
     const { vocab, labels, industry } = useIndustry();
     const [isMapFullscreen, setIsMapFullscreen] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+
+    const { data: editData, setData: setEditData, put, processing: savingEdit, errors: editErrors } = useForm({
+        name: employee.name || '',
+        email: employee.email || '',
+        phone: employee.phone || '',
+        password: '',
+        assigned_region: employee.region || '',
+        emergency_phone: employee.emergency && employee.emergency !== 'N/A' ? employee.emergency : '',
+        status: employee.status === 'disabled' ? 'disabled' : 'active',
+    });
+
+    const handleSaveCredentials = (e) => {
+        e.preventDefault();
+        put(`/admin/employees/${employee.id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setEditData('password', '');
+                setShowEditModal(false);
+            },
+        });
+    };
 
     const [liveLocation, setLiveLocation] = useState({
         lat: parseFloat(employee.last_latitude) || null,
@@ -151,6 +174,12 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                     </Link>
                 </div>
 
+                {flash?.success && (
+                    <div className="hp-bento-card !p-4 border-l-4 border-l-hp-success bg-hp-success-light/30 text-sm font-bold text-hp-dark flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-hp-success" /> {flash.success}
+                    </div>
+                )}
+
                 {/* ══════════ HOSTINGER HERO CARD ══════════ */}
                 <div className="hp-hero-card p-6 sm:p-8">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -173,7 +202,15 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                         </div>
 
                         {/* Top Action Buttons */}
-                        <div className="flex items-center gap-3 shrink-0 self-start lg:self-center">
+                        <div className="flex flex-wrap items-center gap-3 shrink-0 self-start lg:self-center">
+                            <button
+                                type="button"
+                                onClick={() => setShowEditModal(true)}
+                                className="hp-btn hp-btn-secondary !rounded-full"
+                            >
+                                <KeyRound className="w-4 h-4 mr-1 text-hp-primary" />
+                                <span>{t('Change Login & Password')}</span>
+                            </button>
                             <button 
                                 type="button" 
                                 onClick={() => window.location.href = `tel:${employee.phone}`}
@@ -235,7 +272,7 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                             <div className="space-y-3.5 text-xs">
                                 <div className="flex items-center justify-between py-1">
                                     <span className="text-hp-muted flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> Role / Specialization</span>
-                                    <span className="font-bold text-hp-dark">{employee.designation && employee.designation !== 'field_officer' ? employee.designation : vocab.roles[0]}</span>
+                                    <span className="font-bold text-hp-dark">{employee.designation && employee.designation !== 'field_officer' ? employee.designation : (vocab.staff?.roles?.[0] || 'Field Officer')}</span>
                                 </div>
                                 <div className="flex items-center justify-between py-1">
                                     <span className="text-hp-muted flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Assigned Zone</span>
@@ -386,6 +423,99 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                 </div>
 
             </div>
+
+            {showEditModal && (
+                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4" onClick={() => setShowEditModal(false)}>
+                    <div className="hp-card w-full max-w-lg p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between pb-3 border-b border-hp-border">
+                            <h2 className="text-lg font-bold text-hp-dark flex items-center gap-2">
+                                <KeyRound className="w-5 h-5 text-hp-primary" /> {t('Edit Profile & Login Credentials')}
+                            </h2>
+                            <button type="button" onClick={() => setShowEditModal(false)} className="p-1 text-hp-muted hover:text-hp-dark">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSaveCredentials} className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-bold text-hp-dark mb-1">{t('Full Name')} *</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="hp-input"
+                                        value={editData.name}
+                                        onChange={(e) => setEditData('name', e.target.value)}
+                                    />
+                                    {editErrors.name && <p className="text-hp-danger text-xs mt-1">{editErrors.name}</p>}
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-hp-dark mb-1">{t('Mobile Number')} *</label>
+                                    <input
+                                        type="tel"
+                                        required
+                                        className="hp-input"
+                                        value={editData.phone}
+                                        onChange={(e) => setEditData('phone', e.target.value)}
+                                    />
+                                    {editErrors.phone && <p className="text-hp-danger text-xs mt-1">{editErrors.phone}</p>}
+                                </div>
+                                <div className="sm:col-span-2">
+                                    <label className="block text-xs font-bold text-hp-dark mb-1">{t('Username / Login Email')} *</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="hp-input font-mono text-xs"
+                                        value={editData.email}
+                                        onChange={(e) => setEditData('email', e.target.value)}
+                                    />
+                                    {editErrors.email && <p className="text-hp-danger text-xs mt-1">{editErrors.email}</p>}
+                                </div>
+                                <div className="sm:col-span-2">
+                                    <label className="block text-xs font-bold text-hp-dark mb-1">{t('New Password (leave blank to keep current)')}</label>
+                                    <input
+                                        type="text"
+                                        className="hp-input font-mono text-xs"
+                                        placeholder="Enter new password (min 4 chars)"
+                                        value={editData.password}
+                                        onChange={(e) => setEditData('password', e.target.value)}
+                                    />
+                                    {editErrors.password && <p className="text-hp-danger text-xs mt-1">{editErrors.password}</p>}
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-hp-dark mb-1">{t('Assigned Zone')}</label>
+                                    <input
+                                        type="text"
+                                        className="hp-input"
+                                        value={editData.assigned_region}
+                                        onChange={(e) => setEditData('assigned_region', e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-hp-dark mb-1">{t('Account Status')}</label>
+                                    <select
+                                        className="hp-input"
+                                        value={editData.status}
+                                        onChange={(e) => setEditData('status', e.target.value)}
+                                    >
+                                        <option value="active">{t('Active')}</option>
+                                        <option value="disabled">{t('Disabled')}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end gap-2 pt-3 border-t border-hp-border">
+                                <button type="button" onClick={() => setShowEditModal(false)} className="hp-btn hp-btn-secondary">
+                                    {t('Cancel')}
+                                </button>
+                                <button type="submit" disabled={savingEdit} className="hp-btn hp-btn-primary">
+                                    <Save className="w-4 h-4 mr-1" /> {savingEdit ? t('Saving...') : t('Save Credentials')}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </AdminLayout>
     );
 }

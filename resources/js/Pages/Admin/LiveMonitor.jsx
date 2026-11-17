@@ -5,6 +5,7 @@ import { Head, router } from '@inertiajs/react';
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { createFieldEmployeeIcon } from '../../lib/mapIcons';
 
 // Fix Leaflet's default icon path issues
 delete L.Icon.Default.prototype._getIconUrl;
@@ -14,9 +15,15 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-function ChangeView({ center, zoom }) {
+function ChangeView({ center, zoom, fullscreen }) {
   const map = useMap();
-  map.setView(center, zoom);
+  useEffect(() => {
+    map.setView(center, zoom);
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 60);
+    return () => clearTimeout(timer);
+  }, [center, zoom, fullscreen, map]);
   return null;
 }
 
@@ -102,20 +109,10 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
         router.reload({ only: ['employees'], preserveScroll: true, preserveState: true, onSuccess: () => setLastRefreshed(new Date().toLocaleTimeString()) });
     };
 
-    const mapMarkerIcon = L.divIcon({
-        className: 'custom-icon',
-        html: `
-            <div style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="10" fill="white" />
-                    <circle cx="12" cy="12" r="7.5" fill="#F26A10" />
-                    <circle cx="12" cy="12" r="3" fill="white" />
-                </svg>
-            </div>
-        `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-    });
+    const mapMarkerIcon = useMemo(
+        () => createFieldEmployeeIcon(selectedEmployee?.name?.split(' ')?.[0] || ''),
+        [selectedEmployee?.name]
+    );
 
     return (
         <AdminLayout>
@@ -325,58 +322,118 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                         <div className="lg:col-span-2 space-y-6">
 
                             {(() => {
-                                const mapComponent = (
-                                    <div className={`hp-bento-card !p-0 overflow-hidden relative flex flex-col ${isMapFullscreen ? 'fixed inset-0 z-[99999] w-screen h-screen rounded-none' : 'h-[440px]'}`}>
-                                        <div className="absolute top-4 right-4 z-[500] flex items-center gap-2">
-                                            <div className="bg-white/95 backdrop-blur-sm border border-hp-border px-3 py-1.5 rounded-full text-xs font-bold text-hp-dark shadow-sm flex items-center gap-1.5">
-                                                <span className="w-2 h-2 rounded-full bg-hp-primary animate-ping"></span>
-                                                <span>{selectedEmployee.name}</span>
-                                            </div>
-                                            <button 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setIsMapFullscreen(!isMapFullscreen);
-                                                }}
-                                                className="hp-icon-btn !bg-white border border-hp-border shadow-[var(--shadow-hp-md)] !w-9 !h-9 !rounded-full"
-                                                title={isMapFullscreen ? t('Exit fullscreen') : t('Fullscreen')}
-                                            >
-                                                {isMapFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
-                                            </button>
-                                        </div>
-
-                                        <div className="w-full h-full relative">
-                                            <MapContainer
-                                                center={[parseFloat(selectedEmployee.latitude) || 12.9716, parseFloat(selectedEmployee.longitude) || 77.5946]}
-                                                zoom={14}
-                                                style={{ width: '100%', height: '100%', zIndex: 0 }}
-                                            >
-                                                <ChangeView center={[parseFloat(selectedEmployee.latitude) || 12.9716, parseFloat(selectedEmployee.longitude) || 77.5946]} zoom={14} />
-                                                <TileLayer
-                                                    attribution='&copy; Google Maps'
-                                                    url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
-                                                />
-                                                {selectedEmployee.recentPath && selectedEmployee.recentPath.length > 1 && (
-                                                    <Polyline 
-                                                        positions={selectedEmployee.recentPath.map(p => [p.lat, p.lng])} 
-                                                        color="#F26A10" 
-                                                        weight={4} 
-                                                        opacity={0.85}
-                                                        lineCap="round"
-                                                        lineJoin="round"
-                                                    />
-                                                )}
-                                                {selectedEmployee.latitude && selectedEmployee.longitude && (
-                                                    <Marker
-                                                        position={[parseFloat(selectedEmployee.latitude), parseFloat(selectedEmployee.longitude)]}
-                                                        icon={mapMarkerIcon}
-                                                    />
-                                                )}
-                                            </MapContainer>
-                                        </div>
-                                    </div>
+                                const renderMap = (fullscreenMode) => (
+                                    <MapContainer
+                                        center={[parseFloat(selectedEmployee.latitude) || 12.9716, parseFloat(selectedEmployee.longitude) || 77.5946]}
+                                        zoom={fullscreenMode ? 15 : 14}
+                                        style={{ width: '100%', height: '100%', zIndex: 0 }}
+                                    >
+                                        <ChangeView
+                                            center={[parseFloat(selectedEmployee.latitude) || 12.9716, parseFloat(selectedEmployee.longitude) || 77.5946]}
+                                            zoom={fullscreenMode ? 15 : 14}
+                                            fullscreen={fullscreenMode}
+                                        />
+                                        <TileLayer
+                                            attribution='&copy; Google Maps'
+                                            url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+                                        />
+                                        {selectedEmployee.recentPath && selectedEmployee.recentPath.length > 1 && (
+                                            <Polyline 
+                                                positions={selectedEmployee.recentPath.map(p => [p.lat, p.lng])} 
+                                                color="#F26A10" 
+                                                weight={4} 
+                                                opacity={0.85}
+                                                lineCap="round"
+                                                lineJoin="round"
+                                            />
+                                        )}
+                                        {selectedEmployee.latitude && selectedEmployee.longitude && (
+                                            <Marker
+                                                position={[parseFloat(selectedEmployee.latitude), parseFloat(selectedEmployee.longitude)]}
+                                                icon={mapMarkerIcon}
+                                            />
+                                        )}
+                                    </MapContainer>
                                 );
 
-                                return isMapFullscreen ? createPortal(mapComponent, document.body) : mapComponent;
+                                return (
+                                    <>
+                                        <div className="hp-bento-card !p-0 overflow-hidden relative flex flex-col h-[440px]">
+                                            <div className="absolute top-4 right-4 z-[500] flex items-center gap-2">
+                                                <div className="bg-white/95 backdrop-blur-sm border border-hp-border px-3 py-1.5 rounded-full text-xs font-bold text-hp-dark shadow-sm flex items-center gap-1.5">
+                                                    <span className="w-2 h-2 rounded-full bg-hp-primary animate-ping"></span>
+                                                    <span>{selectedEmployee.name}</span>
+                                                </div>
+                                                <button 
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setIsMapFullscreen(true);
+                                                    }}
+                                                    className="hp-icon-btn !bg-white border border-hp-border shadow-[var(--shadow-hp-md)] !w-9 !h-9 !rounded-full"
+                                                    title={t('Fullscreen')}
+                                                >
+                                                    <Maximize className="w-4 h-4" />
+                                                </button>
+                                            </div>
+
+                                            <div className="w-full h-full relative">
+                                                {!isMapFullscreen && renderMap(false)}
+                                            </div>
+                                        </div>
+
+                                        {isMapFullscreen && typeof document !== 'undefined' && createPortal(
+                                            <div
+                                                style={{
+                                                    position: 'fixed',
+                                                    inset: 0,
+                                                    zIndex: 99999,
+                                                    backgroundColor: 'rgba(15, 23, 42, 0.72)',
+                                                    backdropFilter: 'blur(4px)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    padding: '16px',
+                                                }}
+                                            >
+                                                <div
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        backgroundColor: '#ffffff',
+                                                        borderRadius: '20px',
+                                                        overflow: 'hidden',
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45)',
+                                                    }}
+                                                >
+                                                    <div className="px-5 py-3.5 border-b border-hp-border flex items-center justify-between bg-white shrink-0">
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="w-3 h-3 rounded-full bg-hp-primary animate-ping"></span>
+                                                            <div>
+                                                                <h3 className="text-sm font-bold text-hp-dark">{selectedEmployee.name} — {t('Live GPS Map')}</h3>
+                                                                <p className="text-xs text-hp-muted">{selectedEmployee.currentLocation}</p>
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setIsMapFullscreen(false)}
+                                                            className="hp-btn hp-btn-sm hp-btn-secondary"
+                                                        >
+                                                            <Minimize className="w-4 h-4 mr-1.5" />
+                                                            <span>{t('Close Map')}</span>
+                                                        </button>
+                                                    </div>
+                                                    <div style={{ flex: 1, position: 'relative', width: '100%', height: '100%' }}>
+                                                        {renderMap(true)}
+                                                    </div>
+                                                </div>
+                                            </div>,
+                                            document.body
+                                        )}
+                                    </>
+                                );
                             })()}
 
                             {/* Staff Profile Card */}

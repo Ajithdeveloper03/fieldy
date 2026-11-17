@@ -30,7 +30,9 @@ class EmployeeDirectoryController extends Controller
             ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
             ->with(['employeeDetail', 'attendanceLogs' => fn ($q) => $q->whereDate('date', Carbon::today())]);
 
-        $query = IndustryContext::scope($query, $industryKey);
+        if (IndustryContext::hasColumn('users')) {
+            $query = IndustryContext::scope($query, $industryKey);
+        }
 
         if ($search) {
             $query->where(function ($sub) use ($search) {
@@ -278,12 +280,14 @@ class EmployeeDirectoryController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|unique:users,phone|max:20',
+            'email' => 'nullable|string|max:255|unique:users,email',
+            'password' => 'nullable|string|min:4|max:100',
             'emergency_phone' => 'nullable|string|max:20',
             'assigned_region' => 'nullable|string|max:255',
         ]);
 
-        $password = Str::random(12);
-        $email = $validated['phone'].'@fieldy.io';
+        $password = !empty($validated['password']) ? $validated['password'] : Str::random(10);
+        $email = !empty($validated['email']) ? trim($validated['email']) : ($validated['phone'].'@fieldy.io');
 
         $userAttributes = [
             'name' => $validated['name'],
@@ -294,7 +298,9 @@ class EmployeeDirectoryController extends Controller
             'status' => 'active',
             'company_id' => auth()->user()?->company_id,
         ];
-        $userAttributes = IndustryContext::tag($userAttributes, 'users', $industryKey);
+        if (IndustryContext::hasColumn('users')) {
+            $userAttributes = IndustryContext::tag($userAttributes, 'users', $industryKey);
+        }
         $user = User::create($userAttributes);
 
         $region = $validated['assigned_region'] ?? '';
@@ -307,7 +313,11 @@ class EmployeeDirectoryController extends Controller
             'assigned_region' => $validated['assigned_region'] ?? null,
         ]);
 
-        return redirect('/admin/employees')
+        $employeesUrl = ($request->is('fieldy/*') && ! str_ends_with(rtrim(url('/'), '/'), '/fieldy'))
+            ? '/fieldy/admin/employees'
+            : '/admin/employees';
+
+        return redirect($employeesUrl)
             ->with('success', $validated['name'].' registered successfully.')
             ->with('generated_password', $password)
             ->with('generated_login_id', $email)
@@ -355,25 +365,42 @@ class EmployeeDirectoryController extends Controller
     {
         $industryKey = IndustryContext::current();
         if (IndustryCatalog::staffMember($industryKey, $id)) {
-            return redirect('/admin/employees/'.$id)->with('success', 'Staff member updated.');
+            return redirect()->back()->with('success', 'Staff member updated.');
         }
 
         $user = User::where('id', $id)->where('role', 'employee')->firstOrFail();
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'email' => 'required|string|max:255|unique:users,email,'.$user->id,
+            'phone' => 'required|string|max:20|unique:users,phone,'.$user->id,
+            'password' => 'nullable|string|min:4|max:100',
             'assigned_region' => 'nullable|string|max:255',
             'emergency_phone' => 'nullable|string|max:20',
             'status' => 'required|in:active,disabled',
         ]);
 
-        $user->update(['name' => $validated['name'], 'status' => $validated['status']]);
-        $user->employeeDetail?->update([
-            'assigned_region' => $validated['assigned_region'],
-            'emergency_phone' => $validated['emergency_phone'],
-        ]);
+        $userData = [
+            'name' => $validated['name'],
+            'email' => trim($validated['email']),
+            'phone' => trim($validated['phone']),
+            'status' => $validated['status'],
+        ];
+        if (!empty($validated['password'])) {
+            $userData['password'] = Hash::make($validated['password']);
+        }
+        $user->update($userData);
 
-        return redirect('/admin/employees/'.$id)->with('success', 'Staff member updated.');
+        EmployeeDetail::updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'employee_code' => $user->employeeDetail?->employee_code ?? ('FLD-EMP-'.str_pad($user->id, 4, '0', STR_PAD_LEFT)),
+                'assigned_region' => $validated['assigned_region'] ?? null,
+                'emergency_phone' => $validated['emergency_phone'] ?? null,
+            ]
+        );
+
+        return redirect()->back()->with('success', $validated['name'].' credentials and profile updated.');
     }
 
     /**

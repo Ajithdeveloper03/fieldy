@@ -17,6 +17,8 @@ export default function EmployeeRegistrationForm() {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         phone: '',
+        email: '',
+        password: '',
         emergency_phone: '',
         assigned_region: '',
     });
@@ -96,9 +98,15 @@ export default function EmployeeRegistrationForm() {
                 <div className="hp-card">
                     <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
 
-                        {clientError && (
-                            <div className="flex items-center gap-2 text-sm font-semibold text-hp-danger bg-hp-danger-light/40 border border-hp-danger-border rounded-lg px-3 py-2">
-                                <AlertCircle className="w-4 h-4 shrink-0" /> {clientError}
+                        {(clientError || Object.keys(errors || {}).length > 0) && (
+                            <div className="flex items-start gap-2 text-sm font-semibold text-hp-danger bg-hp-danger-light/40 border border-hp-danger-border rounded-lg px-3 py-2">
+                                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                                <div className="space-y-0.5">
+                                    {clientError && <p>{clientError}</p>}
+                                    {Object.values(errors || {}).map((err, idx) => (
+                                        <p key={idx}>{err}</p>
+                                    ))}
+                                </div>
                             </div>
                         )}
 
@@ -206,16 +214,36 @@ export default function EmployeeRegistrationForm() {
                                     </div>
                                 </div>
 
-                                <div className="bg-hp-primary-light/40 border border-hp-primary-border rounded-lg p-4 flex items-start gap-3">
-                                    <KeyRound className="w-5 h-5 text-hp-primary shrink-0 mt-0.5" />
-                                    <div className="space-y-1">
-                                        <h4 className="text-xs font-bold text-hp-dark uppercase tracking-wider">{t(`Automatic ${vocab.staff.singular} App Credentials`)}</h4>
-                                        <p className="text-xs text-hp-muted flex items-center gap-1.5">
-                                            <Smartphone className="w-3.5 h-3.5" />
-                                            {t('App Login ID')}: <span className="font-mono font-bold text-hp-dark">{data.phone ? `${data.phone}@fieldy.io` : 'mobile@fieldy.io'}</span>
-                                        </p>
-                                        <p className="text-xs text-hp-muted">{t('A temporary secure password will be generated automatically and shown once after onboarding.')}</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-hp-primary-light/30 border border-hp-primary-border rounded-xl p-4">
+                                    <div className="md:col-span-2 flex items-center gap-2">
+                                        <KeyRound className="w-4 h-4 text-hp-primary shrink-0" />
+                                        <h4 className="text-xs font-bold text-hp-dark uppercase tracking-wider">{t(`Set ${vocab.staff.singular} Login Credentials`)}</h4>
                                     </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('Username / Login ID')}</label>
+                                        <input
+                                            type="text"
+                                            value={data.email}
+                                            onChange={(e) => setData('email', e.target.value)}
+                                            placeholder={data.phone ? `${data.phone}@fieldy.io` : 'Leave blank to auto-create'}
+                                            className="hp-input !bg-white font-mono text-xs"
+                                        />
+                                        {errors.email && <p className="text-hp-danger text-xs font-bold mt-1">{errors.email}</p>}
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('Password')}</label>
+                                        <input
+                                            type="text"
+                                            value={data.password}
+                                            onChange={(e) => setData('password', e.target.value)}
+                                            placeholder={t('Leave blank to auto-generate')}
+                                            className="hp-input !bg-white font-mono text-xs"
+                                        />
+                                        {errors.password && <p className="text-hp-danger text-xs font-bold mt-1">{errors.password}</p>}
+                                    </div>
+                                    <p className="md:col-span-2 text-[11px] text-hp-muted">
+                                        {t('You can customize the login ID and password now or leave blank to auto-generate and view them immediately after onboarding.')}
+                                    </p>
                                 </div>
                             </div>
                         )}

@@ -78,44 +78,62 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'phone' => 'required|string',
+            'phone' => 'nullable|string',
+            'email' => 'nullable|string',
+            'identifier' => 'nullable|string',
             'password' => 'nullable|string',
             'otp' => 'nullable|string',
         ]);
-        $phone = $this->normalizePhone($request->phone);
-        $user = User::with(['employeeDetail', 'farmerProfile'])
-            ->where('phone', $phone)
+
+        $rawIdentifier = trim((string) ($request->input('identifier') ?? $request->input('email') ?? $request->input('phone') ?? ''));
+        if ($rawIdentifier === '') {
+            return response()->json(['message' => 'Phone number or username/email is required.'], 422);
+        }
+
+        $phone = $this->normalizePhone($rawIdentifier);
+        $user = User::with(['company', 'employeeDetail', 'farmerProfile'])
+            ->where(function ($q) use ($rawIdentifier, $phone) {
+                $q->where('email', $rawIdentifier)
+                    ->orWhere('phone', $rawIdentifier);
+                if ($phone !== '') {
+                    $q->orWhere('phone', $phone);
+                }
+            })
             ->first();
-        if (! $user && in_array($phone, ['8428060946', '9876543210', '9411111111'])) {
-            $isSiteContact = in_array($phone, ['9876543210', '9411111111']);
+
+        if (! $user && in_array($phone, ['8428060946', '9876543210', '9411111111'], true)) {
+            $isSiteContact = in_array($phone, ['9876543210', '9411111111'], true);
             $user = User::firstOrCreate(
                 ['phone' => $phone],
                 [
                     'name' => $isSiteContact ? 'Site Contact Demo' : 'RM Delta',
-                    'email' => $phone . '@fieldy.io',
+                    'email' => $phone.'@fieldy.io',
                     'password' => Hash::make('Employee@1234'),
                     'role' => $isSiteContact ? 'farmer' : 'employee',
                     'status' => 'active',
                 ]
             );
-            $user->load(['employeeDetail', 'farmerProfile']);
+            $user->load(['company', 'employeeDetail', 'farmerProfile']);
         }
+
         if (! $user) {
-            return response()->json(['message' => 'User not found with this mobile number.'], 404);
+            return response()->json(['message' => 'User not found with this phone or email.'], 404);
         }
-        if ($user->status === 'disabled') {
-            return response()->json(['message' => 'Your account has been deactivated.'], 403);
+        if ($user->status === 'disabled' || in_array($user->company?->status, ['inactive', 'disabled'], true)) {
+            return response()->json(['message' => 'Your account or company has been deactivated.'], 403);
         }
+
         $authenticated = false;
         if ($request->filled('password')) {
-            $password = $request->password;
-            if (Hash::check($password, $user->password) || $password === '123456' || $password === 'Employee@1234') {
+            $password = (string) $request->password;
+            $isDemoAccount = in_array($user->phone, ['8428060946', '9876543210', '9411111111'], true);
+            if (Hash::check($password, $user->password) || ($isDemoAccount && in_array($password, ['123456', 'Employee@1234'], true))) {
                 $authenticated = true;
             } else {
-                return response()->json(['message' => 'Invalid password. Default is Employee@1234 or 123456.'], 401);
+                return response()->json(['message' => 'Invalid password. Please check your credentials.'], 401);
             }
         } elseif ($request->filled('otp')) {
-            $otp = $request->otp;
+            $otp = (string) $request->otp;
             if ($otp === '123456' || $otp === '1234') {
                 $authenticated = true;
             } else {
@@ -136,14 +154,17 @@ class AuthController extends Controller
         } else {
             return response()->json(['message' => 'Password or OTP is required.'], 422);
         }
+
         if (! $authenticated) {
             return response()->json(['message' => 'Authentication failed.'], 401);
         }
+
         $user->tokens()->delete();
         $token = $user->createToken('mobile-app')->plainTextToken;
         $designation = $user->employeeDetail?->designation ?? null;
         $employeeCode = $user->employeeDetail?->employee_code ?? null;
         $region = $user->employeeDetail?->assigned_region ?? null;
+        $industry = $user->company?->industry ?? 'construction';
 
         return response()->json([
             'status' => 'success',
@@ -158,13 +179,16 @@ class AuthController extends Controller
                 'designation' => $designation,
                 'employee_code' => $employeeCode,
                 'region' => $region,
+                'company_id' => $user->company_id,
+                'company_name' => $user->company?->name,
+                'industry' => $industry,
             ],
         ]);
     }
 
     public function me(Request $request)
     {
-        $user = $request->user()->load(['employeeDetail', 'farmerProfile']);
+        $user = $request->user()->load(['company', 'employeeDetail', 'farmerProfile']);
 
         return response()->json([
             'status' => 'success',
@@ -177,6 +201,9 @@ class AuthController extends Controller
                 'designation' => $user->employeeDetail?->designation ?? null,
                 'employee_code' => $user->employeeDetail?->employee_code ?? null,
                 'region' => $user->employeeDetail?->assigned_region ?? null,
+                'company_id' => $user->company_id,
+                'company_name' => $user->company?->name,
+                'industry' => $user->company?->industry ?? 'construction',
             ],
         ]);
     }

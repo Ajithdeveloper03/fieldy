@@ -5,7 +5,9 @@ use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
 use App\Models\FarmerProfile;
 use App\Models\FarmerVisit;
+use App\Models\Task;
 use App\Models\User;
+use App\Services\Industry\IndustryCatalog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -62,18 +64,20 @@ class EmployeeController extends Controller
         $validated = $request->validate([
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'is_gps_enabled' => 'required|boolean',
-            'battery_level' => 'required|integer',
+            'is_gps_enabled' => 'nullable|boolean',
+            'battery_level' => 'nullable|integer',
             'speed' => 'nullable|numeric',
             'heading' => 'nullable|numeric',
         ]);
         $user = $request->user();
+        $isGpsEnabled = (bool) ($validated['is_gps_enabled'] ?? true);
+        $batteryLevel = (int) ($validated['battery_level'] ?? 95);
 
         $user->locationLogs()->create([
             'latitude' => $validated['latitude'],
             'longitude' => $validated['longitude'],
-            'is_gps_enabled' => $validated['is_gps_enabled'],
-            'battery_level' => $validated['battery_level'],
+            'is_gps_enabled' => $isGpsEnabled,
+            'battery_level' => $batteryLevel,
             'recorded_at' => now(),
         ]);
 
@@ -84,17 +88,17 @@ class EmployeeController extends Controller
             10.0,
             isset($validated['speed']) ? (float) $validated['speed'] : 0.0,
             isset($validated['heading']) ? (float) $validated['heading'] : 0.0,
-            (int) $validated['battery_level']
+            $batteryLevel
         );
 
         broadcast(new LocationUpdated(
             $user->id,
             $validated['latitude'],
             $validated['longitude'],
-            $validated['is_gps_enabled'],
-            $validated['battery_level']
+            $isGpsEnabled,
+            $batteryLevel
         ));
-        if (! $validated['is_gps_enabled'] || $validated['battery_level'] < 15) {
+        if (! $isGpsEnabled || $batteryLevel < 15) {
             return response()->json(['status' => 'critical_alert', 'message' => 'GPS off or battery critical.'], 200);
         }
 
@@ -161,21 +165,59 @@ class EmployeeController extends Controller
     public function submitVisit(Request $request)
     {
         $validated = $request->validate([
-            'farmer_id' => 'required|exists:users,id',
+            'farmer_id' => 'nullable|integer|exists:users,id',
+            'site_id' => 'nullable|integer|exists:users,id',
+            'task_id' => 'nullable',
             'check_in_latitude' => 'nullable|numeric',
             'check_in_longitude' => 'nullable|numeric',
+            'check_out_latitude' => 'nullable|numeric',
+            'check_out_longitude' => 'nullable|numeric',
             'farm_condition_notes' => 'nullable|string',
+            'notes' => 'nullable|string',
             'recommendations' => 'nullable|string',
+            'before_photo' => 'nullable|string',
+            'after_photo' => 'nullable|string',
+            'otp_verified' => 'nullable|boolean',
         ]);
+
+        $user = $request->user();
+        $task = null;
+        if (! empty($validated['task_id']) && is_numeric($validated['task_id'])) {
+            $task = Task::find((int) $validated['task_id']);
+        }
+
+        $farmerId = $validated['farmer_id']
+            ?? $validated['site_id']
+            ?? $task?->customer_id
+            ?? User::where('role', 'farmer')
+                ->when($user->company_id, fn ($q, $cid) => $q->where('company_id', $cid))
+                ->value('id')
+            ?? $user->id;
+
+        $notes = $validated['farm_condition_notes'] ?? $validated['notes'] ?? 'Field work completed and verified.';
+
         $visit = FarmerVisit::create([
-            'employee_id' => $request->user()->id,
-            'farmer_id' => $validated['farmer_id'],
+            'employee_id' => $user->id,
+            'farmer_id' => $farmerId,
             'check_in_time' => now(),
+            'check_out_time' => now(),
             'check_in_latitude' => $validated['check_in_latitude'] ?? null,
             'check_in_longitude' => $validated['check_in_longitude'] ?? null,
-            'farm_condition_notes' => $validated['farm_condition_notes'] ?? null,
+            'check_out_latitude' => $validated['check_out_latitude'] ?? ($validated['check_in_latitude'] ?? null),
+            'check_out_longitude' => $validated['check_out_longitude'] ?? ($validated['check_in_longitude'] ?? null),
+            'farm_condition_notes' => $notes,
             'recommendations' => $validated['recommendations'] ?? null,
         ]);
+
+        if ($task) {
+            $task->update([
+                'status' => 'done',
+                'otp_verified' => (bool) ($validated['otp_verified'] ?? true),
+                'before_photos' => ! empty($validated['before_photo']) ? [$validated['before_photo']] : $task->before_photos,
+                'after_photos' => ! empty($validated['after_photo']) ? [$validated['after_photo']] : $task->after_photos,
+            ]);
+        }
+
         return response()->json(['status' => 'success', 'visit_id' => $visit->id]);
     }
     public function checkoutVisit(Request $request, $id)
@@ -201,8 +243,9 @@ class EmployeeController extends Controller
     }
     public function dashboard(Request $request)
     {
-        $user = $request->user();
+        $user = $request->user()->load(['company', 'employeeDetail']);
         $today = Carbon::today();
+        $industry = $user->company?->industry ?? 'construction';
         $attendance = AttendanceLog::where('employee_id', $user->id)
             ->whereDate('date', $today)
             ->first();
@@ -210,7 +253,12 @@ class EmployeeController extends Controller
         $visitsToday = FarmerVisit::where('employee_id', $user->id)
             ->whereDate('check_in_time', $today)
             ->count();
-        $totalFarmers = FarmerProfile::where('created_by_employee_id', $user->id)->count();
+        $totalSites = User::where('role', 'farmer')
+            ->when($user->company_id, fn ($q, $cid) => $q->where('company_id', $cid))
+            ->count();
+        $pendingTasks = Task::where('assigned_to', $user->id)
+            ->where('status', '!=', 'done')
+            ->count();
         $recentVisits = FarmerVisit::where('employee_id', $user->id)
             ->with(['farmer.farmerProfile'])
             ->orderBy('id', 'desc')
@@ -222,15 +270,14 @@ class EmployeeController extends Controller
                 return [
                     'id' => (string) $v->id,
                     'farmerId' => (string) ($farmer?->id ?? ''),
-                    'farmerName' => $farmer?->name ?? 'Farmer',
+                    'farmerName' => $farmer?->name ?? 'Assigned Site',
                     'farmerPhone' => $farmer?->phone ?? '',
-                    'address' => $profile?->land_address ?? ($profile?->village ?? 'Tamil Nadu'),
-                    'acres' => $profile?->land_size_acres ? "{$profile->land_size_acres} Acres" : '2.0 Acres',
-                    'cropType' => 'Vetiver',
+                    'address' => $profile?->land_address ?? ($profile?->village ?? 'Chennai, Tamil Nadu'),
+                    'acres' => $profile?->land_size_acres ? "{$profile->land_size_acres} Units" : 'Standard Site',
                     'date' => $v->check_in_time ? Carbon::parse($v->check_in_time)->format('M d, Y') : Carbon::today()->format('M d, Y'),
                     'time' => $v->check_in_time ? Carbon::parse($v->check_in_time)->format('h:i A') : '10:00 AM',
                     'status' => $v->check_out_time ? 'completed' : ($v->check_in_time ? 'in_progress' : 'pending'),
-                    'remarks' => $v->farm_condition_notes ?? 'Field visit and crop review.',
+                    'remarks' => $v->farm_condition_notes ?? 'Field visit completed.',
                 ];
             });
         return response()->json([
@@ -241,9 +288,12 @@ class EmployeeController extends Controller
                     'name' => $user->name,
                     'phone' => $user->phone,
                     'email' => $user->email,
-                    'designation' => $user->employeeDetail?->designation ?? 'Field Officer',
+                    'designation' => $user->employeeDetail?->designation ?? 'Field Executive',
                     'employee_code' => $user->employeeDetail?->employee_code ?? 'EMP-'.str_pad($user->id, 3, '0', STR_PAD_LEFT),
                     'region' => $user->employeeDetail?->assigned_region ?? 'Tamil Nadu',
+                    'company_id' => $user->company_id,
+                    'company_name' => $user->company?->name,
+                    'industry' => $industry,
                 ],
                 'attendance' => $attendance ? [
                     'checked_in' => true,
@@ -252,12 +302,126 @@ class EmployeeController extends Controller
                     'latitude' => $attendance->check_in_latitude,
                     'longitude' => $attendance->check_in_longitude,
                 ] : ['checked_in' => false],
-                'visits_today' => $visitsToday > 0 ? $visitsToday : $visitsCount,
-                'total_farmers' => $totalFarmers > 0 ? $totalFarmers : 8,
+                'visits_today' => $visitsToday,
+                'visits_total' => $visitsCount,
+                'total_farmers' => $totalSites,
+                'pending_tasks' => $pendingTasks,
                 'pending_visits' => FarmerVisit::where('employee_id', $user->id)->whereNull('check_out_time')->count(),
                 'recent_visits' => $recentVisits,
             ],
         ]);
+    }
+    public function tasks(Request $request)
+    {
+        $user = $request->user()->load('company');
+        $industry = $user->company?->industry ?? 'construction';
+
+        $tasks = Task::with(['customer.farmerProfile'])
+            ->where(function ($q) use ($user) {
+                $q->where('assigned_to', $user->id);
+                if ($user->company_id) {
+                    $q->orWhere(function ($sub) use ($user) {
+                        $sub->whereNull('assigned_to')
+                            ->whereHas('createdBy', fn ($u) => $u->where('company_id', $user->company_id));
+                    });
+                }
+            })
+            ->where(function ($q) use ($industry) {
+                $q->where('industry', $industry)->orWhereNull('industry');
+            })
+            ->orderByDesc('id')
+            ->get()
+            ->map(function ($t) use ($industry) {
+                $site = $t->customer;
+                $profile = $site?->farmerProfile;
+                return [
+                    'id' => (string) $t->id,
+                    'workOrderCode' => $t->work_order_code ?: 'WO-'.str_pad($t->id, 5, '0', STR_PAD_LEFT),
+                    'title' => $t->title,
+                    'description' => $t->description ?: 'Complete assigned field verification and upload site report.',
+                    'industry' => $t->industry ?: $industry,
+                    'targetEntity' => $site?->name ?? 'Assigned Project Site',
+                    'facility' => $site?->name ?? 'Assigned Project Site',
+                    'farmerId' => $site?->id,
+                    'address' => $profile?->land_address ?? ($profile?->village ?? 'Chennai, Tamil Nadu'),
+                    'latitude' => $profile?->land_latitude ? (float) $profile->land_latitude : null,
+                    'longitude' => $profile?->land_longitude ? (float) $profile->land_longitude : null,
+                    'priority' => ucfirst($t->priority ?: 'medium'),
+                    'status' => $t->status === 'done' ? 'Completed' : ($t->status === 'in_progress' ? 'In Progress' : 'Pending'),
+                    'rawStatus' => $t->status ?: 'pending',
+                    'due' => $t->due_date ? $t->due_date->format('M d, Y') : 'Today',
+                    'points' => $t->points_awarded ?: 35,
+                    'aiDiagnostic' => $t->ai_suggestions ?: 'Verify site checklist and record field report after checkout.',
+                    'checklist' => $t->checklist ?? [],
+                    'safety_requirements' => $t->safety_requirements ?? [],
+                    'customer_otp' => $t->customer_otp ?: '4821',
+                ];
+            });
+
+        return response()->json([
+            'status' => 'success',
+            'industry' => $industry,
+            'tasks' => $tasks,
+        ]);
+    }
+    public function updateTaskStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:pending,in_progress,done,cancelled',
+        ]);
+        $task = Task::findOrFail($id);
+        $task->update(['status' => $validated['status']]);
+
+        return response()->json(['status' => 'success', 'task' => $task]);
+    }
+    public function sites(Request $request)
+    {
+        $user = $request->user()->load('company');
+        $industry = $user->company?->industry ?? 'construction';
+
+        $sites = User::where('role', 'farmer')
+            ->when($user->company_id, fn ($q, $cid) => $q->where('company_id', $cid))
+            ->with('farmerProfile')
+            ->orderByDesc('id')
+            ->get()
+            ->map(function ($site) use ($industry) {
+                $fp = $site->farmerProfile;
+                return [
+                    'id' => (string) $site->id,
+                    'site_contact_id' => (string) $site->id,
+                    'name' => $site->name,
+                    'phone' => $site->phone,
+                    'site_code' => $fp?->farmer_code ?? 'SITE-'.str_pad($site->id, 3, '0', STR_PAD_LEFT),
+                    'site_address' => $fp?->land_address ?? ($fp?->village ?? 'Chennai, Tamil Nadu'),
+                    'address' => $fp?->land_address ?? ($fp?->village ?? 'Chennai, Tamil Nadu'),
+                    'city' => $fp?->district ?? 'Chennai',
+                    'area' => $fp?->village ?? 'Project Zone',
+                    'type' => ucfirst($fp?->customer_category ?? $industry),
+                    'size' => $fp?->land_size_acres ? (string) $fp->land_size_acres : '1200',
+                    'latitude' => $fp?->land_latitude ? (float) $fp->land_latitude : 13.0827,
+                    'longitude' => $fp?->land_longitude ? (float) $fp->land_longitude : 80.2707,
+                ];
+            });
+
+        if ($sites->isEmpty()) {
+            $catalogSites = collect(IndustryCatalog::entities($industry))->map(fn ($e, $idx) => [
+                'id' => (string) ($e['id'] ?? ($idx + 1)),
+                'name' => $e['name'],
+                'phone' => $e['phone'] ?? '',
+                'site_code' => $e['code'] ?? 'SITE-00'.($idx + 1),
+                'site_address' => $e['address'] ?? 'Chennai, Tamil Nadu',
+                'address' => $e['address'] ?? 'Chennai, Tamil Nadu',
+                'city' => $e['city'] ?? 'Chennai',
+                'area' => $e['area'] ?? '',
+                'type' => $e['type'] ?? ucfirst($industry),
+                'size' => (string) ($e['size'] ?? '2500'),
+                'latitude' => $e['latitude'] ?? 13.0827,
+                'longitude' => $e['longitude'] ?? 80.2707,
+            ]);
+            return response()->json(['status' => 'success', 'industry' => $industry, 'sites' => $catalogSites]);
+        }
+
+        return response()->json(['status' => 'success', 'industry' => $industry, 'sites' => $sites]);
     }
     public function visits(Request $request)
     {

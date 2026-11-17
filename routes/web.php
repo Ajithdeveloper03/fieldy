@@ -115,27 +115,17 @@ foreach (['admin', 'fieldy/admin'] as $adminPrefix) {
         Route::post('/farmers', [FarmerDirectoryController::class, 'store'])->name('farmers.store');
         Route::get('/farmers/{id}', [FarmerDirectoryController::class, 'show'])->name('farmers.show');
 
-        // Pending Farmer Approvals
-        Route::get('/pending-farmers', [FarmerController::class, 'pending'])->name('farmers.pending');
-        Route::get('/pending-farmers/{id}', [FarmerController::class, 'showPending'])->name('farmers.pending.show');
-        Route::post('/pending-farmers/{id}/approve', [FarmerController::class, 'approve'])->name('farmers.approve');
-        Route::post('/pending-farmers/{id}/reject', [FarmerController::class, 'reject'])->name('farmers.reject');
+        // Hidden routes redirected to dashboard
+        Route::get('/pending-farmers', fn () => redirect('/admin/dashboard'))->name('farmers.pending');
+        Route::get('/pending-farmers/{id}', fn () => redirect('/admin/dashboard'))->name('farmers.pending.show');
+        Route::get('/settings', fn () => redirect('/admin/dashboard'))->name('settings.index');
+        Route::get('/payments', fn () => redirect('/admin/dashboard'))->name('payments.index');
 
         // Visit Audits
         Route::get('/visits', [VisitController::class, 'index'])->name('visits.index');
         Route::get('/visits/{id}', [VisitController::class, 'show'])->name('visits.show');
         // Performance Analytics
         Route::get('/performance', [PerformanceController::class, 'index'])->name('performance.index');
-
-        // Settings
-        Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-        Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile');
-        Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
-
-        // Payments & Financials
-        Route::get('/payments', [PaymentsController::class, 'index'])->name('payments.index');
-        Route::post('/payments', [PaymentsController::class, 'store'])->name('payments.store');
-        Route::post('/payments/{id}/mark-paid', [PaymentsController::class, 'markPaid'])->name('payments.markPaid');
 
         // Task Management
         Route::get('/tasks', [TasksController::class, 'index'])->name('tasks.index');
