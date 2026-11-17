@@ -3,7 +3,7 @@ import { Head, Link, useForm, router } from '@inertiajs/react';
 import SuperadminLayout from './SuperadminLayout';
 import { INDUSTRIES, getIndustryById } from '../../data/industriesConfig';
 import { 
-    Building2, Plus, Shield,
+    Building2, Plus, Shield, ShieldCheck, KeyRound, Eye, EyeOff, Globe,
     Users, Phone, Mail, MapPin, 
     CheckCircle2, XCircle, MoreVertical, 
     X, Edit3, Power, AlertCircle, ShieldAlert,
@@ -19,23 +19,51 @@ const CLIENT_INDUSTRIES = INDUSTRIES.filter(({ id }) => CLIENT_INDUSTRY_IDS.incl
 export default function Companies({ companies = [] }) {
     const [industryFilter, setIndustryFilter] = useState('all');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         code: '',
-        industry: 'real_estate',
+        industry: 'construction',
         email: '',
         phone: '',
+        city: '',
+        state: 'Tamil Nadu',
         address: '',
+        gst_number: '',
+        website: '',
+        estimated_sites: 5,
         plan: 'professional',
+        billing_cycle: 'annual',
         max_employees: 50,
-        subscription_expires_at: '',
-        // Client Admin details
+        subscription_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        // Client Admin & Security Controls
         admin_name: '',
+        admin_designation: 'Operations Director',
         admin_email: '',
         admin_phone: '',
         admin_password: '',
+        force_password_reset: true,
+        require_gps_geofence: true,
+        require_selfie_verification: true,
     });
+
+    const generateStrongPassword = () => {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789@#&!';
+        let pwd = 'Fld';
+        for (let i = 0; i < 9; i++) {
+            pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        setData('admin_password', pwd);
+        setShowPassword(true);
+    };
+
+    const passwordStrength = (() => {
+        const p = data.admin_password || '';
+        if (p.length >= 10 && /[A-Z]/.test(p) && /\d/.test(p) && /[^A-Za-z0-9]/.test(p)) return { label: 'Strong', color: 'text-emerald-600', bar: 'w-full bg-emerald-500' };
+        if (p.length >= 8 && /[A-Za-z]/.test(p) && /\d/.test(p)) return { label: 'Good', color: 'text-amber-600', bar: 'w-2/3 bg-amber-500' };
+        return { label: 'Weak (min 8 chars, letters + numbers)', color: 'text-rose-600', bar: 'w-1/3 bg-rose-500' };
+    })();
 
     const filteredCompanies = industryFilter === 'all'
         ? companies
@@ -242,55 +270,117 @@ export default function Companies({ companies = [] }) {
                                 </button>
                             </div>
 
-                            <form onSubmit={handleCreateCompany} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                            <form onSubmit={handleCreateCompany} className="p-6 space-y-5 max-h-[82vh] overflow-y-auto">
+                                {Object.keys(errors).length > 0 && (
+                                    <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 space-y-1">
+                                        <p className="font-bold">Please fix the following validation errors:</p>
+                                        {Object.values(errors).map((err, i) => (
+                                            <p key={i}>• {err}</p>
+                                        ))}
+                                    </div>
+                                )}
+
                                 <div className="text-xs font-bold text-[var(--color-hp-primary)] uppercase tracking-wider pb-1 border-b border-[var(--color-hp-border)]">
-                                    1. Company Information
+                                    1. Organization & Business Identity
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Company Name *</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Company Legal Name *</label>
                                         <input
                                             type="text"
                                             required
                                             value={data.name}
-                                            onChange={(e) => setData('name', e.target.value)}
-                                            placeholder="e.g. Acme Agro Corp"
+                                            onChange={(e) => {
+                                                const v = e.target.value;
+                                                setData('name', v);
+                                                if (!data.code) {
+                                                    const autoCode = v.replace(/[^A-Za-z0-9]/g, '').slice(0, 6).toUpperCase();
+                                                    if (autoCode) setData('code', autoCode);
+                                                }
+                                            }}
+                                            placeholder="e.g. Sri Murugan Infra Pvt Ltd"
                                             className="hp-input"
                                         />
                                         {errors.name && <p className="text-rose-600 text-xs mt-1">{errors.name}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Company Code / Prefix</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Tenant Prefix Code</label>
                                         <input
                                             type="text"
                                             value={data.code}
                                             onChange={(e) => setData('code', e.target.value.toUpperCase())}
-                                            placeholder="e.g. ACME"
+                                            placeholder="e.g. SMINF"
+                                            className="hp-input font-mono"
+                                        />
+                                        {errors.code && <p className="text-rose-600 text-xs mt-1">{errors.code}</p>}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Primary Service Vertical *</label>
+                                        <select
+                                            required
+                                            value={data.industry}
+                                            onChange={(e) => setData('industry', e.target.value)}
+                                            className="hp-input"
+                                        >
+                                            {CLIENT_INDUSTRIES.map((industry) => (
+                                                <option key={industry.id} value={industry.id}>{industry.name}</option>
+                                            ))}
+                                        </select>
+                                        {errors.industry && <p className="text-rose-600 text-xs mt-1">{errors.industry}</p>}
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">GSTIN / Business Reg. ID</label>
+                                        <input
+                                            type="text"
+                                            value={data.gst_number}
+                                            onChange={(e) => setData('gst_number', e.target.value.toUpperCase())}
+                                            placeholder="e.g. 33AABCU9603R1ZM"
                                             className="hp-input font-mono"
                                         />
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Company Type *</label>
-                                    <select
-                                        required
-                                        value={data.industry}
-                                        onChange={(e) => setData('industry', e.target.value)}
-                                        className="hp-input"
-                                    >
-                                        {CLIENT_INDUSTRIES.map((industry) => (
-                                            <option key={industry.id} value={industry.id}>{industry.name}</option>
-                                        ))}
-                                    </select>
-                                    {errors.industry && <p className="text-rose-600 text-xs mt-1">{errors.industry}</p>}
-                                    <p className="text-[11px] text-[var(--color-hp-gray-500)] mt-1">
-                                        This selects the industry dashboard and modules for the client admin.
-                                    </p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">City *</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={data.city}
+                                            onChange={(e) => setData('city', e.target.value)}
+                                            placeholder="e.g. Chennai, Trichy, Coimbatore"
+                                            className="hp-input"
+                                        />
+                                        {errors.city && <p className="text-rose-600 text-xs mt-1">{errors.city}</p>}
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">State</label>
+                                        <input
+                                            type="text"
+                                            value={data.state}
+                                            onChange={(e) => setData('state', e.target.value)}
+                                            placeholder="Tamil Nadu"
+                                            className="hp-input"
+                                        />
+                                    </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Headquarters / Registered Address</label>
+                                    <input
+                                        type="text"
+                                        value={data.address}
+                                        onChange={(e) => setData('address', e.target.value)}
+                                        placeholder="No. 42, Anna Salai, Teynampet"
+                                        className="hp-input"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     <div>
                                         <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Official Email *</label>
                                         <input
@@ -298,21 +388,37 @@ export default function Companies({ companies = [] }) {
                                             required
                                             value={data.email}
                                             onChange={(e) => setData('email', e.target.value)}
-                                            placeholder="contact@acme.com"
+                                            placeholder="ops@company.in"
                                             className="hp-input"
                                         />
                                         {errors.email && <p className="text-rose-600 text-xs mt-1">{errors.email}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Official Phone</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Official Phone *</label>
                                         <input
                                             type="tel"
+                                            required
                                             value={data.phone}
                                             onChange={(e) => setData('phone', e.target.value)}
-                                            placeholder="+91 9876543210"
+                                            placeholder="+91 9840012345"
+                                            className="hp-input"
+                                        />
+                                        {errors.phone && <p className="text-rose-600 text-xs mt-1">{errors.phone}</p>}
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Estimated Project Sites</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            value={data.estimated_sites}
+                                            onChange={(e) => setData('estimated_sites', parseInt(e.target.value) || 1)}
                                             className="hp-input"
                                         />
                                     </div>
+                                </div>
+
+                                <div className="text-xs font-bold text-[var(--color-hp-primary)] uppercase tracking-wider pt-2 pb-1 border-b border-[var(--color-hp-border)]">
+                                    2. Subscription Quota & Contract Term
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -350,10 +456,31 @@ export default function Companies({ companies = [] }) {
                                             </p>
                                         )}
                                     </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Billing Cycle</label>
+                                        <select
+                                            value={data.billing_cycle}
+                                            onChange={(e) => setData('billing_cycle', e.target.value)}
+                                            className="hp-input"
+                                        >
+                                            <option value="annual">Annual Contract</option>
+                                            <option value="monthly">Monthly Retainer</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Subscription Valid Until</label>
+                                        <input
+                                            type="date"
+                                            value={data.subscription_expires_at}
+                                            onChange={(e) => setData('subscription_expires_at', e.target.value)}
+                                            className="hp-input"
+                                        />
+                                    </div>
                                 </div>
 
-                                <div className="text-xs font-bold text-[var(--color-hp-primary)] uppercase tracking-wider pt-3 pb-1 border-b border-[var(--color-hp-border)]">
-                                    2. Primary Client Admin Account
+                                <div className="text-xs font-bold text-[var(--color-hp-primary)] uppercase tracking-wider pt-2 pb-1 border-b border-[var(--color-hp-border)] flex items-center gap-1.5">
+                                    <ShieldCheck className="w-4 h-4" />
+                                    <span>3. Primary Client Admin & Security Controls</span>
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -364,11 +491,24 @@ export default function Companies({ companies = [] }) {
                                             required
                                             value={data.admin_name}
                                             onChange={(e) => setData('admin_name', e.target.value)}
-                                            placeholder="Admin Manager Name"
+                                            placeholder="e.g. Karthik Subramanian"
                                             className="hp-input"
                                         />
                                         {errors.admin_name && <p className="text-rose-600 text-xs mt-1">{errors.admin_name}</p>}
                                     </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Admin Role / Designation</label>
+                                        <input
+                                            type="text"
+                                            value={data.admin_designation}
+                                            onChange={(e) => setData('admin_designation', e.target.value)}
+                                            placeholder="Operations Director"
+                                            className="hp-input"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Admin Login Phone *</label>
                                         <input
@@ -376,14 +516,11 @@ export default function Companies({ companies = [] }) {
                                             required
                                             value={data.admin_phone}
                                             onChange={(e) => setData('admin_phone', e.target.value)}
-                                            placeholder="9000000000"
+                                            placeholder="9840012345"
                                             className="hp-input"
                                         />
                                         {errors.admin_phone && <p className="text-rose-600 text-xs mt-1">{errors.admin_phone}</p>}
                                     </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Admin Login Email *</label>
                                         <input
@@ -391,23 +528,83 @@ export default function Companies({ companies = [] }) {
                                             required
                                             value={data.admin_email}
                                             onChange={(e) => setData('admin_email', e.target.value)}
-                                            placeholder="admin@client.com"
+                                            placeholder="admin@company.in"
                                             className="hp-input"
                                         />
                                         {errors.admin_email && <p className="text-rose-600 text-xs mt-1">{errors.admin_email}</p>}
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Temporary Password *</label>
+                                </div>
+
+                                <div>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)]">Secure Admin Password *</label>
+                                        <button
+                                            type="button"
+                                            onClick={generateStrongPassword}
+                                            className="text-[11px] font-bold text-[var(--color-hp-primary)] hover:underline inline-flex items-center gap-1"
+                                        >
+                                            <KeyRound className="w-3 h-3" /> Generate Strong Password
+                                        </button>
+                                    </div>
+                                    <div className="relative">
                                         <input
-                                            type="text"
+                                            type={showPassword ? 'text' : 'password'}
                                             required
+                                            minLength={8}
                                             value={data.admin_password}
                                             onChange={(e) => setData('admin_password', e.target.value)}
-                                            placeholder="Secure password (min 6 chars)"
-                                            className="hp-input"
+                                            placeholder="Min 8 characters with letters & numbers"
+                                            className="hp-input pr-10 font-mono"
                                         />
-                                        {errors.admin_password && <p className="text-rose-600 text-xs mt-1">{errors.admin_password}</p>}
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-hp-gray-500)] hover:text-[var(--color-hp-dark)]"
+                                        >
+                                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                        </button>
                                     </div>
+                                    <div className="mt-1.5 flex items-center gap-2">
+                                        <div className="flex-1 h-1.5 bg-[var(--color-hp-gray-200)] rounded-full overflow-hidden">
+                                            <div className={`h-full transition-all ${passwordStrength.bar}`} />
+                                        </div>
+                                        <span className={`text-[10px] font-bold ${passwordStrength.color}`}>
+                                            {passwordStrength.label}
+                                        </span>
+                                    </div>
+                                    {errors.admin_password && <p className="text-rose-600 text-xs mt-1">{errors.admin_password}</p>}
+                                </div>
+
+                                {/* Tenant Security Policies */}
+                                <div className="p-3.5 rounded-xl bg-[var(--color-hp-gray-50)] border border-[var(--color-hp-border)] space-y-2.5">
+                                    <p className="text-[11px] font-bold text-[var(--color-hp-dark)] uppercase tracking-wider">Security & Field Compliance Policies</p>
+                                    <label className="flex items-center gap-2.5 text-xs text-[var(--color-hp-dark)] cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={data.force_password_reset}
+                                            onChange={(e) => setData('force_password_reset', e.target.checked)}
+                                            className="rounded border-slate-300"
+                                        />
+                                        <span>Force admin password rotation on initial onboarding sign-in</span>
+                                    </label>
+                                    <label className="flex items-center gap-2.5 text-xs text-[var(--color-hp-dark)] cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={data.require_gps_geofence}
+                                            onChange={(e) => setData('require_gps_geofence', e.target.checked)}
+                                            className="rounded border-slate-300"
+                                        />
+                                        <span>Enforce live GPS geofence verification for field attendance & check-in</span>
+                                    </label>
+                                    <label className="flex items-center gap-2.5 text-xs text-[var(--color-hp-dark)] cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={data.require_selfie_verification}
+                                            onChange={(e) => setData('require_selfie_verification', e.target.checked)}
+                                            className="rounded border-slate-300"
+                                        />
+                                        <span>Require live field photo proof before visit checkout & report submission</span>
+                                    </label>
                                 </div>
 
                                 {/* Submit & Cancel */}

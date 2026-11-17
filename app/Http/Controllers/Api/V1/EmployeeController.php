@@ -8,6 +8,7 @@ use App\Models\FarmerVisit;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\Industry\IndustryCatalog;
+use App\Services\IndustryService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -24,6 +25,7 @@ class EmployeeController extends Controller
             'site_longitude' => 'nullable|numeric',
         ]);
         $user = $request->user();
+        IndustryService::syncUserService($user, $request);
 
         if ($validated['action'] === 'check_in') {
             $log = \App\Services\Attendance\AttendanceService::recordClockIn(
@@ -70,6 +72,7 @@ class EmployeeController extends Controller
             'heading' => 'nullable|numeric',
         ]);
         $user = $request->user();
+        IndustryService::syncUserService($user, $request);
         $isGpsEnabled = (bool) ($validated['is_gps_enabled'] ?? true);
         $batteryLevel = (int) ($validated['battery_level'] ?? 95);
 
@@ -181,6 +184,7 @@ class EmployeeController extends Controller
         ]);
 
         $user = $request->user();
+        $industry = IndustryService::syncUserService($user, $request);
         $task = null;
         if (! empty($validated['task_id']) && is_numeric($validated['task_id'])) {
             $task = Task::find((int) $validated['task_id']);
@@ -199,6 +203,7 @@ class EmployeeController extends Controller
         $visit = FarmerVisit::create([
             'employee_id' => $user->id,
             'farmer_id' => $farmerId,
+            'industry' => $industry,
             'check_in_time' => now(),
             'check_out_time' => now(),
             'check_in_latitude' => $validated['check_in_latitude'] ?? null,
@@ -245,7 +250,7 @@ class EmployeeController extends Controller
     {
         $user = $request->user()->load(['company', 'employeeDetail']);
         $today = Carbon::today();
-        $industry = $user->company?->industry ?? 'construction';
+        $industry = IndustryService::syncUserService($user, $request);
         $attendance = AttendanceLog::where('employee_id', $user->id)
             ->whereDate('date', $today)
             ->first();
@@ -314,7 +319,7 @@ class EmployeeController extends Controller
     public function tasks(Request $request)
     {
         $user = $request->user()->load('company');
-        $industry = $user->company?->industry ?? 'construction';
+        $industry = IndustryService::syncUserService($user, $request);
 
         $tasks = Task::with(['customer.farmerProfile'])
             ->where(function ($q) use ($user) {
@@ -377,7 +382,7 @@ class EmployeeController extends Controller
     public function sites(Request $request)
     {
         $user = $request->user()->load('company');
-        $industry = $user->company?->industry ?? 'construction';
+        $industry = IndustryService::syncUserService($user, $request);
 
         $sites = User::where('role', 'farmer')
             ->when($user->company_id, fn ($q, $cid) => $q->where('company_id', $cid))

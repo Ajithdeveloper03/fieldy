@@ -10,6 +10,7 @@ use App\Services\Industry\IndustryCatalog;
 use App\Services\Industry\IndustryContext;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -50,18 +51,24 @@ class FarmerDirectoryController extends Controller
         $farmers = $query->orderBy('created_at', 'desc')->get()->map(fn ($fp) => [
             'id' => $fp->user?->id,
             'name' => $fp->user?->name ?? 'Unknown',
-            'phone' => $fp->user?->phone ?? 'N/A',
+            'phone' => $fp->mobile_number ?: ($fp->user?->phone ?? 'N/A'),
             'farmer_code' => $fp->farmer_code,
             'land_acres' => $fp->land_size_acres,
+            'area_unit' => $fp->irrigation_type ?: null,
+            'village' => $fp->village,
             'district' => $fp->district,
             'soil_type' => $fp->soil_type ?? 'N/A',
             'customer_category' => $fp->customer_category ?? 'standard',
             'crop_types' => $fp->crop_types ?? [],
             'status' => $fp->approval_status,
             'approval_status' => $fp->approval_status,
+            'kyc_status' => $fp->kyc_status ?? ($fp->approval_status === 'approved' ? 'verified' : 'pending'),
             'registered_by' => $fp->createdBy?->name ?? 'Admin',
             'joined' => $fp->created_at?->format('M d, Y') ?? 'Recently',
             'farmer_photo' => $fp->farmer_photo_path ? Storage::url($fp->farmer_photo_path) : null,
+            'aadhaar_image' => $fp->aadhaar_image_path ? Storage::url($fp->aadhaar_image_path) : null,
+            'land_address' => $fp->land_address,
+            'is_sample' => false,
         ]);
 
         // If no real records exist for this service vertical, supply curated industry catalog data
@@ -161,6 +168,8 @@ class FarmerDirectoryController extends Controller
                     'aadhaar_image' => null,
                     'farm_photos' => [],
                     'total_visits' => count($sampleVisits),
+                    'area_unit' => $catalogEntity['size_unit'] ?? 'Sq.ft',
+                    'is_sample' => true,
                 ],
                 'visits' => $sampleVisits,
             ]);
@@ -195,6 +204,8 @@ class FarmerDirectoryController extends Controller
                 'status' => $user->status,
                 'farmer_code' => $fp?->farmer_code,
                 'land_acres' => $fp?->land_size_acres,
+                'area_unit' => $fp?->irrigation_type ?: 'Sq.ft',
+                'is_sample' => false,
                 'land_address' => $fp?->land_address,
                 'land_latitude' => $fp?->land_latitude,
                 'land_longitude' => $fp?->land_longitude,
@@ -238,29 +249,25 @@ class FarmerDirectoryController extends Controller
             'district' => 'nullable|string|max:255',
             'state' => 'nullable|string|max:255',
             'land_address' => 'nullable|string|max:500',
-            'land_size_acres' => 'nullable|numeric',
+            'land_size_acres' => 'nullable|numeric|min:0|max:999999',
             'soil_type' => 'nullable|string|max:100',
             'irrigation_type' => 'nullable|string|max:50',
             'farmer_photo' => 'nullable|file|max:10240',
             'aadhaar_image' => 'nullable|file|max:10240',
         ]);
 
-        $phone = $validated['phone'] ?: ('9' . str_pad((string) random_int(100000000, 999999999), 9, '0', STR_PAD_LEFT));
-        while (User::where('phone', $phone)->exists()) {
-            $phone = '9' . str_pad((string) random_int(100000000, 999999999), 9, '0', STR_PAD_LEFT);
+        $contactPhone = trim((string) ($validated['phone'] ?? ''));
+        $loginPhone = $contactPhone !== ''
+            ? $contactPhone
+            : ('9' . str_pad((string) random_int(100000000, 999999999), 9, '0', STR_PAD_LEFT));
+        while (User::where('phone', $loginPhone)->exists()) {
+            $loginPhone = '9' . str_pad((string) random_int(100000000, 999999999), 9, '0', STR_PAD_LEFT);
         }
 
-        $userAttributes = [
-            'name' => $validated['name'],
-            'phone' => $phone,
-            'email' => $phone . '@fieldy.io',
-            'password' => Hash::make($phone),
-            'role' => 'farmer',
-            'status' => 'active',
-            'company_id' => auth()->user()?->company_id,
-        ];
-        $userAttributes = IndustryContext::tag($userAttributes, 'users', $industryKey);
-        $farmerUser = User::create($userAttributes);
+        $loginEmail = $loginPhone . '@fieldy.io';
+        while (User::where('email', $loginEmail)->exists()) {
+            $loginEmail = $loginPhone . '.' . random_int(100, 999) . '@fieldy.io';
+        }
 
         $farmerPhotoPath = $request->hasFile('farmer_photo')
             ? $request->file('farmer_photo')->store('farmer_photos', 'public')
@@ -269,29 +276,123 @@ class FarmerDirectoryController extends Controller
             ? $request->file('aadhaar_image')->store('aadhaar_images', 'public')
             : null;
 
-        $district = $validated['district'] ?? '';
-        $prefix = $district ? strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $district), 0, 3)) : 'SIT';
+        DB::transaction(function () use ($validated, $industryKey, $loginPhone, $loginEmail, $contactPhone, $farmerPhotoPath, $aadhaarPath) {
+            $userAttributes = [
+                'name' => $validated['name'],
+                'phone' => $loginPhone,
+                'email' => $loginEmail,
+                'password' => Hash::make($loginPhone),
+                'role' => 'farmer',
+                'status' => 'active',
+                'company_id' => auth()->user()?->company_id,
+            ];
+            $userAttributes = IndustryContext::tag($userAttributes, 'users', $industryKey);
+            $farmerUser = User::create($userAttributes);
 
-        $profileAttributes = [
-            'user_id' => $farmerUser->id,
-            'created_by_employee_id' => auth()->id(),
-            'approval_status' => 'approved',
-            'farmer_code' => $prefix . '-SITE-' . str_pad($farmerUser->id, 4, '0', STR_PAD_LEFT),
-            'land_size_acres' => $validated['land_size_acres'] ?? null,
-            'land_address' => $validated['land_address'] ?? $validated['village'] ?? null,
-            'mobile_number' => $phone,
-            'village' => $validated['village'] ?? null,
-            'district' => $validated['district'] ?? null,
-            'state' => $validated['state'] ?? 'Tamil Nadu',
-            'soil_type' => $validated['soil_type'] ?? null,
-            'irrigation_type' => $validated['irrigation_type'] ?? 'Sq.ft',
-            'kyc_status' => 'verified',
-            'farmer_photo_path' => $farmerPhotoPath,
-            'aadhaar_image_path' => $aadhaarPath,
-        ];
-        $profileAttributes = IndustryContext::tag($profileAttributes, 'farmer_profiles', $industryKey);
-        FarmerProfile::create($profileAttributes);
+            $district = $validated['district'] ?? '';
+            $prefix = $district ? strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $district), 0, 3)) : 'SIT';
 
-        return redirect('/admin/farmers')->with('success', $validated['name'] . ' added successfully.');
+            $profileAttributes = [
+                'user_id' => $farmerUser->id,
+                'created_by_employee_id' => auth()->id(),
+                'approval_status' => 'approved',
+                'farmer_code' => $prefix . '-SITE-' . str_pad($farmerUser->id, 4, '0', STR_PAD_LEFT),
+                'customer_category' => $validated['soil_type'] ?? 'Site',
+                'land_size_acres' => $validated['land_size_acres'] ?? null,
+                'land_address' => $validated['land_address'] ?? ($validated['village'] ?? null),
+                'mobile_number' => $contactPhone !== '' ? $contactPhone : $loginPhone,
+                'village' => $validated['village'] ?? null,
+                'district' => $validated['district'] ?? null,
+                'state' => $validated['state'] ?? 'Tamil Nadu',
+                'soil_type' => $validated['soil_type'] ?? null,
+                'irrigation_type' => $validated['irrigation_type'] ?? 'Sq.ft',
+                'kyc_status' => 'verified',
+                'farmer_photo_path' => $farmerPhotoPath,
+                'aadhaar_image_path' => $aadhaarPath,
+            ];
+            $profileAttributes = IndustryContext::tag($profileAttributes, 'farmer_profiles', $industryKey);
+            FarmerProfile::create($profileAttributes);
+        });
+
+        $redirectUrl = ($request->is('fieldy/*') && ! str_ends_with(rtrim(url('/'), '/'), '/fieldy'))
+            ? '/fieldy/admin/farmers'
+            : '/admin/farmers';
+
+        return redirect($redirectUrl)->with('success', $validated['name'] . ' added successfully.');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $user = User::where('id', $id)->where('role', 'farmer')->with('farmerProfile')->firstOrFail();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'village' => 'nullable|string|max:255',
+            'district' => 'nullable|string|max:255',
+            'state' => 'nullable|string|max:255',
+            'land_address' => 'nullable|string|max:500',
+            'land_size_acres' => 'nullable|numeric|min:0|max:999999',
+            'soil_type' => 'nullable|string|max:100',
+            'irrigation_type' => 'nullable|string|max:50',
+            'approval_status' => 'nullable|in:approved,pending,rejected',
+            'farmer_photo' => 'nullable|file|max:10240',
+            'aadhaar_image' => 'nullable|file|max:10240',
+        ]);
+
+        $profile = $user->farmerProfile;
+        $farmerPhotoPath = $profile?->farmer_photo_path;
+        if ($request->hasFile('farmer_photo')) {
+            $farmerPhotoPath = $request->file('farmer_photo')->store('farmer_photos', 'public');
+        }
+        $aadhaarPath = $profile?->aadhaar_image_path;
+        if ($request->hasFile('aadhaar_image')) {
+            $aadhaarPath = $request->file('aadhaar_image')->store('aadhaar_images', 'public');
+        }
+
+        DB::transaction(function () use ($user, $profile, $validated, $farmerPhotoPath, $aadhaarPath) {
+            $user->update(['name' => $validated['name']]);
+
+            $status = $validated['approval_status'] ?? ($profile?->approval_status ?? 'approved');
+            $kyc = $status === 'approved' ? 'verified' : $status;
+
+            if ($profile) {
+                $profile->update([
+                    'mobile_number' => ! empty($validated['phone']) ? trim($validated['phone']) : $profile->mobile_number,
+                    'village' => $validated['village'] ?? $profile->village,
+                    'district' => $validated['district'] ?? $profile->district,
+                    'state' => $validated['state'] ?? $profile->state,
+                    'land_address' => $validated['land_address'] ?? ($validated['village'] ?? $profile->land_address),
+                    'land_size_acres' => $validated['land_size_acres'] ?? $profile->land_size_acres,
+                    'soil_type' => $validated['soil_type'] ?? $profile->soil_type,
+                    'customer_category' => $validated['soil_type'] ?? $profile->customer_category,
+                    'irrigation_type' => $validated['irrigation_type'] ?? $profile->irrigation_type,
+                    'approval_status' => $status,
+                    'kyc_status' => $kyc,
+                    'farmer_photo_path' => $farmerPhotoPath,
+                    'aadhaar_image_path' => $aadhaarPath,
+                ]);
+            }
+        });
+
+        return redirect()->back()->with('success', $validated['name'] . ' updated successfully.');
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $user = User::where('id', $id)->where('role', 'farmer')->with('farmerProfile')->firstOrFail();
+        $siteName = $user->name;
+
+        DB::transaction(function () use ($user) {
+            FarmerVisit::where('farmer_id', $user->id)->delete();
+            $user->farmerProfile?->delete();
+            $user->delete();
+        });
+
+        $redirectUrl = ($request->is('fieldy/*') && ! str_ends_with(rtrim(url('/'), '/'), '/fieldy'))
+            ? '/fieldy/admin/farmers'
+            : '/admin/farmers';
+
+        return redirect($redirectUrl)->with('success', $siteName . ' deleted successfully.');
     }
 }

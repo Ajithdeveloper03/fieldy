@@ -11,6 +11,7 @@ class Payment extends Model
 
     protected $fillable = [
         'employee_id',
+        'industry',
         'amount',
         'payment_type',
         'status',

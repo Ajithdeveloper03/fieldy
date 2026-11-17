@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\LocationPoint;
 use App\Models\TrackingSession;
 use App\Models\User;
+use App\Services\IndustryService;
 use Illuminate\Http\Request;
 
 class TrackingController extends Controller
@@ -18,6 +19,10 @@ class TrackingController extends Controller
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
         ]);
+
+        if ($request->user()) {
+            IndustryService::syncUserService($request->user(), $request);
+        }
 
         // Get employee ID (use first user for testing if unauthenticated)
         $employeeId = $request->user() ? $request->user()->id : User::first()->id;
@@ -78,6 +83,9 @@ class TrackingController extends Controller
         ]);
 
         $pointsToInsert = [];
+        if ($request->user()) {
+            IndustryService::syncUserService($request->user(), $request);
+        }
         $employeeId = $request->user() ? $request->user()->id : User::first()->id;
 
         // Group points by session_id to minimize queries

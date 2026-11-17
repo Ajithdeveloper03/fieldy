@@ -8,12 +8,47 @@ use App\Models\FarmerVisit;
 use App\Models\LocationPoint;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\Industry\IndustryCatalog;
 use App\Services\Industry\IndustryContext;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class IndustryService
 {
+    /**
+     * Resolve and persist the mobile employee's active service vertical so Web Admin maps
+     * and logs mirror the exact service selected/operated on mobile.
+     */
+    public static function syncUserService(?User $user, ?Request $request = null): string
+    {
+        if (! $user) {
+            return 'construction';
+        }
+
+        $user->loadMissing('company');
+        $headerService = $request?->header('X-Service-Key') ?? $request?->input('industry') ?? $request?->input('service');
+
+        if ($headerService) {
+            $normalized = self::normalize($headerService);
+            if (IndustryContext::hasColumn('users') && $user->industry !== $normalized) {
+                $user->industry = $normalized;
+                $user->save();
+            }
+
+            return $normalized;
+        }
+
+        if ($user->industry) {
+            return self::normalize($user->industry);
+        }
+
+        if ($user->company?->industry) {
+            return self::normalize($user->company->industry);
+        }
+
+        return 'construction';
+    }
     /**
      * Normalize industry identifier string to supported keys
      */
@@ -46,19 +81,20 @@ class IndustryService
         $today = Carbon::today();
         $weekStart = Carbon::now()->startOfWeek();
 
-        // Query workforce scoped to company if specified
+        // Query workforce scoped to company & active industry vertical
         $empQuery = User::where('role', 'employee')
             ->when($companyId, fn($q) => $q->where('company_id', $companyId));
+        $empQuery = IndustryContext::scope($empQuery, $industryKey);
         $empIds = $empQuery->pluck('id');
-        $totalEmployees = (clone $empQuery)->where('status', 'active')->count() ?: 18;
+        $totalEmployees = (clone $empQuery)->where('status', 'active')->count() ?: count(IndustryCatalog::staff($industryKey));
 
         $activeEmployees = User::whereIn('id', $empIds)
             ->whereHas('locationPoints', fn($q) => $q->whereDate('created_at', $today))
-            ->count() ?: rand(4, 12);
+            ->count() ?: count(IndustryCatalog::staff($industryKey));
 
-        $todayAttendance = AttendanceLog::whereIn('employee_id', $empIds)->whereDate('date', $today)->count() ?: rand(6, 14);
+        $todayAttendance = AttendanceLog::whereIn('employee_id', $empIds)->whereDate('date', $today)->count() ?: count(IndustryCatalog::staff($industryKey));
 
-        // Location logs for map
+        // Location logs for map scoped strictly to this service's employees
         $locationLogs = LocationPoint::whereIn('employee_id', $empIds)
             ->with('employee:id,name')
             ->whereDate('created_at', $today)
@@ -68,26 +104,21 @@ class IndustryService
             ->take(20)
             ->values();
 
-        // If no active GPS points today, create representative live points
+        // If no active GPS points today for this vertical, supply service-specific catalog positions
         if ($locationLogs->isEmpty()) {
-            $locationLogs = collect([
-                [
-                    'id' => 101,
-                    'latitude' => 12.9716,
-                    'longitude' => 77.5946,
-                    'employee_id' => 1,
-                    'employee' => ['id' => 1, 'name' => 'Officer Karthik'],
+            $catalogStaff = IndustryCatalog::staff($industryKey);
+            $catalogEntities = IndustryCatalog::entities($industryKey);
+            $locationLogs = collect($catalogStaff)->take(3)->map(function ($staff, $idx) use ($catalogEntities) {
+                $entity = $catalogEntities[$idx % max(1, count($catalogEntities))] ?? null;
+                return [
+                    'id' => 100 + $idx,
+                    'latitude' => (float) ($entity['latitude'] ?? 13.0827),
+                    'longitude' => (float) ($entity['longitude'] ?? 80.2707),
+                    'employee_id' => $staff['id'] ?? ($idx + 1),
+                    'employee' => ['id' => $staff['id'] ?? ($idx + 1), 'name' => $staff['name']],
                     'created_at' => now()->toIso8601String(),
-                ],
-                [
-                    'id' => 102,
-                    'latitude' => 12.9825,
-                    'longitude' => 77.6081,
-                    'employee_id' => 2,
-                    'employee' => ['id' => 2, 'name' => 'Lead Supervisor Anand'],
-                    'created_at' => now()->toIso8601String(),
-                ],
-            ]);
+                ];
+            })->values();
         }
 
         $companyUserIds = $companyId

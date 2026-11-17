@@ -109,11 +109,14 @@ foreach (['admin', 'fieldy/admin'] as $adminPrefix) {
         Route::get('/employees/{id}/edit', [EmployeeDirectoryController::class, 'edit'])->name('employees.edit');
         Route::put('/employees/{id}', [EmployeeDirectoryController::class, 'update'])->name('employees.update');
 
-        // Farmer Management
+        // Farmer / Project Site CRUD Management
         Route::get('/farmers', [FarmerDirectoryController::class, 'index'])->name('farmers.index');
         Route::get('/farmers/register', fn () => inertia('Admin/Profiles/FarmerRegistrationForm'))->name('farmers.register');
         Route::post('/farmers', [FarmerDirectoryController::class, 'store'])->name('farmers.store');
         Route::get('/farmers/{id}', [FarmerDirectoryController::class, 'show'])->name('farmers.show');
+        Route::put('/farmers/{id}', [FarmerDirectoryController::class, 'update'])->name('farmers.update');
+        Route::post('/farmers/{id}', [FarmerDirectoryController::class, 'update'])->name('farmers.update.post');
+        Route::delete('/farmers/{id}', [FarmerDirectoryController::class, 'destroy'])->name('farmers.destroy');
 
         // Hidden routes redirected to dashboard
         Route::get('/pending-farmers', fn () => redirect('/admin/dashboard'))->name('farmers.pending');

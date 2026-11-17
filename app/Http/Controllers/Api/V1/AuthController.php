@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\IndustryService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -164,7 +165,7 @@ class AuthController extends Controller
         $designation = $user->employeeDetail?->designation ?? null;
         $employeeCode = $user->employeeDetail?->employee_code ?? null;
         $region = $user->employeeDetail?->assigned_region ?? null;
-        $industry = $user->company?->industry ?? 'construction';
+        $industry = IndustryService::syncUserService($user, $request);
 
         return response()->json([
             'status' => 'success',
@@ -189,6 +190,7 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         $user = $request->user()->load(['company', 'employeeDetail', 'farmerProfile']);
+        $industry = IndustryService::syncUserService($user, $request);
 
         return response()->json([
             'status' => 'success',
@@ -203,7 +205,7 @@ class AuthController extends Controller
                 'region' => $user->employeeDetail?->assigned_region ?? null,
                 'company_id' => $user->company_id,
                 'company_name' => $user->company?->name,
-                'industry' => $user->company?->industry ?? 'construction',
+                'industry' => $industry,
             ],
         ]);
     }

@@ -50,6 +50,14 @@ export default function FarmerRegistrationForm() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="hp-card p-6 sm:p-8 space-y-6">
+                    {Object.keys(errors).length > 0 && (
+                        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 space-y-1">
+                            <p className="font-bold">{t('Please fix the following before saving:')}</p>
+                            {Object.values(errors).map((err, i) => (
+                                <p key={i}>• {err}</p>
+                            ))}
+                        </div>
+                    )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div className="md:col-span-2">
                             <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">

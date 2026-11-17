@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\User;
 use App\Services\Industry\IndustryCatalog;
+use App\Services\Industry\IndustryContext;
 use App\Services\IndustryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -38,6 +39,7 @@ class CompanyManagementController extends Controller
                     'employees_count' => $comp->employees_count,
                     'farmers_count' => $comp->farmers_count,
                     'subscription_expires_at' => $comp->subscription_expires_at ? $comp->subscription_expires_at->format('Y-m-d') : null,
+                    'settings' => $comp->settings ?? [],
                     'admin' => $comp->admins->first() ? [
                         'name' => $comp->admins->first()->name,
                         'email' => $comp->admins->first()->email,
@@ -58,9 +60,15 @@ class CompanyManagementController extends Controller
             'code' => 'nullable|string|max:50|unique:companies,code',
             'industry' => ['required', 'string', Rule::in(IndustryCatalog::CLIENT_INDUSTRIES)],
             'email' => 'required|email|max:255',
-            'phone' => 'nullable|string|max:50',
+            'phone' => 'required|string|max:50',
+            'city' => 'required|string|max:120',
+            'state' => 'nullable|string|max:120',
             'address' => 'nullable|string|max:500',
+            'gst_number' => 'nullable|string|max:30',
+            'website' => 'nullable|string|max:255',
+            'estimated_sites' => 'nullable|integer|min:1|max:5000',
             'plan' => 'required|in:starter,professional,enterprise',
+            'billing_cycle' => 'nullable|in:monthly,annual',
             'max_employees' => [
                 'required',
                 'integer',
@@ -75,37 +83,75 @@ class CompanyManagementController extends Controller
                 },
             ],
             'subscription_expires_at' => 'nullable|date',
-            // Primary Admin Account
+            // Primary Admin Account & Security Controls
             'admin_name' => 'required|string|max:255',
+            'admin_designation' => 'nullable|string|max:120',
             'admin_email' => 'required|email|unique:users,email',
-            'admin_phone' => 'required|string|unique:users,phone',
-            'admin_password' => 'required|string|min:6',
+            'admin_phone' => 'required|string|max:20|unique:users,phone',
+            'admin_password' => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/^(?=.*[A-Za-z])(?=.*\d).+$/',
+            ],
+            'force_password_reset' => 'nullable|boolean',
+            'require_gps_geofence' => 'nullable|boolean',
+            'require_selfie_verification' => 'nullable|boolean',
+        ], [
+            'admin_password.regex' => 'Password must contain at least 1 letter and 1 number.',
+            'admin_password.min' => 'Password must be at least 8 characters for tenant security.',
         ]);
 
         $slug = Str::slug($validated['name']);
-        // Ensure slug uniqueness
         $originalSlug = $slug;
         $counter = 1;
         while (Company::where('slug', $slug)->exists()) {
             $slug = $originalSlug . '-' . $counter++;
         }
 
-        $company = DB::transaction(function () use ($validated, $slug) {
+        $code = ! empty($validated['code'])
+            ? strtoupper(trim($validated['code']))
+            : strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $validated['name']), 0, 6));
+        while (Company::where('code', $code)->exists()) {
+            $code = strtoupper(substr($code, 0, 4)) . random_int(10, 99);
+        }
+
+        $fullAddress = collect([
+            $validated['address'] ?? null,
+            $validated['city'] ?? null,
+            $validated['state'] ?? null,
+        ])->filter()->implode(', ');
+
+        $company = DB::transaction(function () use ($validated, $slug, $code, $fullAddress) {
             $company = Company::create([
                 'name' => $validated['name'],
                 'slug' => $slug,
-                'code' => $validated['code'] ?? strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $validated['name']), 0, 6)),
+                'code' => $code,
                 'industry' => $validated['industry'],
                 'email' => $validated['email'],
-                'phone' => $validated['phone'] ?? null,
-                'address' => $validated['address'] ?? null,
+                'phone' => $validated['phone'],
+                'address' => $fullAddress ?: null,
                 'plan' => $validated['plan'],
                 'status' => 'active',
                 'max_employees' => $validated['max_employees'],
                 'subscription_expires_at' => $validated['subscription_expires_at'] ?? now()->addYear(),
+                'settings' => [
+                    'city' => $validated['city'],
+                    'state' => $validated['state'] ?? 'Tamil Nadu',
+                    'gst_number' => $validated['gst_number'] ?? null,
+                    'website' => $validated['website'] ?? null,
+                    'estimated_sites' => (int) ($validated['estimated_sites'] ?? 5),
+                    'billing_cycle' => $validated['billing_cycle'] ?? 'annual',
+                    'admin_designation' => $validated['admin_designation'] ?? 'Operations Director',
+                    'security' => [
+                        'force_password_reset' => (bool) ($validated['force_password_reset'] ?? true),
+                        'require_gps_geofence' => (bool) ($validated['require_gps_geofence'] ?? true),
+                        'require_selfie_verification' => (bool) ($validated['require_selfie_verification'] ?? true),
+                    ],
+                ],
             ]);
 
-            User::create([
+            $adminAttrs = [
                 'company_id' => $company->id,
                 'name' => $validated['admin_name'],
                 'email' => $validated['admin_email'],
@@ -113,7 +159,11 @@ class CompanyManagementController extends Controller
                 'password' => Hash::make($validated['admin_password']),
                 'role' => 'admin',
                 'status' => 'active',
-            ]);
+            ];
+            if (IndustryContext::hasColumn('users')) {
+                $adminAttrs['industry'] = $validated['industry'];
+            }
+            User::create($adminAttrs);
 
             return $company;
         });

@@ -11,6 +11,7 @@ class FarmerProfile extends Model
 
     protected $fillable = [
         'user_id',
+        'industry',
         'created_by_employee_id',
         'approval_status',
         'farmer_code',

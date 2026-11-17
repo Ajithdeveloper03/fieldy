@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import AdminLayout from '../AdminLayout';
-import { Link, usePage, router } from '@inertiajs/react';
+import { Link, usePage, router, useForm } from '@inertiajs/react';
 import { 
     Search, Plus, ChevronDown, 
     Clock, MapPin, Building2, Sparkles, LayoutGrid, ListFilter, ArrowUpRight,
-    X, ShieldCheck, Download
+    X, ShieldCheck, Download, Edit3, Trash2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import useIndustry from '../../../hooks/useIndustry';
@@ -25,7 +25,52 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
     const [district, setDistrict] = useState(filters.district || '');
     const [kyc, setKyc] = useState(filters.kyc || '');
     const [category, setCategory] = useState(filters.category || 'all');
-    const [viewMode, setViewMode] = useState('grid'); 
+    const [viewMode, setViewMode] = useState('grid');
+    const [editingSite, setEditingSite] = useState(null);
+
+    const editForm = useForm({
+        name: '',
+        village: '',
+        district: '',
+        land_address: '',
+        soil_type: 'Home',
+        land_size_acres: '',
+        irrigation_type: 'Sq.ft',
+        phone: '',
+        approval_status: 'approved',
+    });
+
+    const openEditModal = (site, e) => {
+        if (e) e.stopPropagation();
+        setEditingSite(site);
+        editForm.setData({
+            name: site.name || '',
+            village: site.village || '',
+            district: site.district || '',
+            land_address: site.land_address || '',
+            soil_type: site.soil_type || 'Home',
+            land_size_acres: site.land_acres || '',
+            irrigation_type: site.area_unit || 'Sq.ft',
+            phone: site.phone === 'N/A' ? '' : (site.phone || ''),
+            approval_status: site.approval_status || 'approved',
+        });
+    };
+
+    const handleUpdateSite = (e) => {
+        e.preventDefault();
+        if (!editingSite) return;
+        editForm.put(`/admin/farmers/${editingSite.id}`, {
+            preserveScroll: true,
+            onSuccess: () => setEditingSite(null),
+        });
+    };
+
+    const handleDeleteSite = (site, e) => {
+        if (e) e.stopPropagation();
+        if (confirm(`Delete project site "${site.name}" permanently?`)) {
+            router.delete(`/admin/farmers/${site.id}`, { preserveScroll: true });
+        }
+    }; 
 
     const handleSearch = (e) => {
         if (e) e.preventDefault();
@@ -243,37 +288,42 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                         <p className="text-sm text-hp-muted max-w-sm mx-auto">{t(`Try adjusting your search filters or onboard a new ${vocab.entity.singular.toLowerCase()}.`)}</p>
                     </div>
                 ) : viewMode === 'grid' ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {farmers.map((farm) => (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {farmers.map((farm) => {
+                            const isVerified = farm.kyc_status === 'verified' || farm.approval_status === 'approved';
+                            return (
                             <div 
                                 key={farm.id}
-                                className="hp-bento-card group flex flex-col justify-between"
+                                className="hp-bento-card group flex flex-col justify-between overflow-hidden"
                             >
                                 <div>
-                                    <div className="hp-card-visual h-40 mb-4 flex items-center justify-center relative">
-                                        <img 
-                                            src={farm.farmer_photo || getCoverImage(farm.id)} 
-                                            alt={farm.name} 
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                            onError={(e) => { e.target.src = getCoverImage(farm.id); }}
-                                        />
+                                    <div className="hp-card-visual h-40 mb-4 flex items-center justify-center relative bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900">
+                                        {farm.farmer_photo ? (
+                                            <img
+                                                src={farm.farmer_photo}
+                                                alt={farm.name}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                            />
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center text-white/80">
+                                                <ActiveIcon className="w-10 h-10 mb-1.5 text-amber-400" />
+                                                <span className="text-[11px] font-semibold tracking-wider uppercase">{industry.shortName}</span>
+                                            </div>
+                                        )}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
                                         
-                                        <div className="absolute top-3 left-3 flex items-center gap-1.5">
-                                            <span className={kycBadge(farm.kyc_status)}>
-                                                {t(farm.kyc_status === 'verified' ? 'Verified' : 'Pending Review')}
+                                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2">
+                                            <span className={`${kycBadge(isVerified ? 'verified' : farm.kyc_status)} !text-[10px] shrink-0`}>
+                                                {t(isVerified ? 'Verified' : 'Pending')}
                                             </span>
-                                        </div>
-
-                                        <div className="absolute top-3 right-3">
-                                            <span className="hp-chip hp-chip-gray !bg-white/90 font-mono text-[11px] backdrop-blur-sm">
+                                            <span className="hp-chip hp-chip-gray !bg-white/90 font-mono !text-[10px] backdrop-blur-sm truncate max-w-[125px]">
                                                 {farm.farmer_code || `ID-${farm.id}`}
                                             </span>
                                         </div>
 
                                         <div className="absolute bottom-3 left-3 right-3 text-white">
                                             <p className="text-xs font-bold text-white/90 truncate">
-                                                {farm.land_acres ? `${farm.land_acres} ${vocab.entity.sizeUnit}` : (farm.soil_type || industry.shortName)}
+                                                {farm.land_acres ? `${farm.land_acres} ${farm.area_unit || vocab.entity.sizeUnit}` : (farm.soil_type || industry.shortName)}
                                             </p>
                                         </div>
                                     </div>
@@ -292,17 +342,38 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                     </div>
                                 </div>
 
-                                <div className="mt-5 pt-3 border-t border-hp-border">
+                                <div className="mt-5 pt-3 border-t border-hp-border flex items-center gap-2 min-w-0">
                                     <Link 
                                         href={`/admin/farmers/${farm.id}`}
-                                        className="hp-btn hp-btn-outline w-full !rounded-xl !h-10 text-sm font-semibold"
+                                        className="hp-btn hp-btn-outline flex-1 min-w-0 !rounded-xl !h-9 !px-3 text-xs font-semibold"
                                     >
-                                        <span>{t(`Manage ${vocab.entity.singular}`)}</span>
-                                        <ArrowUpRight className="w-4 h-4 ml-1" />
+                                        <span className="truncate">{t('View Site')}</span>
+                                        <ArrowUpRight className="w-3.5 h-3.5 ml-1 shrink-0" />
                                     </Link>
+                                    {!farm.is_sample && (
+                                        <>
+                                            <button
+                                                type="button"
+                                                onClick={(e) => openEditModal(farm, e)}
+                                                className="hp-btn hp-btn-secondary !h-9 !w-9 !p-0 !rounded-xl shrink-0"
+                                                title={t('Edit')}
+                                            >
+                                                <Edit3 className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={(e) => handleDeleteSite(farm, e)}
+                                                className="hp-btn hp-btn-secondary !h-9 !w-9 !p-0 !rounded-xl shrink-0 text-rose-600 hover:bg-rose-50"
+                                                title={t('Delete')}
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
-                        ))}
+                        );
+                        })}
                     </div>
                 ) : (
                     <div className="hp-bento-card !p-0 overflow-hidden">
@@ -337,7 +408,7 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                             </td>
                                             <td>
                                                 <span className="text-xs font-bold text-hp-dark">
-                                                    {farm.land_acres ? `${farm.land_acres} ${vocab.entity.sizeUnit}` : '-'}
+                                                    {farm.land_acres ? `${farm.land_acres} ${farm.area_unit || vocab.entity.sizeUnit}` : '-'}
                                                 </span>
                                                 <p className="text-[11px] text-hp-muted mt-0.5">
                                                     {farm.soil_type || farm.customer_category || vocab.entity.types[0]}
@@ -354,14 +425,108 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                                 </span>
                                             </td>
                                             <td className="text-right">
-                                                <Link href={`/admin/farmers/${farm.id}`} className="hp-btn hp-btn-sm hp-btn-outline">
-                                                    {t('Manage')} <ArrowUpRight className="w-3.5 h-3.5" />
-                                                </Link>
+                                                <div className="inline-flex items-center gap-1.5">
+                                                    <Link href={`/admin/farmers/${farm.id}`} className="hp-btn hp-btn-sm hp-btn-outline" onClick={(e) => e.stopPropagation()}>
+                                                        {t('Manage')} <ArrowUpRight className="w-3.5 h-3.5" />
+                                                    </Link>
+                                                    {!farm.is_sample && (
+                                                        <>
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => openEditModal(farm, e)}
+                                                                className="hp-btn hp-btn-sm hp-btn-secondary"
+                                                                title={t('Edit')}
+                                                            >
+                                                                <Edit3 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => handleDeleteSite(farm, e)}
+                                                                className="hp-btn hp-btn-sm hp-btn-secondary text-rose-600 hover:bg-rose-50"
+                                                                title={t('Delete')}
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* EDIT PROJECT SITE MODAL */}
+                {editingSite && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs">
+                        <div className="w-full max-w-lg hp-card shadow-xl overflow-hidden">
+                            <div className="flex items-center justify-between px-6 py-4 border-b border-hp-border">
+                                <h3 className="text-base font-bold text-hp-dark">{t(`Edit ${vocab.entity.singular}`)}</h3>
+                                <button type="button" onClick={() => setEditingSite(null)} className="p-1 text-hp-muted hover:text-hp-dark">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <form onSubmit={handleUpdateSite} className="p-6 space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-hp-dark mb-1">{t('Project Site Name / Title')} *</label>
+                                    <input type="text" required className="hp-input" value={editForm.data.name} onChange={(e) => editForm.setData('name', e.target.value)} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('Location / Site Area')}</label>
+                                        <input type="text" className="hp-input" value={editForm.data.village} onChange={(e) => editForm.setData('village', e.target.value)} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('City')}</label>
+                                        <input type="text" className="hp-input" value={editForm.data.district} onChange={(e) => editForm.setData('district', e.target.value)} />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-hp-dark mb-1">{t('Full Site Address')}</label>
+                                    <input type="text" className="hp-input" value={editForm.data.land_address} onChange={(e) => editForm.setData('land_address', e.target.value)} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('Project Type')}</label>
+                                        <select className="hp-input" value={editForm.data.soil_type} onChange={(e) => editForm.setData('soil_type', e.target.value)}>
+                                            {['Home', 'Corporate', 'Hospital', 'Commercial', 'Industrial', 'Infrastructure', ...vocab.entity.types].filter((v, i, a) => a.indexOf(v) === i).map((tp) => (
+                                                <option key={tp} value={tp}>{tp}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('Total Area')}</label>
+                                        <div className="flex gap-1.5">
+                                            <input type="number" step="0.01" className="hp-input flex-1" value={editForm.data.land_size_acres} onChange={(e) => editForm.setData('land_size_acres', e.target.value)} />
+                                            <select className="hp-input w-24" value={editForm.data.irrigation_type} onChange={(e) => editForm.setData('irrigation_type', e.target.value)}>
+                                                {['Sq.ft', 'Sq.m', 'Cent', 'Acre'].map((u) => <option key={u} value={u}>{u}</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('Contact Phone')}</label>
+                                        <input type="tel" className="hp-input" value={editForm.data.phone} onChange={(e) => editForm.setData('phone', e.target.value)} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('Status')}</label>
+                                        <select className="hp-input" value={editForm.data.approval_status} onChange={(e) => editForm.setData('approval_status', e.target.value)}>
+                                            <option value="approved">{t('Verified')}</option>
+                                            <option value="pending">{t('Pending Review')}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="pt-3 border-t border-hp-border flex justify-end gap-2">
+                                    <button type="button" onClick={() => setEditingSite(null)} className="hp-btn hp-btn-secondary">{t('Cancel')}</button>
+                                    <button type="submit" disabled={editForm.processing} className="hp-btn hp-btn-primary">
+                                        {editForm.processing ? t('Saving...') : t('Save Changes')}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 )}

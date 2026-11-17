@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AdminLayout from '../AdminLayout';
-import { Link } from '@inertiajs/react';
+import { Link, router, useForm } from '@inertiajs/react';
 import { 
     ArrowLeft, Map, Smartphone, FileText, CheckCircle2, Navigation, 
     Image as ImageIcon, Briefcase, Building2,
-    Sparkles, Phone, Calendar
+    Sparkles, Phone, Calendar, Edit3, Trash2, X
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import useIndustry from '../../../hooks/useIndustry';
@@ -12,6 +12,36 @@ import useIndustry from '../../../hooks/useIndustry';
 export default function FarmerDetail({ farmer = {}, visits = [] }) {
     const { t } = useTranslation();
     const { vocab, industry } = useIndustry();
+    const [showEditModal, setShowEditModal] = useState(false);
+
+    const editForm = useForm({
+        name: farmer.name || '',
+        village: farmer.village || '',
+        district: farmer.district || '',
+        land_address: farmer.land_address || '',
+        soil_type: farmer.soil_type || 'Home',
+        land_size_acres: farmer.land_acres || '',
+        irrigation_type: farmer.area_unit || 'Sq.ft',
+        phone: farmer.phone || '',
+        approval_status: farmer.approval_status || 'approved',
+        farmer_photo: null,
+        aadhaar_image: null,
+    });
+
+    const handleUpdate = (e) => {
+        e.preventDefault();
+        editForm.post(`/admin/farmers/${farmer.id}`, {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => setShowEditModal(false),
+        });
+    };
+
+    const handleDelete = () => {
+        if (confirm(`Delete project site "${farmer.name}" permanently?`)) {
+            router.delete(`/admin/farmers/${farmer.id}`);
+        }
+    };
 
     return (
         <AdminLayout>
@@ -55,7 +85,27 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex items-center gap-3 shrink-0 self-start lg:self-center">
+                        <div className="flex items-center gap-2.5 flex-wrap shrink-0 self-start lg:self-center">
+                            {!farmer.is_sample && (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowEditModal(true)}
+                                        className="hp-btn hp-btn-secondary !rounded-full"
+                                    >
+                                        <Edit3 className="w-4 h-4 mr-1" />
+                                        <span>{t('Edit')}</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleDelete}
+                                        className="hp-btn hp-btn-secondary !rounded-full text-rose-600 hover:bg-rose-50"
+                                    >
+                                        <Trash2 className="w-4 h-4 mr-1" />
+                                        <span>{t('Delete')}</span>
+                                    </button>
+                                </>
+                            )}
                             {farmer.phone && (
                                 <button 
                                     type="button" 
@@ -81,7 +131,7 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="hp-metric-pill-card">
                         <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t(vocab.entity.size)}</span>
-                        <p className="font-bold text-2xl text-hp-dark">{farmer.land_acres || '-'} <span className="text-xs font-normal text-hp-muted">{vocab.entity.sizeUnit}</span></p>
+                        <p className="font-bold text-2xl text-hp-dark">{farmer.land_acres || '-'} <span className="text-xs font-normal text-hp-muted">{farmer.area_unit || vocab.entity.sizeUnit}</span></p>
                         <p className="text-xs text-hp-muted mt-1">{t('Total designated capacity')}</p>
                     </div>
 
@@ -206,33 +256,124 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                             
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="border border-hp-border rounded-xl p-3 bg-hp-hover/60">
-                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Compliance Permit')}</p>
+                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Project Documents')}</p>
                                     <div className="aspect-[4/3] rounded-lg overflow-hidden bg-hp-bg border border-hp-border flex items-center justify-center p-2 text-center text-xs text-hp-muted font-medium">
-                                        <span>{vocab.approval.doc}</span>
+                                        {farmer.aadhaar_image ? (
+                                            <a href={farmer.aadhaar_image} target="_blank" rel="noreferrer" className="text-hp-primary font-bold hover:underline">
+                                                {t('Open Uploaded Document')}
+                                            </a>
+                                        ) : (
+                                            <span>{vocab.approval.doc}</span>
+                                        )}
                                     </div>
                                 </div>
                                 
                                 <div className="border border-hp-border rounded-xl p-3 bg-hp-hover/60">
-                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Lead Officer')}</p>
-                                    <div className="aspect-[4/3] rounded-lg overflow-hidden bg-hp-bg border border-hp-border flex items-center justify-center font-bold text-lg text-hp-dark">
-                                        {farmer.name}
+                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Full Site Address')}</p>
+                                    <div className="aspect-[4/3] rounded-lg overflow-hidden bg-hp-bg border border-hp-border flex items-center justify-center p-3 text-center font-semibold text-xs text-hp-dark">
+                                        {farmer.land_address || farmer.village || farmer.district || farmer.name}
                                     </div>
                                 </div>
 
                                 <div className="border border-hp-border rounded-xl p-3 bg-hp-hover/60">
-                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Field Photo')}</p>
-                                    <div className="aspect-[4/3] rounded-lg overflow-hidden bg-hp-bg border border-hp-border">
-                                        <img 
-                                            src="/images/image2.jpg" 
-                                            className="w-full h-full object-cover" 
-                                            alt="Site"
-                                        />
+                                    <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-2">{t('Site Image')}</p>
+                                    <div className="aspect-[4/3] rounded-lg overflow-hidden bg-hp-bg border border-hp-border flex items-center justify-center">
+                                        {farmer.farmer_photo ? (
+                                            <img
+                                                src={farmer.farmer_photo}
+                                                className="w-full h-full object-cover"
+                                                alt={farmer.name}
+                                            />
+                                        ) : (
+                                            <Building2 className="w-8 h-8 text-hp-muted" />
+                                        )}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {showEditModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs">
+                        <div className="w-full max-w-lg hp-card shadow-xl overflow-hidden">
+                            <div className="flex items-center justify-between px-6 py-4 border-b border-hp-border">
+                                <h3 className="text-base font-bold text-hp-dark">{t(`Edit ${vocab.entity.singular}`)}</h3>
+                                <button type="button" onClick={() => setShowEditModal(false)} className="p-1 text-hp-muted hover:text-hp-dark">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <form onSubmit={handleUpdate} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                                <div>
+                                    <label className="block text-xs font-bold text-hp-dark mb-1">{t('Project Site Name / Title')} *</label>
+                                    <input type="text" required className="hp-input" value={editForm.data.name} onChange={(e) => editForm.setData('name', e.target.value)} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('Location / Site Area')}</label>
+                                        <input type="text" className="hp-input" value={editForm.data.village} onChange={(e) => editForm.setData('village', e.target.value)} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('City')}</label>
+                                        <input type="text" className="hp-input" value={editForm.data.district} onChange={(e) => editForm.setData('district', e.target.value)} />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-hp-dark mb-1">{t('Full Site Address')}</label>
+                                    <input type="text" className="hp-input" value={editForm.data.land_address} onChange={(e) => editForm.setData('land_address', e.target.value)} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('Project Type')}</label>
+                                        <select className="hp-input" value={editForm.data.soil_type} onChange={(e) => editForm.setData('soil_type', e.target.value)}>
+                                            {['Home', 'Corporate', 'Hospital', 'Commercial', 'Industrial', 'Infrastructure', ...vocab.entity.types].filter((v, i, a) => a.indexOf(v) === i).map((tp) => (
+                                                <option key={tp} value={tp}>{tp}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('Total Area')}</label>
+                                        <div className="flex gap-1.5">
+                                            <input type="number" step="0.01" className="hp-input flex-1" value={editForm.data.land_size_acres} onChange={(e) => editForm.setData('land_size_acres', e.target.value)} />
+                                            <select className="hp-input w-24" value={editForm.data.irrigation_type} onChange={(e) => editForm.setData('irrigation_type', e.target.value)}>
+                                                {['Sq.ft', 'Sq.m', 'Cent', 'Acre'].map((u) => <option key={u} value={u}>{u}</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('Contact Phone')}</label>
+                                        <input type="tel" className="hp-input" value={editForm.data.phone} onChange={(e) => editForm.setData('phone', e.target.value)} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('Status')}</label>
+                                        <select className="hp-input" value={editForm.data.approval_status} onChange={(e) => editForm.setData('approval_status', e.target.value)}>
+                                            <option value="approved">{t('Verified')}</option>
+                                            <option value="pending">{t('Pending Review')}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('Update Site Photo')}</label>
+                                        <input type="file" accept="image/*" className="text-xs" onChange={(e) => editForm.setData('farmer_photo', e.target.files?.[0] || null)} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('Update Document')}</label>
+                                        <input type="file" accept=".pdf,image/*" className="text-xs" onChange={(e) => editForm.setData('aadhaar_image', e.target.files?.[0] || null)} />
+                                    </div>
+                                </div>
+                                <div className="pt-3 border-t border-hp-border flex justify-end gap-2">
+                                    <button type="button" onClick={() => setShowEditModal(false)} className="hp-btn hp-btn-secondary">{t('Cancel')}</button>
+                                    <button type="submit" disabled={editForm.processing} className="hp-btn hp-btn-primary">
+                                        {editForm.processing ? t('Saving...') : t('Save Changes')}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
 
             </div>
         </AdminLayout>
