@@ -320,7 +320,12 @@ export default function Companies({ companies = [] }) {
                                         <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Subscription Plan</label>
                                         <select
                                             value={data.plan}
-                                            onChange={(e) => setData('plan', e.target.value)}
+                                            onChange={(e) => {
+                                                const nextPlan = e.target.value;
+                                                setData('plan', nextPlan);
+                                                if (nextPlan === 'starter' && data.max_employees > 15) setData('max_employees', 15);
+                                                if (nextPlan === 'professional' && data.max_employees > 50) setData('max_employees', 50);
+                                            }}
                                             className="hp-input"
                                         >
                                             <option value="starter">Starter (Up to 15 agents)</option>
@@ -333,10 +338,17 @@ export default function Companies({ companies = [] }) {
                                         <input
                                             type="number"
                                             min="1"
+                                            max={data.plan === 'starter' ? 15 : data.plan === 'professional' ? 50 : undefined}
                                             value={data.max_employees}
                                             onChange={(e) => setData('max_employees', parseInt(e.target.value) || 1)}
                                             className="hp-input"
                                         />
+                                        {errors.max_employees && <p className="text-red-500 text-xs mt-1">{errors.max_employees}</p>}
+                                        {((data.plan === 'starter' && data.max_employees > 15) || (data.plan === 'professional' && data.max_employees > 50)) && (
+                                            <p className="text-red-500 text-xs mt-1">
+                                                {data.plan === 'starter' ? 'Starter plan allows up to 15 agents max.' : 'Professional plan allows up to 50 agents max.'}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
 

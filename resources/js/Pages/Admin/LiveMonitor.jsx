@@ -39,12 +39,47 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
         setEmployees(propEmployees);
     }, [propEmployees]);
 
+    useEffect(() => {
+        let active = true;
+        const refreshLiveData = async () => {
+            try {
+                const response = await fetch(`${window.location.pathname.replace(/\/$/, '')}/live`, {
+                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'same-origin',
+                });
+                if (!response.ok) return;
+                const data = await response.json();
+                if (active && Array.isArray(data.employees)) {
+                    setEmployees(data.employees);
+                    setLastRefreshed(new Date().toLocaleTimeString());
+                }
+            } catch (error) {
+                console.error('Live monitor refresh failed', error);
+            }
+        };
+        void refreshLiveData();
+        const timer = window.setInterval(refreshLiveData, 5000);
+        return () => {
+            active = false;
+            window.clearInterval(timer);
+        };
+    }, []);
+
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [regionFilter, setRegionFilter] = useState('all');
     const [selectedEmployee, setSelectedEmployee] = useState(employees[0] || null);
     const [lastRefreshed, setLastRefreshed] = useState(new Date().toLocaleTimeString());
     const [isMapFullscreen, setIsMapFullscreen] = useState(false);
+
+    useEffect(() => {
+        if (selectedEmployee) {
+            const latest = employees.find((employee) => String(employee.id) === String(selectedEmployee.id));
+            if (latest) setSelectedEmployee(latest);
+        } else if (employees.length) {
+            setSelectedEmployee(employees[0]);
+        }
+    }, [employees]);
 
     const regions = ['all', ...Array.from(new Set(employees.map(e => e.region).filter(Boolean)))];
 

@@ -16,7 +16,9 @@ class EnsureAdminRole
     public function handle(Request $request, Closure $next): Response
     {
         if (! Auth::check()) {
-            $loginUrl = $request->is('fieldy/*') ? '/fieldy/admin/login' : route('login');
+            $loginUrl = ($request->is('fieldy/*') && ! str_ends_with(rtrim(url('/'), '/'), '/fieldy'))
+                ? '/fieldy/admin/login'
+                : '/admin/login';
 
             return redirect($loginUrl)->with('error', 'Please log in to access the admin panel.');
         }
@@ -24,7 +26,9 @@ class EnsureAdminRole
         if (! in_array(Auth::user()->role, ['admin', 'superadmin'])) {
             Auth::logout();
 
-            $loginUrl = $request->is('fieldy/*') ? '/fieldy/admin/login' : route('login');
+            $loginUrl = ($request->is('fieldy/*') && ! str_ends_with(rtrim(url('/'), '/'), '/fieldy'))
+                ? '/fieldy/admin/login'
+                : '/admin/login';
 
             return redirect($loginUrl)->with('error', 'Access denied. Admin privileges required.');
         }

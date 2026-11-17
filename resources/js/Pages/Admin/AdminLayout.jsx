@@ -27,6 +27,37 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const { triggerCritical } = useAlert();
     const { t, i18n } = useTranslation();
 
+    const [tutorialStep, setTutorialStep] = useState(() => {
+        try {
+            if (localStorage.getItem('fieldy_admin_tutorial_done')) return -1;
+            const saved = localStorage.getItem('fieldy_admin_tutorial_step');
+            return saved !== null ? parseInt(saved, 10) : 0;
+        } catch {
+            return -1;
+        }
+    });
+
+    const TUTORIAL_STEPS = [
+        { title: '1. Add Employee', desc: 'Click Employees in the sidebar, then click Add Employee.', target: '/admin/employees' },
+        { title: '2. Task Assigning', desc: 'Click Today Tasks in the sidebar to assign work.', target: '/admin/tasks' },
+        { title: '3. Live Tracking', desc: 'Click Live Monitor in the sidebar to track GPS live.', target: '/admin/monitor' },
+        { title: '4. Reports Viewing', desc: 'Click Site Visits in the sidebar to view reports.', target: '/admin/visits' },
+    ];
+
+    const advanceTutorial = (nextStep) => {
+        setTutorialStep(nextStep);
+        try {
+            if (nextStep < 0 || nextStep >= TUTORIAL_STEPS.length) {
+                localStorage.setItem('fieldy_admin_tutorial_done', '1');
+                localStorage.removeItem('fieldy_admin_tutorial_step');
+            } else {
+                localStorage.setItem('fieldy_admin_tutorial_step', String(nextStep));
+            }
+        } catch {}
+    };
+
+    const closeTutorial = () => advanceTutorial(-1);
+
     // Active service vertical: page prop → server-shared (session-persisted) prop → real_estate
     const activeIndustryId = passedIndustry?.id || props.currentIndustry || 'real_estate';
     const currentIndustry = passedIndustry || getIndustryById(activeIndustryId);
@@ -473,6 +504,36 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
             </div>
 
             <Chatbot />
+
+            {tutorialStep >= 0 && tutorialStep < TUTORIAL_STEPS.length && (
+                <div className="fixed bottom-5 left-5 z-[100] bg-slate-900 text-white rounded-2xl shadow-2xl border-2 border-emerald-400 max-w-xs w-full p-4">
+                    <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">
+                            Guide • {tutorialStep + 1}/{TUTORIAL_STEPS.length}
+                        </span>
+                        <button onClick={closeTutorial} className="text-[11px] font-semibold text-slate-400 hover:text-white">
+                            Skip
+                        </button>
+                    </div>
+                    <h4 className="text-sm font-bold text-white mb-1">{TUTORIAL_STEPS[tutorialStep].title}</h4>
+                    <p className="text-xs text-slate-300 mb-3">{TUTORIAL_STEPS[tutorialStep].desc}</p>
+                    <div className="flex items-center justify-between">
+                        <Link
+                            href={withBase(TUTORIAL_STEPS[tutorialStep].target)}
+                            onClick={() => advanceTutorial(tutorialStep + 1)}
+                            className="px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-bold hover:bg-emerald-400"
+                        >
+                            Open & Next →
+                        </Link>
+                        <button
+                            onClick={() => advanceTutorial(tutorialStep + 1)}
+                            className="text-xs font-semibold text-slate-300 hover:text-white"
+                        >
+                            {tutorialStep < TUTORIAL_STEPS.length - 1 ? 'Next' : 'Done'}
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

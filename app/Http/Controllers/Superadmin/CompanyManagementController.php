@@ -61,7 +61,19 @@ class CompanyManagementController extends Controller
             'phone' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:500',
             'plan' => 'required|in:starter,professional,enterprise',
-            'max_employees' => 'required|integer|min:1',
+            'max_employees' => [
+                'required',
+                'integer',
+                'min:1',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->plan === 'starter' && $value > 15) {
+                        $fail('Starter plan allows up to 15 field agents.');
+                    }
+                    if ($request->plan === 'professional' && $value > 50) {
+                        $fail('Professional plan allows up to 50 field agents.');
+                    }
+                },
+            ],
             'subscription_expires_at' => 'nullable|date',
             // Primary Admin Account
             'admin_name' => 'required|string|max:255',
@@ -114,14 +126,28 @@ class CompanyManagementController extends Controller
         $company = Company::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'sometimes|required|string|max:255',
             'industry' => 'nullable|string|max:255',
-            'email' => 'required|email|max:255',
+            'email' => 'sometimes|required|email|max:255',
             'phone' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:500',
-            'plan' => 'required|in:starter,professional,enterprise',
-            'status' => 'required|in:active,inactive,suspended',
-            'max_employees' => 'required|integer|min:1',
+            'plan' => 'sometimes|required|in:starter,professional,enterprise',
+            'status' => 'sometimes|required|in:active,inactive,suspended',
+            'max_employees' => [
+                'sometimes',
+                'required',
+                'integer',
+                'min:1',
+                function ($attribute, $value, $fail) use ($request, $company) {
+                    $plan = $request->plan ?? $company->plan;
+                    if ($plan === 'starter' && $value > 15) {
+                        $fail('Starter plan allows up to 15 field agents.');
+                    }
+                    if ($plan === 'professional' && $value > 50) {
+                        $fail('Professional plan allows up to 50 field agents.');
+                    }
+                },
+            ],
             'subscription_expires_at' => 'nullable|date',
         ]);
 

@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Route;
 
 // Root redirect
 Route::get('/', fn () => redirect('/admin/login'));
+Route::get('/fieldy', fn () => redirect('/admin/login'));
 
 // Support both domain-root URLs and local/sub-folder URLs such as /fieldy/admin.
 foreach (['admin', 'fieldy/admin'] as $adminPrefix) {
@@ -69,7 +70,7 @@ Route::prefix('superadmin')->middleware(['auth', 'superadmin'])->group(function 
 // Compatibility routes for local installs opened at http://localhost/fieldy.
 // Apache subfolder deployments strip this prefix before Laravel; artisan serve does not.
 Route::prefix('fieldy/superadmin')->middleware(['auth', 'superadmin'])->group(function () {
-    Route::get('/', fn () => redirect('/fieldy/superadmin/dashboard'));
+    Route::get('/', fn () => redirect('/superadmin/dashboard'));
     Route::get('/dashboard', [\App\Http\Controllers\Superadmin\SuperadminDashboardController::class, 'index']);
     Route::get('/companies', [\App\Http\Controllers\Superadmin\CompanyManagementController::class, 'index']);
     Route::post('/companies', [\App\Http\Controllers\Superadmin\CompanyManagementController::class, 'store']);
@@ -92,7 +93,7 @@ foreach (['admin', 'fieldy/admin'] as $adminPrefix) {
 
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-        Route::get('/', fn () => redirect('/' . $adminPrefix . '/dashboard'));
+        Route::get('/', fn () => redirect('/admin/dashboard'));
 
         // Alerts
         Route::get('/alerts', [AlertsController::class, 'index'])->name('alerts.index');
@@ -147,10 +148,10 @@ foreach (['admin', 'fieldy/admin'] as $adminPrefix) {
         Route::get('/monitor/live', [LiveMonitorController::class, 'liveData'])->name('monitor.live');
 
         // Redirect legacy /admin/subscriptions to Client Admin Dashboard (Plans & Add-ons moved to Superadmin)
-        Route::get('/subscriptions', fn () => redirect('/' . $adminPrefix . '/dashboard'))->name('admin.subscriptions');
+        Route::get('/subscriptions', fn () => redirect('/admin/dashboard'))->name('admin.subscriptions');
 
         // Redirect legacy /admin/satisfaction to dashboard
-        Route::get('/satisfaction', fn () => redirect('/' . $adminPrefix . '/dashboard'))->name('admin.satisfaction');
+        Route::get('/satisfaction', fn () => redirect('/admin/dashboard'))->name('admin.satisfaction');
     });
     });
 }

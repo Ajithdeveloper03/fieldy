@@ -74,7 +74,7 @@ class LiveMonitorController extends Controller
                 ]);
             }
 
-            $recentPath = $user->locationPoints->take(20)->map(function ($log) {
+            $recentPath = $user->locationPoints->take(20)->reverse()->values()->map(function ($log) {
                 return [
                     'lat' => (float) $log->latitude,
                     'lng' => (float) $log->longitude,

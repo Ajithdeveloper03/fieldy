@@ -160,6 +160,10 @@ class TasksController extends Controller
 
     private function tasksUrl(Request $request): string
     {
+        if (str_ends_with(rtrim(url('/'), '/'), '/fieldy')) {
+            return '/admin/tasks';
+        }
+
         return $request->is('fieldy/*') ? '/fieldy/admin/tasks' : '/admin/tasks';
     }
 

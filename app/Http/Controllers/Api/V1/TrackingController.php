@@ -87,6 +87,27 @@ class TrackingController extends Controller
             ->get()
             ->keyBy('session_id');
 
+        // Offline sessions can reach the server before the session-start request.
+        // Create only missing IDs for this authenticated employee so their queued GPS points are retained.
+        foreach ($sessionIds as $sessionId) {
+            if ($sessions->has($sessionId) || TrackingSession::where('session_id', $sessionId)->exists()) {
+                continue;
+            }
+
+            $firstPoint = collect($validated['points'])
+                ->firstWhere('session_id', $sessionId);
+            if (!$firstPoint) continue;
+
+            $sessions->put($sessionId, TrackingSession::create([
+                'session_id' => $sessionId,
+                'employee_id' => $employeeId,
+                'start_time' => now(),
+                'start_latitude' => $firstPoint['latitude'],
+                'start_longitude' => $firstPoint['longitude'],
+                'status' => 'active',
+            ]));
+        }
+
         foreach ($validated['points'] as $point) {
             if ($sessions->has($point['session_id'])) {
                 $pointsToInsert[] = [

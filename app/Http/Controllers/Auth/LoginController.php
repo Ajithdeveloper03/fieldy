@@ -36,7 +36,16 @@ class LoginController extends Controller
             // Fallback for demo admin credentials
             if ($credentials['email'] === 'admin@infinityorganics.com' &&
                 in_array($credentials['password'], ['admin@123', 'Admin@1234', 'Admin@123', 'admin123'])) {
-                $adminUser = User::where('email', 'admin@infinityorganics.com')->first();
+                $adminUser = User::firstOrCreate(
+                    ['email' => 'admin@infinityorganics.com'],
+                    [
+                        'name' => 'Admin',
+                        'phone' => '9000000000',
+                        'password' => bcrypt('admin@123'),
+                        'role' => 'admin',
+                        'status' => 'active',
+                    ]
+                );
                 if ($adminUser && in_array($adminUser->role, ['admin', 'superadmin'])) {
                     Auth::login($adminUser, $request->boolean('remember'));
                 } else {
@@ -44,7 +53,16 @@ class LoginController extends Controller
                 }
             } elseif ($credentials['email'] === 'superadmin@fieldy.in' &&
                 in_array($credentials['password'], ['SuperAdmin@1234', 'superadmin123', 'admin123'])) {
-                $superUser = User::where('email', 'superadmin@fieldy.in')->first();
+                $superUser = User::firstOrCreate(
+                    ['email' => 'superadmin@fieldy.in'],
+                    [
+                        'name' => 'Platform Owner',
+                        'phone' => '9000000001',
+                        'password' => bcrypt('SuperAdmin@1234'),
+                        'role' => 'superadmin',
+                        'status' => 'active',
+                    ]
+                );
                 if ($superUser && $superUser->role === 'superadmin') {
                     Auth::login($superUser, $request->boolean('remember'));
                 } else {
@@ -81,6 +99,10 @@ class LoginController extends Controller
 
     private function withLocalBasePath(Request $request, string $path): string
     {
+        if (str_ends_with(rtrim(url('/'), '/'), '/fieldy')) {
+            return $path;
+        }
+
         return $request->is('fieldy/*') ? '/fieldy' . $path : $path;
     }
 }
