@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import AdminLayout from './AdminLayout';
 import { router, usePage } from '@inertiajs/react';
 import {
-    MapPin, FileCheck2, CheckCircle2, Maximize, Minimize, Briefcase, ArrowRight, ArrowUp,
+    MapPin, FileCheck2, CheckCircle2, Briefcase, ArrowRight, ArrowUp,
     FileText, AlertCircle, Building2, Sparkles, ClipboardList, UserPlus, ShieldAlert,
     Wallet, ChevronRight, Activity, Search, Filter, Clock, TrendingUp, Lightbulb, X
 } from 'lucide-react';
@@ -45,7 +44,6 @@ const GROWTH = [
 const greetingFor = (h) => (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening');
 
 export default function Dashboard({ currentIndustry: initialIndustry, locationLogs = [], stats = {}, recentVisits = [], recentFarmers = [], pendingApprovals = [], agriStats = {}, growthData = [], telemetry = [] }) {
-    const [isMapFullscreen, setIsMapFullscreen] = useState(false);
     const [prompt, setPrompt] = useState('');
     const [showTip, setShowTip] = useState(true);
     const [activeAiTab, setActiveAiTab] = useState('dispatch');
@@ -112,7 +110,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
         { label: t(labels.addEntityAction || 'Add Property'), icon: IndIcon, href: '/admin/farmers/register' },
         { label: t(`Add ${labels.navAgents || 'Agent'}`), icon: UserPlus, href: '/admin/employees/create' },
         { label: t('Live Map'), icon: ShieldAlert, href: '/admin/monitor' },
-        { label: t('Payments'), icon: Wallet, href: '/admin/payments' },
+        ...(industryKey === 'construction' ? [] : [{ label: t('Payments'), icon: Wallet, href: '/admin/payments' }]),
     ];
 
     const services = [
@@ -151,14 +149,6 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
     ];
 
     const todos = [
-        ...(pendingApprovals.length > 0 ? [{
-            icon: AlertCircle,
-            tone: 'warning',
-            title: `${pendingApprovals.length} ${t(labels.todosApprovalTitle)}`,
-            sub: t(labels.todosApprovalSub),
-            cta: t('Review'),
-            href: '/admin/pending-farmers',
-        }] : []),
         {
             icon: ClipboardList,
             tone: 'primary',
@@ -190,17 +180,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
     ].slice(0, 6);
 
     const mapContent = (
-        <div className={`bg-white overflow-hidden ${isMapFullscreen ? 'fixed inset-0 z-[99999] w-screen h-screen' : 'relative w-full h-full'}`}>
-            <button 
-                onClick={(e) => {
-                    e.stopPropagation();
-                    setIsMapFullscreen(!isMapFullscreen);
-                }}
-                className="absolute top-3 right-3 z-[500] hp-icon-btn !bg-white border border-hp-border shadow-[var(--shadow-hp-md)]"
-                title={isMapFullscreen ? t('Exit fullscreen', 'Exit fullscreen') : t('Fullscreen', 'Fullscreen')}
-            >
-                {isMapFullscreen ? <Minimize className="w-[18px] h-[18px]" /> : <Maximize className="w-[18px] h-[18px]" />}
-            </button>
+        <div className="bg-white overflow-hidden relative w-full h-full">
             <MapContainer
                 center={liveLocationLogs.length > 0 ? [parseFloat(liveLocationLogs[0].latitude), parseFloat(liveLocationLogs[0].longitude)] : [12.9716, 77.5946]}
                 zoom={10}
@@ -369,7 +349,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
             </div>
 
             {/* ══════════ FIELD OPERATIONS: MAP + LIVE LOGS ══════════ */}
-            <div className={`grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8 ${isMapFullscreen ? '' : ''}`}>
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
                 <section className="xl:col-span-2 hp-card overflow-hidden flex flex-col">
                     <div className="hp-card-header">
                         <div>
@@ -379,7 +359,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                         <span className="hp-chip hp-chip-success hp-chip-dot">{t('Live')}</span>
                     </div>
                     <div className="h-[420px] relative">
-                        {isMapFullscreen ? createPortal(mapContent, document.body) : mapContent}
+                        {mapContent}
                     </div>
                 </section>
 
@@ -419,8 +399,8 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                 </section>
             </div>
 
-            {/* ══════════ PERFORMANCE CHART ══════════ */}
-            <section className="hp-card mb-8">
+            {/* ══════════ PERFORMANCE CHART (hidden on construction) ══════════ */}
+            {industryKey !== 'construction' && (<section className="hp-card mb-8">
                 <div className="hp-card-header flex-wrap">
                     <div>
                         <h2 className="hp-card-title">{t(labels.chartTitle)}</h2>
@@ -453,7 +433,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                         </div>
                     </div>
                 </div>
-            </section>
+            </section>)}
 
             {/* ══════════ RECENT LOGS & VISITS ══════════ */}
             <section className="hp-card overflow-hidden mb-8">
@@ -502,7 +482,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
             </section>
 
             {/* ══════════ ENTITIES & PENDING APPROVALS ══════════ */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className={`grid grid-cols-1 gap-6 ${industryKey === 'construction' ? '' : 'lg:grid-cols-2'}`}>
                 <section className="hp-card overflow-hidden">
                     <div className="hp-card-header">
                         <h2 className="hp-card-title">{t(labels.recentEntityTitle)}</h2>
@@ -532,7 +512,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                     )}
                 </section>
 
-                <section className="hp-card overflow-hidden">
+                {industryKey !== 'construction' && (<section className="hp-card overflow-hidden">
                     <div className="hp-card-header">
                         <h2 className="hp-card-title">{t(labels.pendingTitle)}</h2>
                         <span className="hp-chip hp-chip-warning">{pendingApprovals.length} {t('Pending')}</span>
@@ -546,9 +526,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                                 <p className="text-sm font-bold text-hp-dark truncate">{approval.name}</p>
                                 <p className="text-xs text-hp-muted">{approval.farmer_code} · {approval.district}</p>
                             </div>
-                            <button type="button" onClick={() => router.visit(`/admin/pending-farmers`)} className="hp-btn hp-btn-sm hp-btn-primary">
-                                {t('Review')}
-                            </button>
+                            <span className="hp-chip hp-chip-warning">{t('Pending Review')}</span>
                         </div>
                     )) : (
                         <div className="flex flex-col items-center text-center py-12 px-6">
@@ -558,7 +536,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                             <p className="text-sm font-bold text-hp-dark">{t('All caught up! No pending items.')}</p>
                         </div>
                     )}
-                </section>
+                </section>)}
             </div>
 
             {/* ══════════ INDUSTRY AI ASSISTANT BANNER ══════════ */}

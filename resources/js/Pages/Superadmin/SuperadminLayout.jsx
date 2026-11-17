@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
-import { asset, withBase } from '../../basePath';
+import { withBase } from '../../basePath';
 import { 
     LayoutDashboard, Building2, Users2, BarChart3, 
     ShieldCheck, LogOut, ExternalLink, Activity, 
-    Layers, ChevronRight, ChevronDown, Menu, X, Home, Crown, CheckCircle2
+    Layers, ChevronRight, ChevronDown, Menu, X, Sparkles, Home, Crown, CheckCircle2
 } from 'lucide-react';
 import { INDUSTRIES, getIndustryById } from '../../data/industriesConfig';
 
@@ -62,9 +62,10 @@ export default function SuperadminLayout({ children, activeIndustry = null, onSe
                     </button>
 
                     <Link href="/superadmin/dashboard" className="flex items-center gap-2.5">
-                        <div className="h-7 rounded-md bg-white px-1.5 flex items-center justify-center shadow-xs">
-                            <img src={asset('/images/logo.png')} alt="Fieldy" className="h-5 w-auto object-contain" />
+                        <div className="w-7 h-7 rounded-md bg-[var(--color-hp-primary)] flex items-center justify-center text-white font-bold text-sm shadow-xs">
+                            <Sparkles className="w-4 h-4" />
                         </div>
+                        <span className="font-bold text-base tracking-tight text-white">FIELDY</span>
                         <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[var(--color-hp-primary)]/20 text-[var(--color-hp-primary)] border border-[var(--color-hp-primary)]/30">
                             Superadmin
                         </span>

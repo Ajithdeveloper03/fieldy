@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import {
     LayoutDashboard, Users, FileCheck2, ShieldAlert,
-    Settings, MapPin, Search, Bell, PlusCircle, Globe, Briefcase, Building2,
+    Settings, MapPin, Search, Bell, Globe, Briefcase, Building2,
     ChevronDown, ChevronRight, Wallet, ClipboardList, Menu, X, Star, Sparkles,
     PanelLeftClose, PanelLeftOpen, LogOut, HelpCircle, User, Layers
 } from 'lucide-react';
@@ -65,6 +65,9 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const vocab = getVocab(currentIndustry?.id);
     const ActiveIndIcon = currentIndustry?.icon || Building2;
 
+    // Construction tenants hide the finance pages (Payroll) and Settings from the shell.
+    const isConstruction = currentIndustry?.id === 'construction';
+
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => readStore('fieldy.sidebarCollapsed', false));
     const [collapsedGroups, setCollapsedGroups] = useState(() => readStore('fieldy.collapsedGroups', {}));
     const [favorites, setFavorites] = useState(() => readStore('fieldy.favorites', ['/admin/monitor', '/admin/tasks']));
@@ -100,7 +103,6 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
             label: labels.navDirectory || 'Properties & Team',
             items: [
                 { href: '/admin/farmers', icon: ActiveIndIcon, label: labels.navEntities || vocab.entity.plural },
-                { href: '/admin/pending-farmers', icon: PlusCircle, label: labels.pendingTitle || vocab.approval.plural },
                 { href: '/admin/employees', icon: Briefcase, label: labels.navAgents || vocab.staff.plural },
             ],
         },
@@ -109,7 +111,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
             label: vocab.finance.group,
             items: [
                 { href: '/admin/performance', icon: MapPin, label: vocab.finance.scores },
-                { href: '/admin/payments', icon: Wallet, label: vocab.finance.payments },
+                ...(isConstruction ? [] : [{ href: '/admin/payments', icon: Wallet, label: vocab.finance.payments }]),
             ],
         },
     ];
@@ -117,7 +119,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const allItems = [
         { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Home' },
         ...navGroups.flatMap(g => g.items),
-        { href: '/admin/settings', icon: Settings, label: 'Settings' },
+        ...(isConstruction ? [] : [{ href: '/admin/settings', icon: Settings, label: 'Settings' }]),
     ];
 
     /* Persist preferences */
@@ -198,7 +200,6 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
         if (cleanPath.startsWith('/admin/tasks')) return [{ label: t(labels.navFieldWork || 'Field Work'), href: '/admin/tasks' }, { label: t(labels.todayTasksTitle || vocab.task.plural), href: '/admin/tasks' }];
         if (cleanPath.startsWith('/admin/visits')) return [{ label: t(labels.navFieldWork || 'Field Work'), href: '/admin/visits' }, { label: t(labels.navVisits || vocab.visit.plural), href: '/admin/visits' }];
         if (cleanPath.startsWith('/admin/monitor')) return [{ label: t(labels.navFieldWork || 'Field Work'), href: '/admin/monitor' }, { label: t(vocab.monitor.title), href: '/admin/monitor' }];
-        if (cleanPath.startsWith('/admin/pending-farmers')) return [{ label: t(labels.navDirectory || 'Directory'), href: '/admin/pending-farmers' }, { label: t(labels.pendingTitle || vocab.approval.plural), href: '/admin/pending-farmers' }];
         if (cleanPath.startsWith('/admin/farmers')) return [{ label: t(labels.navDirectory || 'Directory'), href: '/admin/farmers' }, { label: t(labels.navEntities || vocab.entity.plural), href: '/admin/farmers' }];
         if (cleanPath.startsWith('/admin/employees')) return [{ label: t(labels.navDirectory || 'Directory'), href: '/admin/employees' }, { label: t(labels.navAgents || vocab.staff.plural), href: '/admin/employees' }];
         if (cleanPath.startsWith('/admin/performance')) return [{ label: t(vocab.finance.group), href: '/admin/performance' }, { label: t(vocab.finance.scores), href: '/admin/performance' }];
@@ -291,10 +292,12 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                         );
                     })}
 
-                    <div className="mt-5">
-                        {collapsed && <div className="h-px bg-hp-border mx-2 mb-3" />}
-                        <NavItem href="/admin/settings" icon={Settings} label="Settings" collapsed={collapsed} />
-                    </div>
+                    {!isConstruction && (
+                        <div className="mt-5">
+                            {collapsed && <div className="h-px bg-hp-border mx-2 mb-3" />}
+                            <NavItem href="/admin/settings" icon={Settings} label="Settings" collapsed={collapsed} />
+                        </div>
+                    )}
                 </nav>
 
                 {/* Footer: collapse control (desktop) */}
@@ -444,7 +447,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                                             </select>
                                         </div>
                                     )}
-                                    <Link href="/admin/settings" className="hp-nav-item"><User className="w-[18px] h-[18px] text-hp-muted" /> {t('Account settings')}</Link>
+                                    {!isConstruction && <Link href="/admin/settings" className="hp-nav-item"><User className="w-[18px] h-[18px] text-hp-muted" /> {t('Account settings')}</Link>}
                                     <button type="button" onClick={toggleLanguage} className="hp-nav-item w-full">
                                         <Globe className="w-[18px] h-[18px] text-hp-muted" /> {t('Language')}
                                         <span className="ml-auto hp-chip hp-chip-gray">{i18n.language === 'ta' ? 'தமிழ்' : 'English'}</span>

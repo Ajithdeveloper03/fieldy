@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
+use App\Services\Industry\IndustryContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -9,6 +10,11 @@ class SettingsController extends Controller
 {
     public function index()
     {
+        // Settings are hidden for the construction vertical.
+        if (IndustryContext::current() === 'construction') {
+            return redirect(str_starts_with(request()->path(), 'fieldy/') ? '/fieldy/admin/dashboard' : '/admin/dashboard');
+        }
+
         $admin = Auth::user();
 
         return Inertia::render('Admin/Settings', [
