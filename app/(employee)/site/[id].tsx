@@ -51,7 +51,7 @@ export default function EmployeeSiteContactProfileScreen() {
         <View style={{ paddingHorizontal: 14, paddingTop: 12 }}>
           <View
             style={{
-              height: 360,
+              height: 410,
               borderRadius: 36,
               overflow: "hidden",
               backgroundColor: "#062214",
@@ -63,7 +63,7 @@ export default function EmployeeSiteContactProfileScreen() {
             }}
           >
             <Image
-              source={require("../../../assets/images/image5.jpg")}
+              source={matchedEntity.image || require("../../../assets/images/image5.jpg")}
               style={[
                 StyleSheet.absoluteFillObject,
                 { width: "100%", height: "100%" },

@@ -6,14 +6,13 @@ import {
   StyleSheet,
   Modal,
   TextInput,
-  Platform,
   StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import * as Location from "expo-location";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import MapView, { Marker, Polyline, UrlTile } from "react-native-maps";
+import MapView, { Circle, Marker, Polyline } from "react-native-maps";
 import { FieldEmployeeMarker } from "../../../components/FieldEmployeeMarker";
 import { getAuthUser } from "../../../services/api";
 import {
@@ -29,7 +28,6 @@ import { useTracking } from "../../../context/TrackingContext";
 import { saveLocationLocally } from "../../../utils/trackingManager";
 import {
   haversineDistanceKm,
-  LIGHT_MAP_TILE_URL,
   sendLiveLocationPing,
 } from "../../../utils/locationHelpers";
 
@@ -59,9 +57,6 @@ export default function TrackingScreen() {
     taskId: taskId || id || "",
   });
 
-  const [startTimeLabel] = useState(() =>
-    new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-  );
   const [currentLocation, setCurrentLocation] =
     useState<Location.LocationObject | null>(null);
   const [routeCoordinates, setRouteCoordinates] = useState<
@@ -271,33 +266,33 @@ export default function TrackingScreen() {
       <MapView
         ref={mapRef}
         style={StyleSheet.absoluteFillObject}
-        mapType={Platform.OS === "android" ? "none" : "standard"}
+        mapType="standard"
         userInterfaceStyle="light"
         showsUserLocation
         showsMyLocationButton={false}
+        showsCompass
         initialRegion={{
           latitude: activeCoord.latitude,
           longitude: activeCoord.longitude,
-          latitudeDelta: 0.008,
-          longitudeDelta: 0.008,
+          latitudeDelta: 0.006,
+          longitudeDelta: 0.006,
         }}
       >
-        <UrlTile
-          urlTemplate={LIGHT_MAP_TILE_URL}
-          maximumZ={20}
-          maximumNativeZ={19}
-          doubleTileSize
-          flipY={false}
-          shouldReplaceMapContent={Platform.OS === "ios"}
-          zIndex={1}
-        />
-
         {routeCoordinates.length > 1 && (
           <Polyline
             coordinates={routeCoordinates}
             strokeColor={accentColor}
             strokeWidth={5}
-            zIndex={3}
+          />
+        )}
+
+        {currentLocation?.coords?.accuracy && currentLocation.coords.accuracy > 0 && (
+          <Circle
+            center={activeCoord}
+            radius={currentLocation.coords.accuracy}
+            fillColor={`${accentColor}22`}
+            strokeColor={`${accentColor}88`}
+            strokeWidth={1.5}
           />
         )}
 
@@ -376,8 +371,12 @@ export default function TrackingScreen() {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{startTimeLabel}</Text>
-              <Text style={styles.statLabel}>Started</Text>
+              <Text style={styles.statValue}>
+                {currentLocation?.coords?.accuracy != null
+                  ? `±${Math.round(currentLocation.coords.accuracy)}m`
+                  : "--"}
+              </Text>
+              <Text style={styles.statLabel}>GPS Accuracy</Text>
             </View>
           </View>
 

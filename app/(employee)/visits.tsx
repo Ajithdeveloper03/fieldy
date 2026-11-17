@@ -72,7 +72,7 @@ export default function EmployeeVisitsScreen() {
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
-            paddingHorizontal: 24,
+            paddingHorizontal: 16,
             paddingTop: 16,
           }}
         >
@@ -95,12 +95,15 @@ export default function EmployeeVisitsScreen() {
           >
             <ChevronLeft size={24} color="#ffffff" />
           </TouchableOpacity>
-          <View style={{ alignItems: "center" }}>
+          <View style={{ alignItems: "center", flex: 1, minWidth: 0, paddingHorizontal: 8 }}>
             <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
               style={{
                 color: "#ffffff",
                 fontFamily: "Brandon-Bold",
-                fontSize: 18,
+                fontSize: 23,
+                maxWidth: "100%",
               }}
             >
               Daily {serviceConfig.vocab.visits}
@@ -129,7 +132,8 @@ export default function EmployeeVisitsScreen() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingVertical: 32,
+            paddingVertical: 24,
+            paddingHorizontal: 16,
             alignItems: "center",
             paddingBottom: 240,
           }}
@@ -166,16 +170,20 @@ export default function EmployeeVisitsScreen() {
                   style={{
                     flex: 1,
                     alignItems: "flex-end",
-                    paddingRight: 56,
+                    paddingRight: 46,
+                    minWidth: 0,
                   }}
                 >
                   <Text
+                    numberOfLines={2}
                     style={{
-                      color: "rgba(255,255,255,0.5)",
+                      color: "rgba(255,255,255,0.65)",
                       fontFamily: "Brandon-Bold",
-                      fontSize: 10,
+                      fontSize: 12,
                       letterSpacing: 1,
                       marginBottom: 4,
+                      maxWidth: "100%",
+                      textAlign: "right",
                     }}
                   >
                     {visit.type}
@@ -189,7 +197,7 @@ export default function EmployeeVisitsScreen() {
                           ? "#fbbf24"
                           : "#ffffff",
                       fontFamily: "Brandon-Bold",
-                      fontSize: 16,
+                      fontSize: 18,
                     }}
                   >
                     {visit.status}
@@ -198,26 +206,26 @@ export default function EmployeeVisitsScreen() {
 
                 <View
                   style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: 40,
+                    width: 86,
+                    height: 86,
+                    borderRadius: 43,
                     backgroundColor: "#062214",
                     alignItems: "center",
                     justifyContent: "center",
                     position: "absolute",
                     left: "50%",
-                    marginLeft: -40,
+                    marginLeft: -43,
                     zIndex: 10,
-                    borderWidth: visit.status === "Completed" ? 2 : 1,
+                    borderWidth: visit.status === "Completed" ? 2.5 : 1.5,
                     borderColor:
                       visit.status === "Completed"
                         ? "#4ade80"
-                        : "rgba(255,255,255,0.25)",
+                        : "rgba(255,255,255,0.3)",
                   }}
                 >
                   <Image
                     source={visit.image}
-                    style={{ width: 72, height: 72, borderRadius: 36 }}
+                    style={{ width: 76, height: 76, borderRadius: 38 }}
                   />
                 </View>
 
@@ -225,14 +233,15 @@ export default function EmployeeVisitsScreen() {
                   style={{
                     flex: 1,
                     alignItems: "flex-start",
-                    paddingLeft: 56,
+                    paddingLeft: 54,
+                    minWidth: 0,
                   }}
                 >
                   <Text
                     style={{
                       color: "#ffffff",
                       fontFamily: "Brandon-Bold",
-                      fontSize: 20,
+                      fontSize: 21,
                     }}
                   >
                     {visit.time}
@@ -241,17 +250,21 @@ export default function EmployeeVisitsScreen() {
                     style={{
                       flexDirection: "row",
                       alignItems: "center",
-                      marginTop: 4,
+                      marginTop: 5,
                     }}
                   >
-                    <MapPin size={12} color="rgba(255,255,255,0.5)" />
+                    <MapPin size={14} color="rgba(255,255,255,0.65)" />
                     <Text
-                      style={{
-                        color: "rgba(255,255,255,0.7)",
+                    style={{
+                        color: "rgba(255,255,255,0.8)",
                         fontFamily: "Brandon-Medium",
-                        fontSize: 13,
-                        marginLeft: 4,
+                      fontSize: 15,
+                        marginLeft: 5,
+                      flex: 1,
+                      flexShrink: 1,
                       }}
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
                     >
                       {visit.site_contact}
                     </Text>
@@ -270,39 +283,42 @@ export default function EmployeeVisitsScreen() {
             bottom: 100,
             left: 20,
             right: 20,
-            backgroundColor: "rgba(15, 23, 42, 0.9)",
-            borderRadius: 28,
-            padding: 20,
+            backgroundColor: "rgba(15, 23, 42, 0.92)",
+            borderRadius: 30,
+            padding: 22,
             borderWidth: 1,
-            borderColor: "rgba(74, 222, 128, 0.25)",
+            borderColor: "rgba(74, 222, 128, 0.3)",
           }}
         >
           <View
             style={{
               flexDirection: "row",
+              flexWrap: "wrap",
               alignItems: "center",
               justifyContent: "space-between",
+              gap: 8,
               marginBottom: 8,
             }}
           >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Navigation size={18} color="#4ade80" />
+            <View style={{ flexDirection: "row", alignItems: "center", flex: 1, minWidth: 150 }}>
+              <Navigation size={20} color="#4ade80" />
               <Text
                 style={{
                   color: "#ffffff",
                   fontFamily: "Brandon-Bold",
-                  fontSize: 15,
+                  fontSize: 17,
                   marginLeft: 8,
+                  flexShrink: 1,
                 }}
               >
-                Auto-Routing Active • Open Live Map
+                Open Live GPS Map
               </Text>
             </View>
             <View
               style={{
                 backgroundColor: "rgba(74,222,128,0.2)",
-                paddingHorizontal: 10,
-                paddingVertical: 3,
+                paddingHorizontal: 12,
+                paddingVertical: 4,
                 borderRadius: 999,
               }}
             >
@@ -310,7 +326,7 @@ export default function EmployeeVisitsScreen() {
                 style={{
                   color: "#4ade80",
                   fontFamily: "Brandon-Bold",
-                  fontSize: 10,
+                  fontSize: 12,
                   letterSpacing: 1,
                 }}
               >
@@ -320,10 +336,10 @@ export default function EmployeeVisitsScreen() {
           </View>
           <Text
             style={{
-              color: "rgba(255,255,255,0.6)",
+              color: "rgba(255,255,255,0.7)",
               fontFamily: "Brandon-Medium",
-              fontSize: 12,
-              lineHeight: 17,
+              fontSize: 14,
+              lineHeight: 20,
             }}
           >
             Your {serviceConfig.label} itinerary has been optimized for the fastest

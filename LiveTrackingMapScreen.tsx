@@ -10,7 +10,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import MapView, { Polyline, UrlTile } from 'react-native-maps';
+import MapView, { Circle, Polyline } from 'react-native-maps';
 import { FieldEmployeeMarker } from './components/FieldEmployeeMarker';
 import { useTracking } from './context/TrackingContext';
 import { useService } from './context/ServiceContext';
@@ -18,7 +18,6 @@ import { getAuthUser } from './services/api';
 import { saveLocationLocally } from './utils/trackingManager';
 import {
   haversineDistanceKm,
-  LIGHT_MAP_TILE_URL,
   sendLiveLocationPing,
 } from './utils/locationHelpers';
 
@@ -56,7 +55,6 @@ export default function LiveTrackingMapScreen() {
     distanceKm: 0,
     isOnline: false,
   });
-  const [is3D, setIs3D] = useState(false);
   const [showTraffic, setShowTraffic] = useState(false);
 
   const [breadcrumbRoute, setBreadcrumbRoute] = useState<Coordinate[]>([]);
@@ -122,7 +120,7 @@ export default function LiveTrackingMapScreen() {
         {
           accuracy: Location.Accuracy.BestForNavigation,
           timeInterval: 2000,
-          distanceInterval: 1,
+          distanceInterval: MIN_MOVEMENT_METERS,
         },
         async (location) => {
           if (!isMounted) return;
@@ -191,44 +189,39 @@ export default function LiveTrackingMapScreen() {
     );
   };
 
-  const toggle3D = () => {
-    setIs3D(!is3D);
-    mapRef.current?.animateCamera({ pitch: !is3D ? 45 : 0 }, { duration: 400 });
-  };
-
   return (
     <View style={styles.container}>
       <MapView
         ref={mapRef}
         style={styles.map}
-        mapType={Platform.OS === 'android' ? 'none' : 'standard'}
+        mapType="standard"
         userInterfaceStyle="light"
         showsUserLocation
         showsMyLocationButton={false}
         showsTraffic={showTraffic}
-        showsCompass={false}
+        showsCompass
         initialRegion={{
           latitude: currentLocation?.latitude || defaultCityCoord.latitude,
           longitude: currentLocation?.longitude || defaultCityCoord.longitude,
-          latitudeDelta: 0.008,
-          longitudeDelta: 0.008,
+          latitudeDelta: 0.006,
+          longitudeDelta: 0.006,
         }}
       >
-        <UrlTile
-          urlTemplate={LIGHT_MAP_TILE_URL}
-          maximumZ={20}
-          maximumNativeZ={19}
-          doubleTileSize
-          flipY={false}
-          shouldReplaceMapContent={Platform.OS === 'ios'}
-          zIndex={1}
-        />
-
         {breadcrumbRoute.length > 1 && (
           <Polyline
             coordinates={breadcrumbRoute}
             strokeColor={serviceConfig.themeColor}
             strokeWidth={5}
+          />
+        )}
+
+        {currentLocation && telemetry.accuracy && telemetry.accuracy > 0 && (
+          <Circle
+            center={currentLocation}
+            radius={telemetry.accuracy}
+            fillColor={`${serviceConfig.themeColor}22`}
+            strokeColor={`${serviceConfig.themeColor}88`}
+            strokeWidth={1.5}
           />
         )}
 
@@ -259,13 +252,6 @@ export default function LiveTrackingMapScreen() {
             name="traffic-light"
             size={22}
             color={showTraffic ? serviceConfig.themeColor : '#0F172A'}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.controlButton} onPress={toggle3D}>
-          <MaterialCommunityIcons
-            name={is3D ? 'video-3d' : 'map-outline'}
-            size={22}
-            color="#0F172A"
           />
         </TouchableOpacity>
       </View>

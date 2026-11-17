@@ -1,6 +1,6 @@
 import React from "react";
 import { Stack, router, usePathname } from "expo-router";
-import { CalendarDays, FileText, Home, Plus, User } from "lucide-react-native";
+import { CalendarDays, FileText, Home, Fingerprint, User } from "lucide-react-native";
 import {
   Text,
   TouchableOpacity,
@@ -76,13 +76,13 @@ function FloatingEmployeeTabBar() {
         </BlurView>
       </View>
 
-      {/* Detached Glowing Action Orb (Register / Quick Action) */}
+      {/* Detached Glowing Action Orb (Attendance & Clock-In Hub) */}
       <TouchableOpacity
         activeOpacity={0.85}
-        onPress={() => router.push("/(employee)/register-site/step1" as any)}
+        onPress={() => router.push("/(employee)/attendance-hub" as any)}
         style={styles.fabOrb}
       >
-        <Plus size={26} color="#062214" strokeWidth={2.8} />
+        <Fingerprint size={26} color="#062214" strokeWidth={2.5} />
       </TouchableOpacity>
     </View>
   );

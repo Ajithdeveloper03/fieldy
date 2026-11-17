@@ -83,17 +83,17 @@ export default function EmployeeNotificationsScreen() {
       <SafeAreaView style={{ flex: 1 }}>
         
         {/* HEADER - Instagram Style Top Bar */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#e5e5e5" }}>
-          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 4 }}>
-            <ChevronLeft size={28} color="#000000" />
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 18, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#e5e5e5" }}>
+          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 6 }}>
+            <ChevronLeft size={30} color="#000000" />
           </TouchableOpacity>
-          <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 20, letterSpacing: 0.5 }}>Notifications</Text>
-          <View style={{ width: 36 }} />
+          <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 24, letterSpacing: 0.4 }}>Notifications</Text>
+          <View style={{ width: 38 }} />
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
           
-          <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 16, marginHorizontal: 16, marginTop: 16, marginBottom: 12 }}>New</Text>
+          <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 21, marginHorizontal: 18, marginTop: 18, marginBottom: 14 }}>New</Text>
 
           {/* NOTIFICATION LIST */}
           <View>
@@ -101,7 +101,7 @@ export default function EmployeeNotificationsScreen() {
               if (index === 2) {
                 return (
                   <View key="divider">
-                    <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 16, marginHorizontal: 16, marginTop: 24, marginBottom: 12 }}>Earlier</Text>
+                    <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 21, marginHorizontal: 18, marginTop: 26, marginBottom: 14 }}>Earlier</Text>
                     {renderNotificationItem(notif)}
                   </View>
                 );
@@ -123,13 +123,13 @@ export default function EmployeeNotificationsScreen() {
         style={{ 
           flexDirection: "row", 
           alignItems: "center", 
-          paddingVertical: 12, 
-          paddingHorizontal: 16,
+          paddingVertical: 16, 
+          paddingHorizontal: 18,
           backgroundColor: notif.isUnread ? "#f0f9ff" : "#ffffff",
         }}
       >
         {/* Avatar / Icon */}
-        <View style={{ width: 44, height: 44, borderRadius: 22, marginRight: 12, overflow: "hidden", backgroundColor: notif.bgColor || "#e2e8f0", alignItems: "center", justifyContent: "center" }}>
+        <View style={{ width: 58, height: 58, borderRadius: 29, marginRight: 14, overflow: "hidden", backgroundColor: notif.bgColor || "#e2e8f0", alignItems: "center", justifyContent: "center" }}>
           {notif.avatar ? (
             <Image source={{ uri: notif.avatar }} style={{ width: "100%", height: "100%" }} />
           ) : (
@@ -139,17 +139,17 @@ export default function EmployeeNotificationsScreen() {
 
         {/* Text Content */}
         <View style={{ flex: 1, paddingRight: 12 }}>
-          <Text style={{ fontFamily: "Brandon-Medium", fontSize: 14, color: "#262626", lineHeight: 20 }}>
+          <Text style={{ fontFamily: "Brandon-Medium", fontSize: 17, color: "#1e293b", lineHeight: 23 }}>
             <Text style={{ fontFamily: "Brandon-Bold", color: "#000000" }}>{notif.user} </Text>
             {notif.message}
-            <Text style={{ color: "#a3a3a3", fontSize: 13 }}>  {notif.time}</Text>
+            <Text style={{ color: "#94a3b8", fontSize: 14 }}>  {notif.time}</Text>
           </Text>
         </View>
 
         {/* Action Button */}
         {notif.action && (
-          <TouchableOpacity style={{ backgroundColor: notif.action === "Review" ? "#ef4444" : "#0ea5e9", paddingHorizontal: 16, paddingVertical: 6, borderRadius: 8 }}>
-            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13 }}>{notif.action}</Text>
+          <TouchableOpacity style={{ backgroundColor: notif.action === "Review" ? "#ef4444" : "#0ea5e9", paddingHorizontal: 18, paddingVertical: 9, borderRadius: 12 }}>
+            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 15 }}>{notif.action}</Text>
           </TouchableOpacity>
         )}
       </TouchableOpacity>

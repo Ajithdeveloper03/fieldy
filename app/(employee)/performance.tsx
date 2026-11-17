@@ -16,7 +16,6 @@ import {
   Settings,
   Calendar,
   CheckCircle2,
-  PlusCircle,
   BarChart3,
   User,
   TrendingUp,
@@ -75,7 +74,7 @@ export default function EmployeePerformanceScreen() {
             style={{
               color: "#0f172a",
               fontFamily: "Brandon-Bold",
-              fontSize: 19,
+              fontSize: 24,
             }}
           >
             Performance & KPIs
@@ -270,8 +269,8 @@ export default function EmployeePerformanceScreen() {
                     style={{
                       color: "#0f172a",
                       fontFamily: "Brandon-Bold",
-                      fontSize: 48,
-                      lineHeight: 52,
+                      fontSize: 56,
+                      lineHeight: 60,
                     }}
                   >
                     86%
@@ -280,7 +279,7 @@ export default function EmployeePerformanceScreen() {
                     style={{
                       color: "#64748b",
                       fontFamily: "Brandon-Medium",
-                      fontSize: 12,
+                      fontSize: 14,
                     }}
                   >
                     Reached 480 pts in 18 days
@@ -742,17 +741,17 @@ export default function EmployeePerformanceScreen() {
           }}
         >
           <TouchableOpacity
-            onPress={() => router.push("/(employee)/register-site/step1")}
+            onPress={() => router.push("/(employee)/attendance-hub")}
             style={{
-              width: 42,
-              height: 42,
-              borderRadius: 21,
+              width: 44,
+              height: 44,
+              borderRadius: 22,
               backgroundColor: "#4ade80",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <PlusCircle size={22} color="#062214" />
+            <Clock size={22} color="#062214" />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => router.push("/(employee)/calendar")}

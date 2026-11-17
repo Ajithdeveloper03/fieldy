@@ -92,31 +92,31 @@ export default function TaskDetailScreen() {
             <ChevronLeft size={22} color="#0f172a" />
           </TouchableOpacity>
           <View style={{ alignItems: "center" }}>
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>{serviceConfig.vocab.taskSingular} Details</Text>
-            <Text style={{ color: serviceConfig.color, fontFamily: "Brandon-Bold", fontSize: 11, letterSpacing: 1 }}>{task.workOrderCode}</Text>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 22 }}>{serviceConfig.vocab.taskSingular} Details</Text>
+            <Text style={{ color: serviceConfig.color, fontFamily: "Brandon-Bold", fontSize: 13, letterSpacing: 1 }}>{task.workOrderCode}</Text>
           </View>
           <View style={{ width: 40 }} />
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 20, paddingBottom: 120 }}>
           {/* TITLE & FACILITY CARD */}
-          <View style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4, marginBottom: 20 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
-              <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: "#fee2e2" }}>
-                <Text style={{ color: "#ef4444", fontFamily: "Brandon-Bold", fontSize: 11 }}>{task.priority}</Text>
+          <View style={{ backgroundColor: "#ffffff", borderRadius: 28, padding: 22, shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.06, shadowRadius: 14, elevation: 5, marginBottom: 20 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+              <View style={{ paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999, backgroundColor: "#fee2e2" }}>
+                <Text style={{ color: "#ef4444", fontFamily: "Brandon-Bold", fontSize: 12 }}>{task.priority}</Text>
               </View>
-              <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: `${serviceConfig.color}15` }}>
-                <Text style={{ color: serviceConfig.color, fontFamily: "Brandon-Bold", fontSize: 11 }}>{task.industry}</Text>
+              <View style={{ paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999, backgroundColor: `${serviceConfig.color}15` }}>
+                <Text style={{ color: serviceConfig.color, fontFamily: "Brandon-Bold", fontSize: 12 }}>{task.industry}</Text>
               </View>
               <View style={{ flex: 1 }} />
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Clock size={14} color="#64748b" />
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12, marginLeft: 4 }}>{task.due}</Text>
+                <Clock size={16} color="#64748b" />
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 13, marginLeft: 5 }}>{task.due}</Text>
               </View>
             </View>
 
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 8, lineHeight: 26 }}>{task.title}</Text>
-            <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 13, marginBottom: 12, lineHeight: 20 }}>{task.description}</Text>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 24, marginBottom: 10, lineHeight: 30 }}>{task.title}</Text>
+            <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 16, marginBottom: 14, lineHeight: 24 }}>{task.description}</Text>
 
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <MapPin size={15} color={serviceConfig.color} />

@@ -99,7 +99,7 @@ export default function EmployeeTasksScreen() {
               style={{
                 color: "#0f172a",
                 fontFamily: "Brandon-Bold",
-                fontSize: 22,
+                fontSize: 26,
               }}
             >
               {serviceConfig.vocab.tasks}
@@ -141,8 +141,8 @@ export default function EmployeeTasksScreen() {
                   onPress={() => setSelectedDateIdx(idx)}
                   style={{
                     backgroundColor: isSelected ? "#062214" : "#ffffff",
-                    paddingHorizontal: 18,
-                    paddingVertical: 10,
+                    paddingHorizontal: 20,
+                    paddingVertical: 12,
                     borderRadius: 999,
                     borderWidth: 1,
                     borderColor: isSelected ? "#062214" : "#e2e8f0",
@@ -152,7 +152,7 @@ export default function EmployeeTasksScreen() {
                     style={{
                       color: isSelected ? "#ffffff" : "#475569",
                       fontFamily: "Brandon-Bold",
-                      fontSize: 13,
+                      fontSize: 15,
                     }}
                   >
                     {d.label}
@@ -210,8 +210,8 @@ export default function EmployeeTasksScreen() {
                 style={{
                   color: "#ffffff",
                   fontFamily: "Brandon-Bold",
-                  fontSize: 44,
-                  lineHeight: 48,
+                  fontSize: 54,
+                  lineHeight: 58,
                 }}
               >
                 {completionRate}%
@@ -220,16 +220,16 @@ export default function EmployeeTasksScreen() {
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  marginTop: 6,
+                  marginTop: 8,
                 }}
               >
-                <TrendingUp size={14} color="#a7f3d0" />
+                <TrendingUp size={16} color="#a7f3d0" />
                 <Text
                   style={{
                     color: "#a7f3d0",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 12,
-                    marginLeft: 4,
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 14,
+                    marginLeft: 6,
                   }}
                 >
                   {serviceConfig.shortName} Active SLA
@@ -243,16 +243,16 @@ export default function EmployeeTasksScreen() {
                   style={{
                     color: "#ffffff",
                     fontFamily: "Brandon-Bold",
-                    fontSize: 22,
+                    fontSize: 28,
                   }}
                 >
                   {completedTasks.length}
                 </Text>
                 <Text
                   style={{
-                    color: "rgba(255,255,255,0.6)",
+                    color: "rgba(255,255,255,0.68)",
                     fontFamily: "Brandon-Medium",
-                    fontSize: 12,
+                    fontSize: 14,
                   }}
                 >
                   Completed
@@ -263,16 +263,16 @@ export default function EmployeeTasksScreen() {
                   style={{
                     color: "#4ade80",
                     fontFamily: "Brandon-Bold",
-                    fontSize: 22,
+                    fontSize: 28,
                   }}
                 >
                   {pendingTasks.length}
                 </Text>
                 <Text
                   style={{
-                    color: "rgba(255,255,255,0.6)",
+                    color: "rgba(255,255,255,0.68)",
                     fontFamily: "Brandon-Medium",
-                    fontSize: 12,
+                    fontSize: 14,
                   }}
                 >
                   Pending
@@ -287,8 +287,8 @@ export default function EmployeeTasksScreen() {
               flexDirection: "row",
               backgroundColor: "#e2e8f0",
               borderRadius: 999,
-              padding: 4,
-              marginBottom: 22,
+              padding: 5,
+              marginBottom: 24,
             }}
           >
             {["Pending", "Completed"].map((tab) => (
@@ -298,7 +298,7 @@ export default function EmployeeTasksScreen() {
                 style={{
                   flex: 1,
                   backgroundColor: activeTab === tab ? "#062214" : "transparent",
-                  paddingVertical: 11,
+                  paddingVertical: 13,
                   borderRadius: 999,
                   alignItems: "center",
                 }}
@@ -307,7 +307,7 @@ export default function EmployeeTasksScreen() {
                   style={{
                     color: activeTab === tab ? "#ffffff" : "#475569",
                     fontFamily: "Brandon-Bold",
-                    fontSize: 14,
+                    fontSize: 16,
                   }}
                 >
                   {tab} Orders
@@ -317,7 +317,7 @@ export default function EmployeeTasksScreen() {
           </View>
 
           {/* WORK ORDER CARDS */}
-          <View style={{ gap: 18 }}>
+          <View style={{ gap: 20 }}>
             {activeTab === "Pending" ? (
               <>
                 {pendingTasks.map((task: any) => (
@@ -325,15 +325,15 @@ export default function EmployeeTasksScreen() {
                     key={task.id}
                     style={{
                       backgroundColor: "#ffffff",
-                      borderRadius: 32,
-                      padding: 22,
+                      borderRadius: 34,
+                      padding: 24,
                       borderWidth: 1,
                       borderColor: "#e2e8f0",
                       shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 6 },
-                      shadowOpacity: 0.05,
+                      shadowOffset: { width: 0, height: 8 },
+                      shadowOpacity: 0.06,
                       shadowRadius: 16,
-                      elevation: 4,
+                      elevation: 5,
                     }}
                   >
                     {/* Top Author / Facility Row */}
@@ -342,25 +342,25 @@ export default function EmployeeTasksScreen() {
                         flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        marginBottom: 14,
+                        marginBottom: 16,
                       }}
                     >
-                      <View style={{ flexDirection: "row", alignItems: "center", flex: 1, marginRight: 8 }}>
+                      <View style={{ flexDirection: "row", alignItems: "center", flex: 1, marginRight: 10 }}>
                         <Image
                           source={require("../../assets/images/image3.jpg")}
                           style={{
-                            width: 42,
-                            height: 42,
-                            borderRadius: 21,
-                            marginRight: 12,
+                            width: 64,
+                            height: 64,
+                            borderRadius: 22,
+                            marginRight: 14,
                           }}
                         />
                         <View style={{ flex: 1 }}>
                           <Text
                             style={{
                               color: "#64748b",
-                              fontFamily: "Brandon-Medium",
-                              fontSize: 11,
+                              fontFamily: "Brandon-Bold",
+                              fontSize: 13,
                             }}
                           >
                             {task.workOrderCode} • {task.targetEntity}
@@ -369,7 +369,9 @@ export default function EmployeeTasksScreen() {
                             style={{
                               color: "#0f172a",
                               fontFamily: "Brandon-Bold",
-                              fontSize: 15,
+                              fontSize: 21,
+                              lineHeight: 26,
+                              marginTop: 2,
                             }}
                           >
                             {task.title}
@@ -380,8 +382,8 @@ export default function EmployeeTasksScreen() {
                       <View
                         style={{
                           backgroundColor: task.priority === "Urgent" ? "#fee2e2" : "#fef3c7",
-                          paddingHorizontal: 10,
-                          paddingVertical: 5,
+                          paddingHorizontal: 12,
+                          paddingVertical: 6,
                           borderRadius: 999,
                         }}
                       >
@@ -389,7 +391,7 @@ export default function EmployeeTasksScreen() {
                           style={{
                             color: task.priority === "Urgent" ? "#ef4444" : "#b45309",
                             fontFamily: "Brandon-Bold",
-                            fontSize: 10,
+                            fontSize: 12,
                           }}
                         >
                           {task.due}
@@ -400,11 +402,11 @@ export default function EmployeeTasksScreen() {
                     {/* Description Text */}
                     <Text
                       style={{
-                        color: "#0f172a",
+                        color: "#334155",
                         fontFamily: "Brandon-Medium",
-                        fontSize: 15,
-                        lineHeight: 22,
-                        marginBottom: 16,
+                        fontSize: 16,
+                        lineHeight: 24,
+                        marginBottom: 18,
                       }}
                     >
                       {task.description}
@@ -414,44 +416,45 @@ export default function EmployeeTasksScreen() {
                     <View
                       style={{
                         backgroundColor: "#f8fafc",
-                        borderRadius: 18,
-                        padding: 14,
+                        borderRadius: 20,
+                        padding: 16,
                         flexDirection: "row",
                         alignItems: "center",
-                        marginBottom: 18,
+                        marginBottom: 20,
                         borderWidth: 1,
                         borderColor: "#f1f5f9",
                       }}
                     >
                       <View
                         style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 12,
+                          width: 48,
+                          height: 48,
+                          borderRadius: 16,
                           backgroundColor: `${serviceConfig.themeColor}20`,
                           alignItems: "center",
                           justifyContent: "center",
-                          marginRight: 12,
+                          marginRight: 14,
                         }}
                       >
-                        <FileText size={20} color={serviceConfig.themeColor} />
+                        <FileText size={24} color={serviceConfig.themeColor} />
                       </View>
                       <View style={{ flex: 1 }}>
                         <Text
                           style={{
                             color: "#0f172a",
                             fontFamily: "Brandon-Bold",
-                            fontSize: 13,
+                            fontSize: 15,
+                            lineHeight: 20,
                           }}
                         >
                           {task.aiDiagnostic}
                         </Text>
                         <Text
                           style={{
-                            color: "#94a3b8",
-                            fontFamily: "Brandon-Medium",
-                            fontSize: 11,
-                            marginTop: 2,
+                            color: "#64748b",
+                            fontFamily: "Brandon-Bold",
+                            fontSize: 13,
+                            marginTop: 4,
                           }}
                         >
                           +{task.points} SLA Points • Check-In Required
@@ -465,14 +468,14 @@ export default function EmployeeTasksScreen() {
                       style={{
                         backgroundColor: "#062214",
                         borderRadius: 999,
-                        paddingVertical: 15,
+                        paddingVertical: 18,
                         flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "center",
                       }}
                     >
                       <ListTodo
-                        size={16}
+                        size={19}
                         color="#4ade80"
                         style={{ marginRight: 8 }}
                       />
@@ -480,7 +483,7 @@ export default function EmployeeTasksScreen() {
                         style={{
                           color: "#ffffff",
                           fontFamily: "Brandon-Bold",
-                          fontSize: 14,
+                          fontSize: 17,
                         }}
                       >
                         Execute {serviceConfig.vocab.taskSingular}
@@ -495,8 +498,8 @@ export default function EmployeeTasksScreen() {
                   key={doneTask.id || idx}
                   style={{
                     backgroundColor: "#ffffff",
-                    borderRadius: 28,
-                    padding: 22,
+                    borderRadius: 30,
+                    padding: 24,
                     borderWidth: 1,
                     borderColor: "#e2e8f0",
                   }}
@@ -506,14 +509,14 @@ export default function EmployeeTasksScreen() {
                       flexDirection: "row",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      marginBottom: 10,
+                      marginBottom: 12,
                     }}
                   >
                     <Text
                       style={{
                         color: "#64748b",
                         fontFamily: "Brandon-Bold",
-                        fontSize: 17,
+                        fontSize: 20,
                         textDecorationLine: "line-through",
                         flex: 1,
                         marginRight: 8,
@@ -521,14 +524,14 @@ export default function EmployeeTasksScreen() {
                     >
                       {doneTask?.title || "Inspection Complete"}
                     </Text>
-                    <CheckCircle2 size={22} color="#10b981" />
+                    <CheckCircle2 size={26} color="#10b981" />
                   </View>
                   <Text
                     style={{
-                      color: "#94a3b8",
+                      color: "#64748b",
                       fontFamily: "Brandon-Medium",
-                      fontSize: 13,
-                      marginBottom: 16,
+                      fontSize: 15,
+                      marginBottom: 18,
                     }}
                   >
                     {doneTask.workOrderCode || "WO-001"} • Verified & Submitted
@@ -538,7 +541,7 @@ export default function EmployeeTasksScreen() {
                     style={{
                       backgroundColor: "#f1f5f9",
                       borderRadius: 999,
-                      paddingVertical: 14,
+                      paddingVertical: 16,
                       alignItems: "center",
                     }}
                   >
@@ -546,7 +549,7 @@ export default function EmployeeTasksScreen() {
                       style={{
                         color: "#0f172a",
                         fontFamily: "Brandon-Bold",
-                        fontSize: 14,
+                        fontSize: 16,
                       }}
                     >
                       View {serviceConfig.vocab.report}
