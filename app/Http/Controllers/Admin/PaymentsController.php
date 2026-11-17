@@ -15,6 +15,11 @@ class PaymentsController extends Controller
 {
     public function index(Request $request)
     {
+        // Payroll / payments are hidden for the construction vertical.
+        if (IndustryContext::current() === 'construction') {
+            return redirect(str_starts_with($request->path(), 'fieldy/') ? '/fieldy/admin/dashboard' : '/admin/dashboard');
+        }
+
         $month = $request->query('month', Carbon::now()->format('F Y'));
         $status = $request->query('status', '');
         $empId = $request->query('employee_id', '');

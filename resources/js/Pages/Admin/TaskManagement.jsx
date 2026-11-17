@@ -37,7 +37,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
     const [newTask, setNewTask] = useState({
         title: '',
         description: '',
-        industry: 'site_visit',
+        activity_type: 'routine_service',
         assigned_to: '',
         customer_id: '',
         priority: 'medium',
@@ -246,7 +246,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
         const payload = {
             title: newTask.title.trim(),
             description: newTask.description.trim() || null,
-            industry: newTask.industry,
+            industry: industry.id,
             assigned_to: newTask.assigned_to ? Number(newTask.assigned_to) : null,
             customer_id: newTask.customer_id ? Number(newTask.customer_id) : null,
             priority: newTask.priority,
@@ -261,7 +261,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                 setNewTask({
                     title: '',
                     description: '',
-                    industry: 'site_visit',
+                    activity_type: 'routine_service',
                     assigned_to: '',
                     customer_id: '',
                     priority: 'medium',
@@ -971,8 +971,8 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                                         {t(`${industry.shortName} Activity Type`)} <span className="text-[var(--color-hp-primary)]">*</span>
                                     </label>
                                     <select
-                                        value={newTask.industry}
-                                        onChange={e => setNewTask(prev => ({ ...prev, industry: e.target.value }))}
+                                        value={newTask.activity_type}
+                                        onChange={e => setNewTask(prev => ({ ...prev, activity_type: e.target.value }))}
                                         className="hp-input"
                                     >
                                         <option value="routine_service">{vocab.visit.singular} & Field Action</option>
@@ -1008,7 +1008,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                                     </label>
                                     <button
                                         type="button"
-                                        onClick={() => handleGenerateAiSuggestions(newTask.title, newTask.industry)}
+                                        onClick={() => handleGenerateAiSuggestions(newTask.title, newTask.activity_type)}
                                         disabled={generatingAi}
                                         className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[var(--color-hp-primary)] hover:underline"
                                     >

@@ -4,10 +4,26 @@ import { Link, usePage, router } from '@inertiajs/react';
 import { 
     MapPin, Search, Plus, 
     Briefcase, Sparkles, LayoutGrid, ListFilter, ArrowUpRight, X,
-    Battery, UserCheck, ShieldCheck
+    Battery, UserCheck, ShieldCheck, KeyRound, Copy, Check
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import useIndustry from '../../../hooks/useIndustry';
+
+function CopyButton({ value }) {
+    const [copied, setCopied] = React.useState(false);
+    if (!value) return null;
+    const copy = () => {
+        navigator.clipboard?.writeText(String(value)).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+        });
+    };
+    return (
+        <button type="button" onClick={copy} className="shrink-0 text-hp-muted hover:text-hp-primary" title="Copy">
+            {copied ? <Check className="w-3.5 h-3.5 text-hp-success" /> : <Copy className="w-3.5 h-3.5" />}
+        </button>
+    );
+}
 
 export default function EmployeeList({ employees = [], regions = [], filters = {} }) {
     const { t } = useTranslation();
@@ -43,16 +59,34 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
             <div className="space-y-6 pb-12 hp-animate-in">
 
                 {flash?.success && (
-                    <div className="hp-bento-card !p-4 border-l-4 border-l-hp-success bg-hp-success-light/30 flex justify-between items-center">
-                        <div>
-                            <p className="text-sm font-bold text-hp-dark">{flash.success}</p>
-                            {flash.generated_password && (
-                                <p className="text-xs text-hp-muted mt-1">
-                                    <strong>Generated App Password: </strong>
-                                    <span className="bg-white px-2 py-0.5 rounded border border-hp-border font-mono font-bold text-hp-dark ml-1">{flash.generated_password}</span>
-                                </p>
-                            )}
+                    <div className="hp-bento-card !p-4 border-l-4 border-l-hp-success bg-hp-success-light/30">
+                        <div className="flex items-center gap-2 text-sm font-bold text-hp-dark">
+                            <Check className="w-4 h-4 text-hp-success" /> {flash.success}
                         </div>
+                        {flash.generated_password && (
+                            <div className="mt-3 rounded-xl border border-hp-border bg-white p-4">
+                                <p className="text-xs font-bold text-hp-dark uppercase tracking-wider flex items-center gap-1.5 mb-3">
+                                    <KeyRound className="w-3.5 h-3.5 text-hp-primary" /> {t('App Login Credentials')}
+                                </p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <p className="text-[11px] text-hp-muted mb-1">{t('App Login ID')}</p>
+                                        <div className="flex items-center justify-between gap-2 bg-hp-hover rounded-lg px-3 py-2">
+                                            <span className="text-xs font-mono font-bold text-hp-dark truncate">{flash.generated_login_id || '—'}</span>
+                                            <CopyButton value={flash.generated_login_id} />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] text-hp-muted mb-1">{t('Temporary Password')}</p>
+                                        <div className="flex items-center justify-between gap-2 bg-hp-hover rounded-lg px-3 py-2">
+                                            <span className="text-xs font-mono font-bold text-hp-dark truncate">{flash.generated_password}</span>
+                                            <CopyButton value={flash.generated_password} />
+                                        </div>
+                                    </div>
+                                </div>
+                                <p className="text-[11px] text-hp-muted mt-2">{t('Share these credentials with the staff member. The password is shown only once.')}</p>
+                            </div>
+                        )}
                     </div>
                 )}
 

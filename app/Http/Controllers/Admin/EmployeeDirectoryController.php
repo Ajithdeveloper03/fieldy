@@ -158,6 +158,7 @@ class EmployeeDirectoryController extends Controller
                 'recentReviews' => [
                     ['rating' => 5, 'comment' => 'Very punctual and thorough with all procedures.', 'farmer_name' => 'Site Lead', 'date' => '2 hours ago'],
                 ],
+                'performanceHistory' => $this->dummyPerformanceHistory(),
             ]);
         }
 
@@ -261,6 +262,7 @@ class EmployeeDirectoryController extends Controller
             'visitsThisWeek' => $visitsThisWeek,
             'assignedFarmers' => $assignedFarmers,
             'recentReviews' => $recentReviews,
+            'performanceHistory' => $this->dummyPerformanceHistory(),
         ]);
     }
 
@@ -306,8 +308,10 @@ class EmployeeDirectoryController extends Controller
         ]);
 
         return redirect('/admin/employees')
-            ->with('success', 'Staff member registered successfully.')
-            ->with('generated_password', $password);
+            ->with('success', $validated['name'].' registered successfully.')
+            ->with('generated_password', $password)
+            ->with('generated_login_id', $email)
+            ->with('generated_name', $validated['name']);
     }
 
     public function edit($id)
@@ -370,5 +374,20 @@ class EmployeeDirectoryController extends Controller
         ]);
 
         return redirect('/admin/employees/'.$id)->with('success', 'Staff member updated.');
+    }
+
+    /**
+     * Dummy month-by-month performance history shown on the staff profile page.
+     */
+    private function dummyPerformanceHistory(): array
+    {
+        return [
+            ['period' => 'Nov 2026', 'score' => 94, 'rating' => 4.9, 'visits' => 28, 'attendance' => '98%', 'note' => 'Concrete pour QA verified ahead of schedule.'],
+            ['period' => 'Oct 2026', 'score' => 91, 'rating' => 4.8, 'visits' => 26, 'attendance' => '97%', 'note' => 'Zero safety violations across all site inspections.'],
+            ['period' => 'Sep 2026', 'score' => 88, 'rating' => 4.7, 'visits' => 24, 'attendance' => '96%', 'note' => 'Rebar & slab inspections completed within SLA.'],
+            ['period' => 'Aug 2026', 'score' => 85, 'rating' => 4.6, 'visits' => 22, 'attendance' => '95%', 'note' => 'Onboarded 3 new project sites successfully.'],
+            ['period' => 'Jul 2026', 'score' => 82, 'rating' => 4.5, 'visits' => 20, 'attendance' => '94%', 'note' => 'Monsoon safety drills coordinated for all crews.'],
+            ['period' => 'Jun 2026', 'score' => 79, 'rating' => 4.4, 'visits' => 18, 'attendance' => '93%', 'note' => 'Foundation inspection backlog cleared.'],
+        ];
     }
 }
