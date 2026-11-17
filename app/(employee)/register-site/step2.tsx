@@ -16,7 +16,7 @@ export default function RegisterStep2Screen() {
   const { mobile = "9687846895" } = useLocalSearchParams<{ mobile?: string }>();
   const [otp, setOtp] = useState(["2", "3", "3", "4", "5", "6"]);
   const [countdown, setCountdown] = useState(26);
-  const inputsRef = useRef<(TextInput | null)[]>([]);
+  const inputsRef = useRef<(React.ComponentRef<typeof TextInput> | null)[]>([]);
 
   useEffect(() => {
     if (countdown <= 0) return;

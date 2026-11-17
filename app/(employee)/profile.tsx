@@ -32,20 +32,15 @@ export default function EmployeeProfileScreen() {
     <View style={{ flex: 1, backgroundColor: "#062214" }}>
       <StatusBar barStyle="light-content" />
 
-      {/* Cinematic Drone Map Background (View + Absolute Image) */}
-      <Image
-        source={require("../../assets/images/image2.jpg")}
-        style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
-        resizeMode="cover"
-      />
+      {/* Cinematic Gradient Background */}
       <LinearGradient
         colors={[
-          "rgba(6, 34, 20, 0.82)",
-          "rgba(6, 34, 20, 0.96)",
+          "#042616",
+          "#0a331c",
           "#062214",
         ]}
         locations={[0, 0.35, 1]}
-        style={StyleSheet.absoluteFillObject}
+        style={StyleSheet.absoluteFill}
       />
 
       {/* Glow */}
@@ -246,7 +241,7 @@ export default function EmployeeProfileScreen() {
                 marginBottom: 22,
               }}
             >
-              Senior Field Agronomist • ID: FO-902
+              Senior Field Officer • ID: FO-902
             </Text>
 
             {/* Dual Outlined Pill Buttons (Reference Image 2: "Подписаться" | "Написать") */}
@@ -412,7 +407,7 @@ export default function EmployeeProfileScreen() {
               />
               <LinearGradient
                 colors={["transparent", "rgba(6, 34, 20, 0.85)"]}
-                style={StyleSheet.absoluteFillObject}
+                style={StyleSheet.absoluteFill}
               />
               <View
                 style={{

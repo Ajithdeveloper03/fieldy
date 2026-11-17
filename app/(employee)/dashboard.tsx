@@ -8,7 +8,7 @@ import {
   StyleSheet,
   StatusBar,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -34,77 +34,126 @@ import {
   MoreVertical,
 } from "lucide-react-native";
 import { useLanguage, LanguageTogglePill } from "../../context/LanguageContext";
+import { useService, ServiceSelectorPill, ALL_SERVICE_KEYS } from "../../context/ServiceContext";
+import { api, getAuthUser } from "../../services/api";
+const HERO_LOCAL_IMAGES: Record<string, any> = {
+  real_estate: require("../../assets/images/image1.jpg"),
+  facility_fmcg: require("../../assets/images/image2.jpg"),
+  construction: require("../../assets/images/image3.jpg"),
+  security: require("../../assets/images/image4.jpg"),
+  cleaning: require("../../assets/images/image5.jpg"),
+  maintenance: require("../../assets/images/image6.jpg"),
+  solar: require("../../assets/images/image7.jpg"),
+  pest_control: require("../../assets/images/image8.jpg"),
+  logistics: require("../../assets/images/image10.jpg"),
+};
 
 export default function EmployeeDashboardScreen() {
+  const insets = useSafeAreaInsets();
   const { t, language } = useLanguage();
+  const { serviceConfig, setService } = useService();
   const [isClockedIn, setIsClockedIn] = useState(false);
-  const [userName, setUserName] = useState("Field Officer");
+  const [userName, setUserName] = useState("Field Executive");
+  const [employeeCode, setEmployeeCode] = useState("FO-902");
 
   useEffect(() => {
     (async () => {
       const status = await AsyncStorage.getItem("isClockedIn");
       const name = await AsyncStorage.getItem("userName");
+      const authUser = await getAuthUser();
       if (status === "true") setIsClockedIn(true);
-      if (name) setUserName(name);
+      if (authUser?.name) setUserName(authUser.name);
+      else if (name) setUserName(name);
+      if (authUser?.employee_code) setEmployeeCode(authUser.employee_code);
+
+      try {
+        const dash = await api.get("/employee/dashboard");
+        const emp = dash?.data?.employee;
+        const att = dash?.data?.attendance;
+        if (emp?.name) setUserName(emp.name);
+        if (emp?.employee_code) setEmployeeCode(emp.employee_code);
+        if (emp?.industry && ALL_SERVICE_KEYS.includes(emp.industry)) {
+          await setService(emp.industry);
+        }
+        if (att && typeof att.checked_in === "boolean") {
+          setIsClockedIn(att.checked_in && !att.checked_out);
+          await AsyncStorage.setItem("isClockedIn", att.checked_in && !att.checked_out ? "true" : "false");
+        }
+      } catch {
+        // Offline mode uses stored session state
+      }
     })();
   }, []);
-
+  const renderActionIcon = (iconName: string, color: string) => {
+    switch (iconName) {
+      case "ClipboardCheck": return <ClipboardCheck size={22} color={color} />;
+      case "UserPlus": return <UserPlus size={22} color={color} />;
+      case "Users": return <Users size={22} color={color} />;
+      case "FileText": return <FileText size={22} color={color} />;
+      case "Calendar": return <CalendarDays size={22} color={color} />;
+      case "Boxes": return <Boxes size={22} color={color} />;
+      case "History": return <History size={22} color={color} />;
+      case "Navigation": return <Navigation size={22} color={color} />;
+      case "AlertOctagon": return <AlertOctagon size={22} color={color} />;
+      case "Receipt": return <Receipt size={22} color={color} />;
+      default: return <ClipboardCheck size={22} color={color} />;
+    }
+  };
   return (
     <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
       <StatusBar barStyle="light-content" />
-
-      {/* AMBIENT HEADER BACKGROUND (View + Absolute Image) */}
-      <View
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 390,
-          overflow: "hidden",
-          borderBottomLeftRadius: 44,
-          borderBottomRightRadius: 44,
-          backgroundColor: "#062214",
-        }}
-      >
-        <Image
-          source={require("../../assets/images/image3.jpg")}
-          style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
-          resizeMode="cover"
-        />
-        <LinearGradient
-          colors={[
-            "rgba(6, 34, 20, 0.88)",
-            "rgba(15, 23, 42, 0.82)",
-            "#062214",
-          ]}
-          style={StyleSheet.absoluteFillObject}
-        />
-        {/* Soft Emerald Ambient Glow */}
-        <View
-          style={{
-            position: "absolute",
-            bottom: -60,
-            left: "50%",
-            marginLeft: -140,
-            width: 280,
-            height: 180,
-            borderRadius: 140,
-            backgroundColor: "rgba(16, 185, 129, 0.22)",
-          }}
-        />
-      </View>
-
-      <SafeAreaView style={{ flex: 1 }}>
-        {/* HEADER */}
+      <SafeAreaView style={{ flex: 1 }} edges={["left", "right"]}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 140 }}>
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 470,
+              overflow: "hidden",
+              borderBottomLeftRadius: 44,
+              borderBottomRightRadius: 44,
+              backgroundColor: "#062214",
+            }}
+          >
+            <Image
+              source={HERO_LOCAL_IMAGES[serviceConfig.key] || require("../../assets/images/image2.jpg")}
+              style={[StyleSheet.absoluteFill, { width: "100%", height: "100%" }]}
+              resizeMode="cover"
+            />
+            <LinearGradient
+              colors={[
+                "rgba(4, 24, 14, 0.85)",
+                "rgba(6, 34, 20, 0.92)",
+                "#062214",
+              ]}
+              style={StyleSheet.absoluteFill}
+            />
+            {/* Soft Emerald Ambient Glow */}
+            <View
+              style={{
+                position: "absolute",
+                bottom: -60,
+                left: "50%",
+                marginLeft: -140,
+                width: 280,
+                height: 180,
+                borderRadius: 140,
+                backgroundColor: "rgba(16, 185, 129, 0.22)",
+              }}
+            />
+          </View>
+          {/* HEADER */}
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
-            paddingHorizontal: 24,
-            paddingTop: 12,
+            paddingHorizontal: 18,
+            paddingTop: insets.top + 10,
             paddingBottom: 8,
+            gap: 8,
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -135,7 +184,7 @@ export default function EmployeeDashboardScreen() {
                   fontSize: 12,
                 }}
               >
-                Welcome back! • 29 Oct, 2026
+                Today
               </Text>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Text
@@ -169,14 +218,14 @@ export default function EmployeeDashboardScreen() {
                       letterSpacing: 0.8,
                     }}
                   >
-                    FO-902
+                    {employeeCode}
                   </Text>
                 </View>
               </View>
             </View>
           </View>
-
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <ServiceSelectorPill dark compact />
             <LanguageTogglePill />
             <TouchableOpacity
               onPress={() => router.push("/(employee)/notifications")}
@@ -187,7 +236,7 @@ export default function EmployeeDashboardScreen() {
                 backgroundColor: "rgba(255,255,255,0.12)",
                 alignItems: "center",
                 justifyContent: "center",
-                marginLeft: 8,
+                marginLeft: 4,
                 borderWidth: 1,
                 borderColor: "rgba(255,255,255,0.12)",
               }}
@@ -207,23 +256,14 @@ export default function EmployeeDashboardScreen() {
             </TouchableOpacity>
           </View>
         </View>
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingHorizontal: 22,
-            paddingBottom: 130,
-            paddingTop: 14,
-          }}
-        >
-          {/* HERO GAUGE & DUTY STATUS BOARD (Inspired by Reference Screens 4 & 5) */}
+        <View style={{ paddingHorizontal: 22, paddingTop: 14 }}>
           <View
             style={{
-              backgroundColor: "rgba(255, 255, 255, 0.08)",
+              backgroundColor: "rgba(6, 34, 20, 0.82)",
               borderRadius: 36,
               padding: 22,
               borderWidth: 1,
-              borderColor: "rgba(255, 255, 255, 0.14)",
+              borderColor: "rgba(255, 255, 255, 0.22)",
               marginBottom: 24,
             }}
           >
@@ -236,25 +276,36 @@ export default function EmployeeDashboardScreen() {
                 marginBottom: 14,
               }}
             >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: "rgba(255, 255, 255, 0.85)",
+                  paddingHorizontal: 12,
+                  paddingVertical: 5,
+                  borderRadius: 999,
+                  borderWidth: 1,
+                  borderColor: "rgba(255, 255, 255, 0.95)",
+                }}
+              >
                 <View
                   style={{
-                    width: 10,
-                    height: 10,
+                    width: 9,
+                    height: 9,
                     borderRadius: 5,
-                    backgroundColor: isClockedIn ? "#4ade80" : "#f87171",
-                    marginRight: 8,
+                    backgroundColor: isClockedIn ? "#16a34a" : "#dc2626",
+                    marginRight: 7,
                   }}
                 />
                 <Text
                   style={{
-                    color: "#ffffff",
+                    color: "#0f172a",
                     fontFamily: "Brandon-Bold",
-                    fontSize: 13,
-                    letterSpacing: 1,
+                    fontSize: 12,
+                    letterSpacing: 0.6,
                   }}
                 >
-                  {isClockedIn ? "ON DUTY • GPS ACTIVE" : "OFF DUTY • STANDBY"}
+                  {isClockedIn ? "On Duty" : "Off Duty"}
                 </Text>
               </View>
               <TouchableOpacity
@@ -273,12 +324,10 @@ export default function EmployeeDashboardScreen() {
                     fontSize: 11,
                   }}
                 >
-                  480 points • Service goal
+                  {serviceConfig.kpis.points}
                 </Text>
               </TouchableOpacity>
             </View>
-
-            {/* Semi-Circular Arc Gauge Dial (Reference Image 4 & 5) */}
             <View style={{ alignItems: "center", marginVertical: 6 }}>
               <View
                 style={{
@@ -295,9 +344,9 @@ export default function EmployeeDashboardScreen() {
                     borderRadius: 120,
                     borderWidth: 10,
                     borderColor: "rgba(255, 255, 255, 0.12)",
-                    borderTopColor: "#4ade80",
-                    borderLeftColor: "#4ade80",
-                    borderRightColor: "#10b981",
+                    borderTopColor: serviceConfig.accentColor,
+                    borderLeftColor: serviceConfig.accentColor,
+                    borderRightColor: serviceConfig.themeColor,
                     transform: [{ rotate: "-15deg" }],
                   }}
                 />
@@ -312,11 +361,11 @@ export default function EmployeeDashboardScreen() {
                     style={{
                       color: "#ffffff",
                       fontFamily: "Brandon-Bold",
-                      fontSize: 44,
-                      lineHeight: 48,
+                      fontSize: 40,
+                      lineHeight: 46,
                     }}
                   >
-                    86%
+                    {serviceConfig.kpis.efficiencyRate}
                   </Text>
                   <Text
                     style={{
@@ -326,12 +375,10 @@ export default function EmployeeDashboardScreen() {
                       marginTop: 2,
                     }}
                   >
-                    Daily Efficiency & Route Quota
+                    Efficiency
                   </Text>
                 </View>
               </View>
-
-              {/* Black/Emerald Pill Action Button inside Dial (Reference Image 4 "Start Learning >") */}
               <TouchableOpacity
                 activeOpacity={0.85}
                 onPress={() =>
@@ -342,7 +389,7 @@ export default function EmployeeDashboardScreen() {
                   )
                 }
                 style={{
-                  backgroundColor: isClockedIn ? "#ef4444" : "#10b981",
+                  backgroundColor: isClockedIn ? "#ef4444" : serviceConfig.themeColor,
                   paddingHorizontal: 24,
                   paddingVertical: 11,
                   borderRadius: 999,
@@ -350,7 +397,7 @@ export default function EmployeeDashboardScreen() {
                   alignItems: "center",
                   marginTop: 8,
                   marginBottom: 16,
-                  shadowColor: isClockedIn ? "#ef4444" : "#10b981",
+                  shadowColor: isClockedIn ? "#ef4444" : serviceConfig.themeColor,
                   shadowOffset: { width: 0, height: 6 },
                   shadowOpacity: 0.35,
                   shadowRadius: 12,
@@ -365,13 +412,11 @@ export default function EmployeeDashboardScreen() {
                     fontSize: 14,
                   }}
                 >
-                  {isClockedIn ? "End Shift • End work" : "Start Shift • Start work"}
+                  {isClockedIn ? "Clock Out" : "Clock In"}
                 </Text>
                 <ArrowRight size={15} color="#ffffff" style={{ marginLeft: 6 }} />
               </TouchableOpacity>
             </View>
-
-            {/* 3 Metric Stats Strip */}
             <View
               style={{
                 flexDirection: "row",
@@ -397,7 +442,7 @@ export default function EmployeeDashboardScreen() {
                     fontSize: 18,
                   }}
                 >
-                  12
+                  {serviceConfig.kpis.primaryNumber}
                 </Text>
                 <Text
                   style={{
@@ -406,7 +451,7 @@ export default function EmployeeDashboardScreen() {
                     fontSize: 11,
                   }}
                 >
-                  Assigned
+                  {serviceConfig.kpis.primaryLabel}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -425,7 +470,7 @@ export default function EmployeeDashboardScreen() {
                     fontSize: 18,
                   }}
                 >
-                  4
+                  {serviceConfig.kpis.secondaryNumber}
                 </Text>
                 <Text
                   style={{
@@ -434,7 +479,7 @@ export default function EmployeeDashboardScreen() {
                     fontSize: 11,
                   }}
                 >
-                  Visited
+                  {serviceConfig.kpis.secondaryLabel}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -448,7 +493,7 @@ export default function EmployeeDashboardScreen() {
                     fontSize: 18,
                   }}
                 >
-                  8
+                  {serviceConfig.sampleVisits.length}
                 </Text>
                 <Text
                   style={{
@@ -457,13 +502,13 @@ export default function EmployeeDashboardScreen() {
                     fontSize: 11,
                   }}
                 >
-                  Pending
+                  {serviceConfig.vocab.visits}
                 </Text>
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* DUAL BENTO SUMMARY CARDS (Reference Screen 4: "128 Notes" + "12 Folders") */}
+          {/* DUAL BENTO SUMMARY CARDS */}
           <View
             style={{
               flexDirection: "row",
@@ -486,7 +531,7 @@ export default function EmployeeDashboardScreen() {
                 shadowRadius: 14,
                 elevation: 4,
                 borderWidth: 1,
-                borderColor: "#dcfce7",
+                borderColor: serviceConfig.borderTint,
               }}
             >
               <Text
@@ -496,18 +541,18 @@ export default function EmployeeDashboardScreen() {
                   fontSize: 12,
                 }}
               >
-                Jobs to do
+                Active {serviceConfig.vocab.tasks}
               </Text>
               <Text
                 style={{
                   color: "#0f172a",
                   fontFamily: "Brandon-Bold",
-                  fontSize: 24,
+                  fontSize: 22,
                   marginTop: 2,
                   marginBottom: 12,
                 }}
               >
-                14 Orders
+                {serviceConfig.sampleTasks.length} Orders
               </Text>
 
               {/* Avatar Stack + Badge */}
@@ -538,7 +583,7 @@ export default function EmployeeDashboardScreen() {
                 ))}
                 <View
                   style={{
-                    backgroundColor: "#dcfce7",
+                    backgroundColor: serviceConfig.lightBg,
                     paddingHorizontal: 6,
                     paddingVertical: 2,
                     borderRadius: 999,
@@ -547,12 +592,12 @@ export default function EmployeeDashboardScreen() {
                 >
                   <Text
                     style={{
-                      color: "#15803d",
+                      color: serviceConfig.themeColor,
                       fontFamily: "Brandon-Bold",
                       fontSize: 10,
                     }}
                   >
-                    +11 Sites
+                    +{serviceConfig.sampleEntities.length} {serviceConfig.vocab.entities}
                   </Text>
                 </View>
               </View>
@@ -565,7 +610,7 @@ export default function EmployeeDashboardScreen() {
                   lineHeight: 15,
                 }}
               >
-                2 urgent air and fire safety checks today
+                {serviceConfig.sampleTasks[0]?.title || "SLA compliance on schedule"}
               </Text>
             </TouchableOpacity>
 
@@ -618,7 +663,7 @@ export default function EmployeeDashboardScreen() {
                     fontSize: 22,
                   }}
                 >
-                  12 Facilities
+                  {serviceConfig.kpis.primaryNumber} {serviceConfig.vocab.entities}
                 </Text>
                 <View
                   style={{
@@ -635,87 +680,144 @@ export default function EmployeeDashboardScreen() {
                       fontSize: 11,
                     }}
                   >
-                    📋 112 site checks
+                    📋 {serviceConfig.kpis.secondaryNumber}
                   </Text>
                   <Text
                     style={{
-                      color: "#16a34a",
+                      color: serviceConfig.themeColor,
                       fontFamily: "Brandon-Bold",
                       fontSize: 11,
                     }}
                   >
-                    ✓ 98% on time
+                    ✓ {serviceConfig.kpis.efficiencyRate} SLA
                   </Text>
                 </View>
               </View>
             </TouchableOpacity>
           </View>
 
-          {/* AI SMART DIAGNOSTIC BANNER (Reference Screen 4: "Transform educational videos...") */}
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={() => router.push("/(employee)/report/select-method")}
-            style={{
-              marginBottom: 24,
-              borderRadius: 26,
-              overflow: "hidden",
-              shadowColor: "#10b981",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.08,
-              shadowRadius: 12,
-              elevation: 3,
-            }}
-          >
-            <LinearGradient
-              colors={["#ecfdf5", "#e0f2fe", "#fefce8"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
+          {/* SWIGGY-STYLE COLORED BENTO CARDS WITH TRANSLUCENT IMAGES */}
+          <View style={{ flexDirection: "row", gap: 12, marginBottom: 24, height: 210 }}>
+            {/* Left Tall Card: AI Reports */}
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() => router.push("/(employee)/report/select-method")}
               style={{
-                padding: 20,
-                borderRadius: 26,
-                borderWidth: 1,
-                borderColor: "#d1fae5",
+                flex: 1,
+                backgroundColor: "#065f46",
+                borderRadius: 24,
+                padding: 16,
+                overflow: "hidden",
+                justifyContent: "space-between",
+                elevation: 4,
               }}
             >
-              <View
+              <Image
+                source={require("../../assets/images/image11.jpg")}
                 style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 6,
+                  position: "absolute",
+                  right: -18,
+                  bottom: -18,
+                  width: 110,
+                  height: 110,
+                  borderRadius: 55,
+                  opacity: 0.28,
                 }}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Sparkles size={15} color="#059669" style={{ marginRight: 6 }} />
-                  <Text
-                    style={{
-                      color: "#059669",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 12,
-                      letterSpacing: 0.5,
-                    }}
-                  >
-                    Fieldy AI Field Assistant
+                resizeMode="cover"
+              />
+              <View>
+                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+                  <Sparkles size={14} color="#fde047" style={{ marginRight: 5 }} />
+                  <Text style={{ color: "#fde047", fontFamily: "Brandon-Bold", fontSize: 12 }}>
+                    AI REPORTS
                   </Text>
                 </View>
-                <ArrowRight size={16} color="#0f172a" />
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18, lineHeight: 22 }}>
+                  New {serviceConfig.vocab.report}
+                </Text>
+                <Text style={{ color: "rgba(255,255,255,0.78)", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 4 }}>
+                  Quick notes & photos
+                </Text>
               </View>
-              <Text
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12, marginRight: 4 }}>
+                  Start
+                </Text>
+                <ArrowRight size={14} color="#ffffff" />
+              </View>
+            </TouchableOpacity>
+
+            {/* Right Stacked Cards: Bonus + Live Map */}
+            <View style={{ flex: 1, gap: 12 }}>
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => router.push("/(employee)/bonus-wallet" as any)}
                 style={{
-                  color: "#0f172a",
-                  fontFamily: "Brandon-Medium",
-                  fontSize: 15,
-                  lineHeight: 22,
+                  flex: 1,
+                  backgroundColor: "#ea580c",
+                  borderRadius: 22,
+                  padding: 14,
+                  overflow: "hidden",
+                  justifyContent: "center",
+                  elevation: 4,
                 }}
               >
-                Transform site photos & drone scans into{" "}
-                <Text style={{ fontFamily: "Brandon-Bold" }}>
-                  checked service reports
-                </Text>{" "}
-                instantly.
-              </Text>
-            </LinearGradient>
-          </TouchableOpacity>
+                <Image
+                  source={require("../../assets/images/image12.jpg")}
+                  style={{
+                    position: "absolute",
+                    right: -10,
+                    bottom: -10,
+                    width: 68,
+                    height: 68,
+                    borderRadius: 34,
+                    opacity: 0.32,
+                  }}
+                  resizeMode="cover"
+                />
+                <Text style={{ color: "#fef08a", fontFamily: "Brandon-Bold", fontSize: 11 }}>
+                  REWARDS
+                </Text>
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>
+                  Bonus Wallet
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => router.push("/(employee)/map")}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#3730a3",
+                  borderRadius: 22,
+                  padding: 14,
+                  overflow: "hidden",
+                  justifyContent: "center",
+                  elevation: 4,
+                }}
+              >
+                <Image
+                  source={require("../../assets/images/image13.jpg")}
+                  style={{
+                    position: "absolute",
+                    right: -10,
+                    bottom: -10,
+                    width: 68,
+                    height: 68,
+                    borderRadius: 34,
+                    opacity: 0.32,
+                  }}
+                  resizeMode="cover"
+                />
+                <Text style={{ color: "#a5b4fc", fontFamily: "Brandon-Bold", fontSize: 11 }}>
+                  GPS TRACKING
+                </Text>
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>
+                  Live Route Map
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
 
           {/* QUICK ACTIONS ROW */}
           <View
@@ -725,169 +827,51 @@ export default function EmployeeDashboardScreen() {
               marginBottom: 24,
             }}
           >
-            <TouchableOpacity
-              onPress={() => router.push("/(employee)/tasks")}
-              style={{
-                flex: 1,
-                backgroundColor: "#ffffff",
-                borderRadius: 24,
-                padding: 16,
-                alignItems: "center",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.04,
-                shadowRadius: 10,
-                elevation: 3,
-                marginRight: 6,
-              }}
-            >
-              <View
+            {serviceConfig.quickActions.map((action, idx) => (
+              <TouchableOpacity
+                key={idx}
+                onPress={() => router.push(action.route as any)}
                 style={{
-                  width: 48,
-                  height: 48,
+                  flex: 1,
+                  backgroundColor: "#ffffff",
                   borderRadius: 24,
-                  backgroundColor: "#ede9fe",
+                  padding: 14,
                   alignItems: "center",
-                  justifyContent: "center",
-                  marginBottom: 10,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.04,
+                  shadowRadius: 10,
+                  elevation: 3,
+                  marginHorizontal: 3,
                 }}
               >
-                <ClipboardCheck size={22} color="#7c3aed" />
-              </View>
-              <Text
-                style={{
-                  color: "#0f172a",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 12,
-                  textAlign: "center",
-                }}
-              >
-                Work{"\n"}Orders
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => router.push("/(employee)/register-site/step1")}
-              style={{
-                flex: 1,
-                backgroundColor: "#ffffff",
-                borderRadius: 24,
-                padding: 16,
-                alignItems: "center",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.04,
-                shadowRadius: 10,
-                elevation: 3,
-                marginHorizontal: 4,
-              }}
-            >
-              <View
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 24,
-                  backgroundColor: "#e0f2fe",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginBottom: 10,
-                }}
-              >
-                <UserPlus size={22} color="#0284c7" />
-              </View>
-              <Text
-                style={{
-                  color: "#0f172a",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 12,
-                  textAlign: "center",
-                }}
-              >
-                Onboard{"\n"}Client
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => router.push("/(employee)/my-sites")}
-              style={{
-                flex: 1,
-                backgroundColor: "#ffffff",
-                borderRadius: 24,
-                padding: 16,
-                alignItems: "center",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.04,
-                shadowRadius: 10,
-                elevation: 3,
-                marginHorizontal: 4,
-              }}
-            >
-              <View
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 24,
-                  backgroundColor: "#dcfce7",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginBottom: 10,
-                }}
-              >
-                <Users size={22} color="#16a34a" />
-              </View>
-              <Text
-                style={{
-                  color: "#0f172a",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 12,
-                  textAlign: "center",
-                }}
-              >
-                My Sites{"\n"}& Clients
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => router.push("/(employee)/report/select-method")}
-              style={{
-                flex: 1,
-                backgroundColor: "#ffffff",
-                borderRadius: 24,
-                padding: 16,
-                alignItems: "center",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.04,
-                shadowRadius: 10,
-                elevation: 3,
-                marginLeft: 6,
-              }}
-            >
-              <View
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 24,
-                  backgroundColor: "#fef08a",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginBottom: 10,
-                }}
-              >
-                <FileText size={22} color="#ca8a04" />
-              </View>
-              <Text
-                style={{
-                  color: "#0f172a",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 12,
-                  textAlign: "center",
-                }}
-              >
-                Service{"\n"}Report
-              </Text>
-            </TouchableOpacity>
+                <View
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: action.bg,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 8,
+                  }}
+                >
+                  {renderActionIcon(action.icon, action.color)}
+                </View>
+                <Text
+                  numberOfLines={2}
+                  style={{
+                    color: "#0f172a",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 11,
+                    textAlign: "center",
+                    lineHeight: 14,
+                  }}
+                >
+                  {action.title}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
 
           {/* SECONDARY FIELD TOOLKIT (Expenses, Inventory, Safety SOS) */}
@@ -1031,9 +1015,99 @@ export default function EmployeeDashboardScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* ASSIGNED FACILITIES (Horizontal List) */}
+          {/* ASSIGNED ENTITIES (Horizontal List) */}
           <View style={{ marginBottom: 28 }}>
-            <View
+                      {/* SWIGGY-STYLE HORIZONTAL SLIDER WITH BIG CARDS */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 14, paddingHorizontal: 16 }}
+            style={{ marginHorizontal: -22, marginBottom: 24 }}
+          >
+            {[
+              {
+                tag: "START OF DAY",
+                title: "Attendance & Selfie",
+                sub: "Mark GPS check-in now",
+                bg: "#0f766e",
+                img: require("../../assets/images/image14.jpg"),
+                route: "/(employee)/attendance-hub",
+              },
+              {
+                tag: "ASSIGNED WORK",
+                title: `Today ${serviceConfig.vocab.tasks}`,
+                sub: "View & start field visits",
+                bg: "#ea580c",
+                img: require("../../assets/images/image15.jpg"),
+                route: "/(employee)/tasks",
+              },
+              {
+                tag: "HISTORY",
+                title: "Past Visit Logs",
+                sub: "All saved reports & proof",
+                bg: "#7c3aed",
+                img: require("../../assets/images/image16.jpg"),
+                route: "/(employee)/visit-history",
+              },
+              {
+                tag: "CLAIMS",
+                title: "Travel & Expenses",
+                sub: "Submit fuel & meal bills",
+                bg: "#0369a1",
+                img: require("../../assets/images/image17.jpg"),
+                route: "/(employee)/expenses",
+              },
+            ].map((slide, idx) => (
+              <TouchableOpacity
+                key={idx}
+                activeOpacity={0.9}
+                onPress={() => router.push(slide.route as any)}
+                style={{
+                  width: 300,
+                  height: 168,
+                  backgroundColor: slide.bg,
+                  borderRadius: 24,
+                  padding: 20,
+                  overflow: "hidden",
+                  justifyContent: "space-between",
+                  elevation: 4,
+                }}
+              >
+                <Image
+                  source={slide.img}
+                  style={{
+                    position: "absolute",
+                    right: -14,
+                    bottom: -14,
+                    width: 105,
+                    height: 105,
+                    borderRadius: 52,
+                    opacity: 0.28,
+                  }}
+                  resizeMode="cover"
+                />
+                <View style={{ maxWidth: "74%" }}>
+                  <Text style={{ color: "#fde047", fontFamily: "Brandon-Bold", fontSize: 10, letterSpacing: 0.8 }}>
+                    {slide.tag}
+                  </Text>
+                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18, marginTop: 2 }}>
+                    {slide.title}
+                  </Text>
+                  <Text style={{ color: "rgba(255,255,255,0.8)", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 2 }}>
+                    {slide.sub}
+                  </Text>
+                </View>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12, marginRight: 4 }}>
+                    Open
+                  </Text>
+                  <ArrowRight size={14} color="#ffffff" />
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+<View
               style={{
                 flexDirection: "row",
                 alignItems: "center",
@@ -1048,14 +1122,14 @@ export default function EmployeeDashboardScreen() {
                   fontSize: 20,
                 }}
               >
-                Assigned Facilities
+                My {serviceConfig.vocab.entities}
               </Text>
               <TouchableOpacity
                 onPress={() => router.push("/(employee)/my-sites")}
               >
                 <Text
                   style={{
-                    color: "#15803d",
+                    color: serviceConfig.themeColor,
                     fontFamily: "Brandon-Bold",
                     fontSize: 13,
                     textTransform: "uppercase",
@@ -1070,32 +1144,11 @@ export default function EmployeeDashboardScreen() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 24 }}
             >
-              {[
-                {
-                  id: "1",
-                  name: "Metro Tower",
-                  img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=150&auto=format&fit=project&q=80",
-                },
-                {
-                  id: "2",
-                  name: "Apex Logistics",
-                  img: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=150&auto=format&fit=project&q=80",
-                },
-                {
-                  id: "3",
-                  name: "Grand Mall",
-                  img: "https://images.unsplash.com/photo-1519643381401-22c77e60520e?w=150&auto=format&fit=project&q=80",
-                },
-                {
-                  id: "4",
-                  name: "Horizon Hub",
-                  img: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=150&auto=format&fit=project&q=80",
-                },
-              ].map((facility) => (
+              {serviceConfig.sampleEntities.map((entity) => (
                 <TouchableOpacity
-                  key={facility.id}
+                  key={entity.id}
                   onPress={() =>
-                    router.push(`/(employee)/site/${facility.id}` as any)
+                    router.push(`/(employee)/site/${entity.id}` as any)
                   }
                   style={{ alignItems: "center", marginRight: 16 }}
                 >
@@ -1105,31 +1158,34 @@ export default function EmployeeDashboardScreen() {
                       height: 68,
                       borderRadius: 24,
                       borderWidth: 2,
-                      borderColor: "#10b981",
+                      borderColor: serviceConfig.themeColor,
                       overflow: "hidden",
                       marginBottom: 8,
                     }}
                   >
                     <Image
-                      source={{ uri: facility.img }}
+                      source={entity.image}
                       style={{ width: "100%", height: "100%" }}
                     />
                   </View>
                   <Text
+                    numberOfLines={1}
                     style={{
                       color: "#0f172a",
                       fontFamily: "Brandon-Bold",
                       fontSize: 13,
+                      maxWidth: 80,
+                      textAlign: "center",
                     }}
                   >
-                    {facility.name}
+                    {entity.name}
                   </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
 
-          {/* TODAY'S FACILITY VISITS & AUDITS (Inspired by Reference Screen 4 Community/Challenge Cards) */}
+          {/* TODAY'S SERVICE VISITS / BEATS */}
           <View
             style={{
               flexDirection: "row",
@@ -1145,12 +1201,12 @@ export default function EmployeeDashboardScreen() {
                 fontSize: 20,
               }}
             >
-              Today&apos;s Service Visits
+              Today&apos;s {serviceConfig.vocab.visits}
             </Text>
             <TouchableOpacity onPress={() => router.push("/(employee)/map")}>
               <Text
                 style={{
-                  color: "#0284c7",
+                  color: serviceConfig.themeColor,
                   fontFamily: "Brandon-Bold",
                   fontSize: 13,
                   textTransform: "uppercase",
@@ -1162,288 +1218,83 @@ export default function EmployeeDashboardScreen() {
           </View>
 
           <View style={{ gap: 16, marginBottom: 28 }}>
-            {/* Visit Item 1 (Pending) */}
-            <TouchableOpacity
-              onPress={() => router.push("/(employee)/visit/1")}
-              activeOpacity={0.9}
-              style={{
-                backgroundColor: "#ffffff",
-                borderRadius: 28,
-                padding: 20,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.05,
-                shadowRadius: 14,
-                elevation: 4,
-                borderWidth: 1,
-                borderColor: "#f1f5f9",
-              }}
-            >
-              <View
+            {serviceConfig.sampleVisits.slice(0, 2).map((visit) => (
+              <TouchableOpacity
+                key={visit.id}
+                onPress={() => router.push(`/(employee)/visit/${visit.id}` as any)}
+                activeOpacity={0.85}
                 style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  marginBottom: 14,
-                }}
-              >
-                <View style={{ flex: 1 }}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      marginBottom: 4,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "#0f172a",
-                        fontFamily: "Brandon-Bold",
-                        fontSize: 18,
-                      }}
-                    >
-                      Apex Cyber Tower
-                    </Text>
-                    <View
-                      style={{
-                        backgroundColor: "#fee2e2",
-                        paddingHorizontal: 8,
-                        paddingVertical: 3,
-                        borderRadius: 8,
-                        marginLeft: 8,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: "#ef4444",
-                          fontFamily: "Brandon-Bold",
-                          fontSize: 10,
-                        }}
-                      >
-                        HIGH PRIORITY
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <MapPin size={14} color="#64748b" />
-                    <Text
-                      style={{
-                        color: "#64748b",
-                        fontFamily: "Brandon-Medium",
-                        fontSize: 13,
-                        marginLeft: 4,
-                      }}
-                    >
-                      Tidel Park Road, Block B (4.2km)
-                    </Text>
-                  </View>
-                </View>
-                <View style={{ alignItems: "flex-end" }}>
-                  <Text
-                    style={{
-                      color: "#0284c7",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 14,
-                    }}
-                  >
-                    11:30 AM
-                  </Text>
-                  <Text
-                    style={{
-                      color: "#64748b",
-                      fontFamily: "Brandon-Medium",
-                      fontSize: 11,
-                    }}
-                  >
-                    Scheduled
-                  </Text>
-                </View>
-              </View>
-
-              {/* Embedded Spec File Row (Reference Screen 4 PDF Attachment Card) */}
-              <View
-                style={{
-                  backgroundColor: "#f8fafc",
-                  borderRadius: 16,
-                  padding: 12,
+                  backgroundColor: "#ffffff",
+                  borderRadius: 20,
+                  padding: 16,
                   flexDirection: "row",
                   alignItems: "center",
-                  marginBottom: 16,
+                  justifyContent: "space-between",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 3 },
+                  shadowOpacity: 0.04,
+                  shadowRadius: 8,
+                  elevation: 2,
                   borderWidth: 1,
-                  borderColor: "#e2e8f0",
+                  borderColor: "#f1f5f9",
                 }}
               >
-                <View
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 10,
-                    backgroundColor: "#fee2e2",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginRight: 12,
-                  }}
-                >
-                  <FileText size={18} color="#ef4444" />
-                </View>
-                <View style={{ flex: 1 }}>
+                <View style={{ flex: 1, paddingRight: 12 }}>
                   <Text
                     style={{
                       color: "#0f172a",
                       fontFamily: "Brandon-Bold",
-                      fontSize: 13,
+                      fontSize: 15,
+                      marginBottom: 4,
                     }}
+                    numberOfLines={1}
                   >
-                    HVAC_Chiller_Audit_Checklist.pdf
+                    {visit.site}
                   </Text>
                   <Text
                     style={{
                       color: "#64748b",
                       fontFamily: "Brandon-Medium",
-                      fontSize: 11,
+                      fontSize: 12,
                     }}
                   >
-                    4 Action Items • OTP Required
+                    {visit.time} • {visit.type}
                   </Text>
                 </View>
-              </View>
 
-              <View style={{ flexDirection: "row", gap: 12 }}>
-                <TouchableOpacity
-                  onPress={() => router.push("/(employee)/visit/tracking")}
-                  style={{
-                    flex: 1,
-                    backgroundColor: "#0f172a",
-                    borderRadius: 999,
-                    paddingVertical: 13,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Navigation
-                    size={15}
-                    color="#ffffff"
-                    style={{ marginRight: 6 }}
-                  />
-                  <Text
-                    style={{
-                      color: "#ffffff",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 14,
-                    }}
-                  >
-                    Navigate
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => router.push("/(employee)/visit/check-in")}
-                  style={{
-                    flex: 1,
-                    backgroundColor: "#10b981",
-                    borderRadius: 999,
-                    paddingVertical: 13,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Camera
-                    size={15}
-                    color="#ffffff"
-                    style={{ marginRight: 6 }}
-                  />
-                  <Text
-                    style={{
-                      color: "#ffffff",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 14,
-                    }}
-                  >
-                    Check-in
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-
-            {/* Visit Item 2 (Completed) */}
-            <View
-              style={{
-                backgroundColor: "#ffffff",
-                borderRadius: 28,
-                padding: 20,
-                borderWidth: 1,
-                borderColor: "#e2e8f0",
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  marginBottom: 14,
-                }}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      color: "#64748b",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 18,
-                      textDecorationLine: "line-through",
-                    }}
-                  >
-                    Metro Logistics Hub
-                  </Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                   <View
                     style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      marginTop: 4,
+                      backgroundColor:
+                        visit.status === "Completed"
+                          ? "#dcfce7"
+                          : visit.status === "In Progress"
+                          ? "#fef3c7"
+                          : "#f1f5f9",
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      borderRadius: 999,
                     }}
                   >
-                    <CheckCircle2 size={14} color="#10b981" />
                     <Text
                       style={{
-                        color: "#10b981",
-                        fontFamily: "Brandon-Medium",
-                        fontSize: 13,
-                        marginLeft: 4,
+                        color:
+                          visit.status === "Completed"
+                            ? "#15803d"
+                            : visit.status === "In Progress"
+                            ? "#b45309"
+                            : "#475569",
+                        fontFamily: "Brandon-Bold",
+                        fontSize: 11,
                       }}
                     >
-                      Site check finished at 09:45 AM
+                      {visit.status}
                     </Text>
                   </View>
+                  <ArrowRight size={16} color="#94a3b8" />
                 </View>
-              </View>
-
-              <TouchableOpacity
-                onPress={() => router.push("/(employee)/visit/report")}
-                style={{
-                  backgroundColor: "#f1f5f9",
-                  borderRadius: 999,
-                  paddingVertical: 12,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <FileText
-                  size={16}
-                  color="#0f172a"
-                  style={{ marginRight: 6 }}
-                />
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 14,
-                  }}
-                >
-                  View Submitted Report
-                </Text>
               </TouchableOpacity>
-            </View>
+            ))}
           </View>
 
           {/* PERFORMANCE BANNER */}
@@ -1492,7 +1343,7 @@ export default function EmployeeDashboardScreen() {
                   fontSize: 20,
                 }}
               >
-                My Performance & KPIs
+                My Score
               </Text>
               <Text
                 style={{
@@ -1502,7 +1353,7 @@ export default function EmployeeDashboardScreen() {
                   marginTop: 4,
                 }}
               >
-                86% Efficiency • 480 Pts Earned
+                {serviceConfig.kpis.efficiencyRate} Efficiency • {serviceConfig.kpis.points} Pts
               </Text>
             </View>
             <View
@@ -1528,7 +1379,7 @@ export default function EmployeeDashboardScreen() {
               marginBottom: 16,
             }}
           >
-            Management Tools
+            Quick Tools
           </Text>
           <View
             style={{
@@ -1631,6 +1482,7 @@ export default function EmployeeDashboardScreen() {
               </TouchableOpacity>
             ))}
           </View>
+        </View>
         </ScrollView>
       </SafeAreaView>
     </View>

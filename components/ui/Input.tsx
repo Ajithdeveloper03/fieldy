@@ -9,7 +9,7 @@ interface InputProps extends TextInputProps {
   secureTextEntry?: boolean;
 }
 
-export const Input = forwardRef<TextInput, InputProps>(
+export const Input = forwardRef<React.ComponentRef<typeof TextInput>, InputProps>(
   ({ label, error, icon, secureTextEntry, className = '', ...props }, ref) => {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const isPassword = secureTextEntry;

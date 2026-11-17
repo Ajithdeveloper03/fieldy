@@ -18,7 +18,6 @@ const walkSync = (dir, filelist = []) => {
   }
   return filelist;
 };
-
 const files = walkSync('./app').concat(walkSync('./components'));
 let updatedCount = 0;
 

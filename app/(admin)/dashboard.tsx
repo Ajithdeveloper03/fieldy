@@ -26,8 +26,8 @@ export default function AdminDashboardScreen() {
   const { t } = useLanguage();
   
   // Animations
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
+  const [fadeAnim] = useState(() => new Animated.Value(0));
+  const [slideAnim] = useState(() => new Animated.Value(30));
 
   const fetchPendingSiteContacts = async () => {
     try {
@@ -48,7 +48,11 @@ export default function AdminDashboardScreen() {
   };
 
   useEffect(() => {
-    fetchPendingSiteContacts();
+    const id = requestAnimationFrame(() => {
+      fetchPendingSiteContacts();
+    });
+    return () => cancelAnimationFrame(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleApprove = async (id: number) => {

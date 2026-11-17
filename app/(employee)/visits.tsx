@@ -18,62 +18,55 @@ import {
   Navigation,
 } from "lucide-react-native";
 import { useLanguage } from "../../context/LanguageContext";
+import { useService, ServiceSelectorPill } from "../../context/ServiceContext";
 
 export default function EmployeeVisitsScreen() {
   const { t, language } = useLanguage();
-  const visits = [
-    {
-      id: 1,
-      type: "HVAC INSPECTION",
-      site_contact: "Metro Plaza Tower A",
-      time: "09:00 AM",
-      status: "Completed",
-      image: require("../../assets/images/image1.jpg"),
-    },
-    {
-      id: 2,
-      type: "FIRE SAFETY AUDIT",
-      site_contact: "Apex Logistics Hub",
-      time: "11:30 AM",
-      status: "In Progress",
-      image: require("../../assets/images/image2.jpg"),
-    },
-    {
-      id: 3,
-      type: "ELECTRICAL MAINTENANCE",
-      site_contact: "Grand City Mall",
-      time: "02:00 PM",
-      status: "Pending",
-      image: require("../../assets/images/image5.jpg"),
-    },
-    {
-      id: 4,
-      type: "PLUMBING & SANITATION",
-      site_contact: "TechPark Horizon Block",
-      time: "04:30 PM",
-      status: "Pending",
-      image: require("../../assets/images/image6.jpg"),
-    },
+  const { serviceConfig } = useService();
+
+  const fallbackImages = [
+    require("../../assets/images/image1.jpg"),
+    require("../../assets/images/image2.jpg"),
+    require("../../assets/images/image5.jpg"),
+    require("../../assets/images/image6.jpg"),
   ];
+
+  const visits = (serviceConfig.sampleVisits && serviceConfig.sampleVisits.length > 0)
+    ? serviceConfig.sampleVisits.map((v, i) => ({
+        id: v.id,
+        type: v.type.toUpperCase(),
+        site_contact: v.site,
+        time: v.time,
+        status: v.status,
+        image: fallbackImages[i % fallbackImages.length],
+      }))
+    : [
+        {
+          id: 1,
+          type: `${serviceConfig.label.toUpperCase()} PROTOCOL`,
+          site_contact: "Sector Station Alpha",
+          time: "09:00 AM",
+          status: "Completed",
+          image: fallbackImages[0],
+        },
+        {
+          id: 2,
+          type: `${serviceConfig.label.toUpperCase()} DISPATCH`,
+          site_contact: "Central Hub Beta",
+          time: "11:30 AM",
+          status: "In Progress",
+          image: fallbackImages[1],
+        },
+      ];
 
   return (
     <View style={{ flex: 1, backgroundColor: "#062214" }}>
       <StatusBar barStyle="light-content" />
-      <Image
-        source={require("../../assets/images/image2.jpg")}
-        style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
-        resizeMode="cover"
-      />
       <LinearGradient
-        colors={[
-          "rgba(6, 34, 20, 0.75)",
-          "rgba(6, 34, 20, 0.95)",
-          "#062214",
-        ]}
-        style={StyleSheet.absoluteFillObject}
-      />
-
-      <SafeAreaView style={{ flex: 1 }}>
+        colors={["#062214", "#0a331c", "#04140b"]}
+        style={{ flex: 1 }}
+      >
+        <SafeAreaView style={{ flex: 1 }}>
         <View
           style={{
             flexDirection: "row",
@@ -110,17 +103,11 @@ export default function EmployeeVisitsScreen() {
                 fontSize: 18,
               }}
             >
-              Daily Itinerary
+              Daily {serviceConfig.vocab.visits}
             </Text>
-            <Text
-              style={{
-                color: "#4ade80",
-                fontFamily: "Brandon-Medium",
-                fontSize: 12,
-              }}
-            >
-              Route Optimized
-            </Text>
+            <View style={{ marginTop: 2 }}>
+              <ServiceSelectorPill compact dark />
+            </View>
           </View>
           <TouchableOpacity
             onPress={() => router.push("/(employee)/calendar")}
@@ -339,11 +326,12 @@ export default function EmployeeVisitsScreen() {
               lineHeight: 17,
             }}
           >
-            Your itinerary has been automatically sorted for the most efficient
-            travel time across all sectors today.
+            Your {serviceConfig.label} itinerary has been optimized for the fastest
+            transit and SLA response times today.
           </Text>
         </TouchableOpacity>
-      </SafeAreaView>
+        </SafeAreaView>
+      </LinearGradient>
     </View>
   );
 }

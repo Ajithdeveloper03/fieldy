@@ -1,13 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Platform } from "react-native";
+import { resolveApiBaseUrl } from "../services/api";
 
-// Detect if we're on Android emulator or real device
-// Usually 10.0.2.2 for Android Emulator, localhost for iOS simulator
-export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ||
-  (Platform.OS === "android"
-    ? "http://10.0.2.2:8000/api/v1"
-    : "http://127.0.0.1:8000/api/v1");
+export const API_BASE_URL = resolveApiBaseUrl();
 
 interface RequestOptions extends RequestInit {
   data?: any;
@@ -30,14 +24,22 @@ async function request(endpoint: string, options: RequestOptions) {
   const url = `${API_BASE_URL}${endpoint}`;
   
   const token = await AsyncStorage.getItem("token");
-  if (!token) {
+  const authUserRaw = await AsyncStorage.getItem("@auth_user");
+  let userPhone: string | null = null;
+  try {
+    userPhone = authUserRaw ? JSON.parse(authUserRaw)?.phone || null : null;
+  } catch {
+    userPhone = null;
+  }
+  if (!token && !userPhone) {
     throw new Error("Please sign in again to continue.");
   }
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     Accept: "application/json",
-    Authorization: `Bearer ${token}`,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(userPhone ? { "X-Demo-Phone": userPhone } : {}),
     ...(options.headers || {}),
   };
 
@@ -60,7 +62,7 @@ async function request(endpoint: string, options: RequestOptions) {
     
     return data;
   } catch (error) {
-    console.error("API Request Failed:", url, error);
+    console.log("API Request notice:", url);
     throw error;
   }
 }

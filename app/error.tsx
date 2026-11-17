@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -15,8 +15,8 @@ export default function ErrorScreen() {
   const { message = "Something went wrong. Please try again.", redirect } =
     useLocalSearchParams<{ message?: string; redirect?: string }>();
 
-  const shake = useRef(new Animated.Value(0)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
+  const [shake] = useState(() => new Animated.Value(0));
+  const [opacity] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     Animated.parallel([

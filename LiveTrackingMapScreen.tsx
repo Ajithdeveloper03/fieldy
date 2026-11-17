@@ -1,21 +1,26 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
-import * as TaskManager from 'expo-task-manager';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Animated,
-    Easing,
-    Image,
     Platform,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
 } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
-import { employeeProfile } from './data/mockData';
+import MapView, { Polyline, UrlTile } from 'react-native-maps';
+import { FieldEmployeeMarker } from './components/FieldEmployeeMarker';
+import { useTracking } from './context/TrackingContext';
+import { useService } from './context/ServiceContext';
+import { getAuthUser } from './services/api';
+import { saveLocationLocally } from './utils/trackingManager';
+import {
+  haversineDistanceKm,
+  LIGHT_MAP_TILE_URL,
+  sendLiveLocationPing,
+} from './utils/locationHelpers';
 
 // --- Constants & Types ---
 interface Coordinate {
@@ -27,141 +32,47 @@ interface TelemetryData {
   speed: number;
   accuracy: number | null;
   battery: number | null;
+  distanceKm: number;
   isOnline: boolean;
 }
 
-const GEOFENCE_RADIUS = 100; // meters
-const MAX_ACCEPTABLE_ACCURACY_METERS = 25;
-const MIN_MOVEMENT_METERS = 5;
-const LOCATION_TASK_NAME = 'background-location-task';
+const MIN_MOVEMENT_METERS = 2;
 
-const farmLocation: Coordinate = {
-  latitude: 12.9786,
-  longitude: 77.5996,
-};
-
-// --- Helper Functions ---
-const haversineMeters = (a: Coordinate, b: Coordinate) => {
-  const radius = 6371000;
-  const dLat = ((b.latitude - a.latitude) * Math.PI) / 180;
-  const dLon = ((b.longitude - a.longitude) * Math.PI) / 180;
-  const lat1 = (a.latitude * Math.PI) / 180;
-  const lat2 = (b.latitude * Math.PI) / 180;
-  const sinLat = Math.sin(dLat / 2);
-  const sinLon = Math.sin(dLon / 2);
-  const value =
-    sinLat * sinLat + Math.cos(lat1) * Math.cos(lat2) * sinLon * sinLon;
-
-  return radius * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
-};
-
-// --- Background Task Definition ---
-TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
-  if (error) {
-    console.error("Background Location Error:", error);
-    return;
-  }
-  if (data) {
-    const { locations } = data as { locations: Location.LocationObject[] };
-    const location = locations[0];
-
-    if (location) {
-      const { latitude, longitude, accuracy, speed, heading } = location.coords;
-      
-      // --- SEND REAL-TIME PING TO BACKEND FOR ADMIN DASHBOARD ---
-      // This runs even when the app is in the background!
-      try {
-        fetch('http://10.0.2.2:8000/api/v1/employee/tracking/sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({
-            points: [{
-              session_id: 'live_tracking_session',
-              latitude: latitude,
-              longitude: longitude,
-              accuracy: accuracy,
-              speed: speed,
-              heading: heading,
-              timestamp: location.timestamp,
-            }]
-          })
-        }).catch(e => console.log('Silent sync error:', e));
-      } catch (e) {
-        // Ignore fetch errors to not block background task
-      }
-    }
-  }
-});
-
-// --- Components ---
-const SmoothMarker = ({ coordinate }: { coordinate: Coordinate }) => {
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.5,
-          duration: 1000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, []);
-
-  return (
-    <Marker coordinate={coordinate} anchor={{ x: 0.5, y: 0.5 }}>
-      <View style={styles.markerContainer}>
-        <Animated.View
-          style={[
-            styles.pulseAura,
-            {
-              transform: [{ scale: pulseAnim }],
-              opacity: pulseAnim.interpolate({
-                inputRange: [1, 1.5],
-                outputRange: [0.5, 0],
-              }),
-            },
-          ]}
-        />
-        <View style={styles.markerCore}>
-          <Image 
-            source={{ uri: `https://ui-avatars.com/api/?name=${encodeURIComponent(employeeProfile.name)}&background=10B981&color=fff&size=64` }}
-            style={{ width: 28, height: 28, borderRadius: 14 }}
-          />
-        </View>
-        <View style={styles.markerLabelContainer}>
-          <Text style={styles.markerLabel}>{employeeProfile.name}</Text>
-        </View>
-      </View>
-    </Marker>
-  );
+const defaultCityCoord: Coordinate = {
+  latitude: 13.0827,
+  longitude: 80.2707,
 };
 
 export default function LiveTrackingMapScreen() {
+  const { sessionId, isTracking, startSession } = useTracking();
+  const { serviceConfig } = useService();
   const mapRef = useRef<MapView>(null);
+  const [staffName, setStaffName] = useState('Field Executive');
   const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
   const [telemetry, setTelemetry] = useState<TelemetryData>({
     speed: 0,
     accuracy: null,
-    battery: null,
+    battery: 92,
+    distanceKm: 0,
     isOnline: false,
   });
-  const [inGeofence, setInGeofence] = useState(false);
-  const [is3D, setIs3D] = useState(true);
+  const [is3D, setIs3D] = useState(false);
   const [showTraffic, setShowTraffic] = useState(false);
 
   const [breadcrumbRoute, setBreadcrumbRoute] = useState<Coordinate[]>([]);
   const lastAcceptedRef = useRef<{ coordinate: Coordinate; timestamp: number } | null>(null);
 
-  // Real GPS tracking (Foreground UI updates + Background setup)
+  const destinationSite = serviceConfig.sampleEntities[0];
+
+  useEffect(() => {
+    (async () => {
+      const authUser = await getAuthUser();
+      const storedName = authUser?.name || (await AsyncStorage.getItem('userName'));
+      if (storedName) setStaffName(storedName);
+    })();
+  }, []);
+
+  // Strictly real device GPS tracking (zero simulated movement)
   useEffect(() => {
     let subscription: Location.LocationSubscription | null = null;
     let isMounted = true;
@@ -172,51 +83,60 @@ export default function LiveTrackingMapScreen() {
         return;
       }
 
-      // Request background permissions for secure live tracking
-      const { status: backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
-      if (backgroundStatus === 'granted') {
-        await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-          accuracy: Location.Accuracy.BestForNavigation,
-          timeInterval: 2000,
-          distanceInterval: MIN_MOVEMENT_METERS,
-          showsBackgroundLocationIndicator: true,
-          foregroundService: {
-            notificationTitle: "Live Tracking Active",
-            notificationBody: "Your location is being securely shared with the admin.",
-            notificationColor: "#10B981",
-          }
-        });
+      if (!isTracking || !sessionId) {
+        await startSession(`map_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
       }
 
-      // UI Update Subscription (Foreground)
+      try {
+        const initialFix = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+        if (isMounted && initialFix) {
+          const initialCoord = {
+            latitude: initialFix.coords.latitude,
+            longitude: initialFix.coords.longitude,
+          };
+          setCurrentLocation(initialCoord);
+          setBreadcrumbRoute([initialCoord]);
+          lastAcceptedRef.current = { coordinate: initialCoord, timestamp: initialFix.timestamp };
+          setTelemetry((prev) => ({
+            ...prev,
+            accuracy: initialFix.coords.accuracy,
+            speed: initialFix.coords.speed && initialFix.coords.speed > 0 ? Math.round(initialFix.coords.speed * 3.6) : 0,
+            isOnline: true,
+          }));
+          mapRef.current?.animateToRegion(
+            {
+              latitude: initialCoord.latitude,
+              longitude: initialCoord.longitude,
+              latitudeDelta: 0.004,
+              longitudeDelta: 0.004,
+            },
+            500
+          );
+          void sendLiveLocationPing(initialFix.coords);
+        }
+      } catch {
+        // Initial GPS fix pending watchPositionAsync
+      }
+
       subscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.BestForNavigation,
           timeInterval: 2000,
-          distanceInterval: MIN_MOVEMENT_METERS,
+          distanceInterval: 1,
         },
-        (location) => {
+        async (location) => {
           if (!isMounted) return;
 
-          const { latitude, longitude, accuracy, speed, heading } = location.coords;
+          const { latitude, longitude, accuracy, speed } = location.coords;
           const newCoord = { latitude, longitude };
           const lastAccepted = lastAcceptedRef.current;
 
-          if (accuracy != null && accuracy > MAX_ACCEPTABLE_ACCURACY_METERS) {
-            setTelemetry((prev) => ({ ...prev, accuracy, isOnline: false }));
-            return;
-          }
-
           if (lastAccepted && location.timestamp <= lastAccepted.timestamp) return;
 
-          if (
-            lastAccepted &&
-            haversineMeters(lastAccepted.coordinate, newCoord) <
-              Math.max(MIN_MOVEMENT_METERS, accuracy ?? MIN_MOVEMENT_METERS)
-          ) {
-            setTelemetry((prev) => ({ ...prev, speed: 0, accuracy, isOnline: true }));
-            return;
-          }
+          const deltaKm = lastAccepted ? haversineDistanceKm(lastAccepted.coordinate, newCoord) : 0;
+          const activeSessionId = sessionId ?? (await AsyncStorage.getItem('@current_tracking_session'));
+          if (activeSessionId) void saveLocationLocally([location], activeSessionId);
+          void sendLiveLocationPing(location.coords);
 
           setCurrentLocation(newCoord);
           setBreadcrumbRoute((prev) => [...prev, newCoord]);
@@ -226,29 +146,19 @@ export default function LiveTrackingMapScreen() {
             ...prev,
             speed: speed != null && speed >= 0 ? Math.round(speed * 3.6) : 0,
             accuracy,
+            distanceKm: prev.distanceKm + deltaKm,
             isOnline: true,
           }));
 
-          // Smoothly animate map camera
-          mapRef.current?.animateCamera({
-            center: newCoord,
-            heading: heading != null && heading >= 0 ? heading : 0,
-          }, { duration: 700 });
-
-          // Geofence check
-          const latDiff = Math.abs(farmLocation.latitude - newCoord.latitude);
-          const lngDiff = Math.abs(farmLocation.longitude - newCoord.longitude);
-          const approxDistance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) * 111000;
-
-          setInGeofence((prevInGeofence) => {
-            if (approxDistance < GEOFENCE_RADIUS && !prevInGeofence) {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-              return true;
-            } else if (approxDistance >= GEOFENCE_RADIUS && prevInGeofence) {
-              return false;
-            }
-            return prevInGeofence;
-          });
+          mapRef.current?.animateToRegion(
+            {
+              latitude: newCoord.latitude,
+              longitude: newCoord.longitude,
+              latitudeDelta: 0.004,
+              longitudeDelta: 0.004,
+            },
+            500
+          );
         }
       );
 
@@ -265,24 +175,25 @@ export default function LiveTrackingMapScreen() {
       if (subscription) {
         subscription.remove();
       }
-      // Note: We deliberately do NOT stop the background task (Location.stopLocationUpdatesAsync)
-      // here because we want tracking to continue securely when the user leaves this screen or apps.
     };
-  }, []);
+  }, [isTracking, sessionId, startSession]);
 
   const recenterCamera = () => {
     if (!currentLocation) return;
-    mapRef.current?.animateCamera({
-      center: currentLocation,
-      pitch: is3D ? 45 : 0,
-      heading: 0,
-      zoom: 17,
-    }, { duration: 1000 });
+    mapRef.current?.animateToRegion(
+      {
+        latitude: currentLocation.latitude,
+        longitude: currentLocation.longitude,
+        latitudeDelta: 0.004,
+        longitudeDelta: 0.004,
+      },
+      500
+    );
   };
 
   const toggle3D = () => {
     setIs3D(!is3D);
-    mapRef.current?.animateCamera({ pitch: !is3D ? 45 : 0 }, { duration: 500 });
+    mapRef.current?.animateCamera({ pitch: !is3D ? 45 : 0 }, { duration: 400 });
   };
 
   return (
@@ -290,32 +201,44 @@ export default function LiveTrackingMapScreen() {
       <MapView
         ref={mapRef}
         style={styles.map}
-        showsUserLocation={false} // Custom marker handles this
+        mapType={Platform.OS === 'android' ? 'none' : 'standard'}
+        userInterfaceStyle="light"
+        showsUserLocation
+        showsMyLocationButton={false}
         showsTraffic={showTraffic}
         showsCompass={false}
         initialRegion={{
-          latitude: farmLocation.latitude,
-          longitude: farmLocation.longitude,
-          latitudeDelta: 0.005,
-          longitudeDelta: 0.005,
+          latitude: currentLocation?.latitude || defaultCityCoord.latitude,
+          longitude: currentLocation?.longitude || defaultCityCoord.longitude,
+          latitudeDelta: 0.008,
+          longitudeDelta: 0.008,
         }}
       >
-        {/* Breadcrumb Route */}
+        <UrlTile
+          urlTemplate={LIGHT_MAP_TILE_URL}
+          maximumZ={20}
+          maximumNativeZ={19}
+          doubleTileSize
+          flipY={false}
+          shouldReplaceMapContent={Platform.OS === 'ios'}
+          zIndex={1}
+        />
+
         {breadcrumbRoute.length > 1 && (
           <Polyline
             coordinates={breadcrumbRoute}
-            strokeColor="#10B981"
+            strokeColor={serviceConfig.themeColor}
             strokeWidth={5}
           />
         )}
 
-        {/* Moving Marker */}
-        {currentLocation && <SmoothMarker coordinate={currentLocation} />}
-
-        {/* Destination Marker */}
-        <Marker coordinate={farmLocation}>
-          <Ionicons name="location-sharp" size={32} color="#EF4444" />
-        </Marker>
+        {currentLocation && (
+          <FieldEmployeeMarker
+            coordinate={currentLocation}
+            name={staffName}
+            accentColor={serviceConfig.themeColor}
+          />
+        )}
       </MapView>
 
       {/* Back Button */}
@@ -323,46 +246,39 @@ export default function LiveTrackingMapScreen() {
         style={styles.backButton}
         onPress={() => (router.canGoBack() ? router.back() : router.replace('/(employee)/dashboard'))}
       >
-        <Ionicons name="chevron-back" size={24} color="#fff" />
+        <Ionicons name="chevron-back" size={24} color="#0F172A" />
       </TouchableOpacity>
 
       {/* Floating Controls */}
       <View style={styles.floatingControls}>
         <TouchableOpacity style={styles.controlButton} onPress={recenterCamera}>
-          <MaterialCommunityIcons
-            name="crosshairs-gps"
-            size={24}
-            color="#fff"
-          />
+          <MaterialCommunityIcons name="crosshairs-gps" size={22} color="#0F172A" />
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.controlButton}
-          onPress={() => setShowTraffic(!showTraffic)}
-        >
+        <TouchableOpacity style={styles.controlButton} onPress={() => setShowTraffic(!showTraffic)}>
           <MaterialCommunityIcons
             name="traffic-light"
-            size={24}
-            color={showTraffic ? '#10B981' : '#fff'}
+            size={22}
+            color={showTraffic ? serviceConfig.themeColor : '#0F172A'}
           />
         </TouchableOpacity>
         <TouchableOpacity style={styles.controlButton} onPress={toggle3D}>
           <MaterialCommunityIcons
             name={is3D ? 'video-3d' : 'map-outline'}
-            size={24}
-            color="#fff"
+            size={22}
+            color="#0F172A"
           />
         </TouchableOpacity>
       </View>
 
-      {/* Offline Warning */}
+      {/* GPS Signal Status */}
       {!telemetry.isOnline && (
         <View style={styles.offlinePill}>
-          <Ionicons name="warning" size={16} color="#F59E0B" />
-          <Text style={styles.offlineText}>Reconnecting to GPS...</Text>
+          <Ionicons name="locate" size={16} color="#D97706" />
+          <Text style={styles.offlineText}>Waiting for real GPS lock...</Text>
         </View>
       )}
 
-      {/* Bottom HUD */}
+      {/* White Light-Mode Bottom HUD */}
       <View style={styles.bottomHud}>
         <View style={styles.hudTopRow}>
           <View style={styles.statBox}>
@@ -371,44 +287,36 @@ export default function LiveTrackingMapScreen() {
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statBox}>
-            <Text style={styles.statValue}>
-              {telemetry.accuracy == null ? '--' : `±${Math.round(telemetry.accuracy)}m`}
-            </Text>
-            <Text style={styles.statLabel}>Signal</Text>
+            <Text style={styles.statValue}>{telemetry.distanceKm.toFixed(2)}</Text>
+            <Text style={styles.statLabel}>km moved</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statBox}>
-            <MaterialCommunityIcons
-              name="battery-80"
-              size={24}
-              color="#10B981"
-            />
-            <Text style={styles.statLabel}>
-              {telemetry.battery == null ? '--' : `${telemetry.battery}%`}
+            <Text style={styles.statValue}>
+              {telemetry.accuracy == null ? '--' : `±${Math.round(telemetry.accuracy)}m`}
             </Text>
+            <Text style={styles.statLabel}>GPS</Text>
           </View>
         </View>
 
-        <View style={styles.geofenceCounter}>
-          <Text style={styles.geofenceText}>
-            {inGeofence
-              ? 'Arrived at Farm'
-              : 'Approaching Selvam Vetiver Farm'}
+        <View style={[styles.geofenceCounter, { backgroundColor: `${serviceConfig.themeColor}14`, borderColor: `${serviceConfig.themeColor}40` }]}>
+          <Text style={[styles.geofenceText, { color: serviceConfig.themeColor }]}>
+            {serviceConfig.label} • {destinationSite?.name || serviceConfig.vocab.entitySingular}
           </Text>
         </View>
 
         <View style={styles.actionRow}>
           <TouchableOpacity
             onPress={() => router.push('/(employee)/visit/check-in')}
-            style={[styles.actionBtn, { backgroundColor: '#10B981' }]}
+            style={[styles.actionBtn, { backgroundColor: serviceConfig.themeColor }]}
           >
-            <Text style={styles.actionBtnText}>Check-in Farm</Text>
+            <Text style={styles.actionBtnText}>Field Check-In</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => setShowTraffic(!showTraffic)}
-            style={[styles.actionBtn, { backgroundColor: '#F59E0B' }]}
+            onPress={() => router.push('/(employee)/tasks')}
+            style={[styles.actionBtn, { backgroundColor: '#0F172A' }]}
           >
-            <Text style={styles.actionBtnText}>Traffic</Text>
+            <Text style={styles.actionBtnText}>{serviceConfig.vocab.tasks}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => router.push('/(employee)/sos')}
@@ -425,7 +333,7 @@ export default function LiveTrackingMapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A',
+    backgroundColor: '#FFFFFF',
   },
   map: {
     ...StyleSheet.absoluteFill,
@@ -437,19 +345,21 @@ const styles = StyleSheet.create({
     height: 100,
   },
   markerCore: {
-    width: 32,
-    height: 32,
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    width: 34,
+    height: 34,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 8,
+    elevation: 6,
     zIndex: 2,
     marginTop: 20,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
   },
   pulseAura: {
     position: 'absolute',
@@ -457,138 +367,159 @@ const styles = StyleSheet.create({
     height: 60,
     top: 26,
     borderRadius: 30,
-    backgroundColor: '#10B981',
     zIndex: 1,
   },
   markerLabelContainer: {
-    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 3,
     borderRadius: 8,
-    marginTop: 6,
+    marginTop: 4,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   markerLabel: {
-    color: '#fff',
+    color: '#0F172A',
     fontSize: 10,
     fontWeight: 'bold',
   },
   backButton: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 40,
+    top: Platform.OS === 'ios' ? 56 : 40,
     left: 16,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(30, 41, 59, 0.8)',
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
   },
   floatingControls: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 40,
+    top: Platform.OS === 'ios' ? 56 : 40,
     right: 16,
-    gap: 12,
+    gap: 10,
   },
   controlButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(30, 41, 59, 0.8)',
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
   },
   offlinePill: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 40,
+    top: Platform.OS === 'ios' ? 58 : 42,
     alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(30, 41, 59, 0.9)',
-    paddingHorizontal: 16,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    gap: 8,
+    gap: 6,
     borderWidth: 1,
-    borderColor: '#F59E0B',
+    borderColor: '#FCD34D',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 4,
   },
   offlineText: {
-    color: '#F59E0B',
+    color: '#B45309',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: 13,
   },
   bottomHud: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
-    borderWidth: 1,
-    borderColor: '#334155',
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 36 : 22,
+    borderTopWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 10,
   },
   hudTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 14,
   },
   statBox: {
     flex: 1,
     alignItems: 'center',
   },
   statValue: {
-    color: '#fff',
-    fontSize: 24,
+    color: '#0F172A',
+    fontSize: 22,
     fontWeight: 'bold',
     fontVariant: ['tabular-nums'],
   },
   statLabel: {
-    color: '#94A3B8',
+    color: '#64748B',
     fontSize: 12,
-    marginTop: 4,
+    marginTop: 2,
   },
   statDivider: {
     width: 1,
-    height: 40,
-    backgroundColor: '#334155',
+    height: 34,
+    backgroundColor: '#E2E8F0',
   },
   geofenceCounter: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    padding: 12,
+    padding: 10,
     borderRadius: 12,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
   },
   geofenceText: {
-    color: '#10B981',
-    fontWeight: '600',
-    fontSize: 14,
+    fontWeight: '700',
+    fontSize: 13,
   },
   actionRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
   },
   actionBtn: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: 13,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   actionBtnText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 13,
   },
 });

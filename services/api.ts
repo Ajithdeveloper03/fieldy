@@ -1,14 +1,54 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-const getApiUrl = () => {
+export const resolveApiBaseUrl = () => {
   if (Platform.OS === 'web') {
     return 'http://localhost:8000/api/v1';
   }
-  return process.env.EXPO_PUBLIC_API_URL || (Platform.OS === 'android'
+
+  const hostUri =
+    Constants.expoConfig?.hostUri ||
+    (Constants as any).manifest2?.extra?.expoGo?.debuggerHost ||
+    (Constants as any).manifest?.debuggerHost ||
+    '';
+  const metroHost = typeof hostUri === 'string' ? hostUri.split(':')[0] : '';
+  const hasLanMetroHost =
+    Boolean(metroHost) &&
+    metroHost !== 'localhost' &&
+    metroHost !== '127.0.0.1';
+
+  const envUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (envUrl && !envUrl.includes(':8081')) {
+    const isLocalEnvUrl =
+      envUrl.includes('localhost') || envUrl.includes('127.0.0.1');
+    if (!isLocalEnvUrl) {
+      return envUrl;
+    }
+    if (Platform.OS === 'android') {
+      const targetHost = hasLanMetroHost ? metroHost : '10.0.2.2';
+      return envUrl
+        .replace('localhost', targetHost)
+        .replace('127.0.0.1', targetHost);
+    }
+    if (hasLanMetroHost) {
+      return envUrl
+        .replace('localhost', metroHost)
+        .replace('127.0.0.1', metroHost);
+    }
+    return envUrl;
+  }
+
+  if (hasLanMetroHost) {
+    return `http://${metroHost}:8000/api/v1`;
+  }
+
+  return Platform.OS === 'android'
     ? 'http://10.0.2.2:8000/api/v1'
-    : 'http://127.0.0.1:8000/api/v1');
+    : 'http://127.0.0.1:8000/api/v1';
 };
+
+const getApiUrl = resolveApiBaseUrl;
 
 const TOKEN_KEY = 'token';
 const USER_KEY = '@auth_user';
@@ -19,6 +59,13 @@ interface RequestConfig extends RequestInit {
 
 const request = async (endpoint: string, { data, headers, ...customConfig }: RequestConfig = {}) => {
   const token = await AsyncStorage.getItem(TOKEN_KEY);
+  const authUserRaw = await AsyncStorage.getItem(USER_KEY);
+  let userPhone: string | null = null;
+  try {
+    userPhone = authUserRaw ? JSON.parse(authUserRaw)?.phone || null : null;
+  } catch {
+    userPhone = null;
+  }
   const baseUrl = getApiUrl();
   
   const config: RequestInit = {
@@ -27,6 +74,7 @@ const request = async (endpoint: string, { data, headers, ...customConfig }: Req
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(userPhone ? { 'X-Demo-Phone': userPhone } : {}),
       ...headers,
     },
     ...customConfig,

@@ -19,10 +19,12 @@ import {
 } from "react-native";
 import { Asset } from "expo-asset";
 import "react-native-reanimated";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ToastMessage } from "../components/ui/ToastMessage";
 import "../global.css";
 import { TrackingProvider } from "../context/TrackingContext";
 import { LanguageProvider } from "../context/LanguageContext";
+import { ServiceProvider } from "../context/ServiceContext";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -185,12 +187,16 @@ export default function RootLayout() {
   }
 
   return (
-    <LanguageProvider>
-      <TrackingProvider>
-        <Stack screenOptions={{ headerShown: false }} />
-        <ToastMessage />
-        <StatusBar style="auto" />
-      </TrackingProvider>
-    </LanguageProvider>
+    <SafeAreaProvider>
+      <ServiceProvider>
+        <LanguageProvider>
+          <TrackingProvider>
+            <Stack screenOptions={{ headerShown: false }} />
+            <ToastMessage />
+            <StatusBar style="auto" />
+          </TrackingProvider>
+        </LanguageProvider>
+      </ServiceProvider>
+    </SafeAreaProvider>
   );
 }

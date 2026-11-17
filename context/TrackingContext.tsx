@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { startBackgroundTracking, stopBackgroundTracking } from '../utils/trackingManager';
 import { api } from '../services/api';
@@ -33,7 +33,7 @@ export const TrackingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     checkExistingSession();
   }, []);
 
-  const startSession = async (id: string) => {
+  const startSession = useCallback(async (id: string) => {
     setSessionId(id);
     setIsTracking(true);
     
@@ -52,10 +52,14 @@ export const TrackingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       console.log('Failed to start session on backend', e);
     }
     
-    await startBackgroundTracking(id);
-  };
+    const { status: foregroundStatus } = await Location.requestForegroundPermissionsAsync();
+    if (foregroundStatus === 'granted') {
+      const { status: backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
+      if (backgroundStatus === 'granted') await startBackgroundTracking(id);
+    }
+  }, []);
 
-  const stopSession = async () => {
+  const stopSession = useCallback(async () => {
     if (sessionId) {
         try {
             let loc = await Location.getLastKnownPositionAsync();
@@ -74,7 +78,7 @@ export const TrackingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setSessionId(null);
     setIsTracking(false);
     await stopBackgroundTracking();
-  };
+  }, [sessionId]);
 
   return (
     <TrackingContext.Provider value={{ sessionId, isTracking, startSession, stopSession }}>

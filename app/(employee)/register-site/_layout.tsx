@@ -1,12 +1,15 @@
 import { Stack } from "expo-router";
 
+export const unstable_settings = {
+  initialRouteName: "step1",
+};
+
 export default function RegisterSiteContactLayout() {
   return (
     <Stack
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName="step1"
     >
       <Stack.Screen name="step1" />
       <Stack.Screen name="step2" />
