@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   ChevronLeft,
@@ -18,19 +18,36 @@ import {
   FileText,
   ListTodo,
   TrendingUp,
-  Filter,
-  Sparkles,
-  ArrowRight,
-  Clock,
 } from "lucide-react-native";
 import { useLanguage } from "../../context/LanguageContext";
 import { useService, ServiceSelectorPill } from "../../context/ServiceContext";
+import { apiClient } from "../../api/client";
 
 export default function EmployeeTasksScreen() {
   const { t, language } = useLanguage();
   const { serviceConfig } = useService();
   const [activeTab, setActiveTab] = useState("Pending");
   const [selectedDateIdx, setSelectedDateIdx] = useState(3);
+  const [backendTasks, setBackendTasks] = useState<any[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      apiClient
+        .get("/employee/tasks")
+        .then((res) => {
+          if (Array.isArray(res?.tasks) && res.tasks.length > 0) {
+            setBackendTasks(res.tasks);
+          }
+        })
+        .catch(() => null);
+    }, [serviceConfig.key])
+  );
+
+  const allTasks = backendTasks.length > 0 ? backendTasks : serviceConfig.sampleTasks;
+  const pendingTasks = allTasks.filter((item: any) => item.status !== "Completed");
+  const completedTasks = allTasks.filter((item: any) => item.status === "Completed");
+  const completionRate =
+    allTasks.length > 0 ? Math.round((completedTasks.length / allTasks.length) * 100) : 85;
 
   const dateStrip = [
     { day: "26 Oct", label: "26 Oct" },
@@ -197,7 +214,7 @@ export default function EmployeeTasksScreen() {
                   lineHeight: 48,
                 }}
               >
-                85%
+                {completionRate}%
               </Text>
               <View
                 style={{
@@ -215,7 +232,7 @@ export default function EmployeeTasksScreen() {
                     marginLeft: 4,
                   }}
                 >
-                  +12% vs yesterday
+                  {serviceConfig.shortName} Active SLA
                 </Text>
               </View>
             </View>
@@ -229,7 +246,7 @@ export default function EmployeeTasksScreen() {
                     fontSize: 22,
                   }}
                 >
-                  12
+                  {completedTasks.length}
                 </Text>
                 <Text
                   style={{
@@ -249,7 +266,7 @@ export default function EmployeeTasksScreen() {
                     fontSize: 22,
                   }}
                 >
-                  2
+                  {pendingTasks.length}
                 </Text>
                 <Text
                   style={{
@@ -303,7 +320,7 @@ export default function EmployeeTasksScreen() {
           <View style={{ gap: 18 }}>
             {activeTab === "Pending" ? (
               <>
-                {serviceConfig.sampleTasks.map((task) => (
+                {pendingTasks.map((task: any) => (
                   <View
                     key={task.id}
                     style={{
@@ -330,9 +347,7 @@ export default function EmployeeTasksScreen() {
                     >
                       <View style={{ flexDirection: "row", alignItems: "center", flex: 1, marginRight: 8 }}>
                         <Image
-                          source={{
-                            uri: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&auto=format&fit=project&q=80",
-                          }}
+                          source={require("../../assets/images/image3.jpg")}
                           style={{
                             width: 42,
                             height: 42,
@@ -439,7 +454,7 @@ export default function EmployeeTasksScreen() {
                             marginTop: 2,
                           }}
                         >
-                          +{task.points} SLA Points • Verification Required
+                          +{task.points} SLA Points • Check-In Required
                         </Text>
                       </View>
                     </View>
@@ -468,72 +483,77 @@ export default function EmployeeTasksScreen() {
                           fontSize: 14,
                         }}
                       >
-                        Execute Work Order
+                        Execute {serviceConfig.vocab.taskSingular}
                       </Text>
                     </TouchableOpacity>
                   </View>
                 ))}
               </>
             ) : (
-              <View
-                style={{
-                  backgroundColor: "#ffffff",
-                  borderRadius: 28,
-                  padding: 22,
-                  borderWidth: 1,
-                  borderColor: "#e2e8f0",
-                }}
-              >
+              (completedTasks.length > 0 ? completedTasks : [serviceConfig.sampleTasks[0]]).filter(Boolean).map((doneTask: any, idx: number) => (
                 <View
+                  key={doneTask.id || idx}
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    marginBottom: 10,
+                    backgroundColor: "#ffffff",
+                    borderRadius: 28,
+                    padding: 22,
+                    borderWidth: 1,
+                    borderColor: "#e2e8f0",
                   }}
                 >
-                  <Text
+                  <View
                     style={{
-                      color: "#64748b",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 17,
-                      textDecorationLine: "line-through",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: 10,
                     }}
                   >
-                    {serviceConfig.sampleTasks[0]?.title || "Periodic Inspection Complete"}
+                    <Text
+                      style={{
+                        color: "#64748b",
+                        fontFamily: "Brandon-Bold",
+                        fontSize: 17,
+                        textDecorationLine: "line-through",
+                        flex: 1,
+                        marginRight: 8,
+                      }}
+                    >
+                      {doneTask?.title || "Inspection Complete"}
+                    </Text>
+                    <CheckCircle2 size={22} color="#10b981" />
+                  </View>
+                  <Text
+                    style={{
+                      color: "#94a3b8",
+                      fontFamily: "Brandon-Medium",
+                      fontSize: 13,
+                      marginBottom: 16,
+                    }}
+                  >
+                    {doneTask.workOrderCode || "WO-001"} • Verified & Submitted
                   </Text>
-                  <CheckCircle2 size={22} color="#10b981" />
+                  <TouchableOpacity
+                    onPress={() => router.push("/(employee)/reports" as any)}
+                    style={{
+                      backgroundColor: "#f1f5f9",
+                      borderRadius: 999,
+                      paddingVertical: 14,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#0f172a",
+                        fontFamily: "Brandon-Bold",
+                        fontSize: 14,
+                      }}
+                    >
+                      View {serviceConfig.vocab.report}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
-                <Text
-                  style={{
-                    color: "#94a3b8",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 13,
-                    marginBottom: 16,
-                  }}
-                >
-                  Completed at 09:15 AM • OTP Verified (Code: 4821)
-                </Text>
-                <TouchableOpacity
-                  onPress={() => router.push("/(employee)/task/1" as any)}
-                  style={{
-                    backgroundColor: "#f1f5f9",
-                    borderRadius: 999,
-                    paddingVertical: 14,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#0f172a",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 14,
-                    }}
-                  >
-                    View Service Report
-                  </Text>
-                </TouchableOpacity>
-              </View>
+              ))
             )}
           </View>
         </ScrollView>

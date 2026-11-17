@@ -34,7 +34,8 @@ import {
   MoreVertical,
 } from "lucide-react-native";
 import { useLanguage, LanguageTogglePill } from "../../context/LanguageContext";
-import { useService, ServiceSelectorPill } from "../../context/ServiceContext";
+import { useService, ServiceSelectorPill, ALL_SERVICE_KEYS } from "../../context/ServiceContext";
+import { api, getAuthUser } from "../../services/api";
 const HERO_LOCAL_IMAGES: Record<string, any> = {
   real_estate: require("../../assets/images/image1.jpg"),
   facility_fmcg: require("../../assets/images/image2.jpg"),
@@ -50,15 +51,37 @@ const HERO_LOCAL_IMAGES: Record<string, any> = {
 export default function EmployeeDashboardScreen() {
   const insets = useSafeAreaInsets();
   const { t, language } = useLanguage();
-  const { serviceConfig } = useService();
+  const { serviceConfig, setService } = useService();
   const [isClockedIn, setIsClockedIn] = useState(false);
-  const [userName, setUserName] = useState("Field Officer");
+  const [userName, setUserName] = useState("Field Executive");
+  const [employeeCode, setEmployeeCode] = useState("FO-902");
+
   useEffect(() => {
     (async () => {
       const status = await AsyncStorage.getItem("isClockedIn");
       const name = await AsyncStorage.getItem("userName");
+      const authUser = await getAuthUser();
       if (status === "true") setIsClockedIn(true);
-      if (name) setUserName(name);
+      if (authUser?.name) setUserName(authUser.name);
+      else if (name) setUserName(name);
+      if (authUser?.employee_code) setEmployeeCode(authUser.employee_code);
+
+      try {
+        const dash = await api.get("/employee/dashboard");
+        const emp = dash?.data?.employee;
+        const att = dash?.data?.attendance;
+        if (emp?.name) setUserName(emp.name);
+        if (emp?.employee_code) setEmployeeCode(emp.employee_code);
+        if (emp?.industry && ALL_SERVICE_KEYS.includes(emp.industry)) {
+          await setService(emp.industry);
+        }
+        if (att && typeof att.checked_in === "boolean") {
+          setIsClockedIn(att.checked_in && !att.checked_out);
+          await AsyncStorage.setItem("isClockedIn", att.checked_in && !att.checked_out ? "true" : "false");
+        }
+      } catch {
+        // Offline mode uses stored session state
+      }
     })();
   }, []);
   const renderActionIcon = (iconName: string, color: string) => {
@@ -195,7 +218,7 @@ export default function EmployeeDashboardScreen() {
                       letterSpacing: 0.8,
                     }}
                   >
-                    FO-902
+                    {employeeCode}
                   </Text>
                 </View>
               </View>

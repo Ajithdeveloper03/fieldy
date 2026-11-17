@@ -24,15 +24,15 @@ import {
   ChevronLeft,
   ArrowRight,
 } from "lucide-react-native";
-import { api } from "../../services/api";
-import { useService, ServiceSelectorPill } from "../../context/ServiceContext";
+import { api, resolveApiBaseUrl, setAuthSession } from "../../services/api";
+import { useService, ServiceSelectorPill, ALL_SERVICE_KEYS } from "../../context/ServiceContext";
 import { SERVICES_CONFIG } from "../../constants/servicesConfig";
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const role = (params?.role as string) || "employee";
-  const { serviceConfig } = useService();
+  const { serviceConfig, setService } = useService();
 
   const config = serviceConfig || SERVICES_CONFIG.facility_fmcg;
   const themeColor = config.themeColor || "#059669";
@@ -46,8 +46,9 @@ export default function LoginScreen() {
   const [error, setError] = useState("");
 
   const handleLogin = async () => {
-    if (!mobile.trim()) {
-      setError("Please enter your phone number");
+    const trimmed = mobile.trim();
+    if (!trimmed) {
+      setError("Please enter your phone number or email");
       return;
     }
     if (!password.trim()) {
@@ -59,27 +60,39 @@ export default function LoginScreen() {
     setLoading(true);
 
     try {
-      const res = await api.post("/auth/login", { phone: mobile, password });
-      if (res.status === "success" && res.token) {
-        await AsyncStorage.setItem("token", res.token);
-        await AsyncStorage.setItem("userName", res.user?.name || "Employee");
-        await AsyncStorage.setItem("userRole", "employee");
-        await AsyncStorage.setItem("userPhone", res.user?.phone || mobile);
+      const res = await api.post("/auth/login", {
+        identifier: trimmed,
+        phone: trimmed,
+        password,
+      });
+      if (res?.status === "success" && res?.token) {
+        await setAuthSession(res.token, res.user);
+        await AsyncStorage.setItem("userName", res.user?.name || "Field Executive");
+        await AsyncStorage.setItem("userRole", res.user?.role || "employee");
+        await AsyncStorage.setItem("userPhone", res.user?.phone || trimmed);
+        if (res.user?.industry && ALL_SERVICE_KEYS.includes(res.user.industry)) {
+          await setService(res.user.industry);
+        }
         router.replace("/(employee)/dashboard");
       } else {
-        await AsyncStorage.setItem("token", "demo_token");
-        await AsyncStorage.setItem("userName", "Field Staff");
-        await AsyncStorage.setItem("userRole", "employee");
-        await AsyncStorage.setItem("userPhone", mobile);
-        router.replace("/(employee)/dashboard");
+        setError(res?.message || "Invalid credentials. Please try again.");
       }
-    } catch {
-      // Graceful offline fallback if local backend is not running
-      await AsyncStorage.setItem("token", "demo_token");
-      await AsyncStorage.setItem("userName", "Field Staff");
-      await AsyncStorage.setItem("userRole", "employee");
-      await AsyncStorage.setItem("userPhone", mobile);
-      router.replace("/(employee)/dashboard");
+    } catch (err: any) {
+      const msg = err?.message || "";
+      const lower = msg.toLowerCase();
+      const isNetworkFailure =
+        err instanceof TypeError ||
+        lower.includes("network") ||
+        lower.includes("failed to fetch") ||
+        lower.includes("fetch failed") ||
+        lower.includes("connectexception");
+      if (isNetworkFailure) {
+        setError(
+          `Cannot reach backend (${resolveApiBaseUrl()}). Start Laravel with: php artisan serve --host=0.0.0.0 --port=8000`
+        );
+      } else {
+        setError(msg || "Unable to sign in. Check server connection and credentials.");
+      }
     } finally {
       setLoading(false);
     }
@@ -184,7 +197,7 @@ export default function LoginScreen() {
                       textAlign: "center",
                     }}
                   >
-                    Enter your phone and password
+                    Enter your phone or email and password
                   </Text>
                 </View>
 
@@ -240,7 +253,7 @@ export default function LoginScreen() {
                         textTransform: "uppercase",
                       }}
                     >
-                      Phone Number
+                      Phone or Username / Email
                     </Text>
                     <View
                       style={{
@@ -263,9 +276,10 @@ export default function LoginScreen() {
                           fontSize: 16,
                           color: "#ffffff",
                         }}
-                        placeholder="Mobile number"
+                        placeholder="Phone number or email"
                         placeholderTextColor="rgba(255,255,255,0.3)"
-                        keyboardType="phone-pad"
+                        keyboardType="default"
+                        autoCapitalize="none"
                         value={mobile}
                         onChangeText={setMobile}
                       />

@@ -19,14 +19,44 @@ import {
   CheckCircle2,
 } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as Location from "expo-location";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useService } from "../../../context/ServiceContext";
+import { sendLiveLocationPing } from "../../../utils/locationHelpers";
 
 export default function CheckInScreen() {
-  const { id } = useLocalSearchParams();
+  const { id, taskId, farmerId, siteName } = useLocalSearchParams<{
+    id?: string;
+    taskId?: string;
+    farmerId?: string;
+    siteName?: string;
+  }>();
   const { serviceConfig } = useService();
   const [photoTaken, setPhotoTaken] = useState(false);
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [coordsText, setCoordsText] = useState("Acquiring live GPS...");
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === "granted") {
+          const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+          setCoords({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+          setCoordsText(`${loc.coords.latitude.toFixed(5)}° N, ${loc.coords.longitude.toFixed(5)}° E`);
+          void sendLiveLocationPing(loc.coords);
+        } else {
+          setCoordsText("GPS Permission Needed");
+        }
+      } catch {
+        setCoordsText("13.0827° N, 80.2707° E");
+      }
+    })();
+  }, []);
 
   const matchedEntity = serviceConfig.sampleEntities[0];
+  const resolvedSiteName = siteName || matchedEntity?.name || serviceConfig.vocab.entitySingular;
 
   const handleCapture = async () => {
     try {
@@ -34,26 +64,52 @@ export default function CheckInScreen() {
       if (res.granted) {
         const result = await ImagePicker.launchCameraAsync({
           allowsEditing: true,
-          quality: 0.5,
+          quality: 0.6,
         });
-        if (!result.canceled) {
-          setPhotoTaken(true);
-          return;
-        } else {
+        if (!result.canceled && result.assets?.[0]?.uri) {
+          setPhotoUri(result.assets[0].uri);
           setPhotoTaken(true);
           return;
         }
-      } else {
-        setPhotoTaken(true);
       }
+      const gallery = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        quality: 0.6,
+      });
+      if (!gallery.canceled && gallery.assets?.[0]?.uri) {
+        setPhotoUri(gallery.assets[0].uri);
+      }
+      setPhotoTaken(true);
     } catch (e) {
       console.log("Check-in camera notice:", e);
       setPhotoTaken(true);
     }
   };
 
-  const handleCheckIn = () => {
-    router.replace("/(employee)/dashboard");
+  const handleCheckIn = async () => {
+    await AsyncStorage.setItem(
+      "@active_checkin",
+      JSON.stringify({
+        taskId: taskId || id || "",
+        farmerId: farmerId || "",
+        siteName: resolvedSiteName,
+        latitude: coords?.latitude ?? null,
+        longitude: coords?.longitude ?? null,
+        photoUri,
+        checkedInAt: new Date().toISOString(),
+      })
+    );
+    router.push({
+      pathname: "/(employee)/visit/report",
+      params: {
+        id: id || taskId || "",
+        taskId: taskId || id || "",
+        farmerId: farmerId || "",
+        siteName: resolvedSiteName,
+        lat: coords?.latitude ? String(coords.latitude) : "",
+        lng: coords?.longitude ? String(coords.longitude) : "",
+      },
+    } as any);
   };
 
   return (
@@ -208,7 +264,7 @@ export default function CheckInScreen() {
                   textTransform: "uppercase",
                 }}
               >
-                Within 25m Radius
+                Within 25m Radius • {coordsText}
               </Text>
             </View>
 

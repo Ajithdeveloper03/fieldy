@@ -57,7 +57,7 @@ export const saveLocationLocally = async (locations: Location.LocationObject[], 
     }
   });
   locationQueueWrite = write.catch((error) => {
-    console.error('Error saving location locally:', error);
+    console.log('Notice saving location locally:', error);
   });
   await locationQueueWrite;
 };
@@ -65,7 +65,7 @@ export const saveLocationLocally = async (locations: Location.LocationObject[], 
 // Define the background task
 TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
   if (error) {
-    console.error(error);
+    console.log('Background location notice:', error);
     return;
   }
   if (data) {
@@ -76,7 +76,7 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
         await saveLocationLocally(locations, sessionId);
       }
     } catch (e) {
-      console.error('Error reading session for background task:', e);
+      console.log('Notice reading session for background task:', e);
     }
   }
 });
@@ -116,7 +116,7 @@ export const stopBackgroundTracking = async () => {
     await AsyncStorage.removeItem(CURRENT_SESSION_KEY);
     console.log('Background tracking stopped.');
   } catch (error) {
-    console.error('Error stopping background tracking:', error);
+    console.log('Notice stopping background tracking:', error);
   }
 };
 
@@ -154,12 +154,12 @@ export const syncLocations = async () => {
           await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(latestQueue.filter((point) => !sentIds.has(point.id))));
           console.log('Sync complete.');
         } catch (apiError) {
-          console.error('API sync error:', apiError);
+          console.log('Offline queued GPS points pending server connection:', apiError);
         }
       }
     }
   } catch (error) {
-    console.error('Error syncing locations:', error);
+    console.log('Notice syncing locations:', error);
   } finally {
     isSyncingLocations = false;
     if (syncRequestedWhileRunning) {

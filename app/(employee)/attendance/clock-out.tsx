@@ -20,7 +20,9 @@ import {
   Moon,
 } from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Location from "expo-location";
 import { useLanguage } from "../../../context/LanguageContext";
+import { api } from "../../../services/api";
 
 export default function ClockOutScreen() {
   const { t, language } = useLanguage();
@@ -28,30 +30,56 @@ export default function ClockOutScreen() {
   const [clockInTime, setClockInTime] = useState<string>("09:15 AM");
   const [locationVerified, setLocationVerified] = useState(false);
   const [isLocating, setIsLocating] = useState(true);
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number }>({
+    latitude: 13.0827,
+    longitude: 80.2707,
+  });
 
   useEffect(() => {
+    let mounted = true;
     (async () => {
       const storedClockIn = await AsyncStorage.getItem("clockInTime");
-      if (storedClockIn) setClockInTime(storedClockIn);
-    })();
+      if (storedClockIn && mounted) setClockInTime(storedClockIn);
 
-    const timer = setTimeout(() => {
-      setIsLocating(false);
-      setLocationVerified(true);
-    }, 1500);
-    return () => clearTimeout(timer);
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === "granted") {
+          const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+          if (mounted) {
+            setCoords({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+          }
+        }
+      } catch {
+        // Fallback coordinates kept
+      }
+      if (mounted) {
+        setIsLocating(false);
+        setLocationVerified(true);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleClockOut = async () => {
     if (!locationVerified) return;
 
     setLoading(true);
-    setTimeout(async () => {
+    try {
+      await api
+        .post("/employee/attendance", {
+          action: "check_out",
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        })
+        .catch(() => null);
       await AsyncStorage.setItem("isClockedIn", "false");
       await AsyncStorage.removeItem("clockInTime");
-      setLoading(false);
       router.replace("/(employee)/dashboard");
-    }, 1500);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

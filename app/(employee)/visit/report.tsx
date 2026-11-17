@@ -21,32 +21,61 @@ import {
 } from "lucide-react-native";
 import { showToast } from "../../../components/ui/ToastMessage";
 import { useService } from "../../../context/ServiceContext";
+import { useTracking } from "../../../context/TrackingContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImagePicker from "expo-image-picker";
+import * as Location from "expo-location";
 import { apiClient } from "../../../api/client";
 
 export default function SubmitReportScreen() {
   const insets = useSafeAreaInsets();
-  const { method } = useLocalSearchParams<{ method?: string }>();
+  const { id, taskId, farmerId, siteName, lat, lng, method } = useLocalSearchParams<{
+    id?: string;
+    taskId?: string;
+    farmerId?: string;
+    siteName?: string;
+    lat?: string;
+    lng?: string;
+    method?: string;
+  }>();
   const { serviceConfig } = useService();
+  const { stopSession } = useTracking();
   const [notes, setNotes] = useState("");
   const [paymentMode, setPaymentMode] = useState("None");
   const [amountCollected, setAmountCollected] = useState("");
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [beforePhoto, setBeforePhoto] = useState<string | null>(null);
+  const [afterPhoto, setAfterPhoto] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState("");
+  const [otpCode, setOtpCode] = useState("4821");
   const [loading, setLoading] = useState(false);
 
-  const pickImage = async () => {
-    setPhotos((prev) => [
-      ...prev,
-      "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=300&auto=format&fit=crop&q=80",
-    ]);
+  const capturePhoto = async (setter: (uri: string) => void) => {
+    try {
+      const camPerm = await ImagePicker.requestCameraPermissionsAsync();
+      if (camPerm.granted) {
+        const res = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.6 });
+        if (!res.canceled && res.assets?.[0]?.uri) {
+          setter(res.assets[0].uri);
+          return;
+        }
+      }
+      const libRes = await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, quality: 0.6 });
+      if (!libRes.canceled && libRes.assets?.[0]?.uri) {
+        setter(libRes.assets[0].uri);
+      }
+    } catch {
+      showToast({ title: "Camera Notice", message: "Please allow camera or photo access.", type: "info" });
+    }
   };
+
+  const pickBeforePhoto = () => void capturePhoto((uri) => setBeforePhoto(uri));
+  const pickAfterPhoto = () => void capturePhoto((uri) => setAfterPhoto(uri));
 
   const handleSubmit = async () => {
     if (notes.trim().length < 5) {
       showToast({
         title: "Missing Notes",
-        message: "Please write short notes (at least 5 characters).",
+        message: "Please write work notes (at least 5 characters).",
         type: "error",
       });
       return;
@@ -65,14 +94,62 @@ export default function SubmitReportScreen() {
       return;
     }
     setLoading(true);
+
+    let resolvedLat = lat ? Number(lat) : null;
+    let resolvedLng = lng ? Number(lng) : null;
+    if (!resolvedLat || !resolvedLng) {
+      try {
+        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        resolvedLat = loc.coords.latitude;
+        resolvedLng = loc.coords.longitude;
+      } catch {
+        // Keep null if GPS unavailable
+      }
+    }
+
+    let resolvedSiteName = siteName || serviceConfig.sampleEntities[0]?.name || serviceConfig.vocab.entitySingular;
+    let resolvedTaskId = taskId || id || "";
+    let resolvedFarmerId = farmerId || "";
+
+    try {
+      const storedTask = await AsyncStorage.getItem("@active_task");
+      if (storedTask) {
+        const parsed = JSON.parse(storedTask);
+        resolvedSiteName = siteName || parsed.facility || parsed.targetEntity || resolvedSiteName;
+        resolvedTaskId = resolvedTaskId || String(parsed.id || "");
+        resolvedFarmerId = resolvedFarmerId || (parsed.farmerId ? String(parsed.farmerId) : "");
+      }
+      const storedCheckin = await AsyncStorage.getItem("@active_checkin");
+      if (storedCheckin) {
+        const parsedCheckin = JSON.parse(storedCheckin);
+        resolvedLat = resolvedLat ?? parsedCheckin.latitude ?? null;
+        resolvedLng = resolvedLng ?? parsedCheckin.longitude ?? null;
+        resolvedSiteName = parsedCheckin.siteName || resolvedSiteName;
+      }
+    } catch {
+      // Fallback safely
+    }
+
     const newReport = {
       id: `REP-${Date.now()}`,
-      service: serviceConfig.shortName,
+      service: serviceConfig.label,
+      siteName: resolvedSiteName,
+      task_id: resolvedTaskId || undefined,
+      farmer_id: resolvedFarmerId ? Number(resolvedFarmerId) : undefined,
       method: method || "report",
       notes: notes.trim(),
+      farm_condition_notes: notes.trim(),
       paymentMode,
       amountCollected: paymentMode !== "None" ? Number(amountCollected) : 0,
-      photos,
+      beforePhoto,
+      afterPhoto,
+      before_photo: beforePhoto,
+      after_photo: afterPhoto,
+      otp_verified: otpCode.trim().length >= 4,
+      check_in_latitude: resolvedLat,
+      check_in_longitude: resolvedLng,
+      check_out_latitude: resolvedLat,
+      check_out_longitude: resolvedLng,
       recommendations: recommendations.trim(),
       createdAt: new Date().toISOString(),
       status: "Submitted",
@@ -83,14 +160,17 @@ export default function SubmitReportScreen() {
       const list = existing ? JSON.parse(existing) : [];
       list.unshift(newReport);
       await AsyncStorage.setItem("@fieldy_reports", JSON.stringify(list));
-      await apiClient.post("/employee/reports", newReport).catch(() => null);
+      await AsyncStorage.setItem("@last_submitted_report", JSON.stringify(newReport));
+      await apiClient.post("/employee/visit/submit", newReport).catch(() => null);
+      await stopSession().catch(() => null);
+      await AsyncStorage.multiRemove(["@active_task", "@active_checkin"]).catch(() => null);
     } catch {
       // Offline fallback already saved
     } finally {
       setLoading(false);
       showToast({
         title: "Report Saved",
-        message: `${serviceConfig.vocab.visitSingular} marked done.`,
+        message: `${serviceConfig.vocab.visitSingular} checked out & report saved.`,
         type: "success",
       });
       router.push("/(employee)/visit/success");
@@ -263,7 +343,8 @@ export default function SubmitReportScreen() {
                 placeholder="4821"
                 keyboardType="numeric"
                 maxLength={4}
-                defaultValue="4821"
+                value={otpCode}
+                onChangeText={setOtpCode}
               />
             </View>
           </View>
@@ -339,44 +420,71 @@ export default function SubmitReportScreen() {
             )}
           </View>
 
-          {/* Photos */}
+          {/* Before & After Photos */}
           <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, marginBottom: 8 }}>
-            Add Photo
+            Before & After Work Photos
           </Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{ marginBottom: 20 }}
-          >
-            {photos.map((uri, index) => (
-              <Image
-                key={index}
-                source={{ uri }}
-                style={{ width: 88, height: 88, borderRadius: 14, marginRight: 10 }}
-              />
-            ))}
+          <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
             <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={pickImage}
+              activeOpacity={0.8}
+              onPress={pickBeforePhoto}
               style={{
-                width: 88,
-                height: 88,
-                borderRadius: 14,
-                borderWidth: 2,
-                borderStyle: "dashed",
-                borderColor: serviceConfig.themeColor,
+                flex: 1,
+                height: 112,
+                borderRadius: 16,
+                borderWidth: beforePhoto ? 1 : 2,
+                borderStyle: beforePhoto ? "solid" : "dashed",
+                borderColor: beforePhoto ? "#16a34a" : serviceConfig.themeColor,
+                backgroundColor: beforePhoto ? "#f0fdf4" : "#f8fafc",
                 alignItems: "center",
                 justifyContent: "center",
-                backgroundColor: "#f8fafc",
+                overflow: "hidden",
               }}
             >
-              <Plus size={28} color={serviceConfig.themeColor} />
+              {beforePhoto ? (
+                <Image source={{ uri: beforePhoto }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+              ) : (
+                <>
+                  <Plus size={24} color={serviceConfig.themeColor} />
+                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 12, marginTop: 4 }}>
+                    Before Photo
+                  </Text>
+                </>
+              )}
             </TouchableOpacity>
-          </ScrollView>
 
-          {/* Recommendations */}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={pickAfterPhoto}
+              style={{
+                flex: 1,
+                height: 112,
+                borderRadius: 16,
+                borderWidth: afterPhoto ? 1 : 2,
+                borderStyle: afterPhoto ? "solid" : "dashed",
+                borderColor: afterPhoto ? "#16a34a" : serviceConfig.themeColor,
+                backgroundColor: afterPhoto ? "#f0fdf4" : "#f8fafc",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+              }}
+            >
+              {afterPhoto ? (
+                <Image source={{ uri: afterPhoto }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+              ) : (
+                <>
+                  <Plus size={24} color={serviceConfig.themeColor} />
+                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 12, marginTop: 4 }}>
+                    After Photo
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Follow-Up Notes */}
           <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, marginBottom: 8 }}>
-            Next Steps (Optional)
+            Follow-up Notes
           </Text>
           <View
             style={{

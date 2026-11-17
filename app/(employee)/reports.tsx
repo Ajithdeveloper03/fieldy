@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   ChevronDown,
   CalendarDays,
@@ -21,70 +22,88 @@ import {
   Filter,
 } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { useService } from "../../context/ServiceContext";
+import { apiClient } from "../../api/client";
 
 export default function EmployeeReportsScreen() {
+  const { serviceConfig } = useService();
   const [selectedYear, setSelectedYear] = useState("2026");
+  const [submittedReports, setSubmittedReports] = useState<any[]>([]);
 
-  // Editorial Monthly Report Cards (Reference Image 1: "March / 23 reports", "April / 18 reports", "May / 29 reports")
+  useEffect(() => {
+    (async () => {
+      try {
+        const stored = await AsyncStorage.getItem("@fieldy_reports");
+        const localReports = stored ? JSON.parse(stored) : [];
+        const res = await apiClient.get("/employee/visits").catch(() => null);
+        const serverReports = (res?.visits || []).map((v: any) => ({
+          id: String(v.id),
+          title: `${v.farmerName || serviceConfig.vocab.entitySingular} • ${serviceConfig.shortName} Report`,
+          date: v.date || "Today",
+          size: "Synced",
+          type: "REPORT",
+          status: v.status === "completed" ? "Approved" : "Pending",
+        }));
+        const formattedLocal = localReports.map((r: any) => ({
+          id: r.id,
+          title: `${r.siteName || r.service || serviceConfig.shortName} • ${r.notes?.slice(0, 28) || "Field Report"}`,
+          date: new Date(r.createdAt || Date.now()).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }),
+          size: r.beforePhoto || r.afterPhoto ? "Photo Log" : "Text Log",
+          type: "FIELD",
+          status: "Approved",
+        }));
+        setSubmittedReports([...formattedLocal, ...serverReports]);
+      } catch {
+        // Fallback smoothly
+      }
+    })();
+  }, [serviceConfig.key, serviceConfig.shortName, serviceConfig.vocab.entitySingular]);
+
   const monthlyArchives = [
     {
       month: "October",
-      count: "23 reports",
-      subtitle: "Active SLA Cycle • Field Audit",
+      count: `${23 + submittedReports.length} reports`,
+      subtitle: `${serviceConfig.shortName} • Field Audit`,
       image: require("../../assets/images/image10.jpg"),
       reportId: "1",
     },
     {
       month: "September",
       count: "18 reports",
-      subtitle: "Completed • 100% Approved",
+      subtitle: `${serviceConfig.shortName} • Approved`,
       image: require("../../assets/images/image4.jpg"),
       reportId: "3",
     },
     {
       month: "August",
       count: "29 reports",
-      subtitle: "Quarterly Audit Archive",
+      subtitle: `${serviceConfig.shortName} Archive`,
       image: require("../../assets/images/image14.jpg"),
       reportId: "4",
     },
   ];
 
-  const documents = [
-    {
-      id: "1",
-      title: "Site Audit - Tidel Park Chennai",
-      date: "Oct 8, 2026",
-      size: "2.4 MB",
-      type: "PDF",
-      status: "Approved",
-    },
-    {
-      id: "2",
-      title: "Monthly SLA Summary",
-      date: "Oct 5, 2026",
-      size: "1.1 MB",
-      type: "DOCX",
-      status: "Pending",
-    },
-    {
-      id: "3",
-      title: "Material & Safety Log",
-      date: "Sep 28, 2026",
-      size: "4.8 MB",
-      type: "XLSX",
-      status: "Approved",
-    },
-    {
-      id: "4",
-      title: "Guindy Tech Hub Inspection",
-      date: "Sep 15, 2026",
-      size: "3.2 MB",
-      sizeLabel: "3.2 MB",
-      type: "PDF",
-      status: "Rejected",
-    },
-  ];
+  const documents =
+    submittedReports.length > 0
+      ? submittedReports
+      : [
+          {
+            id: "1",
+            title: `${serviceConfig.sampleEntities[0]?.name || serviceConfig.vocab.entitySingular} Inspection`,
+            date: "Today",
+            size: "1.8 MB",
+            type: "PDF",
+            status: "Approved",
+          },
+          {
+            id: "2",
+            title: `${serviceConfig.shortName} Compliance Summary`,
+            date: "Yesterday",
+            size: "1.1 MB",
+            type: "PDF",
+            status: "Pending",
+          },
+        ];
 
   return (
     <View style={{ flex: 1, backgroundColor: "#062214" }}>
