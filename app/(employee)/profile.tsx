@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,23 +11,88 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   ChevronLeft,
   Settings,
   ShieldCheck,
   Map,
   Users,
-  Edit3,
   Award,
-  CalendarDays,
   Target,
   ArrowRight,
   Sparkles,
-  FileText,
-  ClipboardCheck,
+  Bell,
+  Fingerprint,
 } from "lucide-react-native";
+import { useService, ALL_SERVICE_KEYS } from "../../context/ServiceContext";
+import { api, getAuthUser } from "../../services/api";
+
+const SERVICE_CARD_IMAGES: Record<string, any> = {
+  real_estate: require("../../assets/images/image1.jpg"),
+  facility_fmcg: require("../../assets/images/image2.jpg"),
+  construction: require("../../assets/images/image3.jpg"),
+  security: require("../../assets/images/image4.jpg"),
+  cleaning: require("../../assets/images/image5.jpg"),
+  maintenance: require("../../assets/images/image6.jpg"),
+  solar: require("../../assets/images/image7.jpg"),
+  pest_control: require("../../assets/images/image8.jpg"),
+  logistics: require("../../assets/images/image10.jpg"),
+};
 
 export default function EmployeeProfileScreen() {
+  const { serviceConfig, setService } = useService();
+  const [userName, setUserName] = useState("Field Officer");
+  const [employeeCode, setEmployeeCode] = useState("EMP-001");
+  const [companyName, setCompanyName] = useState(serviceConfig.name);
+  const [isClockedIn, setIsClockedIn] = useState(false);
+  const [siteCount, setSiteCount] = useState(serviceConfig.sampleEntities.length);
+  const [taskCount, setTaskCount] = useState(serviceConfig.sampleTasks.length);
+  const [visitCount, setVisitCount] = useState(serviceConfig.sampleVisits.length);
+
+  useEffect(() => {
+    (async () => {
+      const authUser = await getAuthUser();
+      const storedName = await AsyncStorage.getItem("userName");
+      const status = await AsyncStorage.getItem("isClockedIn");
+      if (status === "true") setIsClockedIn(true);
+      if (authUser?.name) setUserName(authUser.name);
+      else if (storedName) setUserName(storedName);
+      if (authUser?.employee_code) setEmployeeCode(authUser.employee_code);
+
+      try {
+        const dash = await api.get("/employee/dashboard");
+        const emp = dash?.data?.employee;
+        const att = dash?.data?.attendance;
+        const stats = dash?.data?.stats;
+        if (emp?.name) setUserName(emp.name);
+        if (emp?.employee_code) setEmployeeCode(emp.employee_code);
+        if (emp?.company?.name || emp?.company_name) {
+          setCompanyName(emp.company?.name || emp.company_name);
+        }
+        if (emp?.industry && ALL_SERVICE_KEYS.includes(emp.industry)) {
+          await setService(emp.industry);
+        }
+        if (att && typeof att.checked_in === "boolean") {
+          setIsClockedIn(att.checked_in && !att.checked_out);
+        }
+        if (stats?.tasks_count) setTaskCount(Number(stats.tasks_count));
+        if (stats?.visits_count) setVisitCount(Number(stats.visits_count));
+      } catch {
+        // Offline / fallback uses serviceConfig
+      }
+
+      try {
+        const sitesRes = await api.get("/employee/sites");
+        const list = sitesRes?.data?.sites;
+        if (Array.isArray(list) && list.length > 0) {
+          setSiteCount(Math.max(list.length, serviceConfig.sampleEntities.length));
+        }
+      } catch {
+        setSiteCount(serviceConfig.sampleEntities.length);
+      }
+    })();
+  }, [serviceConfig.key]);
   return (
     <View style={{ flex: 1, backgroundColor: "#062214" }}>
       <StatusBar barStyle="light-content" />
@@ -89,23 +154,37 @@ export default function EmployeeProfileScreen() {
             style={{
               color: "#ffffff",
               fontFamily: "Brandon-Bold",
-              fontSize: 19,
+              fontSize: 24,
             }}
           >
-            Officer Profile
+            {serviceConfig.vocab.staffRole}
           </Text>
-          <TouchableOpacity
-            onPress={() => router.push("/(employee)/menu")}
-            style={{
-              backgroundColor: "rgba(255,255,255,0.1)",
-              padding: 10,
-              borderRadius: 999,
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.15)",
-            }}
-          >
-            <Settings size={22} color="#ffffff" />
-          </TouchableOpacity>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <TouchableOpacity
+              onPress={() => router.push("/(employee)/notifications")}
+              style={{
+                backgroundColor: "rgba(255,255,255,0.1)",
+                padding: 10,
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.15)",
+              }}
+            >
+              <Bell size={20} color="#ffffff" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => router.push("/(employee)/menu")}
+              style={{
+                backgroundColor: "rgba(255,255,255,0.1)",
+                padding: 10,
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.15)",
+              }}
+            >
+              <Settings size={20} color="#ffffff" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <ScrollView
@@ -116,7 +195,7 @@ export default function EmployeeProfileScreen() {
             paddingTop: 8,
           }}
         >
-          {/* HERO PROFILE CARD WITH FLANKING METRICS & DUAL PILLS (Reference Image 2 Right Panel) */}
+          {/* HERO PROFILE CARD WITH REAL EMPLOYEE & SERVICE TELEMETRY */}
           <View
             style={{
               backgroundColor: "rgba(15, 23, 42, 0.75)",
@@ -128,7 +207,7 @@ export default function EmployeeProfileScreen() {
               alignItems: "center",
             }}
           >
-            {/* Avatar Flanked by Left & Right Metrics ("1.2K | Avatar | 4.5K") */}
+            {/* Avatar Flanked by Real Left & Right Metrics */}
             <View
               style={{
                 flexDirection: "row",
@@ -145,38 +224,39 @@ export default function EmployeeProfileScreen() {
                   style={{
                     color: "#ffffff",
                     fontFamily: "Brandon-Bold",
-                    fontSize: 22,
+                    fontSize: 28,
                   }}
                 >
-                  124
+                  {siteCount}
                 </Text>
                 <Text
                   style={{
-                    color: "rgba(255,255,255,0.55)",
+                    color: "rgba(255,255,255,0.7)",
                     fontFamily: "Brandon-Medium",
-                    fontSize: 12,
+                    fontSize: 13,
                     marginTop: 2,
+                    textAlign: "center",
                   }}
                 >
-                  Clients
+                  {serviceConfig.vocab.entities}
                 </Text>
               </View>
 
               {/* Center Circular Framed Avatar */}
               <View
                 style={{
-                  width: 112,
-                  height: 112,
-                  borderRadius: 56,
-                  borderWidth: 3,
-                  borderColor: "rgba(74, 222, 128, 0.7)",
+                  width: 136,
+                  height: 136,
+                  borderRadius: 68,
+                  borderWidth: 3.5,
+                  borderColor: "rgba(74, 222, 128, 0.75)",
                   padding: 4,
                   backgroundColor: "rgba(255,255,255,0.08)",
                 }}
               >
                 <Image
-                  source={require("../../assets/images/image1.jpg")}
-                  style={{ width: "100%", height: "100%", borderRadius: 52 }}
+                  source={SERVICE_CARD_IMAGES[serviceConfig.key] || require("../../assets/images/image1.jpg")}
+                  style={{ width: "100%", height: "100%", borderRadius: 64 }}
                 />
               </View>
 
@@ -184,100 +264,113 @@ export default function EmployeeProfileScreen() {
               <View style={{ alignItems: "center", flex: 1 }}>
                 <Text
                   style={{
-                    color: "#ffffff",
+                    color: "#4ade80",
                     fontFamily: "Brandon-Bold",
-                    fontSize: 22,
+                    fontSize: 28,
                   }}
                 >
-                  4.2K
+                  {serviceConfig.kpis.efficiencyRate}
                 </Text>
                 <Text
                   style={{
-                    color: "rgba(255,255,255,0.55)",
+                    color: "rgba(255,255,255,0.7)",
                     fontFamily: "Brandon-Medium",
-                    fontSize: 12,
+                    fontSize: 13,
                     marginTop: 2,
+                    textAlign: "center",
                   }}
                 >
-                  Site Area
+                  SLA Rate
                 </Text>
               </View>
             </View>
 
-            {/* Name + Checked Badge */}
+            {/* Name + Verified Badge */}
             <View
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                marginBottom: 4,
+                marginBottom: 6,
               }}
             >
               <Text
                 style={{
                   color: "#ffffff",
                   fontFamily: "Brandon-Bold",
-                  fontSize: 26,
+                  fontSize: 30,
                 }}
               >
-                Robert Walker
+                {userName}
               </Text>
               <View
                 style={{
                   backgroundColor: "#10b981",
-                  borderRadius: 12,
-                  padding: 3,
+                  borderRadius: 14,
+                  padding: 4,
                   marginLeft: 8,
                 }}
               >
-                <ShieldCheck size={14} color="#ffffff" />
+                <ShieldCheck size={16} color="#ffffff" />
               </View>
             </View>
 
             <Text
               style={{
-                color: "rgba(255,255,255,0.65)",
-                fontFamily: "Brandon-Medium",
-                fontSize: 14,
-                marginBottom: 22,
+                color: "rgba(255,255,255,0.8)",
+                fontFamily: "Brandon-Bold",
+                fontSize: 16,
+                textAlign: "center",
               }}
             >
-              Senior Field Officer • ID: FO-902
+              {serviceConfig.vocab.staffRole} • {employeeCode}
+            </Text>
+            <Text
+              style={{
+                color: "#4ade80",
+                fontFamily: "Brandon-Medium",
+                fontSize: 14,
+                marginTop: 4,
+                marginBottom: 24,
+                textAlign: "center",
+              }}
+            >
+              {companyName} • {isClockedIn ? "On Duty" : "Ready for Shift"}
             </Text>
 
-            {/* Dual Outlined Pill Buttons (Reference Image 2: "Подписаться" | "Написать") */}
+            {/* Dual Outlined Pill Buttons */}
             <View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
               <TouchableOpacity
-                onPress={() => router.push("/(employee)/edit-profile")}
+                onPress={() => router.push("/(employee)/attendance-hub")}
                 style={{
                   flex: 1,
                   borderRadius: 999,
-                  paddingVertical: 13,
+                  paddingVertical: 14,
                   borderWidth: 1.2,
                   borderColor: "rgba(255, 255, 255, 0.45)",
-                  backgroundColor: "rgba(255, 255, 255, 0.06)",
+                  backgroundColor: "rgba(255, 255, 255, 0.08)",
                   alignItems: "center",
                   justifyContent: "center",
                   flexDirection: "row",
                 }}
               >
-                <Edit3 size={15} color="#ffffff" style={{ marginRight: 6 }} />
+                <Fingerprint size={17} color="#ffffff" style={{ marginRight: 6 }} />
                 <Text
                   style={{
                     color: "#ffffff",
                     fontFamily: "Brandon-Bold",
-                    fontSize: 14,
+                    fontSize: 15,
                   }}
                 >
-                  Edit account details
+                  Attendance
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => router.push("/(employee)/performance")}
+                onPress={() => router.push("/(employee)/edit-profile")}
                 style={{
                   flex: 1,
                   borderRadius: 999,
-                  paddingVertical: 13,
+                  paddingVertical: 14,
                   borderWidth: 1.2,
                   borderColor: "#4ade80",
                   backgroundColor: "rgba(74, 222, 128, 0.14)",
@@ -286,27 +379,27 @@ export default function EmployeeProfileScreen() {
                   flexDirection: "row",
                 }}
               >
-                <Award size={15} color="#4ade80" style={{ marginRight: 6 }} />
+                <Award size={17} color="#4ade80" style={{ marginRight: 6 }} />
                 <Text
                   style={{
                     color: "#4ade80",
                     fontFamily: "Brandon-Bold",
-                    fontSize: 14,
+                    fontSize: 15,
                   }}
                 >
-                  KPI Analytics
+                  My Credentials
                 </Text>
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* SPLIT BENTO FEATURE CARDS (Reference Image 2 Middle Row: Light Info Card Left + Photo Tile Right) */}
+          {/* SPLIT BENTO FEATURE CARDS */}
           <View
             style={{
               flexDirection: "row",
               gap: 14,
               marginBottom: 18,
-              height: 220,
+              height: 238,
             }}
           >
             {/* Left Light Bento Card */}
@@ -323,9 +416,9 @@ export default function EmployeeProfileScreen() {
               <View style={{ alignItems: "center" }}>
                 <View
                   style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 24,
+                    width: 56,
+                    height: 56,
+                    borderRadius: 28,
                     borderWidth: 2,
                     borderColor: "#ffffff",
                     overflow: "hidden",
@@ -333,22 +426,23 @@ export default function EmployeeProfileScreen() {
                   }}
                 >
                   <Image
-                    source={require("../../assets/images/image1.jpg")}
+                    source={SERVICE_CARD_IMAGES[serviceConfig.key] || require("../../assets/images/image1.jpg")}
                     style={{ width: "100%", height: "100%" }}
                   />
                 </View>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <Text
+                    numberOfLines={1}
                     style={{
                       color: "#0f172a",
                       fontFamily: "Brandon-Bold",
-                      fontSize: 14,
+                      fontSize: 16,
                     }}
                   >
-                    Robert Walker
+                    {userName}
                   </Text>
                   <ShieldCheck
-                    size={13}
+                    size={14}
                     color="#0f172a"
                     style={{ marginLeft: 4 }}
                   />
@@ -357,13 +451,13 @@ export default function EmployeeProfileScreen() {
                   style={{
                     color: "#475569",
                     fontFamily: "Brandon-Medium",
-                    fontSize: 12,
+                    fontSize: 13,
                     textAlign: "center",
-                    lineHeight: 16,
+                    lineHeight: 17,
                     marginTop: 6,
                   }}
                 >
-                  892 site checks done • 98% jobs finished on time
+                  {taskCount} Active {serviceConfig.vocab.tasks} • {serviceConfig.kpis.points}
                 </Text>
               </View>
 
@@ -372,7 +466,7 @@ export default function EmployeeProfileScreen() {
                 style={{
                   backgroundColor: "#0f172a",
                   width: "100%",
-                  paddingVertical: 11,
+                  paddingVertical: 12,
                   borderRadius: 999,
                   alignItems: "center",
                 }}
@@ -381,7 +475,7 @@ export default function EmployeeProfileScreen() {
                   style={{
                     color: "#ffffff",
                     fontFamily: "Brandon-Bold",
-                    fontSize: 13,
+                    fontSize: 14,
                   }}
                 >
                   Work Orders
@@ -401,18 +495,18 @@ export default function EmployeeProfileScreen() {
               }}
             >
               <Image
-                source={require("../../assets/images/image5.jpg")}
+                source={SERVICE_CARD_IMAGES[serviceConfig.key] || require("../../assets/images/image3.jpg")}
                 style={{ width: "100%", height: "100%" }}
                 resizeMode="cover"
               />
               <LinearGradient
-                colors={["transparent", "rgba(6, 34, 20, 0.85)"]}
+                colors={["transparent", "rgba(6, 34, 20, 0.88)"]}
                 style={StyleSheet.absoluteFill}
               />
               <View
                 style={{
                   position: "absolute",
-                  bottom: 16,
+                  bottom: 18,
                   left: 16,
                   right: 16,
                 }}
@@ -421,42 +515,43 @@ export default function EmployeeProfileScreen() {
                   style={{
                     color: "#4ade80",
                     fontFamily: "Brandon-Bold",
-                    fontSize: 10,
+                    fontSize: 12,
                     letterSpacing: 1,
                   }}
                 >
-                  SECTOR A-4
+                  {serviceConfig.badge} SECTOR
                 </Text>
                 <Text
                   style={{
                     color: "#ffffff",
                     fontFamily: "Brandon-Bold",
-                    fontSize: 16,
+                    fontSize: 20,
+                    marginTop: 2,
                   }}
                 >
-                  Active Sites
+                  My {serviceConfig.vocab.entities}
                 </Text>
               </View>
             </TouchableOpacity>
           </View>
 
-          {/* WIDE HORIZONTAL FEATURE CARD (Reference Image 2 Bottom Card: "✦ Урок 3 | Как делать прогноз волн? | Смотреть курс" + Right Image) */}
+          {/* WIDE HORIZONTAL FEATURE CARD */}
           <TouchableOpacity
             activeOpacity={0.9}
-            onPress={() => router.push("/(employee)/performance")}
+            onPress={() => router.push("/(employee)/calendar")}
             style={{
               backgroundColor: "#e2e8f0",
               borderRadius: 32,
-              padding: 6,
+              padding: 8,
               flexDirection: "row",
               alignItems: "center",
               marginBottom: 24,
-              height: 150,
+              height: 164,
             }}
           >
             <View
               style={{
-                flex: 1.15,
+                flex: 1.2,
                 paddingHorizontal: 18,
                 paddingVertical: 14,
                 justifyContent: "space-between",
@@ -464,15 +559,15 @@ export default function EmployeeProfileScreen() {
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Sparkles size={13} color="#475569" style={{ marginRight: 5 }} />
+                <Sparkles size={15} color="#475569" style={{ marginRight: 5 }} />
                 <Text
                   style={{
                     color: "#475569",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 12,
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 13,
                   }}
                 >
-                  Monthly Quota • 86%
+                  {serviceConfig.shortName} • {serviceConfig.kpis.efficiencyRate} SLA
                 </Text>
               </View>
 
@@ -480,11 +575,11 @@ export default function EmployeeProfileScreen() {
                 style={{
                   color: "#0f172a",
                   fontFamily: "Brandon-Bold",
-                  fontSize: 18,
-                  lineHeight: 22,
+                  fontSize: 20,
+                  lineHeight: 24,
                 }}
               >
-                Are you finishing jobs on time?
+                View Work Calendar & Shift Log
               </Text>
 
               <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -492,22 +587,22 @@ export default function EmployeeProfileScreen() {
                   style={{
                     color: "#0f172a",
                     fontFamily: "Brandon-Bold",
-                    fontSize: 13,
+                    fontSize: 14,
                   }}
                 >
-                  View Performance Log
+                  Open Calendar
                 </Text>
                 <ArrowRight
-                  size={14}
+                  size={16}
                   color="#0f172a"
-                  style={{ marginLeft: 4 }}
+                  style={{ marginLeft: 5 }}
                 />
               </View>
             </View>
 
             <View
               style={{
-                flex: 0.95,
+                flex: 0.9,
                 height: "100%",
                 borderRadius: 26,
                 overflow: "hidden",
@@ -526,11 +621,11 @@ export default function EmployeeProfileScreen() {
             style={{
               color: "#ffffff",
               fontFamily: "Brandon-Bold",
-              fontSize: 19,
-              marginBottom: 14,
+              fontSize: 24,
+              marginBottom: 16,
             }}
           >
-            Work results
+            {serviceConfig.shortName} Overview
           </Text>
           <View
             style={{
@@ -542,29 +637,29 @@ export default function EmployeeProfileScreen() {
             {[
               {
                 icon: Users,
-                label: "SiteContacts Managed",
-                value: "124",
+                label: serviceConfig.vocab.entities,
+                value: String(siteCount),
                 color: "#38bdf8",
                 route: "/(employee)/my-sites",
               },
               {
                 icon: Map,
-                label: "Site Area Covered",
-                value: "4.2k",
+                label: serviceConfig.kpis.primaryLabel,
+                value: serviceConfig.kpis.primaryNumber,
                 color: "#4ade80",
                 route: "/(employee)/map",
               },
               {
                 icon: Target,
-                label: "Reports Filed",
-                value: "892",
+                label: serviceConfig.vocab.visits,
+                value: String(visitCount),
                 color: "#fbbf24",
-                route: "/(employee)/reports",
+                route: "/(employee)/visits",
               },
               {
                 icon: Award,
-                label: "Resolution Rate",
-                value: "98%",
+                label: "SLA Resolution",
+                value: serviceConfig.kpis.efficiencyRate,
                 color: "#f472b6",
                 route: "/(employee)/performance",
               },
@@ -574,42 +669,42 @@ export default function EmployeeProfileScreen() {
                 onPress={() => router.push(metric.route as any)}
                 style={{
                   width: "48%",
-                  backgroundColor: "rgba(255,255,255,0.06)",
-                  borderRadius: 24,
-                  padding: 18,
-                  marginBottom: 14,
+                  backgroundColor: "rgba(255,255,255,0.08)",
+                  borderRadius: 26,
+                  padding: 20,
+                  marginBottom: 16,
                   borderWidth: 1,
-                  borderColor: "rgba(255,255,255,0.1)",
+                  borderColor: "rgba(255,255,255,0.12)",
                 }}
               >
                 <View
                   style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 12,
-                    backgroundColor: `${metric.color}20`,
+                    width: 48,
+                    height: 48,
+                    borderRadius: 16,
+                    backgroundColor: `${metric.color}22`,
                     alignItems: "center",
                     justifyContent: "center",
-                    marginBottom: 10,
+                    marginBottom: 12,
                   }}
                 >
-                  <metric.icon size={20} color={metric.color} />
+                  <metric.icon size={24} color={metric.color} />
                 </View>
                 <Text
                   style={{
                     color: "#ffffff",
                     fontFamily: "Brandon-Bold",
-                    fontSize: 24,
-                    marginBottom: 2,
+                    fontSize: 28,
+                    marginBottom: 4,
                   }}
                 >
                   {metric.value}
                 </Text>
                 <Text
                   style={{
-                    color: "rgba(255,255,255,0.6)",
+                    color: "rgba(255,255,255,0.7)",
                     fontFamily: "Brandon-Medium",
-                    fontSize: 13,
+                    fontSize: 15,
                   }}
                 >
                   {metric.label}

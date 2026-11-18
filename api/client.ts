@@ -25,6 +25,7 @@ async function request(endpoint: string, options: RequestOptions) {
   
   const token = await AsyncStorage.getItem("token");
   const authUserRaw = await AsyncStorage.getItem("@auth_user");
+  const activeService = await AsyncStorage.getItem("@fieldy_active_service");
   let userPhone: string | null = null;
   try {
     userPhone = authUserRaw ? JSON.parse(authUserRaw)?.phone || null : null;
@@ -40,6 +41,7 @@ async function request(endpoint: string, options: RequestOptions) {
     Accept: "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(userPhone ? { "X-Demo-Phone": userPhone } : {}),
+    ...(activeService ? { "X-Service-Key": activeService } : {}),
     ...(options.headers || {}),
   };
 

@@ -28,7 +28,7 @@ export default function EmployeeVisitHistoryScreen() {
       id: "8842",
       date: "Today, 11:30 AM",
       site_contact: "Apex Cyber Tower",
-      project: "Air and cooling system check",
+      project: "AHU & Chiller System Audit",
       status: "Report Submitted",
       location: "Tidel Park Road, Block B",
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=project&q=80",
@@ -46,7 +46,7 @@ export default function EmployeeVisitHistoryScreen() {
       id: "8840",
       date: "24 Jan 2026, 04:00 PM",
       site_contact: "Grand Horizon Corporate Suites",
-      project: "Fire alarm and sprinkler check",
+      project: "Fire Alarm & Sprinkler Audit",
       status: "Flagged Issue",
       location: "Central Business District",
       image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=project&q=80",
@@ -78,67 +78,67 @@ export default function EmployeeVisitHistoryScreen() {
         
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24 }}>
-          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 8, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 999 }}>
-            <ChevronLeft size={24} color="#ffffff" />
+          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 10, backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 999 }}>
+            <ChevronLeft size={26} color="#ffffff" />
           </TouchableOpacity>
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20 }}>Past visits</Text>
-          <TouchableOpacity style={{ padding: 8, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 999 }}>
-            <Filter size={20} color="#ffffff" />
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 25 }}>Visit History</Text>
+          <TouchableOpacity style={{ padding: 10, backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 999 }}>
+            <Filter size={22} color="#ffffff" />
           </TouchableOpacity>
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 10, paddingBottom: 110 }}>
           
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Medium", fontSize: 16 }}>44 past visits</Text>
-            <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255,255,255,0.2)", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}>
-              <Calendar size={14} color="#ffffff" style={{ marginRight: 6 }} />
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13 }}>This Month</Text>
+            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>Showing 44 past visits</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255,255,255,0.2)", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 14 }}>
+              <Calendar size={16} color="#ffffff" style={{ marginRight: 6 }} />
+              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14 }}>This Month</Text>
             </View>
           </View>
 
           {/* Visit Cards */}
-          <View style={{ gap: 16 }}>
+          <View style={{ gap: 20 }}>
             {history.map((visit) => (
               <TouchableOpacity 
                 key={visit.id} 
                 activeOpacity={0.9}
                 onPress={() => router.push(`/(employee)/report/${visit.id}` as any)}
-                style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4 }}
+                style={{ backgroundColor: "#ffffff", borderRadius: 28, padding: 22, shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.08, shadowRadius: 14, elevation: 5 }}
               >
                 
                 {/* Status Bar */}
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16, borderBottomWidth: 1, borderBottomColor: "#f1f5f9", paddingBottom: 12 }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 18, borderBottomWidth: 1, borderBottomColor: "#f1f5f9", paddingBottom: 14 }}>
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Clock size={14} color="#64748b" style={{ marginRight: 6 }} />
-                    <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 12 }}>{visit.date}</Text>
+                    <Clock size={16} color="#64748b" style={{ marginRight: 6 }} />
+                    <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 14 }}>{visit.date}</Text>
                   </View>
-                  <View style={{ backgroundColor: visit.status === "Flagged Issue" ? "#fee2e2" : "#dcfce7", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}>
-                    <Text style={{ color: visit.status === "Flagged Issue" ? "#ef4444" : "#16a34a", fontFamily: "Brandon-Bold", fontSize: 11 }}>{visit.status.toUpperCase()}</Text>
+                  <View style={{ backgroundColor: visit.status === "Flagged Issue" ? "#fee2e2" : "#dcfce7", paddingHorizontal: 12, paddingVertical: 5, borderRadius: 10 }}>
+                    <Text style={{ color: visit.status === "Flagged Issue" ? "#ef4444" : "#16a34a", fontFamily: "Brandon-Bold", fontSize: 12 }}>{visit.status.toUpperCase()}</Text>
                   </View>
                 </View>
 
                 {/* SiteContact Info */}
-                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
-                  <View style={{ width: 56, height: 56, borderRadius: 28, overflow: "hidden", backgroundColor: "#e2e8f0", marginRight: 16 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 18 }}>
+                  <View style={{ width: 76, height: 76, borderRadius: 26, overflow: "hidden", backgroundColor: "#e2e8f0", marginRight: 16 }}>
                     <Image source={{ uri: visit.image }} style={{ width: "100%", height: "100%" }} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, marginBottom: 2 }}>{visit.site_contact}</Text>
+                    <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 22, lineHeight: 26, marginBottom: 4 }}>{visit.site_contact}</Text>
                     <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      <MapPin size={12} color="#94a3b8" />
-                      <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 4 }}>{visit.location}</Text>
+                      <MapPin size={14} color="#64748b" />
+                      <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 15, marginLeft: 5 }}>{visit.location}</Text>
                     </View>
                   </View>
                 </View>
 
                 {/* Actions */}
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "#f8fafc", paddingHorizontal: 16, paddingVertical: 12, borderRadius: 16 }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "#f8fafc", paddingHorizontal: 18, paddingVertical: 14, borderRadius: 18 }}>
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <FileText size={16} color="#0284c7" />
-                    <Text style={{ color: "#0284c7", fontFamily: "Brandon-Bold", fontSize: 14, marginLeft: 8 }}>View Report #{visit.id}</Text>
+                    <FileText size={18} color="#0284c7" />
+                    <Text style={{ color: "#0284c7", fontFamily: "Brandon-Bold", fontSize: 16, marginLeft: 8 }}>View Report #{visit.id}</Text>
                   </View>
-                  <ArrowRight size={16} color="#0284c7" />
+                  <ArrowRight size={18} color="#0284c7" />
                 </View>
 
               </TouchableOpacity>

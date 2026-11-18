@@ -145,16 +145,16 @@ export default function EmployeeReportsScreen() {
               style={{
                 color: "#ffffff",
                 fontFamily: "Brandon-Bold",
-                fontSize: 28,
-                letterSpacing: 0.5,
+                fontSize: 24,
+                letterSpacing: 0.4,
               }}
             >
               {selectedYear}
             </Text>
             <ChevronDown
-              size={22}
+              size={20}
               color="rgba(255,255,255,0.75)"
-              style={{ marginLeft: 6, marginTop: 2 }}
+              style={{ marginLeft: 5, marginTop: 2 }}
             />
           </TouchableOpacity>
 
@@ -219,17 +219,17 @@ export default function EmployeeReportsScreen() {
                   router.push(`/(employee)/report/${item.reportId}` as any)
                 }
                 style={{
-                  height: 215,
-                  borderRadius: 32,
+                  height: 184,
+                  borderRadius: 28,
                   overflow: "hidden",
                   backgroundColor: "#0f172a",
                   borderWidth: 1,
                   borderColor: "rgba(255,255,255,0.14)",
                   shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 12 },
-                  shadowOpacity: 0.35,
-                  shadowRadius: 20,
-                  elevation: 10,
+                  shadowOffset: { width: 0, height: 10 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 16,
+                  elevation: 8,
                 }}
               >
                 <Image
@@ -313,11 +313,11 @@ export default function EmployeeReportsScreen() {
                 >
                   <Text
                     style={{
-                      color: "rgba(255, 255, 255, 0.88)",
+                      color: "rgba(255, 255, 255, 0.9)",
                       fontFamily: "Brandon-Bold",
-                      fontSize: 64,
-                      letterSpacing: -1.5,
-                      lineHeight: 72,
+                      fontSize: 44,
+                      letterSpacing: -1,
+                      lineHeight: 50,
                     }}
                     numberOfLines={1}
                   >
@@ -334,7 +334,7 @@ export default function EmployeeReportsScreen() {
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",
-              marginBottom: 16,
+              marginBottom: 14,
             }}
           >
             <View>
@@ -343,7 +343,7 @@ export default function EmployeeReportsScreen() {
                   color: "#4ade80",
                   fontFamily: "Brandon-Bold",
                   fontSize: 11,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.1,
                 }}
               >
                 RECORDS & LOGS
@@ -352,7 +352,7 @@ export default function EmployeeReportsScreen() {
                 style={{
                   color: "#ffffff",
                   fontFamily: "Brandon-Bold",
-                  fontSize: 22,
+                  fontSize: 19,
                 }}
               >
                 Recent Field Documents
@@ -364,17 +364,17 @@ export default function EmployeeReportsScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 backgroundColor: "rgba(255,255,255,0.1)",
-                paddingHorizontal: 14,
+                paddingHorizontal: 13,
                 paddingVertical: 8,
                 borderRadius: 999,
                 borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.12)",
+                borderColor: "rgba(255,255,255,0.14)",
               }}
             >
               <Filter
-                size={14}
+                size={13}
                 color="#ffffff"
-                style={{ marginRight: 6 }}
+                style={{ marginRight: 5 }}
               />
               <Text
                 style={{
@@ -397,9 +397,9 @@ export default function EmployeeReportsScreen() {
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  backgroundColor: "rgba(255, 255, 255, 0.08)",
-                  padding: 16,
-                  borderRadius: 24,
+                  backgroundColor: "rgba(255, 255, 255, 0.09)",
+                  padding: 15,
+                  borderRadius: 22,
                   borderWidth: 1,
                   borderColor: "rgba(255, 255, 255, 0.12)",
                 }}
@@ -407,9 +407,9 @@ export default function EmployeeReportsScreen() {
                 {/* ICON */}
                 <View
                   style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 16,
+                    width: 46,
+                    height: 46,
+                    borderRadius: 15,
                     backgroundColor:
                       doc.type === "PDF"
                         ? "rgba(239, 68, 68, 0.18)"
@@ -418,11 +418,11 @@ export default function EmployeeReportsScreen() {
                         : "rgba(34, 197, 94, 0.18)",
                     alignItems: "center",
                     justifyContent: "center",
-                    marginRight: 16,
+                    marginRight: 14,
                   }}
                 >
                   <FileText
-                    size={24}
+                    size={22}
                     color={
                       doc.type === "PDF"
                         ? "#f87171"
@@ -439,8 +439,9 @@ export default function EmployeeReportsScreen() {
                     style={{
                       color: "#ffffff",
                       fontFamily: "Brandon-Bold",
-                      fontSize: 16,
-                      marginBottom: 4,
+                      fontSize: 15,
+                      lineHeight: 20,
+                      marginBottom: 3,
                     }}
                     numberOfLines={1}
                   >
@@ -448,7 +449,7 @@ export default function EmployeeReportsScreen() {
                   </Text>
                   <Text
                     style={{
-                      color: "rgba(255,255,255,0.6)",
+                      color: "rgba(255,255,255,0.65)",
                       fontFamily: "Brandon-Medium",
                       fontSize: 12,
                     }}
@@ -458,7 +459,7 @@ export default function EmployeeReportsScreen() {
                 </View>
 
                 {/* ACTION/STATUS */}
-                <View style={{ alignItems: "flex-end" }}>
+                <View style={{ alignItems: "flex-end", marginLeft: 10 }}>
                   <View
                     style={{
                       paddingHorizontal: 10,
@@ -466,10 +467,10 @@ export default function EmployeeReportsScreen() {
                       borderRadius: 999,
                       backgroundColor:
                         doc.status === "Approved"
-                          ? "rgba(74, 222, 128, 0.18)"
+                          ? "rgba(74, 222, 128, 0.2)"
                           : doc.status === "Pending"
-                          ? "rgba(251, 191, 36, 0.18)"
-                          : "rgba(239, 68, 68, 0.18)",
+                          ? "rgba(251, 191, 36, 0.2)"
+                          : "rgba(239, 68, 68, 0.2)",
                       marginBottom: 8,
                     }}
                   >
@@ -496,7 +497,7 @@ export default function EmployeeReportsScreen() {
                       )
                     }
                   >
-                    <Download size={18} color="rgba(255,255,255,0.7)" />
+                    <Download size={18} color="rgba(255,255,255,0.75)" />
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>

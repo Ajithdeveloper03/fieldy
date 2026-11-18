@@ -60,6 +60,7 @@ interface RequestConfig extends RequestInit {
 const request = async (endpoint: string, { data, headers, ...customConfig }: RequestConfig = {}) => {
   const token = await AsyncStorage.getItem(TOKEN_KEY);
   const authUserRaw = await AsyncStorage.getItem(USER_KEY);
+  const activeService = await AsyncStorage.getItem('@fieldy_active_service');
   let userPhone: string | null = null;
   try {
     userPhone = authUserRaw ? JSON.parse(authUserRaw)?.phone || null : null;
@@ -75,6 +76,7 @@ const request = async (endpoint: string, { data, headers, ...customConfig }: Req
       'Accept': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(userPhone ? { 'X-Demo-Phone': userPhone } : {}),
+      ...(activeService ? { 'X-Service-Key': activeService } : {}),
       ...headers,
     },
     ...customConfig,

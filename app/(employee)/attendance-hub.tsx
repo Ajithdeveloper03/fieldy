@@ -43,40 +43,40 @@ export default function EmployeeAttendanceScreen() {
       <SafeAreaView style={{ flex: 1 }}>
         
         {/* HEADER */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}>
-          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 8, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 999 }}>
-            <ChevronLeft size={24} color="#ffffff" />
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 22, paddingTop: 16, paddingBottom: 24 }}>
+          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 10, backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 999 }}>
+            <ChevronLeft size={26} color="#ffffff" />
           </TouchableOpacity>
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20 }}>Attendance Hub</Text>
-          <View style={{ width: 40 }} />
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 25 }}>Attendance Hub</Text>
+          <View style={{ width: 44 }} />
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 22, paddingVertical: 10, paddingBottom: 110 }}>
           
           {/* BIG CLOCK IN BUTTON */}
-          <View style={{ alignItems: "center", marginBottom: 32 }}>
+          <View style={{ alignItems: "center", marginBottom: 34 }}>
             <TouchableOpacity 
               activeOpacity={0.8}
               onPress={() => setIsCheckedIn(!isCheckedIn)}
-              style={{ width: 160, height: 160, borderRadius: 80, backgroundColor: isCheckedIn ? "rgba(16, 185, 129, 0.15)" : "rgba(59, 130, 246, 0.15)", alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: isCheckedIn ? "#10b981" : "#3b82f6", shadowColor: isCheckedIn ? "#10b981" : "#3b82f6", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 30, elevation: 10 }}
+              style={{ width: 196, height: 196, borderRadius: 98, backgroundColor: isCheckedIn ? "rgba(16, 185, 129, 0.18)" : "rgba(59, 130, 246, 0.18)", alignItems: "center", justifyContent: "center", borderWidth: 3, borderColor: isCheckedIn ? "#10b981" : "#3b82f6", shadowColor: isCheckedIn ? "#10b981" : "#3b82f6", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 30, elevation: 10 }}
             >
-              <Fingerprint size={56} color={isCheckedIn ? "#10b981" : "#3b82f6"} style={{ marginBottom: 8 }} />
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>
+              <Fingerprint size={68} color={isCheckedIn ? "#10b981" : "#3b82f6"} style={{ marginBottom: 10 }} />
+              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 22 }}>
                 {isCheckedIn ? "CLOCK OUT" : "CLOCK IN"}
               </Text>
-              <Text style={{ color: "rgba(255,255,255,0.6)", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 4 }}>
+              <Text style={{ color: "rgba(255,255,255,0.75)", fontFamily: "Brandon-Medium", fontSize: 14, marginTop: 4 }}>
                 09:01 AM
               </Text>
             </TouchableOpacity>
             
-            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 24, backgroundColor: "rgba(255,255,255,0.05)", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 }}>
-              <MapPin size={14} color="#94a3b8" />
-              <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 8 }}>HQ Geofence • Connected</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 24, backgroundColor: "rgba(255,255,255,0.08)", paddingHorizontal: 18, paddingVertical: 10, borderRadius: 999 }}>
+              <MapPin size={16} color="#94a3b8" />
+              <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Bold", fontSize: 15, marginLeft: 8 }}>HQ Geofence • Connected</Text>
             </View>
           </View>
 
           {/* NEAT CALENDAR LAYOUT */}
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>January 2026</Text>
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 24, marginBottom: 16 }}>January 2026</Text>
           <View style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 32, padding: 24, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", marginBottom: 32 }}>
             
             {/* Days of week */}
