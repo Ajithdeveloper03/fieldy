@@ -165,7 +165,16 @@ class AuthController extends Controller
         $designation = $user->employeeDetail?->designation ?? null;
         $employeeCode = $user->employeeDetail?->employee_code ?? null;
         $region = $user->employeeDetail?->assigned_region ?? null;
-        $industry = IndustryService::syncUserService($user, $request);
+        // The mobile app can retain a service selected for a previous account.
+        // During sign-in, the employee/company assignment is authoritative so
+        // a stale X-Service-Key cannot move a new employee into another service.
+        $industry = IndustryService::normalize(
+            $user->industry ?: $user->company?->industry ?: $request->header('X-Service-Key') ?: 'construction'
+        );
+        if (! $user->industry && \Illuminate\Schema\Schema::hasColumn('users', 'industry')) {
+            $user->industry = $industry;
+            $user->save();
+        }
 
         return response()->json([
             'status' => 'success',

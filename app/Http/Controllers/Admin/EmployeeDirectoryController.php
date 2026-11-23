@@ -4,16 +4,20 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
+use App\Models\Company;
 use App\Models\EmployeeDetail;
 use App\Models\FarmerProfile;
 use App\Models\FarmerVisit;
 use App\Models\LocationPoint;
 use App\Models\User;
+use App\Services\EmployeePerformanceService;
 use App\Services\Industry\IndustryCatalog;
 use App\Services\Industry\IndustryContext;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -46,7 +50,7 @@ class EmployeeDirectoryController extends Controller
             $query->whereHas('employeeDetail', fn ($ed) => $ed->where('assigned_region', 'like', "%{$region}%"));
         }
 
-        $employees = $query->orderBy('name')->get()->map(fn ($user) => [
+        $employees = $query->orderBy('id')->get()->map(fn ($user) => [
             'id' => $user->id,
             'name' => $user->name,
             'phone' => $user->phone,
@@ -62,7 +66,7 @@ class EmployeeDirectoryController extends Controller
         ]);
 
         // If no employees exist in DB for this service vertical, supply curated catalog workforce
-        if ($employees->isEmpty()) {
+        if ($employees->isEmpty() && ! $companyId) {
             $catalogStaff = IndustryCatalog::staff($industryKey);
             $employees = collect($catalogStaff)->map(fn ($s) => [
                 'id' => $s['id'],
@@ -97,7 +101,7 @@ class EmployeeDirectoryController extends Controller
         ]);
     }
 
-    public function show($id)
+    public function show($id, EmployeePerformanceService $performance)
     {
         $industryKey = IndustryContext::current();
 
@@ -160,7 +164,7 @@ class EmployeeDirectoryController extends Controller
                 'recentReviews' => [
                     ['rating' => 5, 'comment' => 'Very punctual and thorough with all procedures.', 'farmer_name' => 'Site Lead', 'date' => '2 hours ago'],
                 ],
-                'performanceHistory' => $this->dummyPerformanceHistory(),
+                'performanceHistory' => [],
             ]);
         }
 
@@ -264,7 +268,7 @@ class EmployeeDirectoryController extends Controller
             'visitsThisWeek' => $visitsThisWeek,
             'assignedFarmers' => $assignedFarmers,
             'recentReviews' => $recentReviews,
-            'performanceHistory' => $this->dummyPerformanceHistory(),
+            'performanceHistory' => $this->performanceHistory($user, $performance),
         ]);
     }
 
@@ -301,17 +305,28 @@ class EmployeeDirectoryController extends Controller
         if (IndustryContext::hasColumn('users')) {
             $userAttributes = IndustryContext::tag($userAttributes, 'users', $industryKey);
         }
-        $user = User::create($userAttributes);
+        DB::transaction(function () use ($userAttributes, $validated) {
+            $company = $userAttributes['company_id']
+                ? Company::whereKey($userAttributes['company_id'])->lockForUpdate()->firstOrFail()
+                : null;
+            $user = User::create($userAttributes);
+            $code = 'EMP-'.str_pad((string) $user->id, 4, '0', STR_PAD_LEFT);
 
-        $region = $validated['assigned_region'] ?? '';
-        $prefix = $region ? strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $region), 0, 3)) : 'FLD';
+            if ($company && filled($company->code)) {
+                do {
+                    $company->employee_sequence++;
+                    $code = $company->code.'-EMP-'.str_pad((string) $company->employee_sequence, 4, '0', STR_PAD_LEFT);
+                } while (EmployeeDetail::where('employee_code', $code)->exists());
+                $company->save();
+            }
 
-        EmployeeDetail::create([
-            'user_id' => $user->id,
-            'employee_code' => $prefix.'-EMP-'.str_pad($user->id, 4, '0', STR_PAD_LEFT),
-            'emergency_phone' => $validated['emergency_phone'] ?? null,
-            'assigned_region' => $validated['assigned_region'] ?? null,
-        ]);
+            EmployeeDetail::create([
+                'user_id' => $user->id,
+                'employee_code' => $code,
+                'emergency_phone' => $validated['emergency_phone'] ?? null,
+                'assigned_region' => $validated['assigned_region'] ?? null,
+            ]);
+        });
 
         $employeesUrl = ($request->is('fieldy/*') && ! str_ends_with(rtrim(url('/'), '/'), '/fieldy'))
             ? '/fieldy/admin/employees'
@@ -403,18 +418,18 @@ class EmployeeDirectoryController extends Controller
         return redirect()->back()->with('success', $validated['name'].' credentials and profile updated.');
     }
 
-    /**
-     * Dummy month-by-month performance history shown on the staff profile page.
-     */
-    private function dummyPerformanceHistory(): array
+    private function performanceHistory(User $employee, EmployeePerformanceService $performance): array
     {
-        return [
-            ['period' => 'Nov 2026', 'score' => 94, 'rating' => 4.9, 'visits' => 28, 'attendance' => '98%', 'note' => 'Concrete pour QA verified ahead of schedule.'],
-            ['period' => 'Oct 2026', 'score' => 91, 'rating' => 4.8, 'visits' => 26, 'attendance' => '97%', 'note' => 'Zero safety violations across all site inspections.'],
-            ['period' => 'Sep 2026', 'score' => 88, 'rating' => 4.7, 'visits' => 24, 'attendance' => '96%', 'note' => 'Rebar & slab inspections completed within SLA.'],
-            ['period' => 'Aug 2026', 'score' => 85, 'rating' => 4.6, 'visits' => 22, 'attendance' => '95%', 'note' => 'Onboarded 3 new project sites successfully.'],
-            ['period' => 'Jul 2026', 'score' => 82, 'rating' => 4.5, 'visits' => 20, 'attendance' => '94%', 'note' => 'Monsoon safety drills coordinated for all crews.'],
-            ['period' => 'Jun 2026', 'score' => 79, 'rating' => 4.4, 'visits' => 18, 'attendance' => '93%', 'note' => 'Foundation inspection backlog cleared.'],
-        ];
+        $now = CarbonImmutable::now();
+        $history = [];
+        for ($monthsAgo = 0; $monthsAgo < 6; $monthsAgo++) {
+            $start = $now->startOfMonth()->subMonths($monthsAgo);
+            $metrics = $performance->summarize($employee, $start, $monthsAgo ? $start->endOfMonth() : $now);
+            if ($metrics['score'] !== null) {
+                $history[] = ['period' => $start->format('M Y'), ...$metrics];
+            }
+        }
+
+        return $history;
     }
 }

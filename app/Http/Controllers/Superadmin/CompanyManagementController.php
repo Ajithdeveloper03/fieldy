@@ -55,6 +55,10 @@ class CompanyManagementController extends Controller
 
     public function store(Request $request)
     {
+        if (is_string($request->input('code'))) {
+            $request->merge(['code' => strtoupper(trim($request->input('code'))) ?: null]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'nullable|string|max:50|unique:companies,code',
@@ -110,10 +114,15 @@ class CompanyManagementController extends Controller
         }
 
         $code = ! empty($validated['code'])
-            ? strtoupper(trim($validated['code']))
+            ? $validated['code']
             : strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $validated['name']), 0, 6));
-        while (Company::where('code', $code)->exists()) {
-            $code = strtoupper(substr($code, 0, 4)) . random_int(10, 99);
+        if (empty($validated['code'])) {
+            $baseCode = $code ?: 'TENANT';
+            $code = $baseCode;
+            $suffix = 1;
+            while (Company::withTrashed()->where('code', $code)->exists()) {
+                $code = $baseCode.'-'.++$suffix;
+            }
         }
 
         $fullAddress = collect([
@@ -248,7 +257,6 @@ class CompanyManagementController extends Controller
                     'latitude' => $latestLocation->latitude,
                     'longitude' => $latestLocation->longitude,
                     'time' => \Carbon\Carbon::createFromTimestampMs($latestLocation->timestamp)->format('h:i A'),
-                    'battery' => $latestLocation->battery_level ?? 85,
                 ] : null,
                 'visitsToday' => $visitsToday,
                 'totalVisits' => $totalVisits,

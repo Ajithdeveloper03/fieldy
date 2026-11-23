@@ -5,7 +5,7 @@ import { Link, router, useForm, usePage } from '@inertiajs/react';
 import { 
     ArrowLeft, MapPin, Navigation, Clock, Smartphone, ShieldCheck, Activity, 
     Maximize, Minimize, Star, Users, Map, CheckCircle2, Sparkles, Phone, MessageSquare,
-    ArrowUpRight, Building2, Battery, Wifi, TrendingUp, KeyRound, X, Save
+    ArrowUpRight, Building2, Wifi, TrendingUp, KeyRound, X, Save
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import useIndustry from '../../../hooks/useIndustry';
@@ -377,7 +377,7 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                     </div>
                 </div>
 
-                {/* ══════════ PERFORMANCE HISTORY (DEMO) ══════════ */}
+                {/* ══════════ PERFORMANCE HISTORY ══════════ */}
                 <div className={`hp-bento-card !p-0 overflow-hidden ${isMapFullscreen ? 'hidden' : 'block'}`}>
                     <div className="p-4 border-b border-hp-border flex items-center justify-between bg-white">
                         <h3 className="hp-card-title text-sm flex items-center gap-2">
@@ -393,8 +393,8 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                                     <th>{t('Performance Score')}</th>
                                     <th>{t('Rating')}</th>
                                     <th>{t(vocab.visit.plural)}</th>
-                                    <th>{t('Attendance')}</th>
-                                    <th>{t('Remark')}</th>
+                                    <th>{t('Check-ins / Check-outs')}</th>
+                                    <th>{t('Tasks Completed')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -409,10 +409,10 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                                                 <span className="text-xs font-bold text-hp-dark tabular-nums">{row.score}</span>
                                             </div>
                                         </td>
-                                        <td><span className="hp-chip hp-chip-warning !h-5 !text-[11px]">★ {row.rating}</span></td>
-                                        <td className="text-xs font-bold text-hp-dark">{row.visits} {t('done')}</td>
-                                        <td className="text-xs text-hp-dark font-medium">{row.attendance}</td>
-                                        <td className="text-xs text-hp-muted">{row.note}</td>
+                                        <td><span className="hp-chip hp-chip-warning !h-5 !text-[11px]">{row.rating ?? '—'}</span></td>
+                                        <td className="text-xs font-bold text-hp-dark">{row.visits_done} {t('done')}</td>
+                                        <td className="text-xs text-hp-dark font-medium">{row.check_ins} / {row.check_outs}</td>
+                                        <td className="text-xs text-hp-muted">{row.tasks_done} / {row.tasks_total}</td>
                                     </tr>
                                 )) : (
                                     <tr><td colSpan="6" className="text-center py-10 text-hp-muted text-xs">{t('No performance history available.')}</td></tr>

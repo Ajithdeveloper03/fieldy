@@ -7,7 +7,6 @@ use App\Models\FarmerProfile;
 use App\Models\FarmerVisit;
 use App\Models\Task;
 use App\Models\User;
-use App\Services\Industry\IndustryCatalog;
 use App\Services\IndustryService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -180,6 +179,7 @@ class EmployeeController extends Controller
             'recommendations' => 'nullable|string',
             'before_photo' => 'nullable|string',
             'after_photo' => 'nullable|string',
+            'customer_otp' => 'nullable|string|max:12',
             'otp_verified' => 'nullable|boolean',
         ]);
 
@@ -187,8 +187,22 @@ class EmployeeController extends Controller
         $industry = IndustryService::syncUserService($user, $request);
         $task = null;
         if (! empty($validated['task_id']) && is_numeric($validated['task_id'])) {
-            $task = Task::find((int) $validated['task_id']);
+            $task = Task::whereKey((int) $validated['task_id'])->where(function ($query) use ($user) {
+                $query->where('assigned_to', $user->id);
+                if ($user->company_id) {
+                    $query->orWhere(function ($shared) use ($user) {
+                        $shared->whereNull('assigned_to')
+                            ->whereHas('createdBy', fn ($creator) => $creator->where('company_id', $user->company_id));
+                    });
+                }
+            })->firstOrFail();
+            if ($task->customer_otp && ! hash_equals((string) $task->customer_otp, (string) ($validated['customer_otp'] ?? ''))) {
+                return response()->json(['message' => 'The customer verification code is incorrect.'], 422);
+            }
         }
+        $otpVerified = $task && $task->customer_otp
+            ? hash_equals((string) $task->customer_otp, (string) ($validated['customer_otp'] ?? ''))
+            : false;
 
         $farmerId = $validated['farmer_id']
             ?? $validated['site_id']
@@ -217,7 +231,7 @@ class EmployeeController extends Controller
         if ($task) {
             $task->update([
                 'status' => 'done',
-                'otp_verified' => (bool) ($validated['otp_verified'] ?? true),
+                'otp_verified' => $otpVerified,
                 'before_photos' => ! empty($validated['before_photo']) ? [$validated['before_photo']] : $task->before_photos,
                 'after_photos' => ! empty($validated['after_photo']) ? [$validated['after_photo']] : $task->after_photos,
             ]);
@@ -259,11 +273,37 @@ class EmployeeController extends Controller
             ->whereDate('check_in_time', $today)
             ->count();
         $totalSites = User::where('role', 'farmer')
-            ->when($user->company_id, fn ($q, $cid) => $q->where('company_id', $cid))
+            ->when($user->company_id, fn ($q, $cid) => $q->where('company_id', $cid), fn ($q) => $q->whereRaw('1 = 0'))
+            ->where(function ($q) use ($user) {
+                $q->whereDoesntHave('farmerProfile')
+                    ->orWhereHas('farmerProfile', fn ($profile) => $profile
+                        ->where('assignment_mode', 'all')
+                        ->orWhere('assigned_to', $user->id));
+            })
             ->count();
-        $pendingTasks = Task::where('assigned_to', $user->id)
+        $pendingTasks = Task::where(function ($q) use ($user) {
+                $q->where('assigned_to', $user->id);
+                if ($user->company_id) {
+                    $q->orWhere(function ($allEmployees) use ($user) {
+                        $allEmployees->whereNull('assigned_to')
+                            ->whereHas('createdBy', fn ($creator) => $creator->where('company_id', $user->company_id));
+                    });
+                }
+            })
+            ->where(function ($q) use ($industry) {
+                $q->where('industry', $industry)->orWhereNull('industry');
+            })
             ->where('status', '!=', 'done')
             ->count();
+        $allTasksQuery = Task::where(function ($q) use ($user) {
+            $q->where('assigned_to', $user->id);
+            if ($user->company_id) {
+                $q->orWhere(function ($allEmployees) use ($user) {
+                    $allEmployees->whereNull('assigned_to')
+                        ->whereHas('createdBy', fn ($creator) => $creator->where('company_id', $user->company_id));
+                });
+            }
+        })->where(fn ($q) => $q->where('industry', $industry)->orWhereNull('industry'));
         $recentVisits = FarmerVisit::where('employee_id', $user->id)
             ->with(['farmer.farmerProfile'])
             ->orderBy('id', 'desc')
@@ -275,14 +315,14 @@ class EmployeeController extends Controller
                 return [
                     'id' => (string) $v->id,
                     'farmerId' => (string) ($farmer?->id ?? ''),
-                    'farmerName' => $farmer?->name ?? 'Assigned Site',
+                    'farmerName' => $farmer?->name,
                     'farmerPhone' => $farmer?->phone ?? '',
-                    'address' => $profile?->land_address ?? ($profile?->village ?? 'Chennai, Tamil Nadu'),
-                    'acres' => $profile?->land_size_acres ? "{$profile->land_size_acres} Units" : 'Standard Site',
-                    'date' => $v->check_in_time ? Carbon::parse($v->check_in_time)->format('M d, Y') : Carbon::today()->format('M d, Y'),
-                    'time' => $v->check_in_time ? Carbon::parse($v->check_in_time)->format('h:i A') : '10:00 AM',
+                    'address' => $profile?->land_address ?? $profile?->address,
+                    'acres' => $profile?->land_size_acres ? "{$profile->land_size_acres} Units" : null,
+                    'date' => $v->check_in_time ? Carbon::parse($v->check_in_time)->format('M d, Y') : null,
+                    'time' => $v->check_in_time ? Carbon::parse($v->check_in_time)->format('h:i A') : null,
                     'status' => $v->check_out_time ? 'completed' : ($v->check_in_time ? 'in_progress' : 'pending'),
-                    'remarks' => $v->farm_condition_notes ?? 'Field visit completed.',
+                    'remarks' => $v->farm_condition_notes,
                 ];
             });
         return response()->json([
@@ -293,15 +333,15 @@ class EmployeeController extends Controller
                     'name' => $user->name,
                     'phone' => $user->phone,
                     'email' => $user->email,
-                    'designation' => $user->employeeDetail?->designation ?? 'Field Executive',
-                    'employee_code' => $user->employeeDetail?->employee_code ?? 'EMP-'.str_pad($user->id, 3, '0', STR_PAD_LEFT),
-                    'region' => $user->employeeDetail?->assigned_region ?? 'Tamil Nadu',
+                    'designation' => $user->employeeDetail?->designation,
+                    'employee_code' => $user->employeeDetail?->employee_code,
+                    'region' => $user->employeeDetail?->assigned_region,
                     'company_id' => $user->company_id,
                     'company_name' => $user->company?->name,
                     'industry' => $industry,
                 ],
                 'attendance' => $attendance ? [
-                    'checked_in' => true,
+                    'checked_in' => ! is_null($attendance->check_in_timestamp),
                     'check_in_at' => $attendance->check_in_timestamp ? Carbon::parse($attendance->check_in_timestamp)->format('h:i A') : null,
                     'checked_out' => ! is_null($attendance->check_out_timestamp),
                     'latitude' => $attendance->check_in_latitude,
@@ -312,8 +352,100 @@ class EmployeeController extends Controller
                 'total_farmers' => $totalSites,
                 'pending_tasks' => $pendingTasks,
                 'pending_visits' => FarmerVisit::where('employee_id', $user->id)->whereNull('check_out_time')->count(),
+                'stats' => [
+                    'sites_count' => $totalSites,
+                    'tasks_count' => (clone $allTasksQuery)->whereIn('status', ['pending', 'in_progress'])->count(),
+                    'completed_tasks_count' => (clone $allTasksQuery)->where('status', 'done')->count(),
+                    'visits_count' => $visitsCount,
+                    'visits_today' => $visitsToday,
+                ],
                 'recent_visits' => $recentVisits,
             ],
+        ]);
+    }
+    public function performance(Request $request)
+    {
+        $user = $request->user()->load('company');
+        $industry = IndustryService::syncUserService($user, $request);
+        $tasks = Task::where(function ($q) use ($user) {
+            $q->where('assigned_to', $user->id);
+            if ($user->company_id) {
+                $q->orWhere(function ($shared) use ($user) {
+                    $shared->whereNull('assigned_to')
+                        ->whereHas('createdBy', fn ($creator) => $creator->where('company_id', $user->company_id));
+                });
+            }
+        })->where(fn ($q) => $q->where('industry', $industry)->orWhereNull('industry'));
+
+        $attendance = AttendanceLog::where('employee_id', $user->id)
+            ->whereBetween('date', [Carbon::now()->startOfMonth()->toDateString(), Carbon::today()->toDateString()])
+            ->orderByDesc('date')->get();
+        $visits = FarmerVisit::where('employee_id', $user->id)
+            ->whereDate('check_in_time', '>=', Carbon::now()->startOfMonth())
+            ->whereDate('check_in_time', '<=', Carbon::today())
+            ->count();
+        $completedVisits = FarmerVisit::where('employee_id', $user->id)
+            ->whereDate('check_in_time', '>=', Carbon::now()->startOfMonth())
+            ->whereDate('check_in_time', '<=', Carbon::today())
+            ->whereNotNull('check_out_time')->count();
+
+        $workdaysElapsed = 0;
+        for ($day = Carbon::now()->startOfMonth(); $day->lte(Carbon::today()); $day->addDay()) {
+            if ($day->isWeekday()) $workdaysElapsed++;
+        }
+        $attendanceDays = $attendance->whereNotNull('check_in_timestamp')->count();
+        $hours = $attendance->sum(function ($log) {
+            if ((float) ($log->total_hours ?? 0) > 0) return (float) $log->total_hours;
+            if ($log->check_in_timestamp && $log->check_out_timestamp) {
+                return round(Carbon::parse($log->check_in_timestamp)->diffInMinutes(Carbon::parse($log->check_out_timestamp)) / 60, 2);
+            }
+            return 0;
+        });
+        $taskCount = (clone $tasks)->whereIn('status', ['pending', 'in_progress', 'done'])->count();
+        $completedTaskCount = (clone $tasks)->where('status', 'done')->count();
+        $earnedPoints = (int) ((clone $tasks)->where('status', 'done')->sum('points_awarded') ?? 0);
+        $pendingTaskCount = (clone $tasks)->whereIn('status', ['pending', 'in_progress'])->count();
+        $recentTasks = (clone $tasks)->with('customer:id,name')->orderByDesc('updated_at')->limit(5)->get()
+            ->map(fn ($task) => [
+                'id' => (string) $task->id,
+                'title' => $task->title,
+                'site' => $task->customer?->name,
+                'status' => $task->status,
+                'points' => (int) ($task->points_awarded ?? 0),
+                'updated_at' => $task->updated_at?->toIso8601String(),
+            ]);
+
+        return response()->json([
+            'status' => 'success',
+            'period' => Carbon::now()->format('F Y'),
+            'employee' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'employee_code' => $user->employeeDetail?->employee_code,
+                'company_name' => $user->company?->name,
+            ],
+            'metrics' => [
+                'tasks_total' => $taskCount,
+                'tasks_completed' => $completedTaskCount,
+                'tasks_pending' => $pendingTaskCount,
+                'task_completion_rate' => $taskCount ? round($completedTaskCount * 100 / $taskCount, 1) : 0,
+                'points_earned' => $earnedPoints,
+                'attendance_days' => $attendanceDays,
+                'workdays_elapsed' => $workdaysElapsed,
+                'attendance_rate' => $workdaysElapsed ? round($attendanceDays * 100 / $workdaysElapsed, 1) : 0,
+                'punctual_days' => $attendance->where('is_late', false)->whereNotNull('check_in_timestamp')->count(),
+                'hours_worked' => round($hours, 2),
+                'visits_total' => $visits,
+                'visits_completed' => $completedVisits,
+            ],
+            'attendance' => $attendance->map(fn ($log) => [
+                'date' => $log->date?->toDateString(),
+                'check_in' => $log->check_in_timestamp?->format('h:i A'),
+                'check_out' => $log->check_out_timestamp?->format('h:i A'),
+                'hours' => (float) ($log->total_hours ?? 0),
+                'is_late' => (bool) ($log->is_late ?? false),
+            ])->values(),
+            'recent_tasks' => $recentTasks,
         ]);
     }
     public function tasks(Request $request)
@@ -341,25 +473,25 @@ class EmployeeController extends Controller
                 $profile = $site?->farmerProfile;
                 return [
                     'id' => (string) $t->id,
-                    'workOrderCode' => $t->work_order_code ?: 'WO-'.str_pad($t->id, 5, '0', STR_PAD_LEFT),
+                    'workOrderCode' => $t->work_order_code,
                     'title' => $t->title,
-                    'description' => $t->description ?: 'Complete assigned field verification and upload site report.',
+                    'description' => $t->description,
                     'industry' => $t->industry ?: $industry,
-                    'targetEntity' => $site?->name ?? 'Assigned Project Site',
-                    'facility' => $site?->name ?? 'Assigned Project Site',
+                    'targetEntity' => $site?->name,
+                    'facility' => $site?->name,
                     'farmerId' => $site?->id,
-                    'address' => $profile?->land_address ?? ($profile?->village ?? 'Chennai, Tamil Nadu'),
+                    'address' => $profile?->land_address ?? $profile?->address,
                     'latitude' => $profile?->land_latitude ? (float) $profile->land_latitude : null,
                     'longitude' => $profile?->land_longitude ? (float) $profile->land_longitude : null,
                     'priority' => ucfirst($t->priority ?: 'medium'),
                     'status' => $t->status === 'done' ? 'Completed' : ($t->status === 'in_progress' ? 'In Progress' : 'Pending'),
                     'rawStatus' => $t->status ?: 'pending',
-                    'due' => $t->due_date ? $t->due_date->format('M d, Y') : 'Today',
-                    'points' => $t->points_awarded ?: 35,
-                    'aiDiagnostic' => $t->ai_suggestions ?: 'Verify site checklist and record field report after checkout.',
+                    'due' => $t->due_date?->format('M d, Y'),
+                    'points' => (int) ($t->points_awarded ?? 0),
+                    'aiDiagnostic' => $t->ai_suggestions,
                     'checklist' => $t->checklist ?? [],
                     'safety_requirements' => $t->safety_requirements ?? [],
-                    'customer_otp' => $t->customer_otp ?: '4821',
+                    'customer_otp' => $t->customer_otp,
                 ];
             });
 
@@ -374,7 +506,16 @@ class EmployeeController extends Controller
         $validated = $request->validate([
             'status' => 'required|in:pending,in_progress,done,cancelled',
         ]);
-        $task = Task::findOrFail($id);
+        $user = $request->user();
+        $task = Task::whereKey($id)->where(function ($query) use ($user) {
+            $query->where('assigned_to', $user->id);
+            if ($user->company_id) {
+                $query->orWhere(function ($shared) use ($user) {
+                    $shared->whereNull('assigned_to')
+                        ->whereHas('createdBy', fn ($creator) => $creator->where('company_id', $user->company_id));
+                });
+            }
+        })->firstOrFail();
         $task->update(['status' => $validated['status']]);
 
         return response()->json(['status' => 'success', 'task' => $task]);
@@ -385,7 +526,13 @@ class EmployeeController extends Controller
         $industry = IndustryService::syncUserService($user, $request);
 
         $sites = User::where('role', 'farmer')
-            ->when($user->company_id, fn ($q, $cid) => $q->where('company_id', $cid))
+            ->when($user->company_id, fn ($q, $cid) => $q->where('company_id', $cid), fn ($q) => $q->whereRaw('1 = 0'))
+            ->where(function ($q) use ($user) {
+                $q->whereDoesntHave('farmerProfile')
+                    ->orWhereHas('farmerProfile', fn ($profile) => $profile
+                        ->where('assignment_mode', 'all')
+                        ->orWhere('assigned_to', $user->id));
+            })
             ->with('farmerProfile')
             ->orderByDesc('id')
             ->get()
@@ -396,35 +543,17 @@ class EmployeeController extends Controller
                     'site_contact_id' => (string) $site->id,
                     'name' => $site->name,
                     'phone' => $site->phone,
-                    'site_code' => $fp?->farmer_code ?? 'SITE-'.str_pad($site->id, 3, '0', STR_PAD_LEFT),
-                    'site_address' => $fp?->land_address ?? ($fp?->village ?? 'Chennai, Tamil Nadu'),
-                    'address' => $fp?->land_address ?? ($fp?->village ?? 'Chennai, Tamil Nadu'),
-                    'city' => $fp?->district ?? 'Chennai',
-                    'area' => $fp?->village ?? 'Project Zone',
+                    'site_code' => $fp?->farmer_code,
+                    'site_address' => $fp?->land_address ?? $fp?->address,
+                    'address' => $fp?->land_address ?? $fp?->address,
+                    'city' => $fp?->district,
+                    'area' => $fp?->village,
                     'type' => ucfirst($fp?->customer_category ?? $industry),
-                    'size' => $fp?->land_size_acres ? (string) $fp->land_size_acres : '1200',
-                    'latitude' => $fp?->land_latitude ? (float) $fp->land_latitude : 13.0827,
-                    'longitude' => $fp?->land_longitude ? (float) $fp->land_longitude : 80.2707,
+                    'size' => $fp?->land_size_acres ? (string) $fp->land_size_acres : null,
+                    'latitude' => $fp?->land_latitude ? (float) $fp->land_latitude : null,
+                    'longitude' => $fp?->land_longitude ? (float) $fp->land_longitude : null,
                 ];
             });
-
-        if ($sites->isEmpty()) {
-            $catalogSites = collect(IndustryCatalog::entities($industry))->map(fn ($e, $idx) => [
-                'id' => (string) ($e['id'] ?? ($idx + 1)),
-                'name' => $e['name'],
-                'phone' => $e['phone'] ?? '',
-                'site_code' => $e['code'] ?? 'SITE-00'.($idx + 1),
-                'site_address' => $e['address'] ?? 'Chennai, Tamil Nadu',
-                'address' => $e['address'] ?? 'Chennai, Tamil Nadu',
-                'city' => $e['city'] ?? 'Chennai',
-                'area' => $e['area'] ?? '',
-                'type' => $e['type'] ?? ucfirst($industry),
-                'size' => (string) ($e['size'] ?? '2500'),
-                'latitude' => $e['latitude'] ?? 13.0827,
-                'longitude' => $e['longitude'] ?? 80.2707,
-            ]);
-            return response()->json(['status' => 'success', 'industry' => $industry, 'sites' => $catalogSites]);
-        }
 
         return response()->json(['status' => 'success', 'industry' => $industry, 'sites' => $sites]);
     }
@@ -441,18 +570,18 @@ class EmployeeController extends Controller
                 return [
                     'id' => (string) $v->id,
                     'farmerId' => (string) ($farmer?->id ?? ''),
-                    'farmerName' => $farmer?->name ?? 'Farmer',
+                    'farmerName' => $farmer?->name,
                     'farmerPhone' => $farmer?->phone ?? '',
-                    'farmerCode' => $profile?->farmer_code ?? 'FAR-001',
-                    'address' => $profile?->land_address ?? ($profile?->village ?? 'Tamil Nadu'),
-                    'acres' => $profile?->land_size_acres ? "{$profile->land_size_acres} Acres" : '2.0 Acres',
-                    'cropType' => 'Vetiver',
+                    'farmerCode' => $profile?->farmer_code,
+                    'address' => $profile?->land_address ?? $profile?->address,
+                    'acres' => $profile?->land_size_acres ? "{$profile->land_size_acres} Acres" : null,
+                    'cropType' => $profile?->crop_types[0] ?? null,
                     'date' => $v->check_in_time ? Carbon::parse($v->check_in_time)->format('M d, Y') : Carbon::today()->format('M d, Y'),
                     'time' => $v->check_in_time ? Carbon::parse($v->check_in_time)->format('h:i A') : '10:00 AM',
                     'status' => $v->check_out_time ? 'completed' : ($v->check_in_time ? 'in_progress' : 'pending'),
-                    'visitFrequency' => 'Every 15 Days',
-                    'remarks' => $v->farm_condition_notes ?? 'Field inspection and crop monitoring.',
-                    'recommendations' => $v->recommendations ?? 'Maintain organic fertilizer schedule.',
+                    'visitFrequency' => null,
+                    'remarks' => $v->farm_condition_notes,
+                    'recommendations' => $v->recommendations,
                 ];
             });
 

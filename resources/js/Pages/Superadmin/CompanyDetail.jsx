@@ -6,7 +6,7 @@ import {
     Building2, Users, MapPin, Calendar, 
     ClipboardList, Wallet, ArrowLeft, ExternalLink, 
     Smartphone, CheckCircle2, AlertCircle, Clock, 
-    Battery, Navigation, ShieldCheck, FileText, ChevronRight,
+    Navigation, ShieldCheck, FileText, ChevronRight,
     Home
 } from 'lucide-react';
 
@@ -216,9 +216,6 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                                                         <div className="flex items-center justify-center gap-1.5 text-[10px] text-[var(--color-hp-gray-500)] mt-0.5">
                                                             <span>{emp.latestPing.time}</span>
                                                             <span>•</span>
-                                                            <span className="flex items-center gap-0.5 text-emerald-600 font-semibold">
-                                                                <Battery className="w-3 h-3" /> {emp.latestPing.battery}%
-                                                            </span>
                                                         </div>
                                                     </div>
                                                 ) : (

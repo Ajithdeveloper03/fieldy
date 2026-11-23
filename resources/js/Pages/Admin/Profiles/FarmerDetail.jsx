@@ -9,7 +9,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import useIndustry from '../../../hooks/useIndustry';
 
-export default function FarmerDetail({ farmer = {}, visits = [] }) {
+export default function FarmerDetail({ farmer = {}, visits = [], employees = [] }) {
     const { t } = useTranslation();
     const { vocab, industry } = useIndustry();
     const [showEditModal, setShowEditModal] = useState(false);
@@ -23,6 +23,8 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
         land_size_acres: farmer.land_acres || '',
         irrigation_type: farmer.area_unit || 'Sq.ft',
         phone: farmer.phone || '',
+        assignment_mode: farmer.assignment_mode || 'all',
+        assigned_to: farmer.assigned_to ? String(farmer.assigned_to) : '',
         approval_status: farmer.approval_status || 'approved',
         farmer_photo: null,
         aadhaar_image: null,
@@ -308,6 +310,34 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                                     <label className="block text-xs font-bold text-hp-dark mb-1">{t('Project Site Name / Title')} *</label>
                                     <input type="text" required className="hp-input" value={editForm.data.name} onChange={(e) => editForm.setData('name', e.target.value)} />
                                 </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-hp-dark mb-1">{t('Assign Project Site To')}</label>
+                                    <select
+                                        className="hp-input"
+                                        value={editForm.data.assignment_mode}
+                                        onChange={(e) => editForm.setData({ ...editForm.data, assignment_mode: e.target.value, assigned_to: '' })}
+                                    >
+                                        <option value="all">{t('All Employees')}</option>
+                                        <option value="individual">{t('One Employee')}</option>
+                                    </select>
+                                </div>
+                                {editForm.data.assignment_mode === 'individual' && (
+                                    <div>
+                                        <label className="block text-xs font-bold text-hp-dark mb-1">{t('Employee')}</label>
+                                        <select
+                                            required
+                                            className="hp-input"
+                                            value={editForm.data.assigned_to}
+                                            onChange={(e) => editForm.setData('assigned_to', e.target.value)}
+                                        >
+                                            <option value="">{t('Select Employee')}</option>
+                                            {employees.map((employee) => (
+                                                <option key={employee.id} value={employee.id}>{employee.name}</option>
+                                            ))}
+                                        </select>
+                                        {editForm.errors.assigned_to && <p className="text-hp-danger text-xs mt-1">{editForm.errors.assigned_to}</p>}
+                                    </div>
+                                )}
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-xs font-bold text-hp-dark mb-1">{t('Location / Site Area')}</label>
