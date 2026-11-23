@@ -138,7 +138,7 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                         type="text"
                                         value={search}
                                         onChange={e => setSearch(e.target.value)}
-                                        placeholder={t(`Search by ${vocab.entity.singular.toLowerCase()} name, code, or area...`)}
+                                        placeholder={t('Search by {{entity}} name, code, or area...', { entity: vocab.entity.singular.toLowerCase() })}
                                         className="w-full bg-transparent text-xs sm:text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
                                     />
                                     {search && (
@@ -284,8 +284,8 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                         <div className="hp-icon-tile !w-14 !h-14 mx-auto mb-3">
                             <ActiveIcon className="w-6 h-6 text-hp-muted" />
                         </div>
-                        <h2 className="text-base font-bold text-hp-dark mb-1">{t(`No ${vocab.entity.plural.toLowerCase()} found`)}</h2>
-                        <p className="text-sm text-hp-muted max-w-sm mx-auto">{t(`Try adjusting your search filters or onboard a new ${vocab.entity.singular.toLowerCase()}.`)}</p>
+                        <h2 className="text-base font-bold text-hp-dark mb-1">{t('No {{entities}} found', { entities: vocab.entity.plural.toLowerCase() })}</h2>
+                        <p className="text-sm text-hp-muted max-w-sm mx-auto">{t('Try adjusting your search filters or onboard a new {{entity}}.', { entity: vocab.entity.singular.toLowerCase() })}</p>
                     </div>
                 ) : viewMode === 'grid' ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -297,7 +297,7 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                 className="hp-bento-card group flex flex-col justify-between overflow-hidden"
                             >
                                 <div>
-                                    <div className="hp-card-visual h-40 mb-4 flex items-center justify-center relative bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900">
+                                    <div className="hp-card-visual h-40 mb-4 flex items-center justify-center relative bg-slate-800">
                                         {farm.farmer_photo ? (
                                             <img
                                                 src={farm.farmer_photo}
@@ -310,7 +310,7 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                                 <span className="text-[11px] font-semibold tracking-wider uppercase">{industry.shortName}</span>
                                             </div>
                                         )}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+                                        <div className="absolute inset-0 bg-black/35" />
                                         
                                         <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2">
                                             <span className={`${kycBadge(isVerified ? 'verified' : farm.kyc_status)} !text-[10px] shrink-0`}>
@@ -382,7 +382,7 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                                 <thead>
                                     <tr>
                                         <th>{t(vocab.entity.singular)}</th>
-                                        <th>{t(`${vocab.entity.type} / ${vocab.entity.size}`)}</th>
+                                        <th>{t('{{entityType}} / {{entitySize}}', { entityType: vocab.entity.type, entitySize: vocab.entity.size })}</th>
                                         <th>{t('Location')}</th>
                                         <th>{t('Status')}</th>
                                         <th className="text-right">{t('Actions')}</th>
@@ -464,7 +464,7 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs">
                         <div className="w-full max-w-lg hp-card shadow-xl overflow-hidden">
                             <div className="flex items-center justify-between px-6 py-4 border-b border-hp-border">
-                                <h3 className="text-base font-bold text-hp-dark">{t(`Edit ${vocab.entity.singular}`)}</h3>
+                                <h3 className="text-base font-bold text-hp-dark">{t('Edit {{entity}}', { entity: vocab.entity.singular })}</h3>
                                 <button type="button" onClick={() => setEditingSite(null)} className="p-1 text-hp-muted hover:text-hp-dark">
                                     <X className="w-5 h-5" />
                                 </button>

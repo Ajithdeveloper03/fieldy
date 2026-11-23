@@ -1,46 +1,48 @@
 import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import SuperadminLayout from './SuperadminLayout';
 import { getIndustryById } from '../../data/industriesConfig';
-import { 
-    Building2, Users, MapPin, Calendar, 
-    ClipboardList, Wallet, ArrowLeft, ExternalLink, 
-    Smartphone, CheckCircle2, AlertCircle, Clock, 
+import {
+    Building2, Users, MapPin, Calendar,
+    ClipboardList, Wallet, ArrowLeft, ExternalLink,
+    Smartphone, CheckCircle2, AlertCircle, Clock,
     Battery, Navigation, ShieldCheck, FileText, ChevronRight,
     Home
 } from 'lucide-react';
 
 export default function CompanyDetail({ company, stats = {}, employees = [], visits = [], farmers = [], tasks = [], payments = [] }) {
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('employees'); // 'employees' | 'visits' | 'customers' | 'tasks' | 'payments'
 
     const handleImpersonate = () => {
-        if (confirm(`Do you want to switch into the Client Admin Portal of "${company.name}"?`)) {
+        if (confirm(`${t('Do you want to switch into the Client Admin Portal of')} "${company.name}"?`)) {
             router.post(`/superadmin/companies/${company.id}/impersonate`);
         }
     };
 
     const tabs = [
-        { id: 'employees', label: 'Field Workforce (Mobile Apps)', count: employees.length, icon: Users },
-        { id: 'visits', label: 'Field Audits & Visits', count: visits.length, icon: MapPin },
-        { id: 'customers', label: 'Registered Clients / Facilities', count: farmers.length, icon: Building2 },
-        { id: 'tasks', label: 'Tasks & Work Orders', count: tasks.length, icon: ClipboardList },
-        { id: 'payments', label: 'Staff Payments & Payouts', count: payments.length, icon: Wallet },
+        { id: 'employees', label: t('Field Workforce (Mobile Apps)'), count: employees.length, icon: Users },
+        { id: 'visits', label: t('Field Audits & Visits'), count: visits.length, icon: MapPin },
+        { id: 'customers', label: t('Registered Clients / Facilities'), count: farmers.length, icon: Building2 },
+        { id: 'tasks', label: t('Tasks & Work Orders'), count: tasks.length, icon: ClipboardList },
+        { id: 'payments', label: t('Staff Payments & Payouts'), count: payments.length, icon: Wallet },
     ];
 
     return (
         <SuperadminLayout>
-            <Head title={`${company.name} - Company Intelligence - Fieldy`} />
+            <Head title={`${company.name} - ${t('Company Intelligence')} - Fieldy`} />
 
             <div className="space-y-6">
                 {/* Breadcrumbs */}
                 <div className="flex items-center gap-2 text-xs text-[var(--color-hp-gray-600)]">
                     <Link href="/superadmin/dashboard" className="hover:text-[var(--color-hp-primary)] flex items-center gap-1 transition-colors">
                         <Home className="w-3.5 h-3.5" />
-                        <span>Superadmin</span>
+                        <span>{t('Superadmin')}</span>
                     </Link>
                     <ChevronRight className="w-3.5 h-3.5 text-[var(--color-hp-gray-400)]" />
                     <Link href="/superadmin/companies" className="hover:text-[var(--color-hp-primary)] transition-colors">
-                        Companies
+                        {t('Companies')}
                     </Link>
                     <ChevronRight className="w-3.5 h-3.5 text-[var(--color-hp-gray-400)]" />
                     <span className="font-semibold text-[var(--color-hp-dark)]">{company.name}</span>
@@ -58,14 +60,14 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                                     {company.name}
                                 </h1>
                                 <span className="font-mono text-xs px-2 py-0.5 rounded bg-[var(--color-hp-gray-100)] text-[var(--color-hp-gray-700)]">
-                                    {company.code || 'NO-CODE'}
+                                    {company.code || t('NO-CODE')}
                                 </span>
                                 <span className={`hp-chip ${company.status === 'active' ? 'hp-chip-success' : 'hp-chip-danger'}`}>
-                                    {company.status}
+                                    {t(company.status)}
                                 </span>
                             </div>
                             <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--color-hp-gray-600)] mt-1.5">
-                                <span>{getIndustryById(company.industry).name}</span>
+                                <span>{t(getIndustryById(company.industry).name)}</span>
                                 <span>•</span>
                                 <span>{company.email}</span>
                                 {company.phone && (
@@ -75,7 +77,7 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                                     </>
                                 )}
                                 <span>•</span>
-                                <span className="text-[var(--color-hp-primary)] font-semibold uppercase">{company.plan} Tier</span>
+                                <span className="text-[var(--color-hp-primary)] font-semibold uppercase">{t(company.plan)} {t('Tier')}</span>
                             </div>
                         </div>
                     </div>
@@ -86,7 +88,7 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                             className="hp-btn hp-btn-primary inline-flex items-center gap-2"
                         >
                             <ExternalLink className="w-4 h-4" />
-                            <span>Launch Client Admin View</span>
+                            <span>{t('Launch Client Admin View')}</span>
                         </button>
                     </div>
                 </div>
@@ -94,41 +96,41 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                 {/* Quick Metrics Cards */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                     <div className="hp-card p-3.5">
-                        <span className="text-[10px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider">Field Agents</span>
+                        <span className="text-[10px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider">{t('Field Agents')}</span>
                         <div className="mt-1 text-2xl font-bold text-[var(--color-hp-dark)]">{stats.totalEmployees ?? 0}</div>
-                        <span className="text-[11px] text-[var(--color-hp-gray-500)]">Limit: {company.max_employees}</span>
+                        <span className="text-[11px] text-[var(--color-hp-gray-500)]">{t('Limit')}: {company.max_employees}</span>
                     </div>
                     <div className="hp-card p-3.5">
-                        <span className="text-[10px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider">Live GPS</span>
+                        <span className="text-[10px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider">{t('Live GPS')}</span>
                         <div className="mt-1 text-2xl font-bold text-emerald-600">{stats.activeTrackingNow ?? 0}</div>
-                        <span className="text-[11px] text-[var(--color-hp-gray-500)]">Active tracking</span>
+                        <span className="text-[11px] text-[var(--color-hp-gray-500)]">{t('Active tracking')}</span>
                     </div>
                     <div className="hp-card p-3.5">
-                        <span className="text-[10px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider">Attendance</span>
+                        <span className="text-[10px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider">{t('Attendance')}</span>
                         <div className="mt-1 text-2xl font-bold text-[var(--color-hp-primary)]">{stats.checkedInToday ?? 0}</div>
-                        <span className="text-[11px] text-[var(--color-hp-gray-500)]">Checked in today</span>
+                        <span className="text-[11px] text-[var(--color-hp-gray-500)]">{t('Checked in today')}</span>
                     </div>
                     <div className="hp-card p-3.5">
-                        <span className="text-[10px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider">Field Audits</span>
+                        <span className="text-[10px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider">{t('Field Audits')}</span>
                         <div className="mt-1 text-2xl font-bold text-amber-600">{stats.totalVisits ?? 0}</div>
-                        <span className="text-[11px] text-[var(--color-hp-gray-500)]">Visits completed</span>
+                        <span className="text-[11px] text-[var(--color-hp-gray-500)]">{t('Visits completed')}</span>
                     </div>
                     <div className="hp-card p-3.5">
-                        <span className="text-[10px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider">Accounts</span>
+                        <span className="text-[10px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider">{t('Accounts')}</span>
                         <div className="mt-1 text-2xl font-bold text-sky-600">{stats.totalCustomers ?? 0}</div>
-                        <span className="text-[11px] text-[var(--color-hp-gray-500)]">Facilities registered</span>
+                        <span className="text-[11px] text-[var(--color-hp-gray-500)]">{t('Facilities registered')}</span>
                     </div>
                     <div className="hp-card p-3.5">
-                        <span className="text-[10px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider">Disbursements</span>
+                        <span className="text-[10px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider">{t('Disbursements')}</span>
                         <div className="mt-1 text-2xl font-bold text-[var(--color-hp-dark)]">₹{Math.round(stats.totalPayouts || 0).toLocaleString()}</div>
-                        <span className="text-[11px] text-[var(--color-hp-gray-500)]">Ledger total</span>
+                        <span className="text-[11px] text-[var(--color-hp-gray-500)]">{t('Ledger total')}</span>
                     </div>
                 </div>
 
                 {/* Main Content with Tabs */}
                 <div className="hp-card overflow-hidden">
                     {/* Navigation Tabs */}
-                    <div className="flex items-center gap-1 border-b border-[var(--color-hp-border)] px-4 bg-white overflow-x-auto">
+                    <div className="flex items-center gap-1 border-b border-[var(--color-hp-border)] px-4 overflow-x-auto">
                         {tabs.map((tab) => {
                             const Icon = tab.icon;
                             const isActive = activeTab === tab.id;
@@ -160,12 +162,12 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                             <table className="hp-table">
                                 <thead>
                                     <tr>
-                                        <th>Field Officer</th>
-                                        <th>Designation & Region</th>
-                                        <th className="text-center">Shift Attendance</th>
-                                        <th className="text-center">Live GPS Stream</th>
-                                        <th className="text-center">Coordinates</th>
-                                        <th className="text-center">Visits (Today / Lifetime)</th>
+                                        <th>{t('Field Officer')}</th>
+                                        <th>{t('Designation & Region')}</th>
+                                        <th className="text-center">{t('Shift Attendance')}</th>
+                                        <th className="text-center">{t('Live GPS Stream')}</th>
+                                        <th className="text-center">{t('Coordinates')}</th>
+                                        <th className="text-center">{t('Visits (Today / Lifetime)')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -183,28 +185,28 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                                                 </div>
                                             </td>
                                             <td>
-                                                <p className="font-medium text-xs text-[var(--color-hp-dark)] capitalize">{(emp.designation || '').replace('_', ' ')}</p>
+                                                <p className="font-medium text-xs text-[var(--color-hp-dark)] capitalize">{t((emp.designation || '').replace('_', ' '))}</p>
                                                 <p className="text-[11px] text-[var(--color-hp-gray-500)]">{emp.region}</p>
                                             </td>
                                             <td className="text-center">
                                                 {emp.hasCheckedIn ? (
                                                     <div>
                                                         <span className="hp-chip hp-chip-success inline-flex items-center gap-1">
-                                                            <CheckCircle2 className="w-3 h-3" /> Checked In
+                                                            <CheckCircle2 className="w-3 h-3" /> {t('Checked In')}
                                                         </span>
                                                         <p className="text-[11px] text-[var(--color-hp-gray-500)] mt-0.5">{emp.checkInTime} {emp.checkOutTime ? `— ${emp.checkOutTime}` : ''}</p>
                                                     </div>
                                                 ) : (
-                                                    <span className="text-xs text-[var(--color-hp-gray-400)]">Absent / Not Checked In</span>
+                                                    <span className="text-xs text-[var(--color-hp-gray-400)]">{t('Absent / Not Checked In')}</span>
                                                 )}
                                             </td>
                                             <td className="text-center">
                                                 {emp.isTrackingActive ? (
                                                     <span className="hp-chip hp-chip-success inline-flex items-center gap-1 font-semibold">
-                                                        <Navigation className="w-3 h-3" /> Active Route
+                                                        <Navigation className="w-3 h-3" /> {t('Active Route')}
                                                     </span>
                                                 ) : (
-                                                    <span className="hp-chip hp-chip-gray">Idle / Offline</span>
+                                                    <span className="hp-chip hp-chip-gray">{t('Idle / Offline')}</span>
                                                 )}
                                             </td>
                                             <td className="text-center text-xs">
@@ -222,14 +224,14 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <span className="text-[var(--color-hp-gray-400)] text-xs">No pings today</span>
+                                                    <span className="text-[var(--color-hp-gray-400)] text-xs">{t('No pings today')}</span>
                                                 )}
                                             </td>
                                             <td className="text-center">
                                                 <span className="font-bold text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                                                    {emp.visitsToday} today
+                                                    {emp.visitsToday} {t('today')}
                                                 </span>
-                                                <p className="text-[11px] text-[var(--color-hp-gray-500)] mt-0.5">{emp.totalVisits} lifetime</p>
+                                                <p className="text-[11px] text-[var(--color-hp-gray-500)] mt-0.5">{emp.totalVisits} {t('lifetime')}</p>
                                             </td>
                                         </tr>
                                     ))}
@@ -244,18 +246,18 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                             <table className="hp-table">
                                 <thead>
                                     <tr>
-                                        <th>Visit Time</th>
-                                        <th>Field Agent</th>
-                                        <th>Facility / Customer</th>
-                                        <th>GPS Coordinates</th>
-                                        <th>Audit Notes & Recommendations</th>
+                                        <th>{t('Visit Time')}</th>
+                                        <th>{t('Field Agent')}</th>
+                                        <th>{t('Facility / Customer')}</th>
+                                        <th>{t('GPS Coordinates')}</th>
+                                        <th>{t('Audit Notes & Recommendations')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {visits.length === 0 ? (
                                         <tr>
                                             <td colSpan="5" className="py-12 text-center text-[var(--color-hp-gray-500)] text-xs">
-                                                No field visits recorded yet for this company.
+                                                {t('No field visits recorded yet for this company.')}
                                             </td>
                                         </tr>
                                     ) : (
@@ -264,7 +266,7 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                                                 <td>
                                                     <p className="font-semibold text-xs text-[var(--color-hp-dark)]">{v.check_in_time}</p>
                                                     {v.check_out_time && (
-                                                        <p className="text-[11px] text-[var(--color-hp-gray-500)]">Out: {v.check_out_time}</p>
+                                                        <p className="text-[11px] text-[var(--color-hp-gray-500)]">{t('Out')}: {v.check_out_time}</p>
                                                     )}
                                                 </td>
                                                 <td className="font-medium text-xs text-[var(--color-hp-dark)]">
@@ -276,10 +278,10 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                                                 <td className="text-xs font-mono text-[var(--color-hp-gray-600)]">
                                                     {v.check_in_lat && v.check_in_lng ? (
                                                         <span>{Number(v.check_in_lat).toFixed(4)}, {Number(v.check_in_lng).toFixed(4)}</span>
-                                                    ) : 'N/A'}
+                                                    ) : t('N/A')}
                                                 </td>
                                                 <td className="text-xs text-[var(--color-hp-gray-700)] max-w-md">
-                                                    <p className="line-clamp-2">{v.notes || 'No remarks recorded'}</p>
+                                                    <p className="line-clamp-2">{v.notes || t('No remarks recorded')}</p>
                                                     {v.recommendations && (
                                                         <p className="text-[11px] text-amber-700 mt-1 line-clamp-1">💡 {v.recommendations}</p>
                                                     )}
@@ -298,19 +300,19 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                             <table className="hp-table">
                                 <thead>
                                     <tr>
-                                        <th>Client / Facility</th>
-                                        <th>Phone</th>
-                                        <th>Location</th>
-                                        <th className="text-center">Facility Size</th>
-                                        <th className="text-center">KYC Status</th>
-                                        <th className="text-center">Status</th>
+                                        <th>{t('Client / Facility')}</th>
+                                        <th>{t('Phone')}</th>
+                                        <th>{t('Location')}</th>
+                                        <th className="text-center">{t('Facility Size')}</th>
+                                        <th className="text-center">{t('KYC Status')}</th>
+                                        <th className="text-center">{t('Status')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {farmers.length === 0 ? (
                                         <tr>
                                             <td colSpan="6" className="py-12 text-center text-[var(--color-hp-gray-500)] text-xs">
-                                                No clients registered under this company yet.
+                                                {t('No clients registered under this company yet.')}
                                             </td>
                                         </tr>
                                     ) : (
@@ -325,16 +327,16 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                                                     {f.village}, {f.district}
                                                 </td>
                                                 <td className="text-center font-bold text-xs text-[var(--color-hp-dark)]">
-                                                    {f.acres} Acres
+                                                    {f.acres} {t('Acres')}
                                                 </td>
                                                 <td className="text-center">
                                                     <span className={`hp-chip ${f.kyc === 'verified' ? 'hp-chip-success' : 'hp-chip-warning'}`}>
-                                                        {f.kyc}
+                                                        {t(f.kyc)}
                                                     </span>
                                                 </td>
                                                 <td className="text-center">
                                                     <span className={`hp-chip ${f.status === 'active' ? 'hp-chip-success' : 'hp-chip-gray'}`}>
-                                                        {f.status}
+                                                        {t(f.status)}
                                                     </span>
                                                 </td>
                                             </tr>
@@ -351,55 +353,55 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                             <table className="hp-table">
                                 <thead>
                                     <tr>
-                                        <th>Code & Task</th>
-                                        <th>Assigned Agent</th>
-                                        <th>Target Facility</th>
-                                        <th className="text-center">Due Date</th>
-                                        <th className="text-center">Priority</th>
-                                        <th className="text-center">Status</th>
+                                        <th>{t('Code & Task')}</th>
+                                        <th>{t('Assigned Agent')}</th>
+                                        <th>{t('Target Facility')}</th>
+                                        <th className="text-center">{t('Due Date')}</th>
+                                        <th className="text-center">{t('Priority')}</th>
+                                        <th className="text-center">{t('Status')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {tasks.length === 0 ? (
                                         <tr>
                                             <td colSpan="6" className="py-12 text-center text-[var(--color-hp-gray-500)] text-xs">
-                                                No tasks assigned for this company yet.
+                                                {t('No tasks assigned for this company yet.')}
                                             </td>
                                         </tr>
                                     ) : (
-                                        tasks.map((t) => (
-                                            <tr key={t.id}>
+                                        tasks.map((task) => (
+                                            <tr key={task.id}>
                                                 <td>
                                                     <span className="text-[10px] font-mono font-bold text-[var(--color-hp-primary)] uppercase bg-[var(--color-hp-primary-light)] px-1.5 py-0.5 rounded">
-                                                        {t.work_order_code}
+                                                        {task.work_order_code}
                                                     </span>
-                                                    <p className="font-semibold text-xs text-[var(--color-hp-dark)] mt-0.5">{t.title}</p>
+                                                    <p className="font-semibold text-xs text-[var(--color-hp-dark)] mt-0.5">{task.title}</p>
                                                 </td>
                                                 <td className="font-medium text-xs text-[var(--color-hp-dark)]">
-                                                    {t.assigned_to}
+                                                    {task.assigned_to}
                                                 </td>
                                                 <td className="text-xs text-[var(--color-hp-gray-600)]">
-                                                    {t.customer}
+                                                    {task.customer}
                                                 </td>
                                                 <td className="text-center text-xs text-[var(--color-hp-gray-600)]">
-                                                    {t.due_date}
+                                                    {task.due_date}
                                                 </td>
                                                 <td className="text-center">
                                                     <span className={`hp-chip ${
-                                                        t.priority === 'urgent' ? 'hp-chip-danger' :
-                                                        t.priority === 'high' ? 'hp-chip-warning' :
+                                                        task.priority === 'urgent' ? 'hp-chip-danger' :
+                                                        task.priority === 'high' ? 'hp-chip-warning' :
                                                         'hp-chip-gray'
                                                     }`}>
-                                                        {t.priority}
+                                                        {t(task.priority)}
                                                     </span>
                                                 </td>
                                                 <td className="text-center">
                                                     <span className={`hp-chip ${
-                                                        t.status === 'done' || t.status === 'completed'
+                                                        task.status === 'done' || task.status === 'completed'
                                                             ? 'hp-chip-success'
                                                             : 'hp-chip-warning'
                                                     }`}>
-                                                        {t.status.replace('_', ' ')}
+                                                        {t((task.status || '').replace('_', ' '))}
                                                     </span>
                                                 </td>
                                             </tr>
@@ -416,19 +418,19 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                             <table className="hp-table">
                                 <thead>
                                     <tr>
-                                        <th>Field Agent</th>
-                                        <th>Amount</th>
-                                        <th>Payment Type</th>
-                                        <th>Month / Cycle</th>
-                                        <th className="text-center">Disbursement Date</th>
-                                        <th className="text-center">Status</th>
+                                        <th>{t('Field Agent')}</th>
+                                        <th>{t('Amount')}</th>
+                                        <th>{t('Payment Type')}</th>
+                                        <th>{t('Month / Cycle')}</th>
+                                        <th className="text-center">{t('Disbursement Date')}</th>
+                                        <th className="text-center">{t('Status')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {payments.length === 0 ? (
                                         <tr>
                                             <td colSpan="6" className="py-12 text-center text-[var(--color-hp-gray-500)] text-xs">
-                                                No payment records logged for this company yet.
+                                                {t('No payment records logged for this company yet.')}
                                             </td>
                                         </tr>
                                     ) : (
@@ -441,17 +443,17 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                                                     ₹{Number(p.amount).toLocaleString()}
                                                 </td>
                                                 <td className="text-xs capitalize text-[var(--color-hp-gray-700)]">
-                                                    {p.payment_type}
+                                                    {t(p.payment_type)}
                                                 </td>
                                                 <td className="text-xs text-[var(--color-hp-gray-600)]">
                                                     {p.month_year}
                                                 </td>
                                                 <td className="text-center text-xs text-[var(--color-hp-gray-600)]">
-                                                    {p.payment_date || 'Pending'}
+                                                    {p.payment_date || t('Pending')}
                                                 </td>
                                                 <td className="text-center">
                                                     <span className={`hp-chip ${p.status === 'paid' ? 'hp-chip-success' : 'hp-chip-warning'}`}>
-                                                        {p.status}
+                                                        {t(p.status)}
                                                     </span>
                                                 </td>
                                             </tr>

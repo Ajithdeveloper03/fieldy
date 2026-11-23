@@ -114,7 +114,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                             <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
                                 {isConstruction
                                     ? t('Track structural inspections, concrete tests, safety audits, and site engineer visits.')
-                                    : t(`Track verified ${vocab.visit.plural.toLowerCase()}, check-in timestamps, location arrivals, and ${vocab.staff.singular.toLowerCase()} routes.`)}
+                                    : t('Track verified {{visits}}, check-in timestamps, location arrivals, and {{staff}} routes.', { visits: vocab.visit.plural.toLowerCase(), staff: vocab.staff.singular.toLowerCase() })}
                             </p>
 
                             {/* Search Bar */}
@@ -128,7 +128,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                         type="text"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder={t(`Search by ${vocab.entity.singular.toLowerCase()}, ${vocab.staff.singular.toLowerCase()} name, or notes...`)}
+                                        placeholder={t('Search by {{entity}}, {{staff}} name, or notes...', { entity: vocab.entity.singular.toLowerCase(), staff: vocab.staff.singular.toLowerCase() })}
                                         className="w-full bg-transparent text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
                                     />
                                     {searchQuery && (
@@ -184,7 +184,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t(`Total ${vocab.visit.plural}`)}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total {{visits}}', { visits: vocab.visit.plural })}</span>
                             <span className="hp-chip hp-chip-primary !h-5 !text-[11px]">{t(dateRange === 'all' ? 'All Time' : `${dateRange}d`)}</span>
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{totalVisits}</div>
@@ -213,7 +213,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
 
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t(`Active ${vocab.staff.plural}`)}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Active {{staffPlural}}', { staffPlural: vocab.staff.plural })}</span>
                             <span className="w-2 h-2 rounded-full bg-hp-success animate-ping"></span>
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{employees.length || 8}</div>
@@ -266,7 +266,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                 <div className="hp-icon-tile !w-14 !h-14 mx-auto mb-3">
                                     <FileText className="w-6 h-6 text-hp-muted" />
                                 </div>
-                                <h3 className="text-base font-bold text-hp-dark">{t(`No ${vocab.visit.plural.toLowerCase()} found`)}</h3>
+                                <h3 className="text-base font-bold text-hp-dark">{t('No {{visits}} found', { visits: vocab.visit.plural.toLowerCase() })}</h3>
                                 <p className="text-xs text-hp-muted mt-1 max-w-sm mx-auto">
                                     {t('Try adjusting your search terms or expanding the cycle date range.')}
                                 </p>
@@ -286,7 +286,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
                                                     onError={(e) => { e.target.style.display = 'none'; }}
                                                 />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+                                                <div className="absolute inset-0 bg-black/35" />
                                                 
                                                 <div className="absolute top-3 left-3 flex items-center gap-1.5">
                                                     <span className="hp-chip hp-chip-success !bg-white/90 !text-hp-success backdrop-blur-sm">
@@ -333,7 +333,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                                 href={`/admin/visits/${visit.id}?industry=${industry.id}`}
                                                 className="hp-btn hp-btn-outline w-full !rounded-xl !h-10 text-sm font-semibold"
                                             >
-                                                <span>{t(`View ${vocab.visit.singular} Report`)}</span>
+                                                <span>{t('View {{visit}} Report', { visit: vocab.visit.singular })}</span>
                                                 <ArrowUpRight className="w-4 h-4 ml-1" />
                                             </Link>
                                         </div>
@@ -412,8 +412,8 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                         <div className="lg:col-span-2 hp-bento-card">
                             <div className="flex items-center justify-between mb-4">
                                 <div>
-                                    <h3 className="hp-card-title">{t(`Weekly ${vocab.visit.plural} Volume`)}</h3>
-                                                <p className="text-xs text-hp-muted mt-0.5">{t(`Daily completed ${vocab.visit.plural.toLowerCase()} and logs`)}</p>
+                                    <h3 className="hp-card-title">{t('Weekly {{visits}} Volume', { visits: vocab.visit.plural })}</h3>
+                                                <p className="text-xs text-hp-muted mt-0.5">{t('Daily completed {{visits}} and logs', { visits: vocab.visit.plural.toLowerCase() })}</p>
                                 </div>
                                 <span className="hp-chip hp-chip-primary">
                                     <TrendingUp className="w-3 h-3 mr-1" /> +18% {t('Velocity')}
@@ -443,7 +443,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
 
                         <div className="hp-bento-card">
                             <h3 className="hp-card-title mb-1">{t('Activity Focus Breakdown')}</h3>
-                            <p className="text-xs text-hp-muted mb-4">{t(`Allocation across ${industry.shortName} workflows`)}</p>
+                            <p className="text-xs text-hp-muted mb-4">{t('Allocation across {{industry}} workflows', { industry: industry.shortName })}</p>
 
                             <div className="space-y-4">
                                 {analytics.purposes.map((p, idx) => (
@@ -461,7 +461,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                         </div>
 
                         <div className="lg:col-span-3 hp-bento-card">
-                            <h3 className="hp-card-title mb-4">{t(`Top Performing ${vocab.staff.plural}`)}</h3>
+                            <h3 className="hp-card-title mb-4">{t('Top Performing {{staffPlural}}', { staffPlural: vocab.staff.plural })}</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {analytics.topOfficers.map((off, idx) => (
                                     <div key={idx} className="p-4 rounded-xl bg-hp-hover/60 border border-hp-border flex items-center justify-between">

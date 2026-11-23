@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { AlertCircle, CheckCircle, Info, TriangleAlert, X } from 'lucide-react';
+import i18n from '../i18n';
 
 const AlertContext = createContext(null);
 
@@ -28,8 +29,8 @@ export default function AlertSystem({ children }) {
                             <AlertCircle className="h-10 w-10 text-white animate-pulse" />
                         </div>
                         <div className="ml-3 flex-1">
-                            <p className="text-sm font-bold uppercase tracking-wider">Critical Emergency</p>
-                            <p className="mt-1 text-sm">{message}</p>
+                            <p className="text-sm font-bold uppercase tracking-wider">{i18n.t('Critical Emergency')}</p>
+                            <p className="mt-1 text-sm">{i18n.t(message)}</p>
                         </div>
                     </div>
                 </div>
@@ -37,7 +38,7 @@ export default function AlertSystem({ children }) {
                     <button
                         onClick={() => toast.dismiss(t.id)}
                         className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-white hover:bg-white/10 focus:outline-none transition-colors"
-                        title="Dismiss Alert"
+                        title={i18n.t('Dismiss Alert')}
                     >
                         <X className="h-5 w-5" />
                     </button>

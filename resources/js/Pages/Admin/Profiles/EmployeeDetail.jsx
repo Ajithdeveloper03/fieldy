@@ -103,11 +103,11 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                     <h2 className="hp-card-title text-sm flex items-center gap-2">
                         <Activity className="w-4 h-4 text-hp-primary" /> {t('Live Route & Telemetry')}
                     </h2>
-                    <p className="text-xs text-hp-muted mt-0.5">Continuous GPS tracking & path history</p>
+                    <p className="text-xs text-hp-muted mt-0.5">{t('Continuous GPS tracking & path history')}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <span className="hp-chip hp-chip-success hp-chip-dot">
-                        Tracking Active
+                        {t('Tracking Active')}
                     </span>
                     <button 
                         onClick={(e) => {
@@ -150,13 +150,13 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                         />
                     </MapContainer>
                 ) : (
-                    <div className="text-hp-muted font-bold text-sm">No GPS Location Available</div>
+                    <div className="text-hp-muted font-bold text-sm">{t('No GPS Location Available')}</div>
                 )}
                 
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
                     <div className="bg-white/95 backdrop-blur px-3.5 py-1.5 rounded-full shadow-[var(--shadow-hp-md)] border border-hp-border text-center text-xs flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-hp-primary animate-ping"></span>
-                        <span className="text-hp-muted font-medium">Telemetry ping: </span>
+                        <span className="text-hp-muted font-medium">{t('Telemetry ping')}: </span>
                         <strong className="text-hp-dark">{liveLocation.last_seen}</strong>
                     </div>
                 </div>
@@ -192,7 +192,7 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                                     <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">{employee.name}</h1>
                                     <span className="hp-chip hp-chip-gray font-mono">{employee.employee_code || 'ADV-N/A'}</span>
                                     <span className={`hp-chip ${employee.status === 'active' ? 'hp-chip-success hp-chip-dot' : 'hp-chip-gray'}`}>
-                                        {employee.status === 'active' ? 'On Site Duty' : (employee.status || 'Active')}
+                                        {employee.status === 'active' ? t('On Site Duty') : t(employee.status || 'Active')}
                                     </span>
                                 </div>
                                 <p className="text-sm text-hp-muted flex items-center gap-1.5">
@@ -233,14 +233,14 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                 {/* ══════════ HOSTINGER BENTO METRIC CARDS ══════════ */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t(`${vocab.visit.plural} Completed`)}</span>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('{{visits}} Completed', { visits: vocab.visit.plural })}</span>
                         <p className="font-bold text-2xl text-hp-dark">{visitsThisWeek.length}</p>
-                        <p className="text-xs text-hp-muted mt-1">{t(`Weekly verified ${vocab.visit.plural.toLowerCase()}`)}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Weekly verified {{visits}}', { visits: vocab.visit.plural.toLowerCase() })}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
                         <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Duty Attendance')}</span>
-                        <p className="font-bold text-2xl text-hp-success">{attendance.filter(a => a.status === 'present' || a.status === 'overtime').length} <span className="text-xs text-hp-muted font-normal">days</span></p>
+                        <p className="font-bold text-2xl text-hp-success">{attendance.filter(a => a.status === 'present' || a.status === 'overtime').length} <span className="text-xs text-hp-muted font-normal">{t('days')}</span></p>
                         <p className="text-xs text-hp-muted mt-1">100% {t('Geofence verified')}</p>
                     </div>
 
@@ -254,9 +254,9 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                     </div>
 
                     <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t(`Assigned ${vocab.entity.plural}`)}</span>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Assigned {{entities}}', { entities: vocab.entity.plural })}</span>
                         <p className="font-bold text-2xl text-hp-primary">{assignedFarmers.length}</p>
-                        <p className="text-xs text-hp-muted mt-1">{t(`Active ${vocab.entity.plural.toLowerCase()} in zone`)}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Active {{entities}} in zone', { entities: vocab.entity.plural.toLowerCase() })}</p>
                     </div>
                 </div>
 
@@ -266,25 +266,25 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                     <div className={`col-span-1 space-y-6 ${isMapFullscreen ? 'hidden' : 'block'}`}>
                         <div className="hp-bento-card">
                             <h3 className="hp-card-title text-sm pb-3 mb-4 border-b border-hp-border">
-                                {t(`${vocab.staff.singular} Credentials & Service Zone`)}
+                                {t('{{staff}} Credentials & Service Zone', { staff: vocab.staff.singular })}
                             </h3>
 
                             <div className="space-y-3.5 text-xs">
                                 <div className="flex items-center justify-between py-1">
-                                    <span className="text-hp-muted flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> Role / Specialization</span>
-                                    <span className="font-bold text-hp-dark">{employee.designation && employee.designation !== 'field_officer' ? employee.designation : (vocab.staff?.roles?.[0] || 'Field Officer')}</span>
+                                    <span className="text-hp-muted flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> {t('Role / Specialization')}</span>
+                                    <span className="font-bold text-hp-dark">{employee.designation && employee.designation !== 'field_officer' ? t(employee.designation) : (vocab.staff?.roles?.[0] || t('Field Officer'))}</span>
                                 </div>
                                 <div className="flex items-center justify-between py-1">
-                                    <span className="text-hp-muted flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Assigned Zone</span>
-                                    <span className="font-bold text-hp-dark">{employee.region || 'Assigned Zone'}</span>
+                                    <span className="text-hp-muted flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> {t('Assigned Zone')}</span>
+                                    <span className="font-bold text-hp-dark">{employee.region || t('Assigned Zone')}</span>
                                 </div>
                                 <div className="flex items-center justify-between py-1">
-                                    <span className="text-hp-muted flex items-center gap-1.5"><Smartphone className="w-3.5 h-3.5" /> Mobile Contact</span>
-                                    <span className="font-bold text-hp-dark font-mono">{employee.phone || 'N/A'}</span>
+                                    <span className="text-hp-muted flex items-center gap-1.5"><Smartphone className="w-3.5 h-3.5" /> {t('Mobile Contact')}</span>
+                                    <span className="font-bold text-hp-dark font-mono">{employee.phone || t('N/A')}</span>
                                 </div>
                                 {employee.emergency && (
                                     <div className="flex items-center justify-between py-1 text-hp-danger">
-                                        <span className="flex items-center gap-1.5"><Activity className="w-3.5 h-3.5" /> Emergency SOS</span>
+                                        <span className="flex items-center gap-1.5"><Activity className="w-3.5 h-3.5" /> {t('Emergency SOS')}</span>
                                         <span className="font-bold font-mono">{employee.emergency}</span>
                                     </div>
                                 )}
@@ -311,7 +311,7 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                     <div className="hp-bento-card !p-0 overflow-hidden flex flex-col">
                         <div className="p-4 border-b border-hp-border flex items-center justify-between bg-white">
                             <h3 className="hp-card-title text-sm flex items-center gap-2">
-                                <Building2 className="w-4 h-4 text-hp-primary" /> {t(`Assigned ${vocab.entity.plural} & Locations`)}
+                                <Building2 className="w-4 h-4 text-hp-primary" /> {t('Assigned {{entities}} & Locations', { entities: vocab.entity.plural })}
                             </h3>
                             <span className="hp-chip hp-chip-gray">
                                 {assignedFarmers.length} Total
@@ -352,7 +352,7 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                     <div className="hp-bento-card !p-0 overflow-hidden flex flex-col">
                         <div className="p-4 border-b border-hp-border flex items-center justify-between bg-white">
                             <h3 className="hp-card-title text-sm flex items-center gap-2">
-                                <Star className="w-4 h-4 text-hp-primary" /> {t(`Client ${vocab.visit.singular} Feedback`)}
+                                <Star className="w-4 h-4 text-hp-primary" /> {t('Client {{visit}} Feedback', { visit: vocab.visit.singular })}
                             </h3>
                             <div className="flex items-center gap-1.5">
                                 <span className="text-base font-bold text-hp-dark">{employee.avg_rating || '5.0'}</span>
@@ -476,7 +476,7 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                                     <input
                                         type="text"
                                         className="hp-input font-mono text-xs"
-                                        placeholder="Enter new password (min 4 chars)"
+                                        placeholder={t('Enter new password (min 4 chars)')}
                                         value={editData.password}
                                         onChange={(e) => setEditData('password', e.target.value)}
                                     />

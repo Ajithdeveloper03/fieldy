@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import useIndustry from '../../../hooks/useIndustry';
 
 function CopyButton({ value }) {
+    const { t } = useTranslation();
     const [copied, setCopied] = React.useState(false);
     if (!value) return null;
     const copy = () => {
@@ -19,7 +20,7 @@ function CopyButton({ value }) {
         });
     };
     return (
-        <button type="button" onClick={copy} className="shrink-0 text-hp-muted hover:text-hp-primary" title="Copy">
+        <button type="button" onClick={copy} className="shrink-0 text-hp-muted hover:text-hp-primary" title={t('Copy')}>
             {copied ? <Check className="w-3.5 h-3.5 text-hp-success" /> : <Copy className="w-3.5 h-3.5" />}
         </button>
     );
@@ -120,7 +121,7 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                         type="text"
                                         value={search}
                                         onChange={e => setSearch(e.target.value)}
-                                        placeholder={t(`Search by ${vocab.staff.singular.toLowerCase()} name, ID, or phone...`)}
+                                        placeholder={t('Search by {{staff}} name, ID, or phone...', { staff: vocab.staff.singular.toLowerCase() })}
                                         className="w-full bg-transparent text-xs sm:text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
                                     />
                                     {search && (
@@ -149,7 +150,7 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                 className="hp-btn hp-btn-primary !rounded-full"
                             >
                                 <Plus className="w-4 h-4 mr-1" />
-                                <span>{t(`Add ${vocab.staff.singular}`)}</span>
+                                <span>{t('Add {{staff}}', { staff: vocab.staff.singular })}</span>
                             </Link>
                         </div>
                     </div>
@@ -159,7 +160,7 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t(`Total ${vocab.staff.plural}`)}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total {{staffPlural}}', { staffPlural: vocab.staff.plural })}</span>
                             <Briefcase className="w-3.5 h-3.5 text-hp-primary" />
                         </div>
                         <div className="text-2xl font-bold text-hp-dark">{totalStaff}</div>
@@ -234,8 +235,8 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                         <div className="hp-icon-tile !w-14 !h-14 mx-auto mb-3">
                             <UserCheck className="w-6 h-6 text-hp-muted" />
                         </div>
-                        <h2 className="text-base font-bold text-hp-dark mb-1">{t(`No ${vocab.staff.plural.toLowerCase()} found`)}</h2>
-                        <p className="text-sm text-hp-muted max-w-sm mx-auto">{t(`Try adjusting your search filters or onboard new ${vocab.staff.singular.toLowerCase()}.`)}</p>
+                        <h2 className="text-base font-bold text-hp-dark mb-1">{t('No {{staffPlural}} found', { staffPlural: vocab.staff.plural.toLowerCase() })}</h2>
+                        <p className="text-sm text-hp-muted max-w-sm mx-auto">{t('Try adjusting your search filters or onboard new {{staff}}.', { staff: vocab.staff.singular.toLowerCase() })}</p>
                     </div>
                 ) : viewMode === 'grid' ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -245,7 +246,7 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                 className="hp-bento-card group flex flex-col justify-between"
                             >
                                 <div>
-                                    <div className="hp-card-visual h-32 mb-4 p-4 flex flex-col justify-between relative bg-gradient-to-br from-hp-hover to-hp-bg">
+                                    <div className="hp-card-visual h-32 mb-4 p-4 flex flex-col justify-between relative bg-white/40">
                                         <div className="flex items-start justify-between">
                                             <div className="w-12 h-12 rounded-2xl bg-hp-dark text-white font-bold text-base flex items-center justify-center shadow-md">
                                                 {emp.name?.charAt(0) || 'S'}
@@ -284,7 +285,7 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                         href={`/admin/employees/${emp.id}`}
                                         className="hp-btn hp-btn-outline w-full !rounded-xl !h-10 text-sm font-semibold"
                                     >
-                                        <span>{t(`View ${vocab.staff.singular} Profile`)}</span>
+                                        <span>{t('View {{staff}} Profile', { staff: vocab.staff.singular })}</span>
                                         <ArrowUpRight className="w-4 h-4 ml-1" />
                                     </Link>
                                 </div>

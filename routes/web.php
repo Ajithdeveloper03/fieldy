@@ -15,9 +15,9 @@ use App\Http\Controllers\Admin\VisitController;
 use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Support\Facades\Route;
 
-// Root redirect
-Route::get('/', fn () => redirect('/admin/login'));
-Route::get('/fieldy', fn () => redirect('/admin/login'));
+// Public Landing Page
+Route::get('/', fn () => inertia('Landing'))->name('landing');
+Route::get('/fieldy', fn () => inertia('Landing'));
 
 // Support both domain-root URLs and local/sub-folder URLs such as /fieldy/admin.
 foreach (['admin', 'fieldy/admin'] as $adminPrefix) {

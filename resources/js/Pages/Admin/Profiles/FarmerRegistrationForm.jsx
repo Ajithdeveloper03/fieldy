@@ -44,8 +44,8 @@ export default function FarmerRegistrationForm() {
                         <ArrowLeft className="w-4 h-4 mr-1" /> {t('Back')}
                     </Link>
                     <div>
-                        <h1 className="hp-page-title">{t(`Add ${vocab.entity.singular}`)}</h1>
-                        <p className="text-sm text-hp-muted mt-0.5">{t(`Register a new ${vocab.entity.singular.toLowerCase()} for ${industry.shortName}.`)}</p>
+                        <h1 className="hp-page-title">{t('Add {{entity}}', { entity: vocab.entity.singular })}</h1>
+                        <p className="text-sm text-hp-muted mt-0.5">{t('Register a new {{entity}} for {{industry}}.', { entity: vocab.entity.singular.toLowerCase(), industry: industry.shortName })}</p>
                     </div>
                 </div>
 
@@ -67,7 +67,7 @@ export default function FarmerRegistrationForm() {
                                 type="text"
                                 required
                                 className="hp-input"
-                                placeholder="e.g. Skyline Corporate Tower, Anna Nagar"
+                                placeholder={t('e.g. Skyline Corporate Tower, Anna Nagar')}
                                 value={data.name}
                                 onChange={(e) => setData('name', e.target.value)}
                             />
@@ -82,7 +82,7 @@ export default function FarmerRegistrationForm() {
                                 type="text"
                                 required
                                 className="hp-input"
-                                placeholder="e.g. T. Nagar, OMR, Guindy"
+                                placeholder={t('e.g. T. Nagar, OMR, Guindy')}
                                 value={data.village}
                                 onChange={(e) => setData('village', e.target.value)}
                             />
@@ -96,7 +96,7 @@ export default function FarmerRegistrationForm() {
                                 type="text"
                                 required
                                 className="hp-input"
-                                placeholder="e.g. Chennai, Bengaluru, Coimbatore"
+                                placeholder={t('e.g. Chennai, Bengaluru, Coimbatore')}
                                 value={data.district}
                                 onChange={(e) => setData('district', e.target.value)}
                             />
@@ -109,7 +109,7 @@ export default function FarmerRegistrationForm() {
                             <input
                                 type="text"
                                 className="hp-input"
-                                placeholder="Plot No., Street, Landmark"
+                                placeholder={t('Plot No., Street, Landmark')}
                                 value={data.land_address}
                                 onChange={(e) => setData('land_address', e.target.value)}
                             />
@@ -179,7 +179,7 @@ export default function FarmerRegistrationForm() {
                                 <span className="font-bold text-hp-dark text-xs">
                                     {docName || t('Upload Permit / Drawing PDF')}
                                 </span>
-                                <span className="text-[11px] text-hp-muted mt-0.5">PDF, PNG, JPG up to 10MB</span>
+                                <span className="text-[11px] text-hp-muted mt-0.5">{t('PDF, PNG, JPG up to 10MB')}</span>
                                 <input
                                     type="file"
                                     accept=".pdf,image/*"
@@ -204,7 +204,7 @@ export default function FarmerRegistrationForm() {
                                 <span className="font-bold text-hp-dark text-xs">
                                     {imgName || t('Upload Site Photo')}
                                 </span>
-                                <span className="text-[11px] text-hp-muted mt-0.5">PNG, JPG up to 10MB</span>
+                                <span className="text-[11px] text-hp-muted mt-0.5">{t('PNG, JPG up to 10MB')}</span>
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -225,7 +225,7 @@ export default function FarmerRegistrationForm() {
                         <Link href="/admin/farmers" className="hp-btn hp-btn-secondary">{t('Cancel')}</Link>
                         <button type="submit" disabled={processing} className="hp-btn hp-btn-primary">
                             <CheckCircle2 className="w-4 h-4 mr-1.5" />
-                            {processing ? t('Saving...') : t(`Save ${vocab.entity.singular}`)}
+                            {processing ? t('Saving...') : t('Save {{entity}}', { entity: vocab.entity.singular })}
                         </button>
                     </div>
                 </form>

@@ -126,10 +126,10 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {t(`${industry.shortName} Financial Ledger & Settlements`)}
+                                {t('{{industry}} Financial Ledger & Settlements', { industry: industry.shortName })}
                             </h1>
                             <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                                {t(`Track ${vocab.staff.plural.toLowerCase()} payroll, site allowances, client service milestones, and operational settlements.`)}
+                                {t('Track {{staffPlural}} payroll, site allowances, client service milestones, and operational settlements.', { staffPlural: vocab.staff.plural.toLowerCase() })}
                             </p>
 
                             {/* Search Bar */}
@@ -140,7 +140,7 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                                         type="text"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder={t(`Search by ID, ${vocab.staff.singular.toLowerCase()} name, or notes...`)}
+                                        placeholder={t('Search by ID, {{staff}} name, or notes...', { staff: vocab.staff.singular.toLowerCase() })}
                                         className="w-full bg-transparent text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
                                     />
                                     {searchQuery && (
@@ -229,7 +229,7 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                             className={`hp-segmented-item ${activeTab === 'officers' ? 'is-active-primary' : ''}`}
                         >
                             <Briefcase className="w-4 h-4" />
-                            <span>{t(`${vocab.staff.singular} Payroll & Allowances`)}</span>
+                            <span>{t('{{staff}} Payroll & Allowances', { staff: vocab.staff.singular })}</span>
                             <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${activeTab === 'officers' ? 'bg-white/20 text-white' : 'bg-hp-border text-hp-muted'}`}>
                                 {effectiveStaffPayouts.length}
                             </span>
@@ -239,7 +239,7 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                             className={`hp-segmented-item ${activeTab === 'farmers' ? 'is-active-primary' : ''}`}
                         >
                             <Building2 className="w-4 h-4" />
-                            <span>{t(`${vocab.entity.singular} Billing & Retainers`)}</span>
+                            <span>{t('{{entity}} Billing & Retainers', { entity: vocab.entity.singular })}</span>
                             <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${activeTab === 'farmers' ? 'bg-white/20 text-white' : 'bg-hp-border text-hp-muted'}`}>
                                 {effectiveEntityCollections.length}
                             </span>
@@ -265,7 +265,7 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                         <div className="flex items-center gap-2">
                             <CreditCard className="w-5 h-5 text-hp-primary" />
                             <h2 className="hp-card-title">
-                                {activeTab === 'farmers' ? t(`${vocab.entity.singular} Billing Ledger`) : t(`${vocab.staff.singular} Payroll & Disbursements`)}
+                                {activeTab === 'farmers' ? t('{{entity}} Billing Ledger', { entity: vocab.entity.singular }) : t('{{staff}} Payroll & Disbursements', { staff: vocab.staff.singular })}
                             </h2>
                         </div>
                         <span className="text-xs text-hp-muted font-medium">

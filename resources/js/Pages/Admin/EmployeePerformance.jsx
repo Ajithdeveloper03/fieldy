@@ -38,7 +38,7 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
 
     const handleExport = () => {
         if (triggerInfo) {
-            triggerInfo(t(`Exporting ${industry.shortName} ${vocab.staff.plural.toLowerCase()} performance report.`));
+            triggerInfo(t('Exporting {{industry}} {{staffPlural}} performance report.', { industry: industry.shortName, staffPlural: vocab.staff.plural.toLowerCase() }));
         } else {
             alert('Exporting performance report...');
         }
@@ -63,10 +63,10 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {t(`${industry.shortName} ${vocab.staff.plural} Performance Scorecard`)}
+                                {t('{{industry}} {{staffPlural}} Performance Scorecard', { industry: industry.shortName, staffPlural: vocab.staff.plural })}
                             </h1>
                             <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                                {t(`Track completed ${vocab.visit.plural.toLowerCase()}, operational punctuality, geofence compliance, and client quality ratings across all sectors.`)}
+                                {t('Track completed {{visits}}, operational punctuality, geofence compliance, and client quality ratings across all sectors.', { visits: vocab.visit.plural.toLowerCase() })}
                             </p>
 
                             {/* Search Bar */}
@@ -77,7 +77,7 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                                         type="text"
                                         value={searchQuery}
                                         onChange={e => setSearchQuery(e.target.value)}
-                                        placeholder={t(`Search by ${vocab.staff.singular.toLowerCase()} name or area...`)} 
+                                        placeholder={t('Search by {{staff}} name or area...', { staff: vocab.staff.singular.toLowerCase() })} 
                                         className="w-full bg-transparent text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
                                     />
                                     {searchQuery && (
@@ -104,12 +104,12 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                 {/* METRIC & SPOTLIGHT GRID */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     {/* Spotlight Card */}
-                    <div className="hp-bento-card border-hp-primary-border bg-gradient-to-br from-white to-hp-primary-lighter">
+                    <div className="hp-bento-card border-hp-primary-border">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-xs font-bold text-hp-primary uppercase tracking-wider flex items-center gap-1">
-                                <Trophy className="w-3.5 h-3.5" /> {t(`Top ${vocab.staff.singular} of the Month`)}
+                                <Trophy className="w-3.5 h-3.5" /> {t('Top {{staff}} of the Month', { staff: vocab.staff.singular })}
                             </span>
-                            <span className="hp-chip hp-chip-warning font-bold">#1 Ranked</span>
+                            <span className="hp-chip hp-chip-warning font-bold">{t('#1 Ranked')}</span>
                         </div>
                         {topPerformer ? (
                             <div className="flex items-center gap-3.5 mt-2">
@@ -161,7 +161,7 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                             {industry.complianceRate || '99.2%'}
                         </p>
                         <p className="text-xs text-hp-muted mt-2">
-                            {t(`Verified check-in & ${vocab.visit.singular.toLowerCase()} sign-off`)}
+                            {t('Verified check-in & {{visit}} sign-off', { visit: vocab.visit.singular.toLowerCase() })}
                         </p>
                     </div>
                 </div>
@@ -184,7 +184,7 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                     <div className="p-5 border-b border-hp-border flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Award className="w-5 h-5 text-hp-primary" />
-                            <h2 className="hp-card-title">{t(`${vocab.staff.plural} Ranking Scorecard`)}</h2>
+                            <h2 className="hp-card-title">{t('{{staffPlural}} Ranking Scorecard', { staffPlural: vocab.staff.plural })}</h2>
                         </div>
                         <span className="text-xs text-hp-muted font-medium">
                             {filteredData.length} {t('evaluated')}
@@ -210,7 +210,7 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                                             <div className="hp-icon-tile !w-12 !h-12 mx-auto mb-2">
                                                 <UserCheck className="w-5 h-5 text-hp-muted" />
                                             </div>
-                                            <p className="font-bold text-sm text-hp-dark">{t(`No ${vocab.staff.plural.toLowerCase()} found`)}</p>
+                                            <p className="font-bold text-sm text-hp-dark">{t('No {{staffPlural}} found', { staffPlural: vocab.staff.plural.toLowerCase() })}</p>
                                         </td>
                                     </tr>
                                 ) : (

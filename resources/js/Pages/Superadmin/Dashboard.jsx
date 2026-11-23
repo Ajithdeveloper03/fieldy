@@ -1,65 +1,72 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import SuperadminLayout from './SuperadminLayout';
 import { getIndustryById } from '../../data/industriesConfig';
-import { 
-    Building2, Users2, MapPin, Activity, 
-    ArrowUpRight, TrendingUp, ShieldCheck, 
+import {
+    Building2, Users2, MapPin, Activity,
+    ArrowUpRight, TrendingUp, ShieldCheck,
     Plus, Sparkles, CheckCircle2, AlertTriangle, Layers,
     Home, ChevronRight
 } from 'lucide-react';
 
 export default function SuperadminDashboard({ stats, companies = [], planBreakdown = {} }) {
+    const { t } = useTranslation();
+
     const statCards = [
         {
-            title: 'Client Companies',
+            title: t('Client Companies'),
             value: stats?.totalCompanies ?? 0,
-            subtext: `${stats?.activeCompanies ?? 0} Active Tenancies`,
+            subtext: `${stats?.activeCompanies ?? 0} ${t('Active Tenancies')}`,
             icon: Building2,
+            color: '#0F766E',
         },
         {
-            title: 'Field Workforce',
+            title: t('Field Workforce'),
             value: stats?.totalEmployees ?? 0,
-            subtext: `${stats?.activeTrackingToday ?? 0} active GPS sessions`,
+            subtext: `${stats?.activeTrackingToday ?? 0} ${t('active GPS sessions')}`,
             icon: Users2,
+            color: '#1D4ED8',
         },
         {
-            title: "Today's Field Visits",
+            title: t("Today's Field Visits"),
             value: stats?.todayVisits ?? 0,
-            subtext: `${stats?.totalVisits ?? 0} Lifetime Audits`,
+            subtext: `${stats?.totalVisits ?? 0} ${t('Lifetime Audits')}`,
             icon: MapPin,
+            color: '#7E22CE',
         },
         {
-            title: 'Customer Accounts',
+            title: t('Customer Accounts'),
             value: stats?.totalFarmers ?? 0,
-            subtext: `${stats?.totalAdmins ?? 0} Client Admins`,
+            subtext: `${stats?.totalAdmins ?? 0} ${t('Client Admins')}`,
             icon: ShieldCheck,
+            color: '#D97706',
         },
     ];
 
     return (
         <SuperadminLayout>
-            <Head title="Superadmin Platform Overview" />
+            <Head title={t('Superadmin Platform Overview')} />
 
             <div className="space-y-6 pb-12 hp-animate-in">
 
-                {/* ══════════ HOSTINGER HERO CARD ══════════ */}
+                {/* ══════════ HERO CARD ══════════ */}
                 <div className="hp-hero-card p-6 sm:p-8">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <div className="max-w-2xl">
-                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            <div className="flex items-center gap-2.5 mb-3 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
-                                    <Sparkles className="w-3 h-3 mr-1" /> Multi-Tenant Orchestrator
+                                    <Sparkles className="w-3.5 h-3.5 mr-1" /> {t('Multi-Tenant Orchestrator')}
                                 </span>
                                 <span className="hp-chip hp-chip-gray">
-                                    Global Cloud Health 100%
+                                    {t('Global Cloud Health 100%')}
                                 </span>
                             </div>
-                            <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                Global Platform Control & Tenant Fleet
+                            <h1 className="text-3xl sm:text-4xl font-extrabold text-hp-dark tracking-tight leading-tight">
+                                {t('Global Platform Control & Tenant Fleet')}
                             </h1>
-                            <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                                High-level telemetry, active tenant companies, subscription allocation tiers, and aggregate workforce telemetry across all organizations.
+                            <p className="text-base sm:text-[17px] text-hp-muted mt-2 leading-relaxed">
+                                {t('High-level telemetry, active tenant companies, subscription allocation tiers, and aggregate workforce telemetry across all organizations.')}
                             </p>
                         </div>
 
@@ -67,27 +74,29 @@ export default function SuperadminDashboard({ stats, companies = [], planBreakdo
                         <div className="shrink-0 self-start lg:self-center">
                             <Link
                                 href="/superadmin/companies"
-                                className="hp-btn hp-btn-primary !rounded-full"
+                                className="hp-btn hp-btn-primary !rounded-full !h-12 !px-6 !text-base"
                             >
-                                <Plus className="w-4 h-4 mr-1" />
-                                <span>Register New Company</span>
+                                <Plus className="w-5 h-5 mr-1" />
+                                <span>{t('Register New Company')}</span>
                             </Link>
                         </div>
                     </div>
                 </div>
 
-                {/* ══════════ HOSTINGER BENTO METRIC CARDS ══════════ */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* ══════════ BENTO METRIC CARDS ══════════ */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {statCards.map((card, idx) => {
                         const Icon = card.icon;
                         return (
-                            <div key={idx} className="hp-metric-pill-card">
-                                <div className="flex items-center justify-between mb-1.5">
-                                    <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{card.title}</span>
-                                    <Icon className="w-3.5 h-3.5 text-hp-primary" />
+                            <div key={idx} className="hp-metric-pill-card p-5">
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-sm font-bold text-hp-muted uppercase tracking-wide">{card.title}</span>
+                                    <span className="hp-icon-tile !w-10 !h-10" style={{ '--glass-tint': card.color, color: card.color }}>
+                                        <Icon className="w-5 h-5" />
+                                    </span>
                                 </div>
-                                <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{card.value}</div>
-                                <p className="text-xs text-hp-muted mt-1">{card.subtext}</p>
+                                <div className="text-3xl sm:text-4xl font-extrabold text-hp-dark">{card.value}</div>
+                                <p className="text-sm text-hp-muted mt-1.5 font-medium">{card.subtext}</p>
                             </div>
                         );
                     })}
@@ -97,67 +106,69 @@ export default function SuperadminDashboard({ stats, companies = [], planBreakdo
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                     {/* Subscription Plans Breakdown */}
                     <div className="hp-bento-card">
-                        <div className="flex items-center justify-between pb-3 border-b border-hp-border">
+                        <div className="flex items-center justify-between pb-3.5 border-b border-hp-border">
                             <div>
-                                <h2 className="hp-card-title text-sm">Subscription Tiers</h2>
-                                <p className="text-xs text-hp-muted">Tenants by pricing tier</p>
+                                <h2 className="hp-card-title">{t('Subscription Tiers')}</h2>
+                                <p className="text-sm text-hp-muted mt-0.5">{t('Tenants by pricing tier')}</p>
                             </div>
-                            <Layers className="w-4 h-4 text-hp-primary" />
+                            <span className="hp-icon-tile !w-10 !h-10" style={{ '--glass-tint': '#7E22CE', color: '#7E22CE' }}>
+                                <Layers className="w-5 h-5" />
+                            </span>
                         </div>
-                        <div className="mt-4 space-y-2.5">
-                            <div className="flex items-center justify-between p-3.5 rounded-xl bg-hp-hover/60 border border-hp-border">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-hp-primary"></span>
-                                    <span className="text-xs font-bold text-hp-dark">Enterprise</span>
+                        <div className="mt-4 space-y-3">
+                            <div className="flex items-center justify-between p-4 rounded-xl bg-white/40 border border-white/80">
+                                <div className="flex items-center gap-2.5">
+                                    <span className="w-3 h-3 rounded-full bg-hp-primary"></span>
+                                    <span className="text-base font-bold text-hp-dark">{t('Enterprise')}</span>
                                 </div>
-                                <span className="hp-chip hp-chip-primary !h-5 !text-[11px]">
+                                <span className="hp-chip hp-chip-primary">
                                     {planBreakdown?.enterprise ?? 0}
                                 </span>
                             </div>
-                            <div className="flex items-center justify-between p-3.5 rounded-xl bg-hp-hover/60 border border-hp-border">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                                    <span className="text-xs font-bold text-hp-dark">Professional</span>
+                            <div className="flex items-center justify-between p-4 rounded-xl bg-white/40 border border-white/80">
+                                <div className="flex items-center gap-2.5">
+                                    <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
+                                    <span className="text-base font-bold text-hp-dark">{t('Professional')}</span>
                                 </div>
-                                <span className="hp-chip hp-chip-success !h-5 !text-[11px]">
+                                <span className="hp-chip hp-chip-success">
                                     {planBreakdown?.professional ?? 0}
                                 </span>
                             </div>
-                            <div className="flex items-center justify-between p-3.5 rounded-xl bg-hp-hover/60 border border-hp-border">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                                    <span className="text-xs font-bold text-hp-dark">Starter</span>
+                            <div className="flex items-center justify-between p-4 rounded-xl bg-white/40 border border-white/80">
+                                <div className="flex items-center gap-2.5">
+                                    <span className="w-3 h-3 rounded-full bg-amber-500"></span>
+                                    <span className="text-base font-bold text-hp-dark">{t('Starter')}</span>
                                 </div>
-                                <span className="hp-chip hp-chip-warning !h-5 !text-[11px]">
+                                <span className="hp-chip hp-chip-warning">
                                     {planBreakdown?.starter ?? 0}
                                 </span>
                             </div>
                         </div>
 
-                        <div className="mt-5 pt-3 border-t border-hp-border">
+                        <div className="mt-5 pt-4 border-t border-hp-border">
                             <Link
                                 href="/superadmin/companies"
-                                className="hp-btn hp-btn-outline w-full !rounded-xl !h-9 text-xs"
+                                className="hp-btn hp-btn-outline w-full !rounded-full !h-11 text-sm"
                             >
-                                <span>Manage Plan Allocations</span>
-                                <ArrowUpRight className="w-3.5 h-3.5 ml-1" />
+                                <span>{t('Manage Plan Allocations')}</span>
+                                <ArrowUpRight className="w-4 h-4 ml-1" />
                             </Link>
                         </div>
                     </div>
 
                     {/* Company Activity Leaderboard */}
                     <div className="lg:col-span-2 hp-bento-card !p-0 overflow-hidden">
-                        <div className="p-4 border-b border-hp-border flex items-center justify-between bg-white">
+                        <div className="p-5 border-b border-hp-border flex items-center justify-between">
                             <div>
-                                <h2 className="hp-card-title text-sm">Active Companies</h2>
-                                <p className="text-xs text-hp-muted mt-0.5">Workforce and live operations across tenants</p>
+                                <h2 className="hp-card-title">{t('Active Companies')}</h2>
+                                <p className="text-sm text-hp-muted mt-0.5">{t('Workforce and live operations across tenants')}</p>
                             </div>
                             <Link
                                 href="/superadmin/companies"
                                 className="hp-btn hp-btn-sm hp-btn-outline"
                             >
-                                <span>View All</span>
-                                <ArrowUpRight className="w-3.5 h-3.5" />
+                                <span>{t('View All')}</span>
+                                <ArrowUpRight className="w-4 h-4" />
                             </Link>
                         </div>
 
@@ -165,43 +176,43 @@ export default function SuperadminDashboard({ stats, companies = [], planBreakdo
                             <table className="hp-table">
                                 <thead>
                                     <tr>
-                                        <th>Company</th>
-                                        <th>Plan</th>
-                                        <th className="text-center">Employees</th>
-                                        <th className="text-center">Today's Visits</th>
-                                        <th className="text-center">Status</th>
+                                        <th>{t('Company')}</th>
+                                        <th>{t('Plan')}</th>
+                                        <th className="text-center">{t('Employees')}</th>
+                                        <th className="text-center">{t("Today's Visits")}</th>
+                                        <th className="text-center">{t('Status')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {companies.map((comp) => (
                                         <tr key={comp.id} className="hover:bg-hp-hover/60 transition-colors">
                                             <td className="pr-3">
-                                                <div className="flex items-center gap-2.5">
-                                                    <div className="w-8 h-8 rounded-xl bg-hp-primary-light text-hp-primary flex items-center justify-center font-bold text-xs shrink-0">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-xl bg-hp-primary-light text-hp-primary flex items-center justify-center font-bold text-base shrink-0">
                                                         {comp.name.charAt(0)}
                                                     </div>
                                                     <div>
-                                                        <p className="font-bold text-xs text-hp-dark leading-snug">{comp.name}</p>
-                                                        <p className="text-[11px] text-hp-muted">{getIndustryById(comp.industry).shortName}</p>
+                                                        <p className="font-bold text-[15px] sm:text-base text-hp-dark leading-snug">{comp.name}</p>
+                                                        <p className="text-sm text-hp-muted">{t(getIndustryById(comp.industry).shortName)}</p>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td>
-                                                <span className="hp-chip hp-chip-gray !h-5 !text-[11px] capitalize">
-                                                    {comp.plan}
+                                                <span className="hp-chip hp-chip-gray capitalize">
+                                                    {t(comp.plan)}
                                                 </span>
                                             </td>
-                                            <td className="text-center font-bold text-xs text-hp-dark">
-                                                {comp.employees_count} <span className="text-[11px] text-hp-muted font-normal">/ {comp.max_employees}</span>
+                                            <td className="text-center font-bold text-[15px] text-hp-dark">
+                                                {comp.employees_count} <span className="text-sm text-hp-muted font-normal">/ {comp.max_employees}</span>
                                             </td>
                                             <td className="text-center">
-                                                <span className="hp-chip hp-chip-success !h-5 !text-[11px]">
-                                                    {comp.visits_today} visits
+                                                <span className="hp-chip hp-chip-success">
+                                                    {comp.visits_today} {t('visits')}
                                                 </span>
                                             </td>
                                             <td className="text-center">
                                                 <span className={`hp-chip ${comp.status === 'active' ? 'hp-chip-success hp-chip-dot' : 'hp-chip-danger'}`}>
-                                                    {comp.status}
+                                                    {t(comp.status)}
                                                 </span>
                                             </td>
                                         </tr>

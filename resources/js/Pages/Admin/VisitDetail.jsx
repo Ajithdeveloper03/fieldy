@@ -32,7 +32,7 @@ export default function VisitDetail({ visit }) {
             <div className="space-y-6 pb-12 hp-animate-in">
                 <div>
                     <Link href={`/admin/visits?industry=${industry.id}`} className="hp-pill">
-                        <ArrowLeft className="w-4 h-4 mr-1" /> {t(`Back to ${vocab.visit.plural}`)}
+                        <ArrowLeft className="w-4 h-4 mr-1" /> {t('Back to {{visits}}', { visits: vocab.visit.plural })}
                     </Link>
                 </div>
 
@@ -52,10 +52,10 @@ export default function VisitDetail({ visit }) {
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {visit.farmer?.user?.name || visit.farmer_name || vocab.entity.singular} - {t(`${vocab.visit.singular} Report`)}
+                                {visit.farmer?.user?.name || visit.farmer_name || vocab.entity.singular} - {t('{{visit}} Report', { visit: vocab.visit.singular })}
                             </h1>
                             <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                                {t(`Official ${vocab.visit.singular.toLowerCase()} log, GPS coordinates, and execution findings recorded by operations team.`)}
+                                {t('Official {{visit}} log, GPS coordinates, and execution findings recorded by operations team.', { visit: vocab.visit.singular.toLowerCase() })}
                             </p>
                         </div>
 

@@ -26,7 +26,7 @@ export default function Settings() {
 
     return (
         <AdminLayout>
-            <Head title={`Settings - Fieldy ${industry.name}`} />
+            <Head title={`${t('Settings')} - Fieldy ${industry.name}`} />
 
             <div className="space-y-6 pb-12 hp-animate-in">
 
@@ -36,17 +36,17 @@ export default function Settings() {
                         <div className="max-w-2xl">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
-                                    <Sparkles className="w-3 h-3 mr-1" /> {industry.name} Configuration
+                                    <Sparkles className="w-3 h-3 mr-1" /> {t('{{industry}} Configuration', { industry: industry.name })}
                                 </span>
                                 <span className="hp-chip hp-chip-gray">
                                     {t('Field Operational Policies')}
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {t(`${industry.name} Operations & Dispatch Settings`)}
+                                {t('{{industry}} Operations & Dispatch Settings', { industry: industry.name })}
                             </h1>
                             <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                                {t(`Configure ${vocab.entity.singular.toLowerCase()} geofence radii, automated ${vocab.staff.singular.toLowerCase()} dispatch alerts, shift cutoffs, and regulatory compliance rules.`)}
+                                {t('Configure {{entity}} geofence radii, automated {{staff}} dispatch alerts, shift cutoffs, and regulatory compliance rules.', { entity: vocab.entity.singular.toLowerCase(), staff: vocab.staff.singular.toLowerCase() })}
                             </p>
                         </div>
 
@@ -67,19 +67,19 @@ export default function Settings() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <div className="hp-metric-pill-card">
                         <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Geofence Tolerance')}</span>
-                        <p className="font-bold text-2xl text-hp-dark">150 <span className="text-xs text-hp-muted font-normal">meters</span></p>
-                        <p className="text-xs text-hp-muted mt-1">{t(`${vocab.entity.singular} boundary tolerance for GPS check-in`)}</p>
+                        <p className="font-bold text-2xl text-hp-dark">150 <span className="text-xs text-hp-muted font-normal">{t('meters')}</span></p>
+                        <p className="text-xs text-hp-muted mt-1">{t('{{entity}} boundary tolerance for GPS check-in', { entity: vocab.entity.singular })}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
                         <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Stationary Alert Timeout')}</span>
-                        <p className="font-bold text-2xl text-hp-warning">30 <span className="text-xs text-hp-muted font-normal">minutes</span></p>
-                        <p className="text-xs text-hp-muted mt-1">{t(`Alerts dispatcher if ${vocab.staff.singular.toLowerCase()} halts en route`)}</p>
+                        <p className="font-bold text-2xl text-hp-warning">30 <span className="text-xs text-hp-muted font-normal">{t('minutes')}</span></p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Alerts dispatcher if {{staff}} halts en route', { staff: vocab.staff.singular.toLowerCase() })}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
                         <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Standard Shift Window')}</span>
-                        <p className="font-bold text-2xl text-hp-primary">9.0 <span className="text-xs text-hp-muted font-normal">hours</span></p>
+                        <p className="font-bold text-2xl text-hp-primary">9.0 <span className="text-xs text-hp-muted font-normal">{t('hours')}</span></p>
                         <p className="text-xs text-hp-muted mt-1">{t('8h regular duty + 1h lunch/rest cutoff')}</p>
                     </div>
                 </div>
@@ -117,16 +117,16 @@ export default function Settings() {
                                 </div>
                                 <div>
                                     <h2 className="hp-card-title text-base">
-                                        {t(`${vocab.entity.singular} Geofence & GPS Telemetry Settings`)}
+                                        {t('{{entity}} Geofence & GPS Telemetry Settings', { entity: vocab.entity.singular })}
                                     </h2>
-                                    <p className="text-xs text-hp-muted">{t(`Configure ${vocab.entity.singular.toLowerCase()} perimeter radius, stationary warnings, and daily travel audit limits`)}</p>
+                                    <p className="text-xs text-hp-muted">{t('Configure {{entity}} perimeter radius, stationary warnings, and daily travel audit limits', { entity: vocab.entity.singular.toLowerCase() })}</p>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
                                     <label className="block text-xs font-bold text-hp-dark mb-1.5">
-                                        {t(`${vocab.entity.singular} Check-In Radius (Meters)`)}
+                                        {t('{{entity}} Check-In Radius (Meters)', { entity: vocab.entity.singular })}
                                     </label>
                                     <input 
                                         type="number" 
@@ -134,7 +134,7 @@ export default function Settings() {
                                         className="hp-input" 
                                     />
                                     <p className="text-xs text-hp-muted mt-1">
-                                        {t(`Maximum allowed distance from designated site coordinates to verify ${vocab.staff.singular.toLowerCase()} attendance.`)}
+                                        {t('Maximum allowed distance from designated site coordinates to verify {{staff}} attendance.', { staff: vocab.staff.singular.toLowerCase() })}
                                     </p>
                                 </div>
 
@@ -148,7 +148,7 @@ export default function Settings() {
                                         className="hp-input" 
                                     />
                                     <p className="text-xs text-hp-muted mt-1">
-                                        {t(`Triggers high-priority alert if ${vocab.staff.singular.toLowerCase()} remains static without active work order.`)}
+                                        {t('Triggers high-priority alert if {{staff}} remains static without active work order.', { staff: vocab.staff.singular.toLowerCase() })}
                                     </p>
                                 </div>
 
@@ -162,7 +162,7 @@ export default function Settings() {
                                         className="hp-input" 
                                     />
                                     <p className="text-xs text-hp-muted mt-1">
-                                        {t(`Standard daily travel allowance baseline for ${industry.name} field beats.`)}
+                                        {t('Standard daily travel allowance baseline for {{industry}} field beats.', { industry: industry.name })}
                                     </p>
                                 </div>
                             </div>
@@ -180,7 +180,7 @@ export default function Settings() {
                                     <h2 className="hp-card-title text-base">
                                         {t('Automated Shift Rostering & Attendance Cutoffs')}
                                     </h2>
-                                    <p className="text-xs text-hp-muted">{t(`Schedule automated dispatch notifications, morning check-in reminders, and shift cutoffs`)}</p>
+                                    <p className="text-xs text-hp-muted">{t('Schedule automated dispatch notifications, morning check-in reminders, and shift cutoffs')}</p>
                                 </div>
                             </div>
 
@@ -188,10 +188,10 @@ export default function Settings() {
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-hp-border bg-hp-hover/60 gap-4">
                                     <div>
                                         <p className="text-sm font-bold text-hp-dark">
-                                            {t(`Daily ${vocab.visit.plural} Schedule Push (Firebase)`)}
+                                            {t('Daily {{visits}} Schedule Push (Firebase)', { visits: vocab.visit.plural })}
                                         </p>
                                         <p className="text-xs text-hp-muted mt-0.5">
-                                            {t(`Automatically dispatch morning route waypoints to active ${vocab.staff.plural.toLowerCase()}.`)}
+                                            {t('Automatically dispatch morning route waypoints to active {{staffPlural}}.', { staffPlural: vocab.staff.plural.toLowerCase() })}
                                         </p>
                                     </div>
                                     <div className="flex items-center space-x-3">
@@ -226,10 +226,10 @@ export default function Settings() {
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-hp-border bg-hp-hover/60 gap-4">
                                     <div>
                                         <p className="text-sm font-bold text-hp-dark">
-                                            {t(`Standard ${vocab.visit.singular} Dwell Time (Minutes)`)}
+                                            {t('Standard {{visit}} Dwell Time (Minutes)', { visit: vocab.visit.singular })}
                                         </p>
                                         <p className="text-xs text-hp-muted mt-0.5">
-                                            {t(`Target completion window per ${vocab.visit.singular.toLowerCase()} on-site.`)}
+                                            {t('Target completion window per {{visit}} on-site.', { visit: vocab.visit.singular.toLowerCase() })}
                                         </p>
                                     </div>
                                     <input 
@@ -254,7 +254,7 @@ export default function Settings() {
                                 </h2>
                             </div>
                             <p className="text-xs text-hp-muted leading-relaxed">
-                                {t(`Granular permissions for Operations Manager, Dispatcher, Quality Auditor, and Field Staff are strictly enforced for ${industry.name}.`)}
+                                {t('Granular permissions for Operations Manager, Dispatcher, Quality Auditor, and Field Staff are strictly enforced for {{industry}}.', { industry: industry.name })}
                             </p>
                         </div>
                     )}

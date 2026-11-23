@@ -36,7 +36,7 @@ export default function PendingFarmerDetail({ farmer = {} }) {
             <div className="space-y-6 pb-12 hp-animate-in">
                 <div>
                     <Link href="/admin/pending-farmers" className="hp-pill">
-                        <ArrowLeft className="w-4 h-4 mr-1" /> {t(`Back to Pending ${vocab.entity.plural}`)}
+                        <ArrowLeft className="w-4 h-4 mr-1" /> {t('Back to Pending {{entities}}', { entities: vocab.entity.plural })}
                     </Link>
                 </div>
 
@@ -88,7 +88,7 @@ export default function PendingFarmerDetail({ farmer = {} }) {
                 {/* METRIC CARDS */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="hp-metric-pill-card">
-                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t(`Total ${vocab.entity.size}`)}</span>
+                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Total {{entitySize}}', { entitySize: vocab.entity.size })}</span>
                         <p className="font-bold text-2xl text-hp-dark">
                             {farmer.land_size_acres || farmer.land_acres || '-'} <span className="text-xs font-normal text-hp-muted">{vocab.entity.sizeUnit}</span>
                         </p>
@@ -128,11 +128,11 @@ export default function PendingFarmerDetail({ farmer = {} }) {
                             </h3>
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="p-3 bg-hp-hover/60 border border-hp-border rounded-xl text-center">
-                                    <p className="text-[10px] font-bold text-hp-muted uppercase mb-1">Latitude</p>
+                                    <p className="text-[10px] font-bold text-hp-muted uppercase mb-1">{t('Latitude')}</p>
                                     <p className="text-xs font-bold text-hp-dark font-mono">{farmer.land_latitude || '12.9716° N'}</p>
                                 </div>
                                 <div className="p-3 bg-hp-hover/60 border border-hp-border rounded-xl text-center">
-                                    <p className="text-[10px] font-bold text-hp-muted uppercase mb-1">Longitude</p>
+                                    <p className="text-[10px] font-bold text-hp-muted uppercase mb-1">{t('Longitude')}</p>
                                     <p className="text-xs font-bold text-hp-dark font-mono">{farmer.land_longitude || '80.2446° E'}</p>
                                 </div>
                             </div>
@@ -140,7 +140,7 @@ export default function PendingFarmerDetail({ farmer = {} }) {
 
                         <div className="hp-bento-card">
                             <h3 className="hp-card-title text-sm flex items-center gap-2 mb-4 pb-3 border-b border-hp-border">
-                                <Briefcase className="w-4 h-4 text-hp-primary" /> {t(`${vocab.entity.singular} Specifications`)}
+                                <Briefcase className="w-4 h-4 text-hp-primary" /> {t('{{entity}} Specifications', { entity: vocab.entity.singular })}
                             </h3>
                             <div className="space-y-3.5 text-xs">
                                 <div className="flex justify-between items-center py-1">
@@ -163,7 +163,7 @@ export default function PendingFarmerDetail({ farmer = {} }) {
                         <div className="hp-bento-card">
                             <div className="flex items-center justify-between pb-4 mb-4 border-b border-hp-border">
                                 <h3 className="hp-card-title flex items-center gap-2">
-                                    <ImageIcon className="w-5 h-5 text-hp-primary" /> {t(`${vocab.approval.doc} & Verification Media`)}
+                                    <ImageIcon className="w-5 h-5 text-hp-primary" /> {t('{{approvalDoc}} & Verification Media', { approvalDoc: vocab.approval.doc })}
                                 </h3>
                                 <span className="hp-chip hp-chip-warning">
                                     {farmer.kyc_status || 'Pending'}

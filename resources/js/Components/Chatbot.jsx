@@ -6,7 +6,7 @@ export default function Chatbot() {
     const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
-        { id: 1, text: "Hello! I'm your Fieldy AI Assistant. How can I help you today?", sender: 'ai' }
+        { id: 1, textKey: "Hello! I'm your Fieldy AI Assistant. How can I help you today?", sender: 'ai' }
     ]);
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
@@ -46,7 +46,7 @@ export default function Chatbot() {
         // Simulate AI response
         setTimeout(() => {
             const aiResponse = generateAIResponse(newUserMsg.text);
-            setMessages(prev => [...prev, { id: Date.now() + 1, text: aiResponse.text, action: aiResponse.action, sender: 'ai' }]);
+            setMessages(prev => [...prev, { id: Date.now() + 1, textKey: aiResponse.textKey, action: aiResponse.action, sender: 'ai' }]);
             setIsTyping(false);
         }, 1000);
     };
@@ -54,28 +54,28 @@ export default function Chatbot() {
 
     const generateAIResponse = (input) => {
         const lowerInput = input.toLowerCase();
-        if (lowerInput.includes('farmer') || lowerInput.includes('property') || lowerInput.includes('pending') || lowerInput.includes('rera')) {
+        if (lowerInput.includes('farmer') || lowerInput.includes('property') || lowerInput.includes('pending') || lowerInput.includes('rera') || lowerInput.includes('நிலுவை')) {
             return {
-                text: "You have 12 pending real estate property listings waiting for RERA & title approval.",
-                action: { label: "Review Listings", url: "/admin/pending-farmers" }
+                textKey: "You have 12 pending real estate property listings waiting for RERA & title approval.",
+                action: { labelKey: "Review Listings", url: "/admin/pending-farmers" }
             };
-        } else if (lowerInput.includes('task') || lowerInput.includes('visit') || lowerInput.includes('schedule') || lowerInput.includes('showing')) {
+        } else if (lowerInput.includes('task') || lowerInput.includes('visit') || lowerInput.includes('schedule') || lowerInput.includes('showing') || lowerInput.includes('வருகை')) {
             return {
-                text: "There are 8 buyer site showings scheduled for today across OMR and ECR corridors.",
-                action: { label: "View Site Visits", url: "/admin/tasks" }
+                textKey: "There are 8 buyer site showings scheduled for today across OMR and ECR corridors.",
+                action: { labelKey: "View Site Visits", url: "/admin/tasks" }
             };
-        } else if (lowerInput.includes('alert') || lowerInput.includes('emergency') || lowerInput.includes('sos')) {
+        } else if (lowerInput.includes('alert') || lowerInput.includes('emergency') || lowerInput.includes('sos') || lowerInput.includes('எச்சரிக்கை')) {
             return {
-                text: "All project site geofences are active with zero boundary breaches reported today.",
-                action: { label: "Check Site Alerts", url: "/admin/alerts" }
+                textKey: "All project site geofences are active with zero boundary breaches reported today.",
+                action: { labelKey: "Check Site Alerts", url: "/admin/alerts" }
             };
-        } else if (lowerInput.includes('commission') || lowerInput.includes('payment') || lowerInput.includes('booking')) {
+        } else if (lowerInput.includes('commission') || lowerInput.includes('payment') || lowerInput.includes('booking') || lowerInput.includes('கட்டண')) {
             return {
-                text: "Total MTD token advances and bookings stand at ₹37.9 Lakhs. Advisor brokerage payouts are on schedule.",
-                action: { label: "View Ledger", url: "/admin/payments" }
+                textKey: "Total MTD token advances and bookings stand at ₹37.9 Lakhs. Advisor brokerage payouts are on schedule.",
+                action: { labelKey: "View Ledger", url: "/admin/payments" }
             };
         } else {
-            return { text: "I can help you check pending RERA property listings, scheduled buyer site showings, live agent GPS telemetry, or booking commissions. What would you like to review?" };
+            return { textKey: "I can help you check pending RERA property listings, scheduled buyer site showings, live agent GPS telemetry, or booking commissions. What would you like to review?" };
         }
     };
 
@@ -104,7 +104,7 @@ export default function Chatbot() {
                                 <Bot className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-sm">Fieldy AI</h3>
+                                <h3 className="font-bold text-sm">{t('Fieldy AI')}</h3>
                                 <p className="text-[10px] text-slate-300">{t('Always here to help')}</p>
                             </div>
                         </div>
@@ -135,10 +135,10 @@ export default function Chatbot() {
                                         : 'bg-white border border-hp-border text-hp-dark rounded-bl-sm flex flex-col space-y-2'
                                     }`}
                                 >
-                                    <span>{msg.text}</span>
+                                    <span>{msg.textKey ? t(msg.textKey) : msg.text}</span>
                                     {msg.action && (
                                         <a href={msg.action.url} className="hp-btn hp-btn-sm hp-btn-outline mt-1">
-                                            {msg.action.label}
+                                            {msg.action.labelKey ? t(msg.action.labelKey) : msg.action.label}
                                         </a>
                                     )}
                                 </div>
@@ -163,10 +163,10 @@ export default function Chatbot() {
                             {suggestions.map((suggestion, idx) => (
                                 <button
                                     key={idx}
-                                    onClick={() => handleSend(suggestion)}
+                                    onClick={() => handleSend(t(suggestion))}
                                     className="hp-pill snap-start !h-8 !text-xs flex-shrink-0"
                                 >
-                                    {suggestion}
+                                    {t(suggestion)}
                                 </button>
                             ))}
                         </div>

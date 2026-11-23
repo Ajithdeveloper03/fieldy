@@ -126,7 +126,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                         <div className="max-w-2xl">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                                 <span className="hp-chip hp-chip-success hp-chip-dot">
-                                    {t(`Live ${vocab.staff.singular} GPS Stream`)}
+                                    {t('Live {{staff}} GPS Stream', { staff: vocab.staff.singular })}
                                 </span>
                                 <span className="hp-chip hp-chip-gray">
                                     {t('Refreshed')} {lastRefreshed}
@@ -148,7 +148,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                                     <Search className="w-4 h-4 text-hp-muted shrink-0" />
                                     <input
                                         type="text"
-                                        placeholder={t(`Search ${vocab.staff.plural.toLowerCase()}, sectors, or ${vocab.entity.plural.toLowerCase()}...`)}
+                                        placeholder={t('Search {{staffPlural}}, sectors, or {{entities}}...', { staffPlural: vocab.staff.plural.toLowerCase(), entities: vocab.entity.plural.toLowerCase() })}
                                         value={searchQuery}
                                         onChange={e => setSearchQuery(e.target.value)}
                                         className="w-full bg-transparent text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
@@ -196,7 +196,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
 
                     <div className="hp-metric-pill-card">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t(`Today's ${vocab.visit.plural}`)}</span>
+                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Today\'s {{visits}}', { visits: vocab.visit.plural })}</span>
                             <CheckCircle2 className="w-3.5 h-3.5 text-hp-primary" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">
@@ -213,7 +213,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">
                             100%
                         </div>
-                        <p className="text-xs text-hp-muted mt-1">{t(`Within ${vocab.entity.singular.toLowerCase()} bounds`)}</p>
+                        <p className="text-xs text-hp-muted mt-1">{t('Within {{entity}} bounds', { entity: vocab.entity.singular.toLowerCase() })}</p>
                     </div>
                 </div>
 
@@ -255,7 +255,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                     {/* Left: Officer Directory Roster */}
                     <div className="lg:col-span-1 hp-bento-card !p-0 overflow-hidden flex flex-col max-h-[820px]">
                         <div className="p-4 border-b border-hp-border flex items-center justify-between">
-                            <h3 className="hp-card-title text-sm">{t(`${vocab.staff.plural} Roster`)}</h3>
+                            <h3 className="hp-card-title text-sm">{t('{{staffPlural}} Roster', { staffPlural: vocab.staff.plural })}</h3>
                             <span className="text-xs text-hp-muted font-medium">
                                 {filteredEmployees.length} {t('Listed')}
                             </span>
@@ -264,7 +264,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                         <div className="flex-1 overflow-y-auto divide-y divide-hp-border">
                             {filteredEmployees.length === 0 ? (
                                 <div className="p-8 text-center text-xs text-hp-muted font-medium">
-                                    {t(`No ${vocab.staff.plural.toLowerCase()} matching filter.`)}
+                                    {t('No {{staffPlural}} matching filter.', { staffPlural: vocab.staff.plural.toLowerCase() })}
                                 </div>
                             ) : (
                                 filteredEmployees.map(emp => {
@@ -468,7 +468,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
                                     <div className="p-4 bg-hp-hover/60 rounded-xl border border-hp-border">
-                                        <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1">{t(`Current ${vocab.entity.singular} Location`)}</p>
+                                        <p className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1">{t('Current {{entity}} Location', { entity: vocab.entity.singular })}</p>
                                         <p className="text-sm font-semibold text-hp-dark flex items-center gap-1.5">
                                             <MapPin className="w-4 h-4 text-hp-primary shrink-0" />
                                             <span className="truncate">{selectedEmployee.currentLocation || selectedEmployee.current_site || 'Active Beat'}</span>
@@ -486,7 +486,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                                 {/* Target Progress */}
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t(`Today's ${vocab.visit.plural} Target`)}</span>
+                                        <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Today\'s {{visits}} Target', { visits: vocab.visit.plural })}</span>
                                         <span className="text-sm font-bold text-hp-dark">{selectedEmployee.visitsDone || 0} / {selectedEmployee.visitsTarget || 6}</span>
                                     </div>
                                     <div className="w-full bg-hp-hover rounded-full h-2.5 overflow-hidden">
@@ -501,7 +501,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                         </div>
                     ) : (
                         <div className="lg:col-span-2 hp-bento-card p-16 text-center text-sm text-hp-muted">
-                            {t(`Select a ${vocab.staff.singular.toLowerCase()} from the list to view real-time location telemetry.`)}
+                            {t('Select a {{staff}} from the list to view real-time location telemetry.', { staff: vocab.staff.singular.toLowerCase() })}
                         </div>
                     )}
                 </div>

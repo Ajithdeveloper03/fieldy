@@ -2,14 +2,16 @@ import { asset, withBase, BASE } from '../../basePath';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import {
-    LayoutDashboard, Users, FileCheck2, ShieldAlert,
-    Settings, MapPin, Search, Bell, Globe, Briefcase, Building2,
-    ChevronDown, ChevronRight, Wallet, ClipboardList, Menu, X, Star, Sparkles,
-    PanelLeftClose, PanelLeftOpen, LogOut, HelpCircle, User, Layers
+    LayoutDashboard, FileCheck2, ShieldAlert, ClipboardList,
+    Briefcase, MapPin, Search, Bell, Globe, Building2, Sparkles,
+    ChevronDown, ChevronRight, Menu, X, Star,
+    PanelLeftClose, PanelLeftOpen, LogOut, HelpCircle, Layers
 } from 'lucide-react';
 import { useAlert } from '../../Components/AlertSystem';
 import { useTranslation } from 'react-i18next';
 import Chatbot from '../../Components/Chatbot';
+import ThemeCustomizerPopover from '../../Components/ThemeCustomizerPopover';
+import { attachLiquidPointerTracking } from '../../lib/dashboardTheme';
 import { INDUSTRIES, getIndustryById } from '../../data/industriesConfig';
 import { getVocab } from '../../data/industryVocab';
 
@@ -80,6 +82,9 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const [isSearching, setIsSearching] = useState(false);
     const searchInputRef = useRef(null);
     const profileRef = useRef(null);
+    const shellRef = useRef(null);
+
+    useEffect(() => attachLiquidPointerTracking(shellRef.current), []);
 
     const user = props.auth?.user;
     const isSuperadmin = user?.role === 'superadmin';
@@ -92,31 +97,31 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
             id: 'operations',
             label: labels.navFieldWork || 'Field Work',
             items: [
-                { href: '/admin/visits', icon: FileCheck2, label: labels.navVisits || vocab.visit.plural },
-                { href: '/admin/monitor', icon: ShieldAlert, label: vocab.monitor.title, dot: true },
-                { href: '/admin/tasks', icon: ClipboardList, label: labels.todayTasksTitle || vocab.task.plural },
-                { href: '/admin/alerts', icon: Bell, label: vocab.alerts.title },
+                { href: '/admin/visits', icon: FileCheck2, color: '#0D9488', label: labels.navVisits || vocab.visit.plural },
+                { href: '/admin/monitor', icon: ShieldAlert, color: '#2563EB', label: vocab.monitor.title, dot: true },
+                { href: '/admin/tasks', icon: ClipboardList, color: '#7C3AED', label: labels.todayTasksTitle || vocab.task.plural },
+                { href: '/admin/alerts', icon: Bell, color: '#DB2777', label: vocab.alerts.title },
             ],
         },
         {
             id: 'directory',
             label: labels.navDirectory || 'Properties & Team',
             items: [
-                { href: '/admin/farmers', icon: ActiveIndIcon, label: labels.navEntities || vocab.entity.plural },
-                { href: '/admin/employees', icon: Briefcase, label: labels.navAgents || vocab.staff.plural },
+                { href: '/admin/farmers', icon: ActiveIndIcon, color: '#0284C7', label: labels.navEntities || vocab.entity.plural },
+                { href: '/admin/employees', icon: Briefcase, color: '#059669', label: labels.navAgents || vocab.staff.plural },
             ],
         },
         {
             id: 'business',
             label: vocab.finance.group,
             items: [
-                { href: '/admin/performance', icon: MapPin, label: vocab.finance.scores },
+                { href: '/admin/performance', icon: MapPin, color: '#D97706', label: vocab.finance.scores },
             ],
         },
     ];
 
     const allItems = [
-        { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Home' },
+        { href: '/admin/dashboard', icon: LayoutDashboard, color: '#C8553D', label: 'Home' },
         ...navGroups.flatMap(g => g.items),
     ];
 
@@ -182,9 +187,9 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const testAlert = () => {
         triggerCritical("SAFETY ALERT - GEOFENCE BREACH OR TELEMETRY EVENT LOGGED");
     };
+    const isTamil = i18n.language === 'ta' || (i18n.language || '').startsWith('ta');
     const toggleLanguage = () => {
-        const nextLang = i18n.language === 'en' ? 'ta' : 'en';
-        i18n.changeLanguage(nextLang);
+        i18n.changeLanguage(isTamil ? 'en' : 'ta');
     };
     const toggleGroup = (id) => setCollapsedGroups(prev => ({ ...prev, [id]: !prev[id] }));
     const toggleFavorite = (href) => setFavorites(prev => prev.includes(href) ? prev.filter(h => h !== href) : [...prev, href]);
@@ -211,7 +216,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const breadcrumbs = getBreadcrumbs();
 
     /* ─────────────── Sidebar item ─────────────── */
-    const NavItem = ({ href, icon: Icon, label, badge, dot, collapsed, allowFavorite = true }) => {
+    const NavItem = ({ href, icon: Icon, color = '#0D9488', label, badge, dot, collapsed, allowFavorite = true }) => {
         const active = isActive(href);
         const isFav = favorites.includes(href);
         return (
@@ -220,15 +225,18 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                     href={href}
                     title={collapsed ? t(label) : undefined}
                     className={`hp-nav-item ${active ? 'is-active' : ''} ${collapsed ? 'justify-center !px-0' : ''}`}
+                    style={active ? { color } : undefined}
                 >
-                    <Icon className={`w-5 h-5 flex-shrink-0 ${active ? '' : 'text-hp-muted group-hover/nav:text-hp-dark'}`} strokeWidth={1.9} />
+                    <span className="hp-liquid-icon-badge" style={{ '--glass-tint': color }}>
+                        <Icon className="w-[18px] h-[18px] flex-shrink-0" style={{ color }} strokeWidth={active ? 2.3 : 2} />
+                    </span>
                     {!collapsed && <span className="truncate flex-1">{t(label)}</span>}
                     {!collapsed && badge && (
                         <span className={`hp-chip !h-5 !px-1.5 !text-[11px] group-hover/nav:opacity-0 transition-opacity ${active ? 'bg-white text-hp-primary-hover' : 'hp-chip-primary'}`}>{badge}</span>
                     )}
                     {dot && (
-                        <span className={`absolute ${collapsed ? 'top-2 right-3' : 'top-1/2 -translate-y-1/2 right-3 group-hover/nav:opacity-0'} h-2 w-2 rounded-full bg-hp-primary ring-2 ring-white transition-opacity`}>
-                            <span className="absolute inset-0 rounded-full bg-hp-primary animate-ping opacity-60"></span>
+                        <span className={`absolute ${collapsed ? 'top-2 right-3' : 'top-1/2 -translate-y-1/2 right-3 group-hover/nav:opacity-0'} h-2.5 w-2.5 rounded-full bg-cyan-500 ring-2 ring-white transition-opacity`}>
+                            <span className="absolute inset-0 rounded-full bg-cyan-400 animate-ping opacity-70"></span>
                         </span>
                     )}
                 </Link>
@@ -252,7 +260,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
             <div className="flex flex-col h-full">
                 <nav className={`flex-1 overflow-y-auto overflow-x-hidden py-4 ${collapsed ? 'px-3' : 'px-4'}`}>
                     {/* Home */}
-                    <NavItem href={`/admin/dashboard?industry=${currentIndustry.id}`} icon={LayoutDashboard} label="Home" collapsed={collapsed} allowFavorite={false} />
+                    <NavItem href={`/admin/dashboard?industry=${currentIndustry.id}`} icon={LayoutDashboard} color="#C8553D" label="Home" collapsed={collapsed} allowFavorite={false} />
 
                     {/* Favorites */}
                     {favItems.length > 0 && (
@@ -308,10 +316,9 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     };
 
     return (
-        <div className="flex flex-col h-screen bg-hp-bg text-hp-dark font-sans overflow-hidden">
-
-            {/* ══════════ TOP BAR (full width, hPanel style) ══════════ */}
-            <header className="h-16 flex-shrink-0 bg-white border-b border-hp-border flex items-center px-3 lg:px-0 z-40 relative">
+        <div ref={shellRef} className="flex flex-col h-screen hp-liquid-shell text-hp-dark font-sans overflow-hidden relative">
+            {/* ══════════ TOP BAR (Liquid Glass) ══════════ */}
+            <header className="h-16 flex-shrink-0 hp-liquid-header flex items-center px-3 lg:px-0 z-40 relative">
                 {/* Logo zone — aligned with sidebar width */}
                 <div className={`flex items-center gap-1 lg:px-5 flex-shrink-0 transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-[80px] lg:justify-center lg:!px-0' : 'lg:w-[264px]'}`}>
                     <button type="button" onClick={() => setMobileOpen(true)} className="hp-icon-btn lg:hidden" aria-label="Open menu">
@@ -320,6 +327,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                     <Link href={`/admin/dashboard?industry=${currentIndustry.id}`} className="flex items-center" aria-label="Fieldy home">
                         {isSidebarCollapsed ? (
                             <>
+                            
                                 <img src={asset('/images/logo.png')} alt="Fieldy" className="h-9 w-auto object-contain lg:hidden" />
                                 <span className="hidden lg:flex w-10 h-10 rounded-lg overflow-hidden items-center justify-center bg-white border border-hp-border">
                                     <img src={asset('/images/logo.png')} alt="Fieldy" className="h-10 max-w-none object-cover object-left" style={{ width: '88px', marginLeft: '6px' }} />
@@ -374,7 +382,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                 {/* Right actions */}
                 <div className="flex items-center gap-1.5 lg:pr-6 flex-shrink-0">
                     <button type="button" onClick={openAssistant} className="hidden xl:inline-flex hp-btn hp-btn-sm hp-btn-secondary !rounded-full !h-9 !px-3.5 mr-0.5">
-                        <Sparkles className="w-4 h-4 text-hp-primary" />
+                        <Sparkles className="w-4 h-4" style={{ color: 'var(--color-hp-primary)' }} />
                         <span>{t('Ask AI')}</span>
                     </button>
                     <button type="button" onClick={() => searchInputRef.current?.focus()} className="hp-icon-btn md:hidden" aria-label="Search">
@@ -383,8 +391,16 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                     <button type="button" onClick={testAlert} className="hp-icon-btn hover:!text-hp-danger hover:!bg-hp-danger-light" title={t('Test Emergency Alert')}>
                         <ShieldAlert className="w-5 h-5" />
                     </button>
-                    <button type="button" onClick={toggleLanguage} className="hp-icon-btn hidden sm:inline-flex" title={t('Toggle Language')}>
-                        <Globe className="w-5 h-5" />
+                    {/* Live Liquid Glass Accent & Icon Color Customizer */}
+                    <ThemeCustomizerPopover />
+                    <button
+                        type="button"
+                        onClick={toggleLanguage}
+                        className="hp-pill !h-10 !px-3.5 !text-xs !font-bold"
+                        title={t('Toggle Language')}
+                    >
+                        <Globe className="w-4 h-4" />
+                        <span>{isTamil ? 'EN' : 'தமிழ்'}</span>
                     </button>
                     <Link href="/admin/alerts" className="hp-icon-btn" title={t('Alerts & Notifications')}>
                         <Bell className="w-5 h-5" />
@@ -399,7 +415,10 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                             onClick={() => setProfileOpen(!profileOpen)}
                             className={`flex items-center gap-2 h-10 pl-1 pr-2 rounded-full transition-colors ${profileOpen ? 'bg-hp-hover' : 'hover:bg-hp-hover'}`}
                         >
-                            <span className="w-8 h-8 rounded-full bg-hp-dark text-white flex items-center justify-center text-sm font-bold">
+                            <span
+                                className="w-8 h-8 rounded-full text-white flex items-center justify-center text-sm font-bold shadow-md"
+                                style={{ backgroundColor: 'var(--color-hp-primary)' }}
+                            >
                                 {userName.charAt(0).toUpperCase()}
                             </span>
                             <ChevronDown className={`w-4 h-4 text-hp-muted hidden sm:block transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
@@ -414,7 +433,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                                     <div className="min-w-0">
                                         <p className="text-sm font-bold text-hp-dark truncate">{userName}</p>
                                         <p className="text-xs text-hp-muted truncate">{user?.email || companyName}</p>
-                                        <span className="hp-chip hp-chip-primary !h-5 !text-[11px] mt-1.5">{currentIndustry.shortName} Admin</span>
+                                        <span className="hp-chip hp-chip-primary !h-5 !text-[11px] mt-1.5">{t(currentIndustry.shortName)} {t('Admin')}</span>
                                     </div>
                                 </div>
                                 <div className="p-1.5">
@@ -434,13 +453,13 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                                                 onChange={(e) => router.visit(`${cleanPath}?industry=${e.target.value}`)}
                                                 className="hp-input !h-9 !text-sm w-full"
                                             >
-                                                {INDUSTRIES.map(ind => <option key={ind.id} value={ind.id}>{ind.shortName}</option>)}
+                                                {INDUSTRIES.map(ind => <option key={ind.id} value={ind.id}>{t(ind.shortName)}</option>)}
                                             </select>
                                         </div>
                                     )}
                                     <button type="button" onClick={toggleLanguage} className="hp-nav-item w-full">
                                         <Globe className="w-[18px] h-[18px] text-hp-muted" /> {t('Language')}
-                                        <span className="ml-auto hp-chip hp-chip-gray">{i18n.language === 'ta' ? 'தமிழ்' : 'English'}</span>
+                                        <span className="ml-auto hp-chip hp-chip-gray">{isTamil ? 'தமிழ்' : 'English'}</span>
                                     </button>
                                     <button type="button" onClick={openAssistant} className="hp-nav-item w-full"><HelpCircle className="w-[18px] h-[18px] text-hp-muted" /> {t('Help & support')}</button>
                                 </div>
@@ -455,16 +474,16 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                 </div>
             </header>
 
-            <div className="flex flex-1 min-h-0">
-                {/* ══════════ DESKTOP SIDEBAR ══════════ */}
-                <aside className={`hidden lg:flex flex-col flex-shrink-0 bg-white border-r border-hp-border transition-all duration-300 ${isSidebarCollapsed ? 'w-[80px]' : 'w-[264px]'}`}>
+            <div className="flex flex-1 min-h-0 relative z-10">
+                {/* ══════════ DESKTOP SIDEBAR (Liquid Glass) ══════════ */}
+                <aside className={`hidden lg:flex flex-col flex-shrink-0 hp-liquid-sidebar transition-all duration-300 ${isSidebarCollapsed ? 'w-[80px]' : 'w-[264px]'}`}>
                     <SidebarContent collapsed={isSidebarCollapsed} />
                 </aside>
 
                 {/* ══════════ MOBILE DRAWER ══════════ */}
                 <div className={`lg:hidden fixed inset-0 z-50 transition-opacity duration-200 ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-                    <div className="absolute inset-0 bg-hp-dark/40" onClick={() => setMobileOpen(false)} />
-                    <aside className={`absolute left-0 top-0 bottom-0 w-[288px] max-w-[85vw] bg-white shadow-[var(--shadow-hp-lg)] flex flex-col transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                    <div className="absolute inset-0 bg-slate-900/35 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+                    <aside className={`absolute left-0 top-0 bottom-0 w-[288px] max-w-[85vw] hp-liquid-sidebar !bg-white/90 shadow-[var(--shadow-hp-lg)] flex flex-col transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                         <div className="h-16 flex items-center justify-between px-4 border-b border-hp-border flex-shrink-0">
                             <img src={asset('/images/logo.png')} alt="Fieldy" className="h-9 w-auto object-contain" />
                             <button type="button" onClick={() => setMobileOpen(false)} className="hp-icon-btn" aria-label="Close menu"><X className="w-5 h-5" /></button>
@@ -502,27 +521,27 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                 <div className="fixed bottom-5 left-5 z-[100] bg-slate-900 text-white rounded-2xl shadow-2xl border-2 border-emerald-400 max-w-xs w-full p-4">
                     <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">
-                            Guide • {tutorialStep + 1}/{TUTORIAL_STEPS.length}
+                            {t('Guide')} • {tutorialStep + 1}/{TUTORIAL_STEPS.length}
                         </span>
                         <button onClick={closeTutorial} className="text-[11px] font-semibold text-slate-400 hover:text-white">
-                            Skip
+                            {t('Skip')}
                         </button>
                     </div>
-                    <h4 className="text-sm font-bold text-white mb-1">{TUTORIAL_STEPS[tutorialStep].title}</h4>
-                    <p className="text-xs text-slate-300 mb-3">{TUTORIAL_STEPS[tutorialStep].desc}</p>
+                    <h4 className="text-sm font-bold text-white mb-1">{t(TUTORIAL_STEPS[tutorialStep].title)}</h4>
+                    <p className="text-xs text-slate-300 mb-3">{t(TUTORIAL_STEPS[tutorialStep].desc)}</p>
                     <div className="flex items-center justify-between">
                         <Link
                             href={withBase(TUTORIAL_STEPS[tutorialStep].target)}
                             onClick={() => advanceTutorial(tutorialStep + 1)}
                             className="px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-bold hover:bg-emerald-400"
                         >
-                            Open & Next →
+                            {t('Open & Next →')}
                         </Link>
                         <button
                             onClick={() => advanceTutorial(tutorialStep + 1)}
                             className="text-xs font-semibold text-slate-300 hover:text-white"
                         >
-                            {tutorialStep < TUTORIAL_STEPS.length - 1 ? 'Next' : 'Done'}
+                            {tutorialStep < TUTORIAL_STEPS.length - 1 ? t('Next') : t('Done')}
                         </button>
                     </div>
                 </div>

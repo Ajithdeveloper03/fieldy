@@ -49,7 +49,7 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                 {/* Back button */}
                 <div>
                     <Link href="/admin/farmers" className="hp-pill">
-                        <ArrowLeft className="w-4 h-4 mr-1" /> {t(`Back to ${vocab.entity.plural} Directory`)}
+                        <ArrowLeft className="w-4 h-4 mr-1" /> {t('Back to {{entities}} Directory', { entities: vocab.entity.plural })}
                     </Link>
                 </div>
 
@@ -168,11 +168,11 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                             </h3>
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="p-3 bg-hp-hover/60 border border-hp-border rounded-xl text-center">
-                                    <p className="text-[10px] font-bold text-hp-muted uppercase mb-1">Latitude</p>
+                                    <p className="text-[10px] font-bold text-hp-muted uppercase mb-1">{t('Latitude')}</p>
                                     <p className="text-xs font-bold text-hp-dark font-mono">{farmer.land_latitude || '12.9716° N'}</p>
                                 </div>
                                 <div className="p-3 bg-hp-hover/60 border border-hp-border rounded-xl text-center">
-                                    <p className="text-[10px] font-bold text-hp-muted uppercase mb-1">Longitude</p>
+                                    <p className="text-[10px] font-bold text-hp-muted uppercase mb-1">{t('Longitude')}</p>
                                     <p className="text-xs font-bold text-hp-dark font-mono">{farmer.land_longitude || '80.2446° E'}</p>
                                 </div>
                             </div>
@@ -180,7 +180,7 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
 
                         <div className="hp-bento-card">
                             <h3 className="hp-card-title text-sm flex items-center gap-2 mb-4 pb-3 border-b border-hp-border">
-                                <Briefcase className="w-4 h-4 text-hp-primary" /> {t(`${vocab.entity.singular} Attributes`)}
+                                <Briefcase className="w-4 h-4 text-hp-primary" /> {t('{{entity}} Attributes', { entity: vocab.entity.singular })}
                             </h3>
                             <div className="space-y-3.5 text-xs">
                                 <div className="flex justify-between items-center py-1">
@@ -204,7 +204,7 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                         <div className="hp-bento-card">
                             <div className="flex items-center justify-between pb-4 mb-4 border-b border-hp-border">
                                 <h3 className="hp-card-title flex items-center gap-2">
-                                    <FileText className="w-5 h-5 text-hp-primary" /> {t(`Recent ${vocab.visit.plural} Log`)}
+                                    <FileText className="w-5 h-5 text-hp-primary" /> {t('Recent {{visits}} Log', { visits: vocab.visit.plural })}
                                 </h3>
                                 <span className="hp-chip hp-chip-gray">
                                     {visits.length} {t('Completed')}
@@ -212,7 +212,7 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                             </div>
 
                             {visits.length === 0 ? (
-                                <p className="text-xs text-hp-muted text-center py-8">{t(`No ${vocab.visit.plural.toLowerCase()} recorded yet.`)}</p>
+                                <p className="text-xs text-hp-muted text-center py-8">{t('No {{visits}} recorded yet.', { visits: vocab.visit.plural.toLowerCase() })}</p>
                             ) : (
                                 <div className="space-y-3">
                                     {visits.map((visit) => (
@@ -298,7 +298,7 @@ export default function FarmerDetail({ farmer = {}, visits = [] }) {
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs">
                         <div className="w-full max-w-lg hp-card shadow-xl overflow-hidden">
                             <div className="flex items-center justify-between px-6 py-4 border-b border-hp-border">
-                                <h3 className="text-base font-bold text-hp-dark">{t(`Edit ${vocab.entity.singular}`)}</h3>
+                                <h3 className="text-base font-bold text-hp-dark">{t('Edit {{entity}}', { entity: vocab.entity.singular })}</h3>
                                 <button type="button" onClick={() => setShowEditModal(false)} className="p-1 text-hp-muted hover:text-hp-dark">
                                     <X className="w-5 h-5" />
                                 </button>

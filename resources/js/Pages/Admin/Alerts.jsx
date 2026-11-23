@@ -76,10 +76,10 @@ export default function Alerts({ alerts = [] }) {
                             </span>
                         </div>
                         <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                            {t(`${industry.shortName} Operational & Telemetry Alerts`)}
+                            {t('{{industry}} Operational & Telemetry Alerts', { industry: industry.shortName })}
                         </h1>
                         <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
-                            {t(`Real-time audit log of ${industry.name.toLowerCase()} telemetry thresholds, geofence breaches, scheduled ${vocab.visit.plural.toLowerCase()}, and on-duty exceptions.`)}
+                            {t('Real-time audit log of {{industry}} telemetry thresholds, geofence breaches, scheduled {{visits}}, and on-duty exceptions.', { industry: industry.name.toLowerCase(), visits: vocab.visit.plural.toLowerCase() })}
                         </p>
 
                         {/* Search Pill Input Bar */}
@@ -90,7 +90,7 @@ export default function Alerts({ alerts = [] }) {
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder={t(`Search alerts by ${vocab.entity.singular.toLowerCase()}, ${vocab.staff.singular.toLowerCase()}, or event...`)}
+                                    placeholder={t('Search alerts by {{entity}}, {{staff}}, or event...', { entity: vocab.entity.singular.toLowerCase(), staff: vocab.staff.singular.toLowerCase() })}
                                     className="w-full bg-transparent text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
                                 />
                                 {searchQuery && (
@@ -154,7 +154,7 @@ export default function Alerts({ alerts = [] }) {
                     <div className="p-5 border-b border-hp-border flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <ShieldAlert className="w-5 h-5 text-hp-primary" />
-                            <h2 className="hp-card-title">{t(`${industry.shortName} Incident Stream`)}</h2>
+                            <h2 className="hp-card-title">{t('{{industry}} Incident Stream', { industry: industry.shortName })}</h2>
                         </div>
                         <span className="text-xs text-hp-muted font-medium">
                             {filteredAlerts.length} {t('Showing')}
@@ -169,7 +169,7 @@ export default function Alerts({ alerts = [] }) {
                                 </div>
                                 <h3 className="text-base font-bold text-hp-dark">{t('All systems operating normally')}</h3>
                                 <p className="text-xs text-hp-muted mt-1 max-w-sm mx-auto">
-                                    {t(`No incidents matching your filter for ${industry.name}. Field telemetry checks are passing with 100% heartbeat accuracy.`)}
+                                    {t('No incidents matching your filter for {{industry}}. Field telemetry checks are passing with 100% heartbeat accuracy.', { industry: industry.name })}
                                 </p>
                             </div>
                         ) : (

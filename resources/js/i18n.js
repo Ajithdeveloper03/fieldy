@@ -1,6 +1,10 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import taPart1 from './locales/taPart1';
+import taPart2 from './locales/taPart2';
+import taPart3 from './locales/taPart3';
+import taPart4 from './locales/taPart4';
 
 const resources = {
   en: {
@@ -809,7 +813,11 @@ const resources = {
     "Pepper": "மிளகு",
     "Total Cultivated Land": "மொத்த பயிர் நிலப்பரப்பு",
     "Total Field Visits": "மொத்த கள ஆய்வுகள்",
-    "Active Geofence Pings": "புவிசார் கண்காணிப்பு பதிவுகள்"
+    "Active Geofence Pings": "புவிசார் கண்காணிப்பு பதிவுகள்",
+    ...taPart1,
+    ...taPart2,
+    ...taPart3,
+    ...taPart4,
 }
   }
 };
@@ -818,15 +826,23 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
+    supportedLngs: ['en', 'ta'],
+    nonExplicitSupportedLngs: true,
+    load: 'languageOnly',
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false,
-    }
+    },
+    detection: {
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage'],
+    },
   });
 const updateHtmlLanguage = (lng) => {
   if (typeof document !== 'undefined') {
-    document.documentElement.lang = lng;
-    if (lng === 'ta') {
+    const normalized = (lng || 'en').startsWith('ta') ? 'ta' : 'en';
+    document.documentElement.lang = normalized;
+    if (normalized === 'ta') {
       document.documentElement.classList.add('lang-ta');
     } else {
       document.documentElement.classList.remove('lang-ta');

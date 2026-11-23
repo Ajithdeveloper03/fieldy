@@ -968,31 +968,31 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">
-                                        {t(`${industry.shortName} Activity Type`)} <span className="text-[var(--color-hp-primary)]">*</span>
+                                        {t('{{industry}} Activity Type', { industry: industry.shortName })} <span className="text-[var(--color-hp-primary)]">*</span>
                                     </label>
                                     <select
                                         value={newTask.activity_type}
                                         onChange={e => setNewTask(prev => ({ ...prev, activity_type: e.target.value }))}
                                         className="hp-input"
                                     >
-                                        <option value="routine_service">{vocab.visit.singular} & Field Action</option>
-                                        <option value="inspection">Quality Inspection & Checklist QA</option>
-                                        <option value="emergency_dispatch">Emergency SOS / Urgent Dispatch</option>
-                                        <option value="compliance_audit">Regulatory & Statutory Audit</option>
-                                        <option value="client_handover">Client Sign-off & Token Verification</option>
+                                        <option value="routine_service">{vocab.visit.singular} & {t('Field Action')}</option>
+                                        <option value="inspection">{t('Quality Inspection & Checklist QA')}</option>
+                                        <option value="emergency_dispatch">{t('Emergency SOS / Urgent Dispatch')}</option>
+                                        <option value="compliance_audit">{t('Regulatory & Statutory Audit')}</option>
+                                        <option value="client_handover">{t('Client Sign-off & Token Verification')}</option>
                                     </select>
                                 </div>
 
                                 <div>
                                     <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">
-                                        {t(`Target ${vocab.entity.singular}`)}
+                                        {t('Target {{entity}}', { entity: vocab.entity.singular })}
                                     </label>
                                     <select
                                         value={newTask.customer_id}
                                         onChange={e => setNewTask(prev => ({ ...prev, customer_id: e.target.value }))}
                                         className="hp-input"
                                     >
-                                        <option value="">{t(`Select ${vocab.entity.singular}`)}</option>
+                                        <option value="">{t('Select {{entity}}', { entity: vocab.entity.singular })}</option>
                                         {customers.map(c => (
                                             <option key={c.id} value={c.id}>{c.name}</option>
                                         ))}
@@ -1013,7 +1013,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                                         className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[var(--color-hp-primary)] hover:underline"
                                     >
                                         <Sparkles className="w-3 h-3" />
-                                        <span>{generatingAi ? 'Analyzing...' : 'AI Recommend'}</span>
+                                        <span>{generatingAi ? t('Analyzing...') : t('AI Recommend')}</span>
                                     </button>
                                 </div>
                                 <input
@@ -1021,7 +1021,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                                     required
                                     value={newTask.title}
                                     onChange={e => setNewTask(prev => ({ ...prev, title: e.target.value }))}
-                                    placeholder="e.g. 4BHK Model Villa Tour for Buyer Mr. Ramesh at Skyline ECR"
+                                    placeholder={t('e.g. 4BHK Model Villa Tour for Buyer Mr. Ramesh at Skyline ECR')}
                                     className="hp-input"
                                 />
                             </div>
@@ -1031,7 +1031,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                                 <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-lg space-y-1">
                                     <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
                                         <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                                        <span>Fieldy AI Insights (Advisory)</span>
+                                        <span>{t('Fieldy AI Insights (Advisory)')}</span>
                                     </div>
                                     <p className="text-xs text-amber-800 leading-relaxed font-medium">
                                         {newTask.ai_suggestions}
@@ -1048,7 +1048,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                                     rows={3}
                                     value={newTask.description}
                                     onChange={e => setNewTask(prev => ({ ...prev, description: e.target.value }))}
-                                    placeholder="Provide clear goals, target facility / client details, or special notes..."
+                                    placeholder={t('Provide clear goals, target facility / client details, or special notes...')}
                                     className="hp-input resize-none"
                                 />
                             </div>
@@ -1295,8 +1295,8 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
 
                         {/* Work Order & Domain Badge */}
                         <div className="flex items-center justify-between text-xs font-medium text-[var(--color-hp-gray-600)] bg-[var(--color-hp-gray-50)] px-3 py-2 rounded-lg border border-[var(--color-hp-border)]">
-                            <span>Site Task Ref: <strong className="text-[var(--color-hp-dark)]">{selectedTask.work_order_code || `ST-${selectedTask.id}`}</strong></span>
-                            <span className="capitalize text-[var(--color-hp-primary)] font-semibold bg-[var(--color-hp-primary-light)] px-2 py-0.5 rounded">{String(selectedTask.industry || 'site_visit').replace('_', ' ')}</span>
+                            <span>{t('Site Task Ref')}: <strong className="text-[var(--color-hp-dark)]">{selectedTask.work_order_code || `ST-${selectedTask.id}`}</strong></span>
+                            <span className="capitalize text-[var(--color-hp-primary)] font-semibold bg-[var(--color-hp-primary-light)] px-2 py-0.5 rounded">{t(String(selectedTask.industry || 'site_visit').replace('_', ' '))}</span>
                         </div>
 
                         {/* Customer / Client */}
@@ -1313,7 +1313,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                                 {t('Site Showing / Inspection Instructions')}
                             </span>
                             <p className="text-xs sm:text-sm text-[var(--color-hp-dark)] bg-[var(--color-hp-gray-50)] p-3 rounded-lg border border-[var(--color-hp-border)] whitespace-pre-wrap leading-relaxed">
-                                {selectedTask.description || 'No detailed instructions provided.'}
+                                {selectedTask.description || t('No detailed instructions provided.')}
                             </p>
                         </div>
 
@@ -1322,7 +1322,7 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                             <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-lg space-y-1">
                                 <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
                                     <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                                    <span>Fieldy PropTech AI Insights</span>
+                                    <span>{t('Fieldy PropTech AI Insights')}</span>
                                 </div>
                                 <p className="text-xs text-amber-800 leading-relaxed font-medium">
                                     {selectedTask.ai_suggestions}
@@ -1333,14 +1333,14 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                         {/* Service Checklist & Evidence Verification */}
                         <div className="space-y-2">
                             <span className="text-[11px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider block">
-                                {industry.name} Work Order Checklist & Verification
+                                {t('{{industry}} Work Order Checklist & Verification', { industry: industry.name })}
                             </span>
                             <div className="space-y-1.5 bg-[var(--color-hp-gray-50)] p-3 rounded-lg border border-[var(--color-hp-border)]">
                                 {(selectedTask.checklist || [
-                                    { id: 1, text: `GPS Check-in verified inside ${vocab.entity.singular.toLowerCase()} geofence`, done: true },
-                                    { id: 2, text: `Mandatory operational protocol & ${vocab.visit.singular.toLowerCase()} inspection completed`, done: false },
-                                    { id: 3, text: 'Geo-tagged site & procedural evidence photos uploaded', done: false },
-                                    { id: 4, text: `Client OTP sign-off verified (Code: ${selectedTask.customer_otp || '4821'})`, done: selectedTask.otp_verified }
+                                    { id: 1, text: t('GPS Check-in verified inside {{entity}} geofence', { entity: vocab.entity.singular.toLowerCase() }), done: true },
+                                    { id: 2, text: t('Mandatory operational protocol & {{visit}} inspection completed', { visit: vocab.visit.singular.toLowerCase() }), done: false },
+                                    { id: 3, text: t('Geo-tagged site & procedural evidence photos uploaded'), done: false },
+                                    { id: 4, text: `${t('Client OTP sign-off verified')} (${t('Code')}: ${selectedTask.customer_otp || '4821'})`, done: selectedTask.otp_verified }
                                 ]).map((item, idx) => (
                                     <div key={idx} className="flex items-center gap-2 text-xs">
                                         <div className={`w-4 h-4 rounded flex items-center justify-center ${item.done ? 'bg-emerald-600 text-white' : 'border border-[var(--color-hp-border)] bg-white'}`}>
@@ -1387,21 +1387,21 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
 
                             <div className="bg-[var(--color-hp-gray-50)] p-2.5 rounded-lg border border-[var(--color-hp-border)]">
                                 <span className="text-[10px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider block mb-1">
-                                    Customer OTP
+                                    {t('Customer OTP')}
                                 </span>
                                 <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--color-hp-dark)]">
                                     <KeyRound className="w-3.5 h-3.5 text-[var(--color-hp-primary)]" />
-                                    <span>{selectedTask.customer_otp || '4821'} ({selectedTask.otp_verified ? 'Verified' : 'Pending'})</span>
+                                    <span>{selectedTask.customer_otp || '4821'} ({selectedTask.otp_verified ? t('Verified') : t('Pending')})</span>
                                 </div>
                             </div>
 
                             <div className="bg-[var(--color-hp-gray-50)] p-2.5 rounded-lg border border-[var(--color-hp-border)]">
                                 <span className="text-[10px] font-semibold text-[var(--color-hp-gray-500)] uppercase tracking-wider block mb-1">
-                                    Performance Reward
+                                    {t('Performance Reward')}
                                 </span>
                                 <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
                                     <Award className="w-3.5 h-3.5 text-emerald-600" />
-                                    <span>+{selectedTask.points_awarded || 35} Pts</span>
+                                    <span>+{selectedTask.points_awarded || 35} {t('Pts')}</span>
                                 </div>
                             </div>
                         </div>

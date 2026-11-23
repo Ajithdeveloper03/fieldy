@@ -59,8 +59,8 @@ export default function EmployeeRegistrationForm() {
                         <ArrowLeft className="w-4 h-4 mr-1" /> {t('Back')}
                     </Link>
                     <div>
-                        <h1 className="hp-page-title">{t(`Onboard New ${vocab.staff.singular}`)}</h1>
-                        <p className="text-sm text-hp-muted mt-0.5">{t(`Add a new certified ${vocab.staff.singular.toLowerCase()} to your ${industry.name} field operations workforce.`)}</p>
+                        <h1 className="hp-page-title">{t('Onboard New {{staff}}', { staff: vocab.staff.singular })}</h1>
+                        <p className="text-sm text-hp-muted mt-0.5">{t('Add a new certified {{staff}} to your {{industry}} field operations workforce.', { staff: vocab.staff.singular.toLowerCase(), industry: industry.name })}</p>
                     </div>
                 </div>
 
@@ -116,18 +116,18 @@ export default function EmployeeRegistrationForm() {
                                 <div>
                                     <h2 className="hp-card-title flex items-center gap-2">
                                         <User className="w-5 h-5 text-hp-primary" />
-                                        {t(`${vocab.staff.singular} Personal Details`)}
+                                        {t('{{staff}} Personal Details', { staff: vocab.staff.singular })}
                                     </h2>
-                                    <p className="text-xs text-hp-muted mt-0.5">{t(`Basic identity of the ${vocab.staff.singular.toLowerCase()}.`)}</p>
+                                    <p className="text-xs text-hp-muted mt-0.5">{t('Basic identity of the {{staff}}.', { staff: vocab.staff.singular.toLowerCase() })}</p>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t(`${vocab.staff.singular} Full Name`)}</label>
+                                        <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">{t('{{staff}} Full Name', { staff: vocab.staff.singular })}</label>
                                         <input
                                             type="text"
                                             value={data.name}
                                             onChange={(e) => setData('name', e.target.value)}
-                                            placeholder="e.g. Karthik Sundaram"
+                                            placeholder={t('e.g. Karthik Sundaram')}
                                             className="hp-input"
                                         />
                                         {errors.name && <p className="text-hp-danger text-xs font-bold mt-1">{errors.name}</p>}
@@ -138,7 +138,7 @@ export default function EmployeeRegistrationForm() {
                                             type="tel"
                                             value={data.phone}
                                             onChange={(e) => setData('phone', e.target.value)}
-                                            placeholder="10-digit mobile number"
+                                            placeholder={t('10-digit mobile number')}
                                             className="hp-input"
                                         />
                                         {errors.phone && <p className="text-hp-danger text-xs font-bold mt-1">{errors.phone}</p>}
@@ -164,7 +164,7 @@ export default function EmployeeRegistrationForm() {
                                             type="text"
                                             value={data.emergency_phone}
                                             onChange={(e) => setData('emergency_phone', e.target.value)}
-                                            placeholder="Alternate emergency contact phone"
+                                            placeholder={t('Alternate emergency contact phone')}
                                             className="hp-input"
                                         />
                                         {errors.emergency_phone && <p className="text-hp-danger text-xs font-bold mt-1">{errors.emergency_phone}</p>}
@@ -175,7 +175,7 @@ export default function EmployeeRegistrationForm() {
                                             type="text"
                                             value={data.assigned_region}
                                             onChange={(e) => setData('assigned_region', e.target.value)}
-                                            placeholder="e.g. Metro Central Beat"
+                                            placeholder={t('e.g. Metro Central Beat')}
                                             className="hp-input"
                                         />
                                         {errors.assigned_region && <p className="text-hp-danger text-xs font-bold mt-1">{errors.assigned_region}</p>}
@@ -192,12 +192,12 @@ export default function EmployeeRegistrationForm() {
                                         <CheckCircle2 className="w-5 h-5 text-hp-primary" />
                                         {t('Review & Create Login Credentials')}
                                     </h2>
-                                    <p className="text-xs text-hp-muted mt-0.5">{t(`Confirm the details below. App login credentials are generated automatically on submit.`)}</p>
+                                    <p className="text-xs text-hp-muted mt-0.5">{t('Confirm the details below. App login credentials are generated automatically on submit.')}</p>
                                 </div>
 
                                 <div className="rounded-xl border border-hp-border divide-y divide-hp-border overflow-hidden">
                                     <div className="flex items-center justify-between px-4 py-3">
-                                        <span className="text-xs text-hp-muted">{t(`${vocab.staff.singular} Name`)}</span>
+                                        <span className="text-xs text-hp-muted">{t('{{staff}} Name', { staff: vocab.staff.singular })}</span>
                                         <span className="text-sm font-bold text-hp-dark">{data.name || '—'}</span>
                                     </div>
                                     <div className="flex items-center justify-between px-4 py-3">
@@ -217,7 +217,7 @@ export default function EmployeeRegistrationForm() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-hp-primary-light/30 border border-hp-primary-border rounded-xl p-4">
                                     <div className="md:col-span-2 flex items-center gap-2">
                                         <KeyRound className="w-4 h-4 text-hp-primary shrink-0" />
-                                        <h4 className="text-xs font-bold text-hp-dark uppercase tracking-wider">{t(`Set ${vocab.staff.singular} Login Credentials`)}</h4>
+                                        <h4 className="text-xs font-bold text-hp-dark uppercase tracking-wider">{t('Set {{staff}} Login Credentials', { staff: vocab.staff.singular })}</h4>
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-hp-dark mb-1">{t('Username / Login ID')}</label>
@@ -266,7 +266,7 @@ export default function EmployeeRegistrationForm() {
                                 ) : (
                                     <button type="submit" disabled={processing} className="hp-btn hp-btn-primary">
                                         <Save className="w-4 h-4 mr-1.5" />
-                                        {processing ? t('Onboarding...') : t(`Onboard ${vocab.staff.singular}`)}
+                                        {processing ? t('Onboarding...') : t('Onboard {{staff}}', { staff: vocab.staff.singular })}
                                     </button>
                                 )}
                             </div>

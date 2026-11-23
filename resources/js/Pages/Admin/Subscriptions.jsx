@@ -169,7 +169,7 @@ export default function Subscriptions() {
                                     alt="Attendance Automation" 
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/20" />
+                                <div className="absolute inset-0 bg-black/45" />
                                 
                                 {/* Floating Badges */}
                                 <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/20">
@@ -196,8 +196,8 @@ export default function Subscriptions() {
                             </p>
                             <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-hp-border text-[11px] font-semibold text-hp-muted">
                                 <span>{t('Recommended for:')}</span>
-                                <span className="hp-chip hp-chip-gray !h-5">Jibble Alternative</span>
-                                <span className="hp-chip hp-chip-gray !h-5">Truein Ready</span>
+                                <span className="hp-chip hp-chip-gray !h-5">{t('Jibble Alternative')}</span>
+                                <span className="hp-chip hp-chip-gray !h-5">{t('Truein Ready')}</span>
                             </div>
                         </div>
 
@@ -209,7 +209,7 @@ export default function Subscriptions() {
                                     alt="Work Orders & CRM" 
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/20" />
+                                <div className="absolute inset-0 bg-black/45" />
                                 
                                 <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/20">
                                     <FileCheck2 className="w-3.5 h-3.5 text-orange-400" />
@@ -234,8 +234,8 @@ export default function Subscriptions() {
                             </p>
                             <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-hp-border text-[11px] font-semibold text-hp-muted">
                                 <span>{t('Recommended for:')}</span>
-                                <span className="hp-chip hp-chip-gray !h-5">Zoho FSM Match</span>
-                                <span className="hp-chip hp-chip-gray !h-5">OptifyServe</span>
+                                <span className="hp-chip hp-chip-gray !h-5">{t('Zoho FSM Match')}</span>
+                                <span className="hp-chip hp-chip-gray !h-5">{t('OptifyServe')}</span>
                             </div>
                         </div>
 
@@ -247,7 +247,7 @@ export default function Subscriptions() {
                                     alt="Live Telemetry" 
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/20" />
+                                <div className="absolute inset-0 bg-black/45" />
                                 
                                 <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/20">
                                     <MapPin className="w-3.5 h-3.5 text-red-400" />
@@ -272,8 +272,8 @@ export default function Subscriptions() {
                             </p>
                             <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-hp-border text-[11px] font-semibold text-hp-muted">
                                 <span>{t('Recommended for:')}</span>
-                                <span className="hp-chip hp-chip-gray !h-5">TrackoField Match</span>
-                                <span className="hp-chip hp-chip-gray !h-5">Emirates Compliance</span>
+                                <span className="hp-chip hp-chip-gray !h-5">{t('TrackoField Match')}</span>
+                                <span className="hp-chip hp-chip-gray !h-5">{t('Emirates Compliance')}</span>
                             </div>
                         </div>
                     </div>
@@ -355,7 +355,7 @@ export default function Subscriptions() {
                                     </div>
                                     <div className="text-right">
                                         <p className="text-xs text-hp-muted line-through">₹ 1,599.00</p>
-                                        <p className="text-xl font-bold text-hp-dark">₹ {currentLevel.prices['24']} <span className="text-xs font-normal text-hp-muted">/agent/mo</span></p>
+                                        <p className="text-xl font-bold text-hp-dark">₹ {currentLevel.prices['24']} <span className="text-xs font-normal text-hp-muted">{t('/agent/mo')}</span></p>
                                     </div>
                                 </div>
                             </div>
@@ -381,7 +381,7 @@ export default function Subscriptions() {
                                     </div>
                                     <div className="text-right">
                                         <p className="text-xs text-hp-muted line-through">₹ 1,599.00</p>
-                                        <p className="text-xl font-bold text-hp-dark">₹ {currentLevel.prices['12']} <span className="text-xs font-normal text-hp-muted">/agent/mo</span></p>
+                                        <p className="text-xl font-bold text-hp-dark">₹ {currentLevel.prices['12']} <span className="text-xs font-normal text-hp-muted">{t('/agent/mo')}</span></p>
                                     </div>
                                 </div>
                             </div>
@@ -407,7 +407,7 @@ export default function Subscriptions() {
                                     </div>
                                     <div className="text-right">
                                         <p className="text-xs text-hp-muted line-through">₹ 1,599.00</p>
-                                        <p className="text-xl font-bold text-hp-dark">₹ {currentLevel.prices['1']} <span className="text-xs font-normal text-hp-muted">/agent/mo</span></p>
+                                        <p className="text-xl font-bold text-hp-dark">₹ {currentLevel.prices['1']} <span className="text-xs font-normal text-hp-muted">{t('/agent/mo')}</span></p>
                                     </div>
                                 </div>
                             </div>
@@ -462,7 +462,7 @@ export default function Subscriptions() {
                                     {currentLevel.features.slice(0, 6).map((feat, i) => (
                                         <li key={i} className="flex items-center gap-2.5">
                                             <Check className="w-4 h-4 text-indigo-600 shrink-0" />
-                                            <span>{feat}</span>
+                                            <span>{t(feat)}</span>
                                         </li>
                                     ))}
                                 </ul>

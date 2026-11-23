@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Head, Link, useForm, router } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import SuperadminLayout from './SuperadminLayout';
 import { INDUSTRIES, getIndustryById } from '../../data/industriesConfig';
-import { 
+import {
     Building2, Plus, Shield, ShieldCheck, KeyRound, Eye, EyeOff, Globe,
-    Users, Phone, Mail, MapPin, 
-    CheckCircle2, XCircle, MoreVertical, 
+    Users, Phone, Mail, MapPin,
+    CheckCircle2, XCircle, MoreVertical,
     X, Edit3, Power, AlertCircle, ShieldAlert,
     Home, ChevronRight
 } from 'lucide-react';
@@ -17,6 +18,7 @@ const CLIENT_INDUSTRY_IDS = [
 const CLIENT_INDUSTRIES = INDUSTRIES.filter(({ id }) => CLIENT_INDUSTRY_IDS.includes(id));
 
 export default function Companies({ companies = [] }) {
+    const { t } = useTranslation();
     const [industryFilter, setIndustryFilter] = useState('all');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -60,9 +62,9 @@ export default function Companies({ companies = [] }) {
 
     const passwordStrength = (() => {
         const p = data.admin_password || '';
-        if (p.length >= 10 && /[A-Z]/.test(p) && /\d/.test(p) && /[^A-Za-z0-9]/.test(p)) return { label: 'Strong', color: 'text-emerald-600', bar: 'w-full bg-emerald-500' };
-        if (p.length >= 8 && /[A-Za-z]/.test(p) && /\d/.test(p)) return { label: 'Good', color: 'text-amber-600', bar: 'w-2/3 bg-amber-500' };
-        return { label: 'Weak (min 8 chars, letters + numbers)', color: 'text-rose-600', bar: 'w-1/3 bg-rose-500' };
+        if (p.length >= 10 && /[A-Z]/.test(p) && /\d/.test(p) && /[^A-Za-z0-9]/.test(p)) return { label: t('Strong'), color: 'text-emerald-600', bar: 'w-full bg-emerald-500' };
+        if (p.length >= 8 && /[A-Za-z]/.test(p) && /\d/.test(p)) return { label: t('Good'), color: 'text-amber-600', bar: 'w-2/3 bg-amber-500' };
+        return { label: t('Weak (min 8 chars, letters + numbers)'), color: 'text-rose-600', bar: 'w-1/3 bg-rose-500' };
     })();
 
     const filteredCompanies = industryFilter === 'all'
@@ -80,34 +82,34 @@ export default function Companies({ companies = [] }) {
     };
 
     const handleToggleStatus = (id) => {
-        if (confirm('Are you sure you want to toggle the active status of this company?')) {
+        if (confirm(t('Are you sure you want to toggle the active status of this company?'))) {
             router.post(`/superadmin/companies/${id}/toggle-status`);
         }
     };
 
     return (
         <SuperadminLayout>
-            <Head title="Client Companies Management - Fieldy" />
+            <Head title={`${t('Client Companies')} - Fieldy`} />
 
             <div className="space-y-6">
                 {/* Breadcrumbs */}
                 <div className="flex items-center gap-2 text-xs text-[var(--color-hp-gray-600)]">
                     <Link href="/superadmin/dashboard" className="hover:text-[var(--color-hp-primary)] flex items-center gap-1 transition-colors">
                         <Home className="w-3.5 h-3.5" />
-                        <span>Superadmin</span>
+                        <span>{t('Superadmin')}</span>
                     </Link>
                     <ChevronRight className="w-3.5 h-3.5 text-[var(--color-hp-gray-400)]" />
-                    <span className="font-semibold text-[var(--color-hp-dark)]">Client Companies</span>
+                    <span className="font-semibold text-[var(--color-hp-dark)]">{t('Client Companies')}</span>
                 </div>
 
-                {/* Hostinger hPanel Header */}
+                {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[var(--color-hp-border)]">
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-hp-dark)] tracking-tight">
-                            Client Companies
+                            {t('Client Companies')}
                         </h1>
                         <p className="text-xs sm:text-sm text-[var(--color-hp-gray-600)] mt-1">
-                            Register, manage tenancies, configure limits, and provision client admins.
+                            {t('Register, manage tenancies, configure limits, and provision client admins.')}
                         </p>
                     </div>
                     <button
@@ -115,7 +117,7 @@ export default function Companies({ companies = [] }) {
                         className="hp-btn hp-btn-primary inline-flex items-center gap-2"
                     >
                         <Plus className="w-4 h-4" />
-                        <span>Onboard Client Company</span>
+                        <span>{t('Onboard Client Company')}</span>
                     </button>
                 </div>
 
@@ -128,15 +130,15 @@ export default function Companies({ companies = [] }) {
                             onChange={(e) => setIndustryFilter(e.target.value)}
                             className="hp-input pl-9 appearance-none cursor-pointer"
                         >
-                            <option value="all">All Company Types</option>
+                            <option value="all">{t('All Company Types')}</option>
                             {CLIENT_INDUSTRIES.map((industry) => (
-                                <option key={industry.id} value={industry.id}>{industry.name}</option>
+                                <option key={industry.id} value={industry.id}>{t(industry.name)}</option>
                             ))}
                         </select>
                         <ChevronRight className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-[var(--color-hp-gray-500)] pointer-events-none" />
                     </div>
                     <div className="text-xs text-[var(--color-hp-gray-600)] font-medium">
-                        Total: <span className="font-bold text-[var(--color-hp-dark)]">{filteredCompanies.length}</span> Companies
+                        {t('Total')}: <span className="font-bold text-[var(--color-hp-dark)]">{filteredCompanies.length}</span> {t('Companies')}
                     </div>
                 </div>
 
@@ -159,12 +161,12 @@ export default function Companies({ companies = [] }) {
                                                 {company.name}
                                             </h3>
                                             <span className="text-[11px] font-mono text-[var(--color-hp-gray-500)]">
-                                                {company.code || 'NO-CODE'}
+                                                {company.code || t('NO-CODE')}
                                             </span>
                                         </div>
                                     </div>
                                     <span className={`hp-chip ${company.status === 'active' ? 'hp-chip-success' : 'hp-chip-danger'}`}>
-                                        {company.status}
+                                        {t(company.status)}
                                     </span>
                                 </div>
 
@@ -191,27 +193,27 @@ export default function Companies({ companies = [] }) {
                                 <div className="mt-2.5 flex items-center gap-2 text-xs text-[var(--color-hp-gray-600)]">
                                     <Building2 className="w-3.5 h-3.5 text-[var(--color-hp-gray-400)] shrink-0" />
                                     <span className="font-medium text-[var(--color-hp-dark)]">
-                                        {getIndustryById(company.industry).name}
+                                        {t(getIndustryById(company.industry).name)}
                                     </span>
                                 </div>
 
                                 {/* Limits & Tier */}
-                                <div className="mt-3.5 p-3 rounded-lg bg-[var(--color-hp-gray-50)] border border-[var(--color-hp-border)] space-y-2">
+                                <div className="mt-3.5 p-3 rounded-lg bg-white/40 border border-white/80 space-y-2">
                                     <div className="flex items-center justify-between text-xs">
-                                        <span className="text-[var(--color-hp-gray-600)]">Subscription Tier</span>
+                                        <span className="text-[var(--color-hp-gray-600)]">{t('Subscription Tier')}</span>
                                         <span className="font-bold uppercase tracking-wider text-[var(--color-hp-primary)] text-[10px] bg-[var(--color-hp-primary-light)] px-2 py-0.5 rounded">
-                                            {company.plan}
+                                            {t(company.plan)}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between text-xs">
-                                        <span className="text-[var(--color-hp-gray-600)]">Workforce Quota</span>
+                                        <span className="text-[var(--color-hp-gray-600)]">{t('Workforce Quota')}</span>
                                         <span className="font-semibold text-[var(--color-hp-dark)]">
-                                            {company.employees_count} / {company.max_employees} agents
+                                            {company.employees_count} / {company.max_employees} {t('agents')}
                                         </span>
                                     </div>
                                     {/* Capacity progress bar */}
                                     <div className="w-full bg-[var(--color-hp-gray-200)] h-1.5 rounded-full overflow-hidden">
-                                        <div 
+                                        <div
                                             className="bg-[var(--color-hp-primary)] h-full rounded-full transition-all"
                                             style={{ width: `${Math.min(100, (company.employees_count / (company.max_employees || 1)) * 100)}%` }}
                                         />
@@ -220,8 +222,8 @@ export default function Companies({ companies = [] }) {
 
                                 {/* Admin assigned */}
                                 {company.admin && (
-                                    <div className="mt-2.5 text-[11px] text-[var(--color-hp-gray-600)] flex items-center justify-between bg-[var(--color-hp-gray-50)] px-2.5 py-1.5 rounded border border-[var(--color-hp-border)]">
-                                        <span>Admin:</span>
+                                    <div className="mt-2.5 text-[11px] text-[var(--color-hp-gray-600)] flex items-center justify-between bg-white/40 px-2.5 py-1.5 rounded border border-white/80">
+                                        <span>{t('Admin')}:</span>
                                         <span className="font-medium text-[var(--color-hp-dark)] truncate ml-1">{company.admin.name} ({company.admin.email})</span>
                                     </div>
                                 )}
@@ -234,7 +236,7 @@ export default function Companies({ companies = [] }) {
                                     className="flex-1 hp-btn hp-btn-secondary hp-btn-sm inline-flex items-center justify-center gap-1.5"
                                 >
                                     <Edit3 className="w-3.5 h-3.5" />
-                                    <span>Inspect Data</span>
+                                    <span>{t('Inspect Data')}</span>
                                 </Link>
 
                                 <button
@@ -244,7 +246,7 @@ export default function Companies({ companies = [] }) {
                                             ? 'text-rose-600 border border-rose-200 hover:bg-rose-50'
                                             : 'text-emerald-700 border border-emerald-200 hover:bg-emerald-50'
                                     }`}
-                                    title={company.status === 'active' ? 'Suspend Tenant' : 'Activate Tenant'}
+                                    title={company.status === 'active' ? t('Suspend Tenant') : t('Activate Tenant')}
                                 >
                                     <Power className="w-3.5 h-3.5" />
                                 </button>
@@ -256,11 +258,11 @@ export default function Companies({ companies = [] }) {
                 {/* Create Company Modal */}
                 {isAddModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs overflow-y-auto">
-                        <div className="w-full max-w-2xl hp-card shadow-xl overflow-hidden my-8">
+                        <div className="w-full max-w-2xl hp-pop rounded-2xl overflow-hidden my-8">
                             <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-hp-border)]">
                                 <div className="flex items-center gap-2 text-[var(--color-hp-dark)] font-bold text-base">
                                     <Building2 className="w-5 h-5 text-[var(--color-hp-primary)]" />
-                                    <span>Onboard New Client Company</span>
+                                    <span>{t('Onboard New Client Company')}</span>
                                 </div>
                                 <button
                                     onClick={() => setIsAddModalOpen(false)}
@@ -273,7 +275,7 @@ export default function Companies({ companies = [] }) {
                             <form onSubmit={handleCreateCompany} className="p-6 space-y-5 max-h-[82vh] overflow-y-auto">
                                 {Object.keys(errors).length > 0 && (
                                     <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 space-y-1">
-                                        <p className="font-bold">Please fix the following validation errors:</p>
+                                        <p className="font-bold">{t('Please fix the following validation errors:')}</p>
                                         {Object.values(errors).map((err, i) => (
                                             <p key={i}>• {err}</p>
                                         ))}
@@ -281,12 +283,12 @@ export default function Companies({ companies = [] }) {
                                 )}
 
                                 <div className="text-xs font-bold text-[var(--color-hp-primary)] uppercase tracking-wider pb-1 border-b border-[var(--color-hp-border)]">
-                                    1. Organization & Business Identity
+                                    {t('1. Organization & Business Identity')}
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Company Legal Name *</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Company Legal Name')} *</label>
                                         <input
                                             type="text"
                                             required
@@ -299,18 +301,18 @@ export default function Companies({ companies = [] }) {
                                                     if (autoCode) setData('code', autoCode);
                                                 }
                                             }}
-                                            placeholder="e.g. Sri Murugan Infra Pvt Ltd"
+                                            placeholder={t('e.g. Sri Murugan Infra Pvt Ltd')}
                                             className="hp-input"
                                         />
                                         {errors.name && <p className="text-rose-600 text-xs mt-1">{errors.name}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Tenant Prefix Code</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Tenant Prefix Code')}</label>
                                         <input
                                             type="text"
                                             value={data.code}
                                             onChange={(e) => setData('code', e.target.value.toUpperCase())}
-                                            placeholder="e.g. SMINF"
+                                            placeholder={t('e.g. SMINF')}
                                             className="hp-input font-mono"
                                         />
                                         {errors.code && <p className="text-rose-600 text-xs mt-1">{errors.code}</p>}
@@ -319,7 +321,7 @@ export default function Companies({ companies = [] }) {
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Primary Service Vertical *</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Primary Service Vertical')} *</label>
                                         <select
                                             required
                                             value={data.industry}
@@ -327,18 +329,18 @@ export default function Companies({ companies = [] }) {
                                             className="hp-input"
                                         >
                                             {CLIENT_INDUSTRIES.map((industry) => (
-                                                <option key={industry.id} value={industry.id}>{industry.name}</option>
+                                                <option key={industry.id} value={industry.id}>{t(industry.name)}</option>
                                             ))}
                                         </select>
                                         {errors.industry && <p className="text-rose-600 text-xs mt-1">{errors.industry}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">GSTIN / Business Reg. ID</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('GSTIN / Business Reg. ID')}</label>
                                         <input
                                             type="text"
                                             value={data.gst_number}
                                             onChange={(e) => setData('gst_number', e.target.value.toUpperCase())}
-                                            placeholder="e.g. 33AABCU9603R1ZM"
+                                            placeholder={t('e.g. 33AABCU9603R1ZM')}
                                             className="hp-input font-mono"
                                         />
                                     </div>
@@ -346,43 +348,43 @@ export default function Companies({ companies = [] }) {
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">City *</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('City')} *</label>
                                         <input
                                             type="text"
                                             required
                                             value={data.city}
                                             onChange={(e) => setData('city', e.target.value)}
-                                            placeholder="e.g. Chennai, Trichy, Coimbatore"
+                                            placeholder={t('e.g. Chennai, Trichy, Coimbatore')}
                                             className="hp-input"
                                         />
                                         {errors.city && <p className="text-rose-600 text-xs mt-1">{errors.city}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">State</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('State')}</label>
                                         <input
                                             type="text"
                                             value={data.state}
                                             onChange={(e) => setData('state', e.target.value)}
-                                            placeholder="Tamil Nadu"
+                                            placeholder={t('Tamil Nadu')}
                                             className="hp-input"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Headquarters / Registered Address</label>
+                                    <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Headquarters / Registered Address')}</label>
                                     <input
                                         type="text"
                                         value={data.address}
                                         onChange={(e) => setData('address', e.target.value)}
-                                        placeholder="No. 42, Anna Salai, Teynampet"
+                                        placeholder={t('No. 42, Anna Salai, Teynampet')}
                                         className="hp-input"
                                     />
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Official Email *</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Official Email')} *</label>
                                         <input
                                             type="email"
                                             required
@@ -394,7 +396,7 @@ export default function Companies({ companies = [] }) {
                                         {errors.email && <p className="text-rose-600 text-xs mt-1">{errors.email}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Official Phone *</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Official Phone')} *</label>
                                         <input
                                             type="tel"
                                             required
@@ -406,7 +408,7 @@ export default function Companies({ companies = [] }) {
                                         {errors.phone && <p className="text-rose-600 text-xs mt-1">{errors.phone}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Estimated Project Sites</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Estimated Project Sites')}</label>
                                         <input
                                             type="number"
                                             min="1"
@@ -418,12 +420,12 @@ export default function Companies({ companies = [] }) {
                                 </div>
 
                                 <div className="text-xs font-bold text-[var(--color-hp-primary)] uppercase tracking-wider pt-2 pb-1 border-b border-[var(--color-hp-border)]">
-                                    2. Subscription Quota & Contract Term
+                                    {t('2. Subscription Quota & Contract Term')}
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Subscription Plan</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Subscription Plan')}</label>
                                         <select
                                             value={data.plan}
                                             onChange={(e) => {
@@ -434,13 +436,13 @@ export default function Companies({ companies = [] }) {
                                             }}
                                             className="hp-input"
                                         >
-                                            <option value="starter">Starter (Up to 15 agents)</option>
-                                            <option value="professional">Professional (Up to 50 agents)</option>
-                                            <option value="enterprise">Enterprise (Custom/Unlimited)</option>
+                                            <option value="starter">{t('Starter (Up to 15 agents)')}</option>
+                                            <option value="professional">{t('Professional (Up to 50 agents)')}</option>
+                                            <option value="enterprise">{t('Enterprise (Custom/Unlimited)')}</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Max Field Agents Allowed</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Max Field Agents Allowed')}</label>
                                         <input
                                             type="number"
                                             min="1"
@@ -452,23 +454,23 @@ export default function Companies({ companies = [] }) {
                                         {errors.max_employees && <p className="text-red-500 text-xs mt-1">{errors.max_employees}</p>}
                                         {((data.plan === 'starter' && data.max_employees > 15) || (data.plan === 'professional' && data.max_employees > 50)) && (
                                             <p className="text-red-500 text-xs mt-1">
-                                                {data.plan === 'starter' ? 'Starter plan allows up to 15 agents max.' : 'Professional plan allows up to 50 agents max.'}
+                                                {data.plan === 'starter' ? t('Starter plan allows up to 15 agents max.') : t('Professional plan allows up to 50 agents max.')}
                                             </p>
                                         )}
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Billing Cycle</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Billing Cycle')}</label>
                                         <select
                                             value={data.billing_cycle}
                                             onChange={(e) => setData('billing_cycle', e.target.value)}
                                             className="hp-input"
                                         >
-                                            <option value="annual">Annual Contract</option>
-                                            <option value="monthly">Monthly Retainer</option>
+                                            <option value="annual">{t('Annual Contract')}</option>
+                                            <option value="monthly">{t('Monthly Retainer')}</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Subscription Valid Until</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Subscription Valid Until')}</label>
                                         <input
                                             type="date"
                                             value={data.subscription_expires_at}
@@ -480,29 +482,29 @@ export default function Companies({ companies = [] }) {
 
                                 <div className="text-xs font-bold text-[var(--color-hp-primary)] uppercase tracking-wider pt-2 pb-1 border-b border-[var(--color-hp-border)] flex items-center gap-1.5">
                                     <ShieldCheck className="w-4 h-4" />
-                                    <span>3. Primary Client Admin & Security Controls</span>
+                                    <span>{t('3. Primary Client Admin & Security Controls')}</span>
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Admin Full Name *</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Admin Full Name')} *</label>
                                         <input
                                             type="text"
                                             required
                                             value={data.admin_name}
                                             onChange={(e) => setData('admin_name', e.target.value)}
-                                            placeholder="e.g. Karthik Subramanian"
+                                            placeholder={t('e.g. Karthik Subramanian')}
                                             className="hp-input"
                                         />
                                         {errors.admin_name && <p className="text-rose-600 text-xs mt-1">{errors.admin_name}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Admin Role / Designation</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Admin Role / Designation')}</label>
                                         <input
                                             type="text"
                                             value={data.admin_designation}
                                             onChange={(e) => setData('admin_designation', e.target.value)}
-                                            placeholder="Operations Director"
+                                            placeholder={t('Operations Director')}
                                             className="hp-input"
                                         />
                                     </div>
@@ -510,7 +512,7 @@ export default function Companies({ companies = [] }) {
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Admin Login Phone *</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Admin Login Phone')} *</label>
                                         <input
                                             type="tel"
                                             required
@@ -522,7 +524,7 @@ export default function Companies({ companies = [] }) {
                                         {errors.admin_phone && <p className="text-rose-600 text-xs mt-1">{errors.admin_phone}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">Admin Login Email *</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Admin Login Email')} *</label>
                                         <input
                                             type="email"
                                             required
@@ -537,13 +539,13 @@ export default function Companies({ companies = [] }) {
 
                                 <div>
                                     <div className="flex items-center justify-between mb-1">
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)]">Secure Admin Password *</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)]">{t('Secure Admin Password')} *</label>
                                         <button
                                             type="button"
                                             onClick={generateStrongPassword}
                                             className="text-[11px] font-bold text-[var(--color-hp-primary)] hover:underline inline-flex items-center gap-1"
                                         >
-                                            <KeyRound className="w-3 h-3" /> Generate Strong Password
+                                            <KeyRound className="w-3 h-3" /> {t('Generate Strong Password')}
                                         </button>
                                     </div>
                                     <div className="relative">
@@ -553,7 +555,7 @@ export default function Companies({ companies = [] }) {
                                             minLength={8}
                                             value={data.admin_password}
                                             onChange={(e) => setData('admin_password', e.target.value)}
-                                            placeholder="Min 8 characters with letters & numbers"
+                                            placeholder={t('Min 8 characters with letters & numbers')}
                                             className="hp-input pr-10 font-mono"
                                         />
                                         <button
@@ -576,8 +578,8 @@ export default function Companies({ companies = [] }) {
                                 </div>
 
                                 {/* Tenant Security Policies */}
-                                <div className="p-3.5 rounded-xl bg-[var(--color-hp-gray-50)] border border-[var(--color-hp-border)] space-y-2.5">
-                                    <p className="text-[11px] font-bold text-[var(--color-hp-dark)] uppercase tracking-wider">Security & Field Compliance Policies</p>
+                                <div className="p-3.5 rounded-xl bg-white/40 border border-white/80 space-y-2.5">
+                                    <p className="text-[11px] font-bold text-[var(--color-hp-dark)] uppercase tracking-wider">{t('Security & Field Compliance Policies')}</p>
                                     <label className="flex items-center gap-2.5 text-xs text-[var(--color-hp-dark)] cursor-pointer">
                                         <input
                                             type="checkbox"
@@ -585,7 +587,7 @@ export default function Companies({ companies = [] }) {
                                             onChange={(e) => setData('force_password_reset', e.target.checked)}
                                             className="rounded border-slate-300"
                                         />
-                                        <span>Force admin password rotation on initial onboarding sign-in</span>
+                                        <span>{t('Force admin password rotation on initial onboarding sign-in')}</span>
                                     </label>
                                     <label className="flex items-center gap-2.5 text-xs text-[var(--color-hp-dark)] cursor-pointer">
                                         <input
@@ -594,7 +596,7 @@ export default function Companies({ companies = [] }) {
                                             onChange={(e) => setData('require_gps_geofence', e.target.checked)}
                                             className="rounded border-slate-300"
                                         />
-                                        <span>Enforce live GPS geofence verification for field attendance & check-in</span>
+                                        <span>{t('Enforce live GPS geofence verification for field attendance & check-in')}</span>
                                     </label>
                                     <label className="flex items-center gap-2.5 text-xs text-[var(--color-hp-dark)] cursor-pointer">
                                         <input
@@ -603,7 +605,7 @@ export default function Companies({ companies = [] }) {
                                             onChange={(e) => setData('require_selfie_verification', e.target.checked)}
                                             className="rounded border-slate-300"
                                         />
-                                        <span>Require live field photo proof before visit checkout & report submission</span>
+                                        <span>{t('Require live field photo proof before visit checkout & report submission')}</span>
                                     </label>
                                 </div>
 
@@ -614,14 +616,14 @@ export default function Companies({ companies = [] }) {
                                         onClick={() => setIsAddModalOpen(false)}
                                         className="hp-btn hp-btn-secondary"
                                     >
-                                        Cancel
+                                        {t('Cancel')}
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={processing}
                                         className="hp-btn hp-btn-primary"
                                     >
-                                        {processing ? 'Provisioning...' : 'Provision Client Company'}
+                                        {processing ? t('Provisioning...') : t('Provision Client Company')}
                                     </button>
                                 </div>
                             </form>

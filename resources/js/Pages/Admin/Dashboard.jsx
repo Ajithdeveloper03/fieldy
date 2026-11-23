@@ -100,10 +100,10 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
     };
 
     const quickActions = [
-        { label: t(labels.todayTasksTitle || 'New Task'), icon: ClipboardList, href: '/admin/tasks' },
-        { label: t(labels.addEntityAction || 'Add Property'), icon: IndIcon, href: '/admin/farmers/register' },
-        { label: t(`Add ${labels.navAgents || 'Agent'}`), icon: UserPlus, href: '/admin/employees/create' },
-        { label: t('Open Map'), icon: MapPin, onClick: () => setIsFullScreenMap(true) },
+        { label: t(labels.todayTasksTitle || 'New Task'), icon: ClipboardList, color: '#7C3AED', href: '/admin/tasks' },
+        { label: t(labels.addEntityAction || 'Add Property'), icon: IndIcon, color: '#0284C7', href: '/admin/farmers/register' },
+        { label: t('Add {{agent}}', { agent: labels.navAgents || 'Agent' }), icon: UserPlus, color: '#0D9488', href: '/admin/employees/create' },
+        { label: t('Open Map'), icon: MapPin, color: '#2563EB', onClick: () => setIsFullScreenMap(true) },
     ];
 
     const services = [
@@ -112,6 +112,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
             sub: t(labels.entitySub),
             value: stats?.totalFarmers ?? 0,
             icon: IndIcon,
+            color: '#0284C7',
             chip: { cls: 'hp-chip-info', label: t(labels.entityListedChip) },
             href: '/admin/farmers',
         },
@@ -120,6 +121,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
             sub: t(labels.agentDutySub),
             value: stats?.activeEmployees ?? 0,
             icon: Briefcase,
+            color: '#0D9488',
             chip: { cls: 'hp-chip-success hp-chip-dot', label: t('Online') },
             href: '/admin/monitor',
         },
@@ -128,6 +130,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
             sub: t(labels.todayTasksSub),
             value: stats?.activeWorkOrders ?? 8,
             icon: FileText,
+            color: '#7C3AED',
             chip: { cls: 'hp-chip-primary', label: `${stats?.slaCompliance || '96.4%'}` },
             href: '/admin/tasks',
         },
@@ -136,10 +139,13 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
             sub: t(labels.completedTasksSub),
             value: stats?.totalVisits ?? 0,
             icon: FileCheck2,
-            chip: { cls: 'hp-chip-gray', label: `${stats?.weeklyVisits ?? 0} ${t('this week')}` },
+            color: '#C8553D',
+            chip: { cls: 'hp-chip-warning', label: `${stats?.weeklyVisits ?? 0} ${t('this week')}` },
             href: '/admin/visits',
         },
     ];
+
+    const KPI_TINTS = ['#0D9488', '#2563EB', '#7C3AED', '#C8553D'];
 
     const todos = [
         {
@@ -199,18 +205,18 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
 
             {/* ══════════ HOME HERO — AI-first, hPanel style ══════════ */}
             <section className="hp-animate-in pt-2 lg:pt-6 pb-8">
-                <div className="max-w-[760px] mx-auto text-center">
-                    <p className="text-sm font-semibold text-hp-muted mb-2">{t(greetingFor(new Date().getHours()))}, {firstName} 👋</p>
-                    <h1 className="text-[26px] sm:text-[32px] leading-tight font-bold tracking-tight text-hp-dark">
+                <div className="max-w-[780px] mx-auto text-center">
+                    <p className="text-base sm:text-lg font-semibold text-hp-muted mb-2">{t(greetingFor(new Date().getHours()))}, {firstName} 👋</p>
+                    <h1 className="text-[32px] sm:text-[42px] leading-tight font-extrabold tracking-tight text-hp-dark">
                         {t('What would you like to')} <span className="hp-gradient-text">{t('do today?')}</span>
                     </h1>
 
                     <form
                         onSubmit={(e) => { e.preventDefault(); askAssistant(); }}
-                        className="mt-6 bg-white border border-hp-border-strong rounded-2xl shadow-[var(--shadow-hp-md)] focus-within:border-hp-primary focus-within:shadow-[0_0_0_4px_rgba(242,106,16,.12),var(--shadow-hp-md)] transition-all text-left"
+                        className="mt-6 bg-white border border-hp-border-strong rounded-2xl shadow-[var(--shadow-hp-md)] focus-within:border-hp-primary focus-within:shadow-[0_0_0_4px_rgba(var(--hp-accent-rgb),.14),var(--shadow-hp-md)] transition-all text-left"
                     >
-                        <div className="flex items-start gap-3 px-4 pt-3.5">
-                            <Sparkles className="w-5 h-5 text-hp-primary mt-0.5 flex-shrink-0" />
+                        <div className="flex items-start gap-3 px-4 pt-4">
+                            <Sparkles className="w-5 h-5 text-hp-primary mt-1 flex-shrink-0" />
                             <textarea
                                 id="home-ai-prompt"
                                 rows={2}
@@ -218,15 +224,15 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                                 onChange={(e) => setPrompt(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askAssistant(); } }}
                                 placeholder={t(labels.searchPlaceholder)}
-                                className="flex-1 resize-none bg-transparent text-[14px] text-hp-dark placeholder:text-hp-muted focus:outline-none"
+                                className="flex-1 resize-none bg-transparent text-base text-hp-dark placeholder:text-hp-muted focus:outline-none"
                             />
                         </div>
-                        <div className="flex items-center justify-between px-4 pb-3 pt-1">
-                            <span className="text-xs text-hp-muted">{t('Press Enter to search')}</span>
+                        <div className="flex items-center justify-between px-4 pb-3.5 pt-1">
+                            <span className="text-sm text-hp-muted">{t('Press Enter to search')}</span>
                             <button
                                 type="submit"
                                 disabled={!prompt.trim()}
-                                className="w-8 h-8 rounded-full bg-hp-primary text-white flex items-center justify-center hover:bg-hp-primary-hover disabled:bg-hp-hover disabled:text-hp-muted transition-colors"
+                                className="w-9 h-9 rounded-full bg-hp-primary text-white flex items-center justify-center hover:bg-hp-primary-hover disabled:bg-hp-hover disabled:text-hp-muted transition-colors"
                                 aria-label="Send"
                             >
                                 <ArrowUp className="w-4 h-4" strokeWidth={2.4} />
@@ -234,10 +240,10 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                         </div>
                     </form>
 
-                    <div className="flex flex-wrap justify-center gap-2 mt-4">
+                    <div className="flex flex-wrap justify-center gap-2.5 mt-4">
                         {quickActions.map((a, idx) => (
-                            <button key={idx} type="button" onClick={() => a.onClick ? a.onClick() : router.visit(a.href)} className="hp-pill text-xs">
-                                <a.icon className="w-3.5 h-3.5" /> {a.label}
+                            <button key={idx} type="button" onClick={() => a.onClick ? a.onClick() : router.visit(a.href)} className="hp-pill text-sm font-bold" style={{ '--glass-tint': a.color }}>
+                                <a.icon className="w-4 h-4" style={{ color: a.color }} /> {a.label}
                             </button>
                         ))}
                     </div>
@@ -246,47 +252,50 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
 
             {/* ══════════ INDUSTRY-SPECIFIC OPERATIONS SNAPSHOT ══════════ */}
             <section className="hp-animate-in mb-8">
-                <div className="mb-3">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-hp-primary">{currentIndustry.badge}</p>
+                <div className="mb-4">
+                    <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-hp-primary">{currentIndustry.badge}</p>
                     <h2 className="hp-section-title mt-1">{currentIndustry.shortName} Operations</h2>
-                    <p className="text-xs text-hp-muted mt-1">{currentIndustry.tagline}</p>
+                    <p className="text-sm sm:text-base text-hp-muted mt-1">{currentIndustry.tagline}</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                    {currentIndustry.kpis.map((kpi) => (
-                        <article
-                            key={kpi.label}
-                            onClick={() => kpi.href && router.visit(kpi.href)}
-                            className={`hp-card p-4 ${kpi.href ? 'cursor-pointer hover:border-hp-primary transition-colors' : ''}`}
-                        >
-                            <div className="flex items-start justify-between gap-3">
-                                <span className="hp-icon-tile"><kpi.icon className="w-5 h-5" /></span>
-                                <span className="hp-chip hp-chip-success">{kpi.trend}</span>
-                            </div>
-                            <p className="text-xs font-semibold text-hp-muted mt-4">{t(kpi.label)}</p>
-                            <p className="text-xl font-bold text-hp-dark mt-1">{t(kpi.value)}</p>
-                            <p className="text-[11px] text-hp-muted mt-1">{t(kpi.desc)}</p>
-                        </article>
-                    ))}
+                    {currentIndustry.kpis.map((kpi, idx) => {
+                        const tint = KPI_TINTS[idx % KPI_TINTS.length];
+                        return (
+                            <article
+                                key={kpi.label}
+                                onClick={() => kpi.href && router.visit(kpi.href)}
+                                className={`hp-card p-5 ${kpi.href ? 'cursor-pointer hover:border-hp-primary transition-colors' : ''}`}
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    <span className="hp-icon-tile" style={{ '--glass-tint': tint, color: tint }}><kpi.icon className="w-5 h-5" /></span>
+                                    <span className="hp-chip hp-chip-success">{kpi.trend}</span>
+                                </div>
+                                <p className="text-sm sm:text-[15px] font-bold text-hp-muted mt-4">{t(kpi.label)}</p>
+                                <p className="text-2xl sm:text-3xl font-extrabold text-hp-dark mt-1">{t(kpi.value)}</p>
+                                <p className="text-sm text-hp-muted mt-1.5 leading-snug">{t(kpi.desc)}</p>
+                            </article>
+                        );
+                    })}
                 </div>
             </section>
 
             {/* ══════════ PROMO / TIP BANNER ══════════ */}
             {showTip && (
-                <div className="hp-animate-in relative overflow-hidden rounded-xl mb-6 bg-hp-dark text-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                        <span className="w-9 h-9 rounded-lg bg-hp-primary flex items-center justify-center flex-shrink-0">
-                            <Lightbulb className="w-4 h-4 text-white" />
+                <div className="hp-animate-in relative overflow-hidden rounded-2xl mb-6 bg-hp-dark text-white p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3.5">
+                        <span className="w-10 h-10 rounded-xl bg-hp-primary flex items-center justify-center flex-shrink-0">
+                            <Lightbulb className="w-5 h-5 text-white" />
                         </span>
                         <div>
-                            <p className="font-bold text-sm">{t(labels.bannerTitle)}</p>
-                            <p className="text-xs text-white/70">{t(labels.bannerSub)}</p>
+                            <p className="font-bold text-base sm:text-lg">{t(labels.bannerTitle)}</p>
+                            <p className="text-sm text-white/75 mt-0.5">{t(labels.bannerSub)}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 self-start sm:self-auto">
-                        <button type="button" onClick={() => setIsFullScreenMap(true)} className="hp-btn hp-btn-sm hp-btn-primary !h-8 text-xs">
+                        <button type="button" onClick={() => setIsFullScreenMap(true)} className="hp-btn hp-btn-sm hp-btn-primary text-sm">
                             {t('Open Map')}
                         </button>
-                        <button type="button" onClick={() => setShowTip(false)} className="w-8 h-8 rounded-md flex items-center justify-center text-white/60 hover:text-white" aria-label="Dismiss">
+                        <button type="button" onClick={() => setShowTip(false)} className="w-9 h-9 rounded-lg flex items-center justify-center text-white/70 hover:text-white" aria-label="Dismiss">
                             <X className="w-4 h-4" />
                         </button>
                     </div>
@@ -305,15 +314,15 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                     <div className="hp-card overflow-hidden">
                         {services.map((s, idx) => (
                             <div key={idx} className="hp-row cursor-pointer group" onClick={() => router.visit(s.href)}>
-                                <span className="hp-icon-tile"><s.icon className="w-5 h-5" /></span>
+                                <span className="hp-icon-tile" style={{ '--glass-tint': s.color, color: s.color }}><s.icon className="w-5 h-5" /></span>
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        <p className="text-[15px] font-bold text-hp-dark">{s.title}</p>
+                                    <div className="flex items-center gap-2.5 flex-wrap">
+                                        <p className="text-base sm:text-[17px] font-bold text-hp-dark">{s.title}</p>
                                         <span className={`hp-chip ${s.chip.cls}`}>{s.chip.label}</span>
                                     </div>
-                                    <p className="text-sm text-hp-muted mt-0.5 truncate">{s.sub}</p>
+                                    <p className="text-[15px] text-hp-muted mt-0.5 truncate">{s.sub}</p>
                                 </div>
-                                <p className="text-2xl font-bold text-hp-dark tabular-nums mr-2 hidden sm:block">{s.value}</p>
+                                <p className="text-3xl font-extrabold text-hp-dark tabular-nums mr-2 hidden sm:block">{s.value}</p>
                                 <button type="button" onClick={(e) => { e.stopPropagation(); router.visit(s.href); }} className="hp-btn hp-btn-sm hp-btn-outline">
                                     {t('Open')}
                                 </button>
@@ -330,13 +339,13 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                     </div>
                     <div className="hp-card overflow-hidden">
                         {todos.map((todo, i) => (
-                            <div key={i} className="flex items-start gap-3 p-4 border-t border-hp-border first:border-t-0">
-                                <span className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${toneTile[todo.tone]}`}>
-                                    <todo.icon className="w-[18px] h-[18px]" />
+                            <div key={i} className="flex items-start gap-3.5 p-4.5 border-t border-hp-border first:border-t-0">
+                                <span className="hp-icon-tile !w-11 !h-11 flex-shrink-0">
+                                    <todo.icon className="w-5 h-5" />
                                 </span>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-bold text-hp-dark">{todo.title}</p>
-                                    <p className="text-xs text-hp-muted mt-0.5">{todo.sub}</p>
+                                    <p className="text-[15px] sm:text-base font-bold text-hp-dark">{todo.title}</p>
+                                    <p className="text-sm text-hp-muted mt-0.5">{todo.sub}</p>
                                 </div>
                                 <button type="button" onClick={() => router.visit(todo.href)} className="hp-btn hp-btn-sm hp-btn-secondary">{todo.cta}</button>
                             </div>
@@ -351,7 +360,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                     <div className="hp-card-header">
                         <div>
                             <h2 className="hp-card-title">{t(labels.agentDutyTitle || 'Agent Live Locations')}</h2>
-                            <p className="text-xs text-hp-muted">{liveLocationLogs.length} {t('personnel online on map')}</p>
+                            <p className="text-sm text-hp-muted mt-0.5">{liveLocationLogs.length} {t('personnel online on map')}</p>
                         </div>
                         <span className="hp-chip hp-chip-success hp-chip-dot">{t('Live')}</span>
                     </div>
@@ -363,9 +372,9 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                 <section className="hp-card flex flex-col max-h-[502px]">
                     <div className="hp-card-header">
                         <div className="flex items-center gap-2">
-                            <span className="relative flex h-2 w-2">
+                            <span className="relative flex h-2.5 w-2.5">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-hp-primary opacity-60"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-hp-primary"></span>
+                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-hp-primary"></span>
                             </span>
                             <h2 className="hp-card-title">{t('Recent Activity')}</h2>
                         </div>
@@ -375,20 +384,20 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                         {combinedLogs.length === 0 ? (
                             <div className="flex flex-col items-center justify-center text-center py-14 px-6">
                                 <span className="hp-icon-tile !w-12 !h-12 mb-3"><Clock className="w-6 h-6" /></span>
-                                <p className="text-sm font-bold text-hp-dark">{t('No recent activity')}</p>
-                                <p className="text-xs text-hp-muted mt-1">{t('Check-ins will show up here.')}</p>
+                                <p className="text-base font-bold text-hp-dark">{t('No recent activity')}</p>
+                                <p className="text-sm text-hp-muted mt-1">{t('Check-ins will show up here.')}</p>
                             </div>
                         ) : combinedLogs.map((log, i) => (
-                            <div key={i} className="flex items-start gap-3 px-5 py-3.5 border-t border-hp-border first:border-t-0 hover:bg-[#FCFBFA] transition-colors">
-                                <span className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${log.type === 'success' ? toneTile.success : toneTile.info}`}>
+                            <div key={i} className="flex items-start gap-3 px-5 py-4 border-t border-hp-border first:border-t-0 hover:bg-[#FCFBFA] transition-colors">
+                                <span className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${log.type === 'success' ? toneTile.success : toneTile.info}`}>
                                     <log.icon className="w-4 h-4" />
                                 </span>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-center gap-2">
-                                        <p className="text-sm font-bold text-hp-dark truncate">{log.user}</p>
-                                        <span className="text-xs text-hp-muted flex-shrink-0">{log.time}</span>
+                                        <p className="text-[15px] font-bold text-hp-dark truncate">{log.user}</p>
+                                        <span className="text-xs sm:text-sm text-hp-muted flex-shrink-0">{log.time}</span>
                                     </div>
-                                    <p className="text-xs text-hp-muted mt-0.5 truncate">{log.event}</p>
+                                    <p className="text-sm text-hp-muted mt-0.5 truncate">{log.event}</p>
                                 </div>
                             </div>
                         ))}
@@ -420,21 +429,21 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                                 <tr key={i} className="cursor-pointer" onClick={() => visit.id && router.visit(`/admin/visits/${visit.id}`)}>
                                     <td>
                                         <div className="flex items-center gap-3">
-                                            <span className="hp-icon-tile !w-9 !h-9"><FileText className="w-4 h-4" /></span>
+                                            <span className="hp-icon-tile !w-10 !h-10"><FileText className="w-4 h-4" /></span>
                                             <div>
-                                                <span className="font-bold block text-sm">{visit.farmer}</span>
-                                                <span className="text-xs text-hp-muted">Assignee: {visit.employee}</span>
+                                                <span className="font-bold block text-[15px] sm:text-base">{visit.farmer}</span>
+                                                <span className="text-sm text-hp-muted">Assignee: {visit.employee}</span>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="!text-hp-muted font-mono text-xs">LOG-{String(visit.id).padStart(4, '0')}</td>
-                                    <td className="!text-hp-muted text-xs">{visit.date}</td>
+                                    <td className="!text-hp-muted font-mono text-sm">LOG-{String(visit.id).padStart(4, '0')}</td>
+                                    <td className="!text-hp-muted text-sm">{visit.date}</td>
                                     <td><span className="hp-chip hp-chip-success hp-chip-dot">{t('Completed')}</span></td>
                                     <td className="text-right"><ChevronRight className="w-4 h-4 text-hp-muted inline" /></td>
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="5" className="!py-12 text-center !text-hp-muted">{t('No activity records found yet.')}</td>
+                                    <td colSpan="5" className="!py-12 text-center !text-hp-muted text-base">{t('No activity records found yet.')}</td>
                                 </tr>
                             )}
                         </tbody>
@@ -454,71 +463,71 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                     {recentFarmers.length > 0 ? recentFarmers.map((farmer, i) => (
                         <div key={i} onClick={() => router.visit(`/admin/farmers/${farmer.id}`)} className="hp-row cursor-pointer">
                             <img
-                                src={farmer.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(farmer.name)}&background=FFF1E6&color=D95A07&bold=true`}
-                                onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(farmer.name)}&background=FFF1E6&color=D95A07&bold=true`; }}
+                                src={farmer.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(farmer.name)}&background=E6F7F5&color=0F766E&bold=true`}
+                                onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(farmer.name)}&background=E6F7F5&color=0F766E&bold=true`; }}
                                 alt={farmer.name}
-                                className="w-9 h-9 rounded-lg object-cover flex-shrink-0"
+                                className="w-10 h-10 rounded-xl object-cover flex-shrink-0"
                             />
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-hp-dark truncate">{farmer.name}</p>
-                                <p className="text-xs text-hp-muted font-mono">{farmer.farmer_code}</p>
+                                <p className="text-base font-bold text-hp-dark truncate">{farmer.name}</p>
+                                <p className="text-sm text-hp-muted font-mono">{farmer.farmer_code}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-xs font-semibold text-hp-dark">{farmer.crop && farmer.crop !== 'Vetiver' ? farmer.crop : currentIndustry.badge}</p>
-                                <p className="text-xs text-hp-muted">{farmer.acres || '1'} {t('Units')}</p>
+                                <p className="text-sm font-semibold text-hp-dark">{farmer.crop && farmer.crop !== 'Vetiver' ? farmer.crop : currentIndustry.badge}</p>
+                                <p className="text-sm text-hp-muted">{farmer.acres || '1'} {t('Units')}</p>
                             </div>
                         </div>
                     )) : (
-                        <div className="text-center text-hp-muted text-sm py-12">{t('No entities onboarded yet.')}</div>
+                        <div className="text-center text-hp-muted text-base py-12">{t('No entities onboarded yet.')}</div>
                     )}
                 </section>
             </div>
 
             {/* ══════════ INDUSTRY AI ASSISTANT BANNER ══════════ */}
-            <div className="hp-card-gradient-dark-violet rounded-2xl p-5 sm:p-7 shadow-lg border border-indigo-500/20 text-white mt-8 relative overflow-hidden">
+            <div className="hp-card-gradient-dark-violet rounded-2xl p-6 sm:p-8 shadow-lg border border-white/15 text-white mt-8 relative overflow-hidden">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-bold text-xs">
-                                <Sparkles className="w-3 h-3 text-amber-400" /> {currentIndustry.shortName} AI Assistant
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 font-bold text-sm">
+                                <Sparkles className="w-3.5 h-3.5 text-amber-400" /> {currentIndustry.shortName} AI Assistant
                             </span>
                         </div>
-                        <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+                        <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
                             {t(labels.aiHelpTitle)}
                         </h2>
-                        <p className="text-xs sm:text-sm text-zinc-300 mt-1">
+                        <p className="text-sm sm:text-base text-zinc-200 mt-1.5">
                             {t(labels.aiHelpSub)}
                         </p>
                     </div>
                     <button
                         type="button"
                         onClick={() => askAssistant(`Show ${currentIndustry.shortName} today summary`)}
-                        className="hp-btn hp-btn-primary !rounded-full !h-10 px-5 font-bold text-xs shrink-0 self-start sm:self-auto"
+                        className="hp-btn hp-btn-primary !rounded-full !h-11 px-6 font-bold text-sm shrink-0 self-start sm:self-auto"
                     >
                         <Sparkles className="w-4 h-4 mr-1.5" />
                         <span>{t('Ask Assistant')}</span>
                     </button>
                 </div>
 
-                <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/10">
+                <div className="flex flex-wrap gap-2.5 mt-5 pt-4 border-t border-white/15">
                     <button
                         type="button"
                         onClick={() => askAssistant(`Which ${labels.navAgents || 'agents'} are on duty today?`)}
-                        className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-xs text-zinc-200 transition-colors"
+                        className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-sm font-medium text-zinc-100 transition-colors"
                     >
                         {labels.agentDutyTitle || t('Who is on duty?')}
                     </button>
                     <button
                         type="button"
                         onClick={() => askAssistant('Any pending approvals or checklists?')}
-                        className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-xs text-zinc-200 transition-colors"
+                        className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-sm font-medium text-zinc-100 transition-colors"
                     >
                         {labels.pendingTitle || t('Pending approvals')}
                     </button>
                     <button
                         type="button"
                         onClick={() => askAssistant(`Today ${labels.completedTasksTitle || 'completed visits'}`)}
-                        className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-xs text-zinc-200 transition-colors"
+                        className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-sm font-medium text-zinc-100 transition-colors"
                     >
                         {labels.completedTasksTitle || t('Completed tasks today')}
                     </button>

@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import SuperadminLayout from './SuperadminLayout';
-import { 
-    Check, X, Sparkles, Shield, Zap, Layers, ArrowRight, 
-    Smartphone, Globe, Award, HelpCircle, ChevronDown, ChevronUp, 
+import {
+    Check, X, Sparkles, Shield, Zap, Layers, ArrowRight,
+    Smartphone, Globe, Award, HelpCircle, ChevronDown, ChevronUp,
     Cpu, Building2, Lock, CheckCircle2, Home, ChevronRight, Crown
 } from 'lucide-react';
 
 export default function Subscriptions() {
+    const { t } = useTranslation();
     const [billingCycle, setBillingCycle] = useState('annual'); // 'monthly' | 'annual'
     const [openFaq, setOpenFaq] = useState(0);
 
@@ -21,7 +23,7 @@ export default function Subscriptions() {
             discount: 'SAVE 62%',
             popular: false,
             cta: 'Provision Starter Plan',
-            tenantsCount: '12 Active Tenants',
+            tenantsCount: 12,
             features: [
                 { text: 'Up to 25 Active Field Officers', included: true },
                 { text: 'Live GPS Attendance & Geofence Check-in', included: true },
@@ -44,7 +46,7 @@ export default function Subscriptions() {
             popular: true,
             cta: 'Default Enterprise Tier',
             current: true,
-            tenantsCount: '34 Active Tenants',
+            tenantsCount: 34,
             features: [
                 { text: 'Up to 150 Active Field Officers', included: true, bold: true },
                 { text: 'Real-Time Live Telemetry & Breadcrumb Replay', included: true, bold: true },
@@ -66,7 +68,7 @@ export default function Subscriptions() {
             discount: 'SAVE 57%',
             popular: false,
             cta: 'Configure Custom Tenant',
-            tenantsCount: '8 Active Tenants',
+            tenantsCount: 8,
             features: [
                 { text: 'Unlimited Active Field Officers', included: true, bold: true },
                 { text: 'High-Frequency 5s Live GPS Telemetry Stream', included: true, bold: true },
@@ -81,109 +83,33 @@ export default function Subscriptions() {
         }
     ];
 
-    const addons = [
-        {
-            title: 'WhatsApp Business API Bot',
-            category: 'COMMUNICATION',
-            desc: 'Send automated visit reminders, digital receipts, and OTP confirmations directly to clients on WhatsApp.',
-            price: '₹999',
-            period: '/mo per tenant',
-            icon: Smartphone,
-            color: 'bg-emerald-50 text-emerald-600',
-            active: true,
-        },
-        {
-            title: 'Satellite GIS & Plot Boundary Pro',
-            category: 'GEOSPATIAL',
-            desc: 'Measure property plot boundaries, land parcels, and project site perimeters via satellite polygons.',
-            price: '₹1,499',
-            period: '/mo per tenant',
-            icon: Globe,
-            color: 'bg-blue-50 text-blue-600',
-            active: true,
-        },
-        {
-            title: 'AI Face Liveness & Biometric KYC',
-            category: 'SECURITY',
-            desc: 'Prevent buddy-punching with 3D liveness selfie verification and instant Aadhaar/ID OCR extraction.',
-            price: '₹1,299',
-            period: '/mo per tenant',
-            icon: Shield,
-            color: 'bg-orange-50 text-[var(--color-hp-primary)]',
-            active: false,
-        },
-        {
-            title: 'ERP & Tally Prime Auto-Bridge',
-            category: 'ACCOUNTING',
-            desc: 'Two-way real-time sync for bookings, field expenses, invoices, and staff disbursements with Tally & Zoho.',
-            price: '₹1,999',
-            period: '/mo per tenant',
-            icon: Cpu,
-            color: 'bg-amber-50 text-amber-600',
-            active: false,
-        }
-    ];
-
-    const comparisonRows = [
-        { feature: 'Active Field Force Quota', starter: '25 Officers', pro: '150 Officers', enterprise: 'Unlimited' },
-        { feature: 'GPS Breadcrumb Retention', starter: '30 Days', pro: '1 Year', enterprise: 'Unlimited (Cold Storage)' },
-        { feature: 'Geofence Radius Accuracy', starter: '50 Meters', pro: '10 Meters (High Precision)', enterprise: 'Custom Polygon Fencing' },
-        { feature: 'Offline-First Mobile Sync', starter: true, pro: true, enterprise: true },
-        { feature: 'Customer OTP & Digital Sign-off', starter: true, pro: true, enterprise: true },
-        { feature: 'Fieldy AI Operations Assistant', starter: false, pro: true, enterprise: true },
-        { feature: 'Custom Branding & White-Label Domain', starter: false, pro: false, enterprise: true },
-        { feature: 'API Rate Limit', starter: '1,000 req/min', pro: '10,000 req/min', enterprise: 'Unlimited Dedicated Node' },
-    ];
-
-    const faqs = [
-        {
-            q: 'How are subscription tiers assigned to Client Companies?',
-            a: 'As a Superadmin, you can assign or upgrade any client company between Starter, Professional, and Enterprise tiers directly from the Client Companies directory. Quota changes apply immediately without downtime.'
-        },
-        {
-            q: 'What happens when a tenant reaches their Field Officer quota?',
-            a: 'Existing field officers continue to stream GPS and log visits normally. To onboard additional employees beyond their tier limit, the Superadmin can either increase their custom agent limit or upgrade their subscription plan.'
-        },
-        {
-            q: 'Can add-on modules be enabled per client company?',
-            a: 'Yes! Platform add-ons like Satellite GIS Plot Boundary Pro, WhatsApp Business API Bot, and Biometric KYC can be provisioned per tenant based on their industry vertical (such as Real Estate, Agriculture, or Facility Management).'
-        },
-        {
-            q: 'How does Multi-Company Tenant Isolation work?',
-            a: 'Every client company operates in an isolated tenant scope with dedicated employee rosters, property/client records, GPS logs, and financial ledgers. Client Admins only see their own organization workflow.'
-        }
-    ];
-
     return (
         <SuperadminLayout>
-            <Head title="Platform Plans & Add-ons Marketplace — Superadmin" />
+            <Head title={`${t('Plans & Add-ons Marketplace')} — ${t('Superadmin')}`} />
 
             <div className="space-y-8 pb-10">
                 {/* Breadcrumbs */}
                 <div className="flex items-center gap-2 text-xs text-[var(--color-hp-gray-600)]">
                     <Link href="/superadmin/dashboard" className="hover:text-[var(--color-hp-primary)] flex items-center gap-1 transition-colors">
                         <Home className="w-3.5 h-3.5" />
-                        <span>Superadmin</span>
+                        <span>{t('Superadmin')}</span>
                     </Link>
                     <ChevronRight className="w-3.5 h-3.5 text-[var(--color-hp-gray-400)]" />
-                    <span className="font-semibold text-[var(--color-hp-dark)]">Plans & Add-ons Marketplace</span>
+                    <span className="font-semibold text-[var(--color-hp-dark)]">{t('Plans & Add-ons Marketplace')}</span>
                 </div>
 
-                {/* Hero Banner */}
-                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1E1B2E] via-[#2B193D] to-[#1A1025] text-white p-8 md:p-12 shadow-xl">
-                    <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-[var(--color-hp-primary)]/20 blur-3xl pointer-events-none" />
-                    <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
-
+                {/* Hero Banner (Zero CSS Gradients) */}
+                <div className="relative overflow-hidden rounded-3xl bg-[#162332] border border-white/15 text-white p-8 md:p-12 shadow-xl">
                     <div className="relative z-10 max-w-3xl mx-auto text-center space-y-5">
-                        <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-bold uppercase tracking-wider text-orange-200">
+                        <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-bold uppercase tracking-wider text-teal-200">
                             <Crown className="w-3.5 h-3.5 text-amber-400" />
-                            Superadmin SaaS Billing & Edition Catalog
+                            {t('Superadmin SaaS Billing & Edition Catalog')}
                         </span>
                         <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
-                            Manage Tenant Editions & Platform Add-ons
+                            {t('Manage Tenant Editions & Platform Add-ons')}
                         </h1>
                         <p className="text-slate-300 text-sm md:text-base max-w-2xl mx-auto">
-                            Configure multi-company subscription tiers, agent quotas, and industry-specific add-on modules across all client organizations on the Fieldy platform.
+                            {t('Configure multi-company subscription tiers, agent quotas, and industry-specific add-on modules across all client organizations on the Fieldy platform.')}
                         </p>
 
                         {/* Billing Toggle Pill */}
@@ -197,7 +123,7 @@ export default function Subscriptions() {
                                             : 'text-slate-300 hover:text-white'
                                     }`}
                                 >
-                                    Monthly Billing
+                                    {t('Monthly Billing')}
                                 </button>
                                 <button
                                     onClick={() => setBillingCycle('annual')}
@@ -207,9 +133,9 @@ export default function Subscriptions() {
                                             : 'text-slate-300 hover:text-white'
                                     }`}
                                 >
-                                    <span>Annual Contract</span>
+                                    <span>{t('Annual Contract')}</span>
                                     <span className="px-2 py-0.5 text-[10px] rounded-full bg-amber-400 text-slate-950 font-extrabold">
-                                        2 MONTHS FREE
+                                        {t('2 MONTHS FREE')}
                                     </span>
                                 </button>
                             </div>
@@ -224,16 +150,16 @@ export default function Subscriptions() {
                         return (
                             <div
                                 key={idx}
-                                className={`relative rounded-2xl bg-white flex flex-col justify-between transition-all duration-300 ${
+                                className={`hp-card relative flex flex-col justify-between transition-all duration-300 ${
                                     plan.popular
-                                        ? 'border-2 border-[var(--color-hp-primary)] shadow-[0_12px_36px_-8px_rgba(242,106,16,0.22)] lg:-translate-y-2'
-                                        : 'border border-[var(--color-hp-border)] shadow-[var(--shadow-hp)] hover:shadow-[var(--shadow-hp-md)]'
+                                        ? 'ring-2 ring-[var(--color-hp-primary)] lg:-translate-y-2'
+                                        : ''
                                 }`}
                             >
                                 {/* Top Ribbon for Popular Plan */}
                                 {plan.popular && (
-                                    <div className="bg-[var(--color-hp-primary)] text-white text-center py-2 px-4 rounded-t-[14px] text-xs font-extrabold uppercase tracking-widest">
-                                        ★ {plan.discount}
+                                    <div className="bg-[var(--color-hp-primary)] text-white text-center py-2 px-4 rounded-t-[20px] text-xs font-extrabold uppercase tracking-widest">
+                                        ★ {t(plan.discount)}
                                     </div>
                                 )}
 
@@ -241,56 +167,52 @@ export default function Subscriptions() {
                                     {/* Discount Pill for non-popular */}
                                     <div className="flex items-center justify-between gap-2 mb-3">
                                         {!plan.popular ? (
-                                            <span className="inline-block px-2.5 py-1 rounded-full bg-orange-50 text-[var(--color-hp-primary)] text-[11px] font-extrabold">
-                                                {plan.discount}
+                                            <span className="inline-block px-2.5 py-1 rounded-full bg-hp-primary-light text-[var(--color-hp-primary)] text-[11px] font-extrabold">
+                                                {t(plan.discount)}
                                             </span>
                                         ) : (
                                             <span className="inline-block px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-extrabold">
-                                                DEFAULT TENANT TIER
+                                                {t('DEFAULT TENANT TIER')}
                                             </span>
                                         )}
-                                        <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
-                                            {plan.tenantsCount}
+                                        <span className="text-[11px] font-bold text-slate-600 bg-white/60 px-2.5 py-1 rounded-full border border-white/80">
+                                            {plan.tenantsCount} {t('Active Tenants')}
                                         </span>
                                     </div>
 
-                                    <h3 className="text-lg font-extrabold text-slate-900 tracking-tight">{plan.name}</h3>
-                                    <p className="text-xs text-slate-500 mt-1 min-h-[32px]">{plan.subtitle}</p>
+                                    <h3 className="text-lg font-extrabold text-slate-900 tracking-tight">{t(plan.name)}</h3>
+                                    <p className="text-xs text-slate-500 mt-1 min-h-[32px]">{t(plan.subtitle)}</p>
 
                                     {/* Price Block */}
-                                    <div className="my-6 pb-6 border-b border-slate-100">
+                                    <div className="my-6 pb-6 border-b border-slate-200/70">
                                         <div className="flex items-center gap-2 text-xs text-slate-400 line-through">
-                                            ₹{plan.originalPrice.toLocaleString('en-IN')}/mo
+                                            ₹{plan.originalPrice.toLocaleString('en-IN')}/{t('mo')}
                                         </div>
                                         <div className="flex items-baseline gap-1 mt-1">
                                             <span className="text-lg font-bold text-slate-900">₹</span>
                                             <span className="text-4xl font-extrabold text-slate-900 tracking-tight">
                                                 {price.toLocaleString('en-IN')}
                                             </span>
-                                            <span className="text-xs font-semibold text-slate-500">/mo per tenant</span>
+                                            <span className="text-xs font-semibold text-slate-500">{t('/mo per tenant')}</span>
                                         </div>
-                                        <p className="text-[11px] text-emerald-600 font-semibold mt-1.5">
-                                            {billingCycle === 'annual' ? '+3 months free on 36-month enterprise lock-in' : 'Billed monthly per client organization'}
+                                        <p className="text-[11px] text-emerald-700 font-semibold mt-1.5">
+                                            {billingCycle === 'annual' ? t('+3 months free on 36-month enterprise lock-in') : t('Billed monthly per client organization')}
                                         </p>
                                     </div>
 
                                     {/* CTA Button */}
                                     <Link
                                         href="/superadmin/companies"
-                                        className={`w-full py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 mb-6 ${
-                                            plan.popular
-                                                ? 'bg-[var(--color-hp-primary)] hover:bg-[var(--color-hp-primary-hover)] text-white shadow-md shadow-orange-600/20'
-                                                : 'bg-slate-900 hover:bg-slate-800 text-white'
-                                        }`}
+                                        className={`hp-btn w-full mb-6 ${plan.popular ? 'hp-btn-primary' : 'hp-btn-secondary'}`}
                                     >
-                                        <span>{plan.cta}</span>
+                                        <span>{t(plan.cta)}</span>
                                         <ArrowRight className="w-3.5 h-3.5" />
                                     </Link>
 
                                     {/* Feature Checklist */}
                                     <div className="space-y-3 flex-1">
-                                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                                            Included Tenant Capabilities
+                                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                                            {t('Included Tenant Capabilities')}
                                         </p>
                                         {plan.features.map((feat, fIdx) => (
                                             <div key={fIdx} className="flex items-start gap-2.5 text-xs">
@@ -304,11 +226,11 @@ export default function Subscriptions() {
                                                     </div>
                                                 )}
                                                 <span className={`${feat.included ? 'text-slate-700' : 'text-slate-400 line-through'} ${feat.bold ? 'font-bold text-slate-900' : ''}`}>
-                                                    {feat.text}
+                                                    {t(feat.text)}
                                                 </span>
                                                 {feat.badge && (
-                                                    <span className="ml-auto px-1.5 py-0.5 text-[9px] font-extrabold rounded bg-orange-100 text-[var(--color-hp-primary)]">
-                                                        {feat.badge}
+                                                    <span className="ml-auto px-1.5 py-0.5 text-[9px] font-extrabold rounded bg-hp-primary-light text-[var(--color-hp-primary)]">
+                                                        {t(feat.badge)}
                                                     </span>
                                                 )}
                                             </div>
@@ -319,9 +241,7 @@ export default function Subscriptions() {
                         );
                     })}
                 </div>
-
-                            </div>
+            </div>
         </SuperadminLayout>
     );
 }
-

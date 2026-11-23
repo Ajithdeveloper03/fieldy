@@ -76,7 +76,7 @@ export default function PendingFarmers({ farmers = [] }) {
                                 </span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark tracking-tight">
-                                {t(`Pending ${vocab.entity.plural} & Authorisations`)}
+                                {t('Pending {{entities}} & Authorisations', { entities: vocab.entity.plural })}
                             </h1>
                             <p className="text-sm text-hp-muted mt-1.5 leading-relaxed">
                                 {t(labels.todosApprovalSub || `Review and authorize new ${vocab.entity.plural.toLowerCase()}, check documents, and confirm operational readiness.`)}
@@ -90,7 +90,7 @@ export default function PendingFarmers({ farmers = [] }) {
                                         type="text" 
                                         value={searchQuery}
                                         onChange={e => setSearchQuery(e.target.value)}
-                                        placeholder={t(`Search by ${vocab.entity.singular.toLowerCase()} name, contact, or area...`)} 
+                                        placeholder={t('Search by {{entity}} name, contact, or area...', { entity: vocab.entity.singular.toLowerCase() })} 
                                         className="w-full bg-transparent text-sm text-hp-dark placeholder:text-hp-muted focus:outline-none"
                                     />
                                     {searchQuery && (
@@ -119,7 +119,7 @@ export default function PendingFarmers({ farmers = [] }) {
                             <div className="hp-icon-tile !w-12 !h-12 mx-auto mb-3">
                                 <ActiveIcon className="w-6 h-6 text-hp-muted" />
                             </div>
-                            <h2 className="text-base font-bold text-hp-dark mb-1">{t(`No pending ${vocab.entity.plural.toLowerCase()}`)}</h2>
+                            <h2 className="text-base font-bold text-hp-dark mb-1">{t('No pending {{entities}}', { entities: vocab.entity.plural.toLowerCase() })}</h2>
                             <p className="text-sm text-hp-muted">{t('All submissions for this vertical have been reviewed and approved.')}</p>
                         </div>
                     ) : (
@@ -130,7 +130,7 @@ export default function PendingFarmers({ farmers = [] }) {
                                         <th>{t(vocab.entity.singular)}</th>
                                         <th>{t('Contact')}</th>
                                         <th>{t('Location')}</th>
-                                        <th>{t(`${vocab.entity.size} / Status`)}</th>
+                                        <th>{t('{{entitySize}} / Status', { entitySize: vocab.entity.size })}</th>
                                         <th className="text-right">{t('Actions')}</th>
                                     </tr>
                                 </thead>
