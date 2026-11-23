@@ -39,6 +39,7 @@ Route::prefix('v1')->group(function () {
         // Employee endpoints
         Route::prefix('employee')->group(function () {
             Route::get('/dashboard', [EmployeeController::class, 'dashboard']);
+            Route::get('/performance', [EmployeeController::class, 'performance']);
             Route::get('/tasks', [EmployeeController::class, 'tasks']);
             Route::post('/tasks/{id}/status', [EmployeeController::class, 'updateTaskStatus']);
             Route::get('/sites', [EmployeeController::class, 'sites']);

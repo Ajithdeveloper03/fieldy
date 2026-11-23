@@ -13,10 +13,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class FarmerDirectoryController extends Controller
 {
+    public function create()
+    {
+        return Inertia::render('Admin/Profiles/FarmerRegistrationForm', [
+            'employees' => $this->employeeOptions(auth()->user()?->company_id),
+        ]);
+    }
+
     public function index(Request $request)
     {
         $search = $request->query('search', '');
@@ -217,6 +225,8 @@ class FarmerDirectoryController extends Controller
                 'aadhaar_number' => $fp?->aadhaar_number,
                 'kyc_status' => $fp?->kyc_status ?? 'pending',
                 'approval_status' => $fp?->approval_status ?? 'pending',
+                'assignment_mode' => $fp?->assignment_mode ?: 'all',
+                'assigned_to' => $fp?->assigned_to,
                 'registered_by' => $fp?->createdBy?->name ?? 'Admin',
                 'joined' => $user->created_at->format('M d, Y'),
                 'crop_stage' => $fp?->vetiver_crop_stage,
@@ -235,12 +245,18 @@ class FarmerDirectoryController extends Controller
                 'total_visits' => FarmerVisit::where('farmer_id', $id)->count(),
             ],
             'visits' => $visits,
+            'employees' => $this->employeeOptions($user->company_id),
         ]);
     }
 
     public function store(Request $request)
     {
         $industryKey = IndustryContext::current();
+        $companyId = auth()->user()?->company_id;
+        $assignedToRule = Rule::exists('users', 'id')->where('role', 'employee')->where('status', 'active');
+        if ($companyId) {
+            $assignedToRule->where('company_id', $companyId);
+        }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -252,6 +268,8 @@ class FarmerDirectoryController extends Controller
             'land_size_acres' => 'nullable|numeric|min:0|max:999999',
             'soil_type' => 'nullable|string|max:100',
             'irrigation_type' => 'nullable|string|max:50',
+            'assignment_mode' => 'required|in:all,individual',
+            'assigned_to' => ['nullable', 'required_if:assignment_mode,individual', 'integer', $assignedToRule],
             'farmer_photo' => 'nullable|file|max:10240',
             'aadhaar_image' => 'nullable|file|max:10240',
         ]);
@@ -294,6 +312,8 @@ class FarmerDirectoryController extends Controller
 
             $profileAttributes = [
                 'user_id' => $farmerUser->id,
+                'assignment_mode' => $validated['assignment_mode'],
+                'assigned_to' => $validated['assignment_mode'] === 'individual' ? $validated['assigned_to'] : null,
                 'created_by_employee_id' => auth()->id(),
                 'approval_status' => 'approved',
                 'farmer_code' => $prefix . '-SITE-' . str_pad($farmerUser->id, 4, '0', STR_PAD_LEFT),
@@ -324,6 +344,11 @@ class FarmerDirectoryController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::where('id', $id)->where('role', 'farmer')->with('farmerProfile')->firstOrFail();
+        $companyId = auth()->user()?->company_id;
+        $assignedToRule = Rule::exists('users', 'id')->where('role', 'employee')->where('status', 'active');
+        if ($companyId) {
+            $assignedToRule->where('company_id', $companyId);
+        }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -335,6 +360,8 @@ class FarmerDirectoryController extends Controller
             'land_size_acres' => 'nullable|numeric|min:0|max:999999',
             'soil_type' => 'nullable|string|max:100',
             'irrigation_type' => 'nullable|string|max:50',
+            'assignment_mode' => 'sometimes|required|in:all,individual',
+            'assigned_to' => ['nullable', 'required_if:assignment_mode,individual', 'integer', $assignedToRule],
             'approval_status' => 'nullable|in:approved,pending,rejected',
             'farmer_photo' => 'nullable|file|max:10240',
             'aadhaar_image' => 'nullable|file|max:10240',
@@ -371,6 +398,10 @@ class FarmerDirectoryController extends Controller
                     'kyc_status' => $kyc,
                     'farmer_photo_path' => $farmerPhotoPath,
                     'aadhaar_image_path' => $aadhaarPath,
+                    ...(array_key_exists('assignment_mode', $validated) ? [
+                        'assignment_mode' => $validated['assignment_mode'],
+                        'assigned_to' => $validated['assignment_mode'] === 'individual' ? ($validated['assigned_to'] ?? null) : null,
+                    ] : []),
                 ]);
             }
         });
@@ -394,5 +425,15 @@ class FarmerDirectoryController extends Controller
             : '/admin/farmers';
 
         return redirect($redirectUrl)->with('success', $siteName . ' deleted successfully.');
+    }
+
+    private function employeeOptions(?int $companyId)
+    {
+        return User::where('role', 'employee')
+            ->where('status', 'active')
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
     }
 }

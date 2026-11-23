@@ -4,7 +4,7 @@ import { Link, usePage, router } from '@inertiajs/react';
 import { 
     MapPin, Search, Plus, 
     Briefcase, Sparkles, LayoutGrid, ListFilter, ArrowUpRight, X,
-    Battery, UserCheck, ShieldCheck, KeyRound, Copy, Check
+    UserCheck, ShieldCheck, KeyRound, Copy, Check
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import useIndustry from '../../../hooks/useIndustry';
@@ -259,9 +259,6 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                         <div className="flex items-center justify-between text-xs text-hp-muted">
                                             <span className="font-mono font-bold bg-white/80 px-2 py-0.5 rounded border border-hp-border text-hp-dark">
                                                 {emp.employee_code || `STF-${emp.id}`}
-                                            </span>
-                                            <span className="flex items-center gap-1 font-semibold text-hp-dark">
-                                                <Battery className="w-3.5 h-3.5 text-hp-primary" /> {emp.battery || 92}%
                                             </span>
                                         </div>
                                     </div>

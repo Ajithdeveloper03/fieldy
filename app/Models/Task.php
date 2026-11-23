@@ -32,6 +32,7 @@ class Task extends Model
 
     protected $casts = [
         'due_date' => 'date',
+        'completed_at' => 'datetime',
         'checklist' => 'array',
         'safety_requirements' => 'array',
         'otp_verified' => 'boolean',
@@ -39,6 +40,15 @@ class Task extends Model
         'after_photos' => 'array',
         'points_awarded' => 'integer',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (Task $task) {
+            if ($task->isDirty('status')) {
+                $task->completed_at = $task->status === 'done' ? now() : null;
+            }
+        });
+    }
 
     public function assignedTo()
     {

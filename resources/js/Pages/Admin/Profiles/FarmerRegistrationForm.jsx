@@ -7,7 +7,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import useIndustry from '../../../hooks/useIndustry';
 
-export default function FarmerRegistrationForm() {
+export default function FarmerRegistrationForm({ employees = [] }) {
     const { t } = useTranslation();
     const { vocab, industry } = useIndustry();
     const [docName, setDocName] = useState('');
@@ -22,6 +22,8 @@ export default function FarmerRegistrationForm() {
         land_size_acres: '',
         irrigation_type: 'Sq.ft',
         phone: '',
+        assignment_mode: 'all',
+        assigned_to: '',
         aadhaar_image: null,
         farmer_photo: null,
     });
@@ -168,6 +170,37 @@ export default function FarmerRegistrationForm() {
                                 onChange={(e) => setData('phone', e.target.value)}
                             />
                             {errors.phone && <p className="text-hp-danger text-xs mt-1">{errors.phone}</p>}
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <label className="block text-xs font-bold text-hp-dark uppercase tracking-wider mb-1.5">
+                                {t('Assign Project Site To')}
+                            </label>
+                            <select
+                                className="hp-input"
+                                value={data.assignment_mode}
+                                onChange={(e) => setData({ ...data, assignment_mode: e.target.value, assigned_to: '' })}
+                            >
+                                <option value="all">{t('All Employees')}</option>
+                                <option value="individual">{t('One Employee')}</option>
+                            </select>
+                            {data.assignment_mode === 'individual' && (
+                                <div className="mt-3">
+                                    <select
+                                        required
+                                        className="hp-input"
+                                        value={data.assigned_to}
+                                        onChange={(e) => setData('assigned_to', e.target.value)}
+                                    >
+                                        <option value="">{t('Select Employee')}</option>
+                                        {employees.map((employee) => (
+                                            <option key={employee.id} value={employee.id}>{employee.name}</option>
+                                        ))}
+                                    </select>
+                                    {errors.assigned_to && <p className="text-hp-danger text-xs mt-1">{errors.assigned_to}</p>}
+                                </div>
+                            )}
+                            <p className="text-[11px] text-hp-muted mt-1.5">{t('The assigned site will appear in the selected employee’s mobile app.')}</p>
                         </div>
 
                         <div>

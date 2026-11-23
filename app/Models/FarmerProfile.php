@@ -11,6 +11,8 @@ class FarmerProfile extends Model
 
     protected $fillable = [
         'user_id',
+        'assignment_mode',
+        'assigned_to',
         'industry',
         'created_by_employee_id',
         'approval_status',
@@ -65,5 +67,10 @@ class FarmerProfile extends Model
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by_employee_id');
+    }
+
+    public function assignedTo()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
     }
 }

@@ -30,7 +30,7 @@ function ChangeView({ center, zoom, fullscreen }) {
 import {
     ShieldAlert, MapPin, Clock, Search,
     CheckCircle2, Wifi, WifiOff, Phone,
-    Battery, Navigation, MessageSquare, Maximize, Minimize,
+    Navigation, MessageSquare, Maximize, Minimize,
     RefreshCw
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -293,9 +293,6 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                                                     <p className="text-xs text-hp-muted truncate mt-0.5">{emp.currentLocation || 'Location streaming...'}</p>
                                                     
                                                     <div className="flex items-center gap-3 mt-2 text-[11px] text-hp-muted">
-                                                        <span className="flex items-center gap-1 font-semibold">
-                                                            <Battery className="w-3.5 h-3.5 text-hp-primary" />{emp.battery || 85}%
-                                                        </span>
                                                         <span className="flex items-center gap-1">
                                                             {emp.gps === 'enabled' ? (
                                                                 <Wifi className="w-3 h-3 text-hp-success" />

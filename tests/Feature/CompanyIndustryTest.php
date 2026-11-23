@@ -31,6 +31,7 @@ class CompanyIndustryTest extends TestCase
                 'industry' => 'solar',
                 'email' => 'contact@sunrise.test',
                 'phone' => '9000000002',
+                'city' => 'Coimbatore',
                 'plan' => 'professional',
                 'max_employees' => 50,
                 'admin_name' => 'Solar Admin',

@@ -99,7 +99,7 @@ class LiveMonitorController extends Controller
                 'employee_code' => $user->employeeDetail?->employee_code ?? 'N/A',
                 'status' => $isActive ? 'active' : ($attendanceToday ? 'idle' : 'offline'),
                 'gps' => 'enabled',
-                'battery' => 95,
+
                 'lastSeen' => $latestLocation ? Carbon::createFromTimestampMs($latestLocation->timestamp)->diffForHumans() : 'Never',
                 'visitsDone' => $visitsToday,
                 'visitsTarget' => 5,
@@ -141,7 +141,7 @@ class LiveMonitorController extends Controller
                     'employee_code' => $s['code'],
                     'status' => $s['online'] ? 'active' : 'idle',
                     'gps' => 'enabled',
-                    'battery' => 92 - $idx * 7,
+
                     'lastSeen' => $s['online'] ? '2 mins ago' : '1 hour ago',
                     'visitsDone' => 2 + ($idx % 3),
                     'visitsTarget' => 5,

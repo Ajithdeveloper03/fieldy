@@ -111,7 +111,7 @@ foreach (['admin', 'fieldy/admin'] as $adminPrefix) {
 
         // Farmer / Project Site CRUD Management
         Route::get('/farmers', [FarmerDirectoryController::class, 'index'])->name('farmers.index');
-        Route::get('/farmers/register', fn () => inertia('Admin/Profiles/FarmerRegistrationForm'))->name('farmers.register');
+        Route::get('/farmers/register', [FarmerDirectoryController::class, 'create'])->name('farmers.register');
         Route::post('/farmers', [FarmerDirectoryController::class, 'store'])->name('farmers.store');
         Route::get('/farmers/{id}', [FarmerDirectoryController::class, 'show'])->name('farmers.show');
         Route::put('/farmers/{id}', [FarmerDirectoryController::class, 'update'])->name('farmers.update');
