@@ -10,9 +10,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('companies', function (Blueprint $table) {
-            $table->unsignedBigInteger('employee_sequence')->default(0);
-        });
+        if (Schema::hasTable('companies') && ! Schema::hasColumn('companies', 'employee_sequence')) {
+            Schema::table('companies', function (Blueprint $table) {
+                $table->unsignedBigInteger('employee_sequence')->default(0);
+            });
+        }
 
         DB::transaction(function () {
             $defaultCompany = DB::table('companies')->where('code', 'INF-ORG')->first(['id', 'code']);
@@ -37,8 +39,11 @@ return new class extends Migration
             $sequences = [];
             $assignCodes = function ($rows) use (&$sequences, $defaultCompany) {
                 foreach ($rows as $row) {
-                    $companyId = $row->company_id ?? $defaultCompany->id;
-                    $prefix = $row->code ?? $defaultCompany->code;
+                    $companyId = $row->company_id ?? $defaultCompany?->id;
+                    $prefix = $row->code ?? $defaultCompany?->code;
+                    if (! $companyId || ! $prefix) {
+                        continue;
+                    }
                     $sequence = $sequences[$companyId] ?? 0;
                     do {
                         $code = $prefix.'-EMP-'.str_pad((string) ++$sequence, 4, '0', STR_PAD_LEFT);

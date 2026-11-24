@@ -8,11 +8,26 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('farmer_profiles', function (Blueprint $table) {
-            $table->string('assignment_mode')->default('all');
-            $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
-            $table->index(['assignment_mode', 'assigned_to']);
-        });
+        if (! Schema::hasTable('farmer_profiles')) {
+            return;
+        }
+
+        $addMode = ! Schema::hasColumn('farmer_profiles', 'assignment_mode');
+        $addAssigned = ! Schema::hasColumn('farmer_profiles', 'assigned_to');
+
+        if ($addMode || $addAssigned) {
+            Schema::table('farmer_profiles', function (Blueprint $table) use ($addMode, $addAssigned) {
+                if ($addMode) {
+                    $table->string('assignment_mode')->default('all');
+                }
+                if ($addAssigned) {
+                    $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
+                }
+                if ($addMode && $addAssigned) {
+                    $table->index(['assignment_mode', 'assigned_to']);
+                }
+            });
+        }
     }
 
     public function down(): void
