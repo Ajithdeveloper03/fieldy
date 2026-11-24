@@ -46,7 +46,7 @@ export default function SubmitReportScreen() {
   const [beforePhoto, setBeforePhoto] = useState<string | null>(null);
   const [afterPhoto, setAfterPhoto] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState("");
-  const [otpCode, setOtpCode] = useState("4821");
+  const [otpCode, setOtpCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const capturePhoto = async (setter: (uri: string) => void) => {
@@ -145,6 +145,7 @@ export default function SubmitReportScreen() {
       afterPhoto,
       before_photo: beforePhoto,
       after_photo: afterPhoto,
+      customer_otp: otpCode.trim() || undefined,
       otp_verified: otpCode.trim().length >= 4,
       check_in_latitude: resolvedLat,
       check_in_longitude: resolvedLng,
@@ -156,24 +157,28 @@ export default function SubmitReportScreen() {
     };
 
     try {
+      await apiClient.post("/employee/visit/submit", newReport);
       const existing = await AsyncStorage.getItem("@fieldy_reports");
       const list = existing ? JSON.parse(existing) : [];
       list.unshift(newReport);
       await AsyncStorage.setItem("@fieldy_reports", JSON.stringify(list));
       await AsyncStorage.setItem("@last_submitted_report", JSON.stringify(newReport));
-      await apiClient.post("/employee/visit/submit", newReport).catch(() => null);
       await stopSession().catch(() => null);
       await AsyncStorage.multiRemove(["@active_task", "@active_checkin"]).catch(() => null);
-    } catch {
-      // Offline fallback already saved
-    } finally {
       setLoading(false);
       showToast({
         title: "Report Saved",
-        message: `${serviceConfig.vocab.visitSingular} checked out & report saved.`,
+        message: `${serviceConfig.vocab.visitSingular} checked out & report saved.` ,
         type: "success",
       });
       router.push("/(employee)/visit/success");
+    } catch (error: any) {
+      setLoading(false);
+      showToast({
+        title: "Report not saved",
+        message: error?.message || "Connect to the server and try again.",
+        type: "error",
+      });
     }
   };
 
@@ -324,7 +329,7 @@ export default function SubmitReportScreen() {
               </Text>
             </View>
             <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12, marginBottom: 10 }}>
-              4-digit code (Demo: 4821)
+              Customer verification code
             </Text>
             <View
               style={{
@@ -340,7 +345,7 @@ export default function SubmitReportScreen() {
             >
               <TextInput
                 style={{ flex: 1, color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, textAlign: "center" }}
-                placeholder="4821"
+                placeholder="Enter the code provided at the site"
                 keyboardType="numeric"
                 maxLength={4}
                 value={otpCode}

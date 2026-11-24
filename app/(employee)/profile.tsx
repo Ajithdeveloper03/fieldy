@@ -42,13 +42,17 @@ const SERVICE_CARD_IMAGES: Record<string, any> = {
 
 export default function EmployeeProfileScreen() {
   const { serviceConfig, setService } = useService();
-  const [userName, setUserName] = useState("Field Officer");
-  const [employeeCode, setEmployeeCode] = useState("EMP-001");
-  const [companyName, setCompanyName] = useState(serviceConfig.name);
+  const [userName, setUserName] = useState("");
+  const [employeeCode, setEmployeeCode] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [completionRate, setCompletionRate] = useState(0);
+  const [pointsEarned, setPointsEarned] = useState(0);
   const [isClockedIn, setIsClockedIn] = useState(false);
-  const [siteCount, setSiteCount] = useState(serviceConfig.sampleEntities.length);
-  const [taskCount, setTaskCount] = useState(serviceConfig.sampleTasks.length);
-  const [visitCount, setVisitCount] = useState(serviceConfig.sampleVisits.length);
+  const [siteCount, setSiteCount] = useState(0);
+  const [taskCount, setTaskCount] = useState(0);
+  const [visitCount, setVisitCount] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -59,6 +63,9 @@ export default function EmployeeProfileScreen() {
       if (authUser?.name) setUserName(authUser.name);
       else if (storedName) setUserName(storedName);
       if (authUser?.employee_code) setEmployeeCode(authUser.employee_code);
+      if (authUser?.phone) setPhone(authUser.phone);
+      if (authUser?.email) setEmail(authUser.email);
+      if (authUser?.company_name) setCompanyName(authUser.company_name);
 
       try {
         const dash = await api.get("/employee/dashboard");
@@ -76,20 +83,30 @@ export default function EmployeeProfileScreen() {
         if (att && typeof att.checked_in === "boolean") {
           setIsClockedIn(att.checked_in && !att.checked_out);
         }
-        if (stats?.tasks_count) setTaskCount(Number(stats.tasks_count));
-        if (stats?.visits_count) setVisitCount(Number(stats.visits_count));
+        if (emp?.phone) setPhone(emp.phone);
+        if (emp?.email) setEmail(emp.email);
+        setTaskCount(Number(stats?.tasks_count ?? 0));
+        setVisitCount(Number(stats?.visits_count ?? 0));
+        setSiteCount(Number(stats?.sites_count ?? 0));
       } catch {
-        // Offline / fallback uses serviceConfig
+        // Keep only profile details already returned at sign in.
+      }
+
+      try {
+        const performance = await api.get("/employee/performance");
+        setCompletionRate(Number(performance?.metrics?.task_completion_rate ?? 0));
+        setPointsEarned(Number(performance?.metrics?.points_earned ?? 0));
+      } catch {
+        setCompletionRate(0);
+        setPointsEarned(0);
       }
 
       try {
         const sitesRes = await api.get("/employee/sites");
         const list = sitesRes?.data?.sites;
-        if (Array.isArray(list) && list.length > 0) {
-          setSiteCount(Math.max(list.length, serviceConfig.sampleEntities.length));
-        }
+        if (Array.isArray(list)) setSiteCount(list.length);
       } catch {
-        setSiteCount(serviceConfig.sampleEntities.length);
+        setSiteCount(0);
       }
     })();
   }, [serviceConfig.key]);
@@ -254,10 +271,7 @@ export default function EmployeeProfileScreen() {
                   backgroundColor: "rgba(255,255,255,0.08)",
                 }}
               >
-                <Image
-                  source={SERVICE_CARD_IMAGES[serviceConfig.key] || require("../../assets/images/image1.jpg")}
-                  style={{ width: "100%", height: "100%", borderRadius: 64 }}
-                />
+                <View style={{ flex: 1, borderRadius: 64, backgroundColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" }}><Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 54 }}>{userName.trim().charAt(0).toUpperCase() || "?"}</Text></View>
               </View>
 
               {/* Right Metric */}
@@ -269,7 +283,7 @@ export default function EmployeeProfileScreen() {
                     fontSize: 28,
                   }}
                 >
-                  {serviceConfig.kpis.efficiencyRate}
+                  {completionRate}%
                 </Text>
                 <Text
                   style={{
@@ -280,7 +294,7 @@ export default function EmployeeProfileScreen() {
                     textAlign: "center",
                   }}
                 >
-                  SLA Rate
+                  Task completion
                 </Text>
               </View>
             </View>
@@ -322,7 +336,7 @@ export default function EmployeeProfileScreen() {
                 textAlign: "center",
               }}
             >
-              {serviceConfig.vocab.staffRole} • {employeeCode}
+              {[serviceConfig.vocab.staffRole, employeeCode].filter(Boolean).join(" • ") || "Employee"}
             </Text>
             <Text
               style={{
@@ -334,8 +348,9 @@ export default function EmployeeProfileScreen() {
                 textAlign: "center",
               }}
             >
-              {companyName} • {isClockedIn ? "On Duty" : "Ready for Shift"}
+              {companyName || "Company not linked"} • {isClockedIn ? "On Duty" : "Off Duty"}
             </Text>
+            {phone || email ? <Text style={{ color: "rgba(255,255,255,0.78)", fontFamily: "Brandon-Medium", fontSize: 13, textAlign: "center", marginTop: -16, marginBottom: 20 }}>{[phone, email].filter(Boolean).join(" • ")}</Text> : null}
 
             {/* Dual Outlined Pill Buttons */}
             <View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
@@ -425,10 +440,7 @@ export default function EmployeeProfileScreen() {
                     marginBottom: 8,
                   }}
                 >
-                  <Image
-                    source={SERVICE_CARD_IMAGES[serviceConfig.key] || require("../../assets/images/image1.jpg")}
-                    style={{ width: "100%", height: "100%" }}
-                  />
+                  <View style={{ flex: 1, backgroundColor: "#e2e8f0", alignItems: "center", justifyContent: "center" }}><Text style={{ color: "#334155", fontFamily: "Brandon-Bold", fontSize: 20 }}>{userName.trim().charAt(0).toUpperCase() || "?"}</Text></View>
                 </View>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <Text
@@ -457,7 +469,7 @@ export default function EmployeeProfileScreen() {
                     marginTop: 6,
                   }}
                 >
-                  {taskCount} Active {serviceConfig.vocab.tasks} • {serviceConfig.kpis.points}
+                    {taskCount} Active {serviceConfig.vocab.tasks} • {pointsEarned} points earned
                 </Text>
               </View>
 
@@ -567,7 +579,7 @@ export default function EmployeeProfileScreen() {
                     fontSize: 13,
                   }}
                 >
-                  {serviceConfig.shortName} • {serviceConfig.kpis.efficiencyRate} SLA
+                  {serviceConfig.shortName} • {completionRate}% task completion
                 </Text>
               </View>
 
@@ -644,8 +656,8 @@ export default function EmployeeProfileScreen() {
               },
               {
                 icon: Map,
-                label: serviceConfig.kpis.primaryLabel,
-                value: serviceConfig.kpis.primaryNumber,
+                label: "Active tasks",
+                value: String(taskCount),
                 color: "#4ade80",
                 route: "/(employee)/map",
               },
@@ -659,7 +671,7 @@ export default function EmployeeProfileScreen() {
               {
                 icon: Award,
                 label: "SLA Resolution",
-                value: serviceConfig.kpis.efficiencyRate,
+                value: `${completionRate}%`,
                 color: "#f472b6",
                 route: "/(employee)/performance",
               },

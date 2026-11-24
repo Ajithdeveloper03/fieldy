@@ -1,15 +1,14 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
-  Image,
   StatusBar,
   StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   ChevronLeft,
@@ -19,45 +18,20 @@ import {
 } from "lucide-react-native";
 import { useLanguage } from "../../context/LanguageContext";
 import { useService, ServiceSelectorPill } from "../../context/ServiceContext";
+import { api } from "../../services/api";
 
 export default function EmployeeVisitsScreen() {
   const { t, language } = useLanguage();
   const { serviceConfig } = useService();
-
-  const fallbackImages = [
-    require("../../assets/images/image1.jpg"),
-    require("../../assets/images/image2.jpg"),
-    require("../../assets/images/image5.jpg"),
-    require("../../assets/images/image6.jpg"),
-  ];
-
-  const visits = (serviceConfig.sampleVisits && serviceConfig.sampleVisits.length > 0)
-    ? serviceConfig.sampleVisits.map((v, i) => ({
-        id: v.id,
-        type: v.type.toUpperCase(),
-        site_contact: v.site,
-        time: v.time,
-        status: v.status,
-        image: fallbackImages[i % fallbackImages.length],
-      }))
-    : [
-        {
-          id: 1,
-          type: `${serviceConfig.label.toUpperCase()} PROTOCOL`,
-          site_contact: "Sector Station Alpha",
-          time: "09:00 AM",
-          status: "Completed",
-          image: fallbackImages[0],
-        },
-        {
-          id: 2,
-          type: `${serviceConfig.label.toUpperCase()} DISPATCH`,
-          site_contact: "Central Hub Beta",
-          time: "11:30 AM",
-          status: "In Progress",
-          image: fallbackImages[1],
-        },
-      ];
+  const [visits, setVisits] = useState<any[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    api.get("/employee/visits").then((result) => {
+      if (active) setVisits(Array.isArray(result?.visits) ? result.visits : []);
+    }).catch(() => { if (active) setVisits([]); }).finally(() => { if (active) setLoaded(true); });
+    return () => { active = false; };
+  }, [serviceConfig.key]));
 
   return (
     <View style={{ flex: 1, backgroundColor: "#062214" }}>
@@ -151,6 +125,7 @@ export default function EmployeeVisitsScreen() {
                 zIndex: 0,
               }}
             />
+            {loaded && visits.length === 0 ? <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Medium", textAlign: "center", paddingVertical: 32 }}>No site visits have been recorded.</Text> : null}
             {visits.map((visit) => (
               <TouchableOpacity
                 key={visit.id}
@@ -186,21 +161,21 @@ export default function EmployeeVisitsScreen() {
                       textAlign: "right",
                     }}
                   >
-                    {visit.type}
+                    {visit.cropType || "Site visit"}
                   </Text>
                   <Text
                     style={{
                       color:
-                        visit.status === "Completed"
+                        visit.status === "completed"
                           ? "#4ade80"
-                          : visit.status === "In Progress"
+                          : visit.status === "in_progress"
                           ? "#fbbf24"
                           : "#ffffff",
                       fontFamily: "Brandon-Bold",
                       fontSize: 18,
                     }}
                   >
-                    {visit.status}
+                    {visit.status === "completed" ? "Completed" : visit.status === "in_progress" ? "In progress" : "Pending"}
                   </Text>
                 </View>
 
@@ -216,17 +191,14 @@ export default function EmployeeVisitsScreen() {
                     left: "50%",
                     marginLeft: -43,
                     zIndex: 10,
-                    borderWidth: visit.status === "Completed" ? 2.5 : 1.5,
+                    borderWidth: visit.status === "completed" ? 2.5 : 1.5,
                     borderColor:
-                      visit.status === "Completed"
+                      visit.status === "completed"
                         ? "#4ade80"
                         : "rgba(255,255,255,0.3)",
                   }}
                 >
-                  <Image
-                    source={visit.image}
-                    style={{ width: 76, height: 76, borderRadius: 38 }}
-                  />
+                  <Navigation size={30} color="#4ade80" />
                 </View>
 
                 <View
@@ -244,7 +216,7 @@ export default function EmployeeVisitsScreen() {
                       fontSize: 21,
                     }}
                   >
-                    {visit.time}
+                    {[visit.date, visit.time].filter(Boolean).join(" • ") || "Visit time not recorded"}
                   </Text>
                   <View
                     style={{
@@ -266,7 +238,7 @@ export default function EmployeeVisitsScreen() {
                     numberOfLines={2}
                     ellipsizeMode="tail"
                     >
-                      {visit.site_contact}
+                      {visit.farmerName || "Site name not recorded"}
                     </Text>
                   </View>
                 </View>

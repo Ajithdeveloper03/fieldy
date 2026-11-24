@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
-  Image,
   StyleSheet,
   StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   ChevronLeft,
@@ -19,22 +18,31 @@ import {
   LogIn,
   LogOut,
 } from "lucide-react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { api } from "../../../services/api";
 import { useLanguage } from "../../../context/LanguageContext";
 
 export default function AttendanceScreen() {
   const { t, language } = useLanguage();
-  const [clockInTime, setClockInTime] = useState<string | null>("09:15 AM");
-  const [isClockedIn, setIsClockedIn] = useState<boolean>(true);
+  const [clockInTime, setClockInTime] = useState<string | null>(null);
+  const [isClockedIn, setIsClockedIn] = useState<boolean>(false);
 
-  useEffect(() => {
-    (async () => {
-      const time = await AsyncStorage.getItem("clockInTime");
-      const status = await AsyncStorage.getItem("isClockedIn");
-      if (time) setClockInTime(time);
-      if (status) setIsClockedIn(status === "true");
-    })();
-  }, []);
+  const [attendance, setAttendance] = useState<any[]>([]);
+  const [attendanceLoaded, setAttendanceLoaded] = useState(false);
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    api.get("/employee/performance").then((data) => {
+      if (!active) return;
+      const rows = Array.isArray(data?.attendance) ? data.attendance : [];
+      setAttendance(rows);
+      const currentDate = new Date();
+      const today = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(currentDate.getDate()).padStart(2, "0")}`;
+      const record = rows.find((row: any) => row.date === today);
+      setClockInTime(record?.check_in || null);
+      setIsClockedIn(Boolean(record?.check_in && !record?.check_out));
+      setAttendanceLoaded(true);
+    }).catch(() => { if (active) setAttendanceLoaded(false); });
+    return () => { active = false; };
+  }, []));
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0f172a" }}>
@@ -116,9 +124,9 @@ export default function AttendanceScreen() {
                 lineHeight: 54,
               }}
             >
-              {isClockedIn ? "ON DUTY" : "OFF DUTY"}
+              {attendanceLoaded ? (isClockedIn ? "ON DUTY" : "OFF DUTY") : "ATTENDANCE UNAVAILABLE"}
             </Text>
-            {isClockedIn && (
+            {attendanceLoaded && isClockedIn && (
               <View
                 style={{
                   flexDirection: "row",
@@ -201,7 +209,7 @@ export default function AttendanceScreen() {
 
             {!isClockedIn ? (
               <TouchableOpacity
-                onPress={() => router.push("/(employee)/attendance/clock-in")}
+            onPress={() => router.push("/(employee)/attendance/clock-in")}
                 style={{
                   backgroundColor: "#16a34a",
                   borderRadius: 999,
@@ -267,33 +275,12 @@ export default function AttendanceScreen() {
               marginBottom: 16,
             }}
           >
-            This Week&apos;s Log
+            This Month&apos;s Attendance
           </Text>
 
           <View style={{ gap: 12 }}>
-            {[
-              {
-                day: "Today",
-                date: "Oct 8",
-                in: "09:15 AM",
-                out: "--",
-                status: "active",
-              },
-              {
-                day: "Yesterday",
-                date: "Oct 7",
-                in: "08:50 AM",
-                out: "05:30 PM",
-                status: "completed",
-              },
-              {
-                day: "Monday",
-                date: "Oct 6",
-                in: "09:00 AM",
-                out: "06:00 PM",
-                status: "completed",
-              },
-            ].map((log, index) => (
+            {attendanceLoaded && attendance.length === 0 ? <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Medium", textAlign: "center", padding: 18 }}>No attendance records have been recorded this month.</Text> : null}
+            {attendance.slice(0, 7).map((log, index) => (
               <View
                 key={index}
                 style={{
@@ -323,7 +310,7 @@ export default function AttendanceScreen() {
                       fontSize: 14,
                     }}
                   >
-                    {log.day}
+                    {log.date ? new Date(`${log.date}T12:00:00`).toLocaleDateString(undefined, { weekday: "short" }) : "—"}
                   </Text>
                   <Text
                     style={{
@@ -332,7 +319,7 @@ export default function AttendanceScreen() {
                       fontSize: 11,
                     }}
                   >
-                    {log.date}
+                    {log.date || "Date unavailable"}
                   </Text>
                 </View>
 
@@ -361,7 +348,7 @@ export default function AttendanceScreen() {
                         fontSize: 14,
                       }}
                     >
-                      {log.in}
+                      {log.check_in || "—"}
                     </Text>
                   </View>
                   <View style={{ alignItems: "flex-end" }}>
@@ -382,7 +369,7 @@ export default function AttendanceScreen() {
                         fontSize: 14,
                       }}
                     >
-                      {log.out}
+                      {log.check_out || "—"}
                     </Text>
                   </View>
                 </View>

@@ -1,783 +1,99 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  StatusBar,
-  Switch,
-} from "react-native";
+import React, { useCallback, useState } from "react";
+import { View, Text, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
-import {
-  ChevronLeft,
-  Settings,
-  Calendar,
-  CheckCircle2,
-  BarChart3,
-  User,
-  TrendingUp,
-  Award,
-  Clock,
-  ArrowUpRight,
-  Zap,
-  ShieldCheck,
-} from "lucide-react-native";
+import { router, useFocusEffect } from "expo-router";
+import { ChevronLeft, Clock, CheckCircle2, ClipboardList, CalendarCheck } from "lucide-react-native";
+import { api } from "../../services/api";
+
+type PerformanceData = {
+  period?: string;
+  employee?: { name?: string; employee_code?: string | null; company_name?: string | null };
+  metrics?: {
+    tasks_total?: number; tasks_completed?: number; tasks_pending?: number;
+    task_completion_rate?: number; points_earned?: number; attendance_days?: number;
+    workdays_elapsed?: number; attendance_rate?: number; punctual_days?: number;
+    hours_worked?: number; visits_total?: number; visits_completed?: number;
+  };
+  attendance?: Array<{ date: string | null; check_in: string | null; check_out: string | null; hours: number; is_late: boolean }>;
+  recent_tasks?: Array<{ id: string; title: string; site?: string | null; status: string; points: number }>;
+};
+
+const Card = ({ label, value, detail }: { label: string; value: string; detail: string }) => (
+  <View style={{ flex: 1, minWidth: "46%", backgroundColor: "#ffffff", borderRadius: 22, padding: 18, borderWidth: 1, borderColor: "#e2e8f0" }}>
+    <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>{label}</Text>
+    <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 26, marginTop: 8 }}>{value}</Text>
+    <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 4 }}>{detail}</Text>
+  </View>
+);
 
 export default function EmployeePerformanceScreen() {
-  const [autoRouting, setAutoRouting] = useState(true);
+  const [data, setData] = useState<PerformanceData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    setLoading(true);
+    api.get("/employee/performance")
+      .then((result) => { if (active) { setData(result); setError(false); } })
+      .catch(() => { if (active) setError(true); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []));
+
+  const metrics = data?.metrics;
+  const number = (value?: number) => Number(value || 0).toLocaleString();
+  const percent = (value?: number) => `${Number(value || 0).toFixed(0)}%`;
 
   return (
     <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
       <StatusBar barStyle="dark-content" />
-
       <SafeAreaView style={{ flex: 1 }}>
-        {/* HEADER (Reference Image 5 Minimalist Header) */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            paddingHorizontal: 22,
-            paddingTop: 12,
-            paddingBottom: 14,
-          }}
-        >
-          <TouchableOpacity
-            onPress={() =>
-              router.canGoBack()
-                ? router.back()
-                : router.replace("/(employee)/dashboard")
-            }
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: "#ffffff",
-              alignItems: "center",
-              justifyContent: "center",
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
-              shadowRadius: 8,
-              elevation: 2,
-              borderWidth: 1,
-              borderColor: "#f1f5f9",
-            }}
-          >
+        <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingVertical: 12 }}>
+          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 10, backgroundColor: "#ffffff", borderRadius: 999 }}>
             <ChevronLeft size={22} color="#0f172a" />
           </TouchableOpacity>
-
-          <Text
-            style={{
-              color: "#0f172a",
-              fontFamily: "Brandon-Bold",
-              fontSize: 24,
-            }}
-          >
-            Performance & KPIs
-          </Text>
-
-          <TouchableOpacity
-            onPress={() => router.push("/(employee)/menu")}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: "#ffffff",
-              alignItems: "center",
-              justifyContent: "center",
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
-              shadowRadius: 8,
-              elevation: 2,
-              borderWidth: 1,
-              borderColor: "#f1f5f9",
-            }}
-          >
-            <Settings size={20} color="#0f172a" />
-          </TouchableOpacity>
+          <View style={{ marginLeft: 14 }}>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 23 }}>My Performance</Text>
+            <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>{data?.period || "Current month"}</Text>
+          </View>
         </View>
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingHorizontal: 20,
-            paddingBottom: 140,
-            paddingTop: 6,
-          }}
-        >
-          {/* TOP HERO DIAL CARD (Reference Image 5 Center Screen: "Air Condition" + 3 Sub-Columns + Semi-Circle Gauge) */}
-          <View
-            style={{
-              backgroundColor: "#ffffff",
-              borderRadius: 36,
-              padding: 24,
-              marginBottom: 20,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: 0.05,
-              shadowRadius: 20,
-              elevation: 4,
-              borderWidth: 1,
-              borderColor: "#f1f5f9",
-            }}
-          >
-            {/* Card Title + Toggle Switch */}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 20,
-              }}
-            >
-              <Text
-                style={{
-                  color: "#0f172a",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 20,
-                }}
-              >
-                On-time work goal
-              </Text>
-              <Switch
-                value={autoRouting}
-                onValueChange={setAutoRouting}
-                trackColor={{ false: "#e2e8f0", true: "#10b981" }}
-                thumbColor="#ffffff"
-              />
+        <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 120, gap: 14 }}>
+          {loading && !data ? <ActivityIndicator color="#059669" style={{ marginTop: 32 }} /> : null}
+          {error ? <Text style={{ color: "#b91c1c", backgroundColor: "#fee2e2", padding: 14, borderRadius: 12 }}>Performance details could not be loaded. Check your connection and reopen this page.</Text> : null}
+          {!loading && !error && data ? <>
+            <View style={{ backgroundColor: "#062214", borderRadius: 24, padding: 20 }}>
+              <Text style={{ color: "#bbf7d0", fontFamily: "Brandon-Medium", fontSize: 14 }}>{data.employee?.name || "Employee"}{data.employee?.employee_code ? ` • ${data.employee.employee_code}` : ""}</Text>
+              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 32, marginTop: 8 }}>{number(metrics?.points_earned)} points</Text>
+              <Text style={{ color: "#d1d5db", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 3 }}>Points from completed assigned tasks</Text>
+              {data.employee?.company_name ? <Text style={{ color: "#bbf7d0", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 10 }}>{data.employee.company_name}</Text> : null}
             </View>
-
-            {/* 3 Minimal Sub-Columns (Reference Image 5: "Fan Speed | Timer | Auto Mode") */}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 24,
-              }}
-            >
-              <View>
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 13,
-                  }}
-                >
-                  Target Quota
-                </Text>
-                <Text
-                  style={{
-                    color: "#94a3b8",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 11,
-                    marginTop: 2,
-                  }}
-                >
-                  45 Audits / Mo
-                </Text>
-              </View>
-              <View>
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 13,
-                  }}
-                >
-                  Avg Turnaround
-                </Text>
-                <Text
-                  style={{
-                    color: "#94a3b8",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 11,
-                    marginTop: 2,
-                  }}
-                >
-                  Hours &lt; 2.4h
-                </Text>
-              </View>
-              <View>
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 13,
-                  }}
-                >
-                  Auto-assign
-                </Text>
-                <Text
-                  style={{
-                    color: "#10b981",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 11,
-                    marginTop: 2,
-                  }}
-                >
-                  {autoRouting ? "Active [On]" : "Manual [Off]"}
-                </Text>
-              </View>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
+              <Card label="Task completion" value={percent(metrics?.task_completion_rate)} detail={`${number(metrics?.tasks_completed)} of ${number(metrics?.tasks_total)} tasks completed`} />
+              <Card label="Attendance" value={percent(metrics?.attendance_rate)} detail={`${number(metrics?.attendance_days)} of ${number(metrics?.workdays_elapsed)} weekdays recorded`} />
+              <Card label="Time recorded" value={`${number(metrics?.hours_worked)} hrs`} detail={`${number(metrics?.punctual_days)} on-time attendance days`} />
+              <Card label="Site visits" value={number(metrics?.visits_completed)} detail={`${number(metrics?.visits_total)} visits recorded this month`} />
             </View>
-
-            {/* Glowing Semi-Circular Arc Gauge ("22°C" -> "86%") */}
-            <View style={{ alignItems: "center", paddingTop: 6 }}>
-              <View
-                style={{
-                  width: 240,
-                  height: 125,
-                  overflow: "hidden",
-                  alignItems: "center",
-                }}
-              >
-                <View
-                  style={{
-                    width: 240,
-                    height: 240,
-                    borderRadius: 120,
-                    borderWidth: 16,
-                    borderColor: "#f1f5f9",
-                    borderTopColor: "#10b981",
-                    borderLeftColor: "#34d399",
-                    borderRightColor: "#059669",
-                    transform: [{ rotate: "-15deg" }],
-                  }}
-                />
-                <View
-                  style={{
-                    position: "absolute",
-                    bottom: 4,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#94a3b8",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 11,
-                      marginBottom: 2,
-                    }}
-                  >
-                    100%
-                  </Text>
-                  <Text
-                    style={{
-                      color: "#0f172a",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 56,
-                      lineHeight: 60,
-                    }}
-                  >
-                    86%
-                  </Text>
-                  <Text
-                    style={{
-                      color: "#64748b",
-                      fontFamily: "Brandon-Medium",
-                      fontSize: 14,
-                    }}
-                  >
-                    Reached 480 pts in 18 days
-                  </Text>
-                </View>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  width: 240,
-                  marginTop: 4,
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#94a3b8",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 11,
-                  }}
-                >
-                  0%
-                </Text>
-                <Text
-                  style={{
-                    color: "#10b981",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 11,
-                  }}
-                >
-                  On-time goal
-                </Text>
-              </View>
+            <View style={{ backgroundColor: "#ffffff", borderRadius: 22, padding: 18, borderWidth: 1, borderColor: "#e2e8f0" }}>
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}><CalendarCheck size={19} color="#059669" /><Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 17, marginLeft: 8 }}>Attendance records</Text></View>
+              {data.attendance?.length ? data.attendance.map((entry, index) => <View key={`${entry.date}-${index}`} style={{ paddingVertical: 12, borderTopWidth: index ? 1 : 0, borderColor: "#f1f5f9", flexDirection: "row", justifyContent: "space-between" }}>
+                <View><Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14 }}>{entry.date || "Date unavailable"}</Text><Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 3 }}>{entry.check_in || "—"} – {entry.check_out || "—"}{entry.is_late ? " • Late" : ""}</Text></View>
+                <Text style={{ color: "#334155", fontFamily: "Brandon-Bold", fontSize: 14 }}>{number(entry.hours)} hrs</Text>
+              </View>) : <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", paddingVertical: 10 }}>No attendance has been recorded this month.</Text>}
             </View>
-          </View>
-
-          {/* ANALYTICS & POINTS BREAKDOWN CARD (Reference Image 5 Right Screen: "361.9 kWh" + Area Chart + Cost Rows) */}
-          <View
-            style={{
-              backgroundColor: "#ffffff",
-              borderRadius: 32,
-              padding: 22,
-              marginBottom: 20,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: 0.04,
-              shadowRadius: 16,
-              elevation: 3,
-              borderWidth: 1,
-              borderColor: "#f1f5f9",
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 18,
-              }}
-            >
-              <View>
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 32,
-                  }}
-                >
-                  480.0 Pts
-                </Text>
-                <Text
-                  style={{
-                    color: "#94a3b8",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 12,
-                  }}
-                >
-                  Total Incentive Score • October 2026
-                </Text>
-              </View>
-              {/* Dot-Matrix Badge Icon */}
-              <View
-                style={{
-                  backgroundColor: "#ecfdf5",
-                  paddingHorizontal: 14,
-                  paddingVertical: 10,
-                  borderRadius: 16,
-                  borderWidth: 1,
-                  borderColor: "#bbf7d0",
-                  alignItems: "center",
-                }}
-              >
-                <Zap size={22} color="#10b981" />
-                <Text
-                  style={{
-                    color: "#15803d",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 10,
-                    marginTop: 2,
-                  }}
-                >
-                  TIER 1
-                </Text>
-              </View>
+            <View style={{ backgroundColor: "#ffffff", borderRadius: 22, padding: 18, borderWidth: 1, borderColor: "#e2e8f0" }}>
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}><ClipboardList size={19} color="#059669" /><Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 17, marginLeft: 8 }}>Recent assigned tasks</Text></View>
+              {data.recent_tasks?.length ? data.recent_tasks.map((task) => <View key={task.id} style={{ paddingVertical: 12, borderTopWidth: 1, borderColor: "#f1f5f9", flexDirection: "row", alignItems: "center" }}>
+                <CheckCircle2 size={18} color={task.status === "done" ? "#059669" : "#94a3b8"} />
+                <View style={{ flex: 1, marginLeft: 10 }}><Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14 }}>{task.title}</Text><Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>{task.site || "Site not specified"} • {task.status}</Text></View>
+                <Text style={{ color: "#059669", fontFamily: "Brandon-Bold", fontSize: 13 }}>{number(task.points)} pts</Text>
+              </View>) : <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", paddingVertical: 10 }}>No assigned tasks have been recorded yet.</Text>}
             </View>
-
-            {/* Simulated Area Trend Bars */}
-            <View style={{ marginBottom: 18 }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 12,
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 15,
-                  }}
-                >
-                  Weekly Output Optimization
-                </Text>
-                <View
-                  style={{
-                    backgroundColor: "#dcfce7",
-                    paddingHorizontal: 8,
-                    paddingVertical: 3,
-                    borderRadius: 8,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#15803d",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 11,
-                    }}
-                  >
-                    +14.2%
-                  </Text>
-                </View>
-              </View>
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "flex-end",
-                  justifyContent: "space-between",
-                  height: 90,
-                  paddingTop: 10,
-                  paddingHorizontal: 8,
-                  backgroundColor: "#f8fafc",
-                  borderRadius: 20,
-                  paddingBottom: 10,
-                }}
-              >
-                {[
-                  { day: "Mon", h: 42, active: false },
-                  { day: "Tue", h: 56, active: false },
-                  { day: "Wed", h: 48, active: false },
-                  { day: "Thu", h: 72, active: true },
-                  { day: "Fri", h: 64, active: false },
-                  { day: "Sat", h: 68, active: false },
-                  { day: "Sun", h: 52, active: false },
-                ].map((bar, i) => (
-                  <View key={i} style={{ alignItems: "center", flex: 1 }}>
-                    <View
-                      style={{
-                        width: 18,
-                        height: bar.h,
-                        borderRadius: 9,
-                        backgroundColor: bar.active ? "#10b981" : "#cbd5e1",
-                        marginBottom: 6,
-                      }}
-                    />
-                    <Text
-                      style={{
-                        color: bar.active ? "#0f172a" : "#94a3b8",
-                        fontFamily: bar.active
-                          ? "Brandon-Bold"
-                          : "Brandon-Medium",
-                        fontSize: 10,
-                      }}
-                    >
-                      {bar.day}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-
-            {/* Incentive Payout Vehicle problem (Reference Image 5 "Energy Cost" Rows) */}
-            <View
-              style={{
-                borderTopWidth: 1,
-                borderTopColor: "#f1f5f9",
-                paddingTop: 16,
-                gap: 10,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 15,
-                  }}
-                >
-                  Incentive & Bonus Ledger
-                </Text>
-                <ArrowUpRight size={16} color="#64748b" />
-              </View>
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#64748b",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 13,
-                  }}
-                >
-                  Weekly Checked Bonus
-                </Text>
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 14,
-                  }}
-                >
-                  ₹2,400
-                </Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#64748b",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 13,
-                  }}
-                >
-                  Full-month estimated payout
-                </Text>
-                <Text
-                  style={{
-                    color: "#10b981",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 14,
-                  }}
-                >
-                  ₹9,600
-                </Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#64748b",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 13,
-                  }}
-                >
-                  Last month&apos;s bonus
-                </Text>
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 14,
-                  }}
-                >
-                  ₹8,250
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* 2x2 SMART CATEGORY BENTO TILES (Reference Image 5: "Audio System | Smart Light") */}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 14,
-            }}
-          >
-            <Text
-              style={{
-                color: "#0f172a",
-                fontFamily: "Brandon-Bold",
-                fontSize: 18,
-              }}
-            >
-              Service Specializations
-            </Text>
-            <TouchableOpacity onPress={() => router.push("/(employee)/tasks")}>
-              <Text
-                style={{
-                  color: "#15803d",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 13,
-                }}
-              >
-                View All
-              </Text>
+            <TouchableOpacity onPress={() => router.push("/(employee)/tasks")} style={{ backgroundColor: "#059669", borderRadius: 18, padding: 16, alignItems: "center", flexDirection: "row", justifyContent: "center" }}>
+              <Clock size={18} color="#ffffff" /><Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16, marginLeft: 8 }}>{number(metrics?.tasks_pending)} pending tasks</Text>
             </TouchableOpacity>
-          </View>
-
-          <View
-            style={{
-              flexDirection: "row",
-              gap: 14,
-              marginBottom: 20,
-            }}
-          >
-            <TouchableOpacity
-              onPress={() => router.push("/(employee)/task/10482" as any)}
-              style={{
-                flex: 1,
-                backgroundColor: "#ffffff",
-                borderRadius: 28,
-                padding: 18,
-                borderWidth: 1,
-                borderColor: "#f1f5f9",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.03,
-                shadowRadius: 10,
-                elevation: 2,
-              }}
-            >
-              <Text
-                style={{
-                  color: "#0f172a",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 15,
-                }}
-              >
-                AHU & Chillers
-              </Text>
-              <Text
-                style={{
-                  color: "#94a3b8",
-                  fontFamily: "Brandon-Medium",
-                  fontSize: 11,
-                  marginBottom: 14,
-                }}
-              >
-                Metro Tower • +40 pts
-              </Text>
-              <View
-                style={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: 32,
-                  backgroundColor: "#ecfdf5",
-                  alignSelf: "center",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <CheckCircle2 size={28} color="#10b981" />
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => router.push("/(employee)/task/10483" as any)}
-              style={{
-                flex: 1,
-                backgroundColor: "#ffffff",
-                borderRadius: 28,
-                padding: 18,
-                borderWidth: 1,
-                borderColor: "#f1f5f9",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.03,
-                shadowRadius: 10,
-                elevation: 2,
-              }}
-            >
-              <Text
-                style={{
-                  color: "#0f172a",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 15,
-                }}
-              >
-                Fire safety check
-              </Text>
-              <Text
-                style={{
-                  color: "#94a3b8",
-                  fontFamily: "Brandon-Medium",
-                  fontSize: 11,
-                  marginBottom: 14,
-                }}
-              >
-                Apex Hub • +35 pts
-              </Text>
-              <View
-                style={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: 32,
-                  backgroundColor: "#eff6ff",
-                  alignSelf: "center",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <ShieldCheck size={28} color="#0284c7" />
-              </View>
-            </TouchableOpacity>
-          </View>
+          </> : null}
         </ScrollView>
-
-        {/* FLOATING BOTTOM DOCK (Reference Image 5 Pill Dock) */}
-        <View
-          style={{
-            position: "absolute",
-            bottom: 24,
-            left: 24,
-            right: 24,
-            backgroundColor: "#062214",
-            borderRadius: 32,
-            paddingVertical: 14,
-            paddingHorizontal: 24,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 12 },
-            shadowOpacity: 0.25,
-            shadowRadius: 20,
-            elevation: 12,
-          }}
-        >
-          <TouchableOpacity
-            onPress={() => router.push("/(employee)/attendance-hub")}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: "#4ade80",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Clock size={22} color="#062214" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => router.push("/(employee)/calendar")}
-            style={{ alignItems: "center", padding: 8 }}
-          >
-            <Calendar size={22} color="rgba(255,255,255,0.6)" />
-          </TouchableOpacity>
-          <TouchableOpacity style={{ alignItems: "center", padding: 8 }}>
-            <BarChart3 size={22} color="#4ade80" />
-            <View
-              style={{
-                width: 4,
-                height: 4,
-                borderRadius: 2,
-                backgroundColor: "#4ade80",
-                marginTop: 4,
-              }}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => router.push("/(employee)/profile")}
-            style={{ alignItems: "center", padding: 8 }}
-          >
-            <User size={22} color="rgba(255,255,255,0.6)" />
-          </TouchableOpacity>
-        </View>
       </SafeAreaView>
     </View>
   );

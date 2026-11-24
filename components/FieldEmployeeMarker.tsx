@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
-import { Marker } from 'react-native-maps';
+import { Marker } from './MapView';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 interface FieldEmployeeMarkerProps {

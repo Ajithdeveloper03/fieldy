@@ -1,137 +1,43 @@
-import React from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  StyleSheet,
-  StatusBar,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
-import {
-  ChevronLeft,
-  MapPin,
-  CalendarDays,
-  Target,
-  ClipboardList,
-  Navigation,
-  Camera,
-  AlertTriangle,
-  ShieldCheck
-} from "lucide-react-native";
-import { useService } from "../../../context/ServiceContext";
+import { ChevronLeft, MapPin, CalendarDays, FileText } from "lucide-react-native";
+import { api } from "../../../services/api";
 
-export default function EmployeeVisitPurposeScreen() {
-  const { id } = useLocalSearchParams();
-  const { serviceConfig } = useService();
+export default function EmployeeVisitDetailScreen() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const [visit, setVisit] = useState<any | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => {
+    let active = true;
+    api.get("/employee/visits").then((result) => {
+      const entry = (result?.visits || []).find((row: any) => String(row.id) === String(id));
+      if (active) setVisit(entry || null);
+    }).catch(() => { if (active) setVisit(null); }).finally(() => { if (active) setLoaded(true); });
+    return () => { active = false; };
+  }, [id]);
 
-  const matchedVisit = serviceConfig.sampleVisits.find(v => String(v.id) === String(id)) || serviceConfig.sampleVisits[0];
-  const matchedEntity = serviceConfig.sampleEntities[0];
-
-  const actionItems = [
-    { text: `Verify Geofence On-Site Check-in at ${serviceConfig.vocab.entitySingular}`, icon: MapPin, color: "#10b981" },
-    { text: `Capture standard photo evidence of ${serviceConfig.vocab.entitySingular.toLowerCase()}`, icon: Camera, color: serviceConfig.color },
-    { text: `Log ${serviceConfig.shortName} telemetry and diagnostic readings`, icon: ClipboardList, color: "#f59e0b" },
-    { text: `Run ${serviceConfig.vocab.customerRole} validation and sign-off`, icon: ShieldCheck, color: "#6366f1" },
-  ];
-
-  return (
-    <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
-      <StatusBar barStyle="light-content" />
-
-      {/* Hero Header Gradient */}
-      <View style={{ position: "absolute", top: 0, left: 0, right: 0, height: 250 }}>
-        <LinearGradient
-          colors={["#0f172a", "#1e293b", "#f8fafc"]}
-          style={StyleSheet.absoluteFill}
-        />
+  return <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+    <StatusBar barStyle="dark-content" />
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", padding: 18 }}>
+        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/visits")} style={{ padding: 10, backgroundColor: "#fff", borderRadius: 999 }}><ChevronLeft size={22} color="#0f172a" /></TouchableOpacity>
+        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 22, marginLeft: 12 }}>Visit record</Text>
       </View>
-
-      <SafeAreaView style={{ flex: 1 }}>
-        
-        {/* HEADER */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24 }}>
-          <TouchableOpacity onPress={() => router.back()} style={{ padding: 8, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 999 }}>
-            <ChevronLeft size={24} color="#ffffff" />
-          </TouchableOpacity>
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20 }}>{serviceConfig.vocab.visitSingular} Details</Text>
-          <View style={{ width: 40 }} />
+      {!loaded ? <ActivityIndicator color="#059669" style={{ marginTop: 36 }} /> : !visit ? <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", padding: 24 }}>This visit record is unavailable.</Text> : <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 120 }}>
+        <View style={{ backgroundColor: "#062214", borderRadius: 24, padding: 22 }}>
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 24 }}>{visit.farmerName || "Site name not recorded"}</Text>
+          <Text style={{ color: "#bbf7d0", fontFamily: "Brandon-Medium", fontSize: 14, marginTop: 8 }}>{visit.status === "completed" ? "Completed" : visit.status === "in_progress" ? "In progress" : "Pending"}</Text>
         </View>
-
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}>
-          
-          {/* Target Profile Card */}
-          <View style={{ backgroundColor: "#ffffff", borderRadius: 32, padding: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.05, shadowRadius: 20, elevation: 10, marginBottom: 24 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
-              <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: "#e2e8f0", overflow: "hidden", marginRight: 16 }}>
-                <Image source={{ uri: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=project&q=80" }} style={{ width: "100%", height: "100%" }} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 22 }}>
-                  {matchedVisit?.site || matchedEntity?.name || "Client Location"}
-                </Text>
-                <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-                  <MapPin size={14} color="#64748b" />
-                  <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 4 }}>
-                    {matchedEntity?.address || "Active Sector • 3.2km away"}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={{ flexDirection: "row", backgroundColor: "#f8fafc", padding: 16, borderRadius: 16, alignItems: "center" }}>
-              <CalendarDays size={20} color={serviceConfig.color} style={{ marginRight: 12 }} />
-              <View>
-                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>{matchedVisit?.time || "Today, 11:30 AM"}</Text>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>Scheduled {serviceConfig.label} {serviceConfig.vocab.visitSingular}</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* VISIT PURPOSE */}
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>{serviceConfig.label} Protocol</Text>
-          <View style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, marginBottom: 24, borderWidth: 1, borderColor: `${serviceConfig.color}25` }}>
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-              <Target size={24} color={serviceConfig.color} />
-              <Text style={{ color: serviceConfig.color, fontFamily: "Brandon-Bold", fontSize: 18, marginLeft: 12 }}>
-                {matchedVisit?.type || `${serviceConfig.label} Operation Audit`}
-              </Text>
-            </View>
-            <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 15, lineHeight: 24 }}>
-              Execute standard {serviceConfig.vocab.taskSingular.toLowerCase()} protocol on this {serviceConfig.vocab.entitySingular.toLowerCase()}. Ensure all compliance checklist items, sensor readings, and {serviceConfig.vocab.customerRole.toLowerCase()} sign-offs are submitted to cloud telemetry.
-            </Text>
-          </View>
-
-          {/* REQUIRED TASKS CHECKLIST */}
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Required Action Items</Text>
-          <View style={{ gap: 12, marginBottom: 32 }}>
-            {actionItems.map((task, idx) => (
-              <View key={idx} style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#ffffff", padding: 16, borderRadius: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8 }}>
-                <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: `${task.color}15`, alignItems: "center", justifyContent: "center", marginRight: 16 }}>
-                  <task.icon size={18} color={task.color} />
-                </View>
-                <Text style={{ color: "#334155", fontFamily: "Brandon-Bold", fontSize: 15, flex: 1 }}>{task.text}</Text>
-              </View>
-            ))}
-          </View>
-
-          {/* START VISIT ACTIONS */}
-          <View style={{ flexDirection: "row", gap: 16 }}>
-            <TouchableOpacity onPress={() => router.push("/(employee)/visit/tracking")} style={{ flex: 1, backgroundColor: "#0f172a", borderRadius: 16, paddingVertical: 16, flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
-              <Navigation size={18} color="#ffffff" style={{ marginRight: 8 }} />
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>Start GPS</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push("/(employee)/visit/check-in")} style={{ flex: 1, backgroundColor: serviceConfig.color, borderRadius: 16, paddingVertical: 16, flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
-              <Camera size={18} color="#ffffff" style={{ marginRight: 8 }} />
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>Check-In</Text>
-            </TouchableOpacity>
-          </View>
-
-        </ScrollView>
-      </SafeAreaView>
-    </View>
-  );
+        <View style={{ backgroundColor: "#ffffff", borderRadius: 22, padding: 20, marginTop: 14, gap: 16 }}>
+          {(visit.date || visit.time) ? <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}><CalendarDays size={18} color="#059669" /><Text style={{ color: "#334155", fontFamily: "Brandon-Medium" }}>{[visit.date, visit.time].filter(Boolean).join(" • ")}</Text></View> : null}
+          {visit.address ? <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}><MapPin size={18} color="#059669" /><Text style={{ flex: 1, color: "#334155", fontFamily: "Brandon-Medium" }}>{visit.address}</Text></View> : null}
+          {visit.farmerCode ? <Text style={{ color: "#334155", fontFamily: "Brandon-Medium" }}>Site code: {visit.farmerCode}</Text> : null}
+          {(visit.remarks || visit.recommendations) ? <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}><FileText size={18} color="#059669" /><View style={{ flex: 1 }}>{visit.remarks ? <Text style={{ color: "#334155", fontFamily: "Brandon-Medium" }}>{visit.remarks}</Text> : null}{visit.recommendations ? <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", marginTop: 8 }}>{visit.recommendations}</Text> : null}</View></View> : null}
+          {!visit.date && !visit.time && !visit.address && !visit.farmerCode && !visit.remarks && !visit.recommendations ? <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium" }}>No additional details have been recorded.</Text> : null}
+        </View>
+      </ScrollView>}
+    </SafeAreaView>
+  </View>;
 }

@@ -39,8 +39,8 @@ export default function LoginScreen() {
   const accentColor = config.accentColor || "#34d399";
   const vocab = config.vocab || SERVICES_CONFIG.facility_fmcg.vocab;
 
-  const [mobile, setMobile] = useState("8428060946");
-  const [password, setPassword] = useState("Employee@1234");
+  const [mobile, setMobile] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

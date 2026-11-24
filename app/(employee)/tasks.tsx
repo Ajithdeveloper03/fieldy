@@ -27,36 +27,27 @@ export default function EmployeeTasksScreen() {
   const { t, language } = useLanguage();
   const { serviceConfig } = useService();
   const [activeTab, setActiveTab] = useState("Pending");
-  const [selectedDateIdx, setSelectedDateIdx] = useState(3);
   const [backendTasks, setBackendTasks] = useState<any[]>([]);
+  const [tasksLoaded, setTasksLoaded] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
+      setTasksLoaded(false);
       apiClient
         .get("/employee/tasks")
         .then((res) => {
-          if (Array.isArray(res?.tasks) && res.tasks.length > 0) {
-            setBackendTasks(res.tasks);
-          }
+          setBackendTasks(Array.isArray(res?.tasks) ? res.tasks : []);
+          setTasksLoaded(true);
         })
-        .catch(() => null);
+        .catch(() => setTasksLoaded(false));
     }, [serviceConfig.key])
   );
 
-  const allTasks = backendTasks.length > 0 ? backendTasks : serviceConfig.sampleTasks;
+  const allTasks = tasksLoaded ? backendTasks : [];
   const pendingTasks = allTasks.filter((item: any) => item.status !== "Completed");
   const completedTasks = allTasks.filter((item: any) => item.status === "Completed");
   const completionRate =
-    allTasks.length > 0 ? Math.round((completedTasks.length / allTasks.length) * 100) : 85;
-
-  const dateStrip = [
-    { day: "26 Oct", label: "26 Oct" },
-    { day: "27 Oct", label: "27 Oct" },
-    { day: "28 Oct", label: "28 Oct" },
-    { day: "Today", label: "Today" },
-    { day: "30 Oct", label: "30 Oct" },
-    { day: "31 Oct", label: "31 Oct" },
-  ];
+    allTasks.length > 0 ? Math.round((completedTasks.length / allTasks.length) * 100) : 0;
 
   return (
     <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
@@ -124,43 +115,6 @@ export default function EmployeeTasksScreen() {
               <Calendar size={19} color="#0f172a" />
             </TouchableOpacity>
           </View>
-        </View>
-
-        {/* HORIZONTAL DATE PILL STRIP (Reference Screen 4: "12 Jul | 12 Jul | Today (black pill) | 12 Jul") */}
-        <View style={{ marginBottom: 18 }}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 22, gap: 10 }}
-          >
-            {dateStrip.map((d, idx) => {
-              const isSelected = selectedDateIdx === idx;
-              return (
-                <TouchableOpacity
-                  key={idx}
-                  onPress={() => setSelectedDateIdx(idx)}
-                  style={{
-                    backgroundColor: isSelected ? "#062214" : "#ffffff",
-                    paddingHorizontal: 20,
-                    paddingVertical: 12,
-                    borderRadius: 999,
-                    borderWidth: 1,
-                    borderColor: isSelected ? "#062214" : "#e2e8f0",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: isSelected ? "#ffffff" : "#475569",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 15,
-                    }}
-                  >
-                    {d.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
         </View>
 
         <ScrollView
@@ -320,6 +274,11 @@ export default function EmployeeTasksScreen() {
           <View style={{ gap: 20 }}>
             {activeTab === "Pending" ? (
               <>
+                {pendingTasks.length === 0 && (
+                  <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 16, textAlign: "center", paddingVertical: 36 }}>
+                    No tasks are currently assigned to you.
+                  </Text>
+                )}
                 {pendingTasks.map((task: any) => (
                   <View
                     key={task.id}
@@ -493,7 +452,9 @@ export default function EmployeeTasksScreen() {
                 ))}
               </>
             ) : (
-              (completedTasks.length > 0 ? completedTasks : [serviceConfig.sampleTasks[0]]).filter(Boolean).map((doneTask: any, idx: number) => (
+              <>
+              {tasksLoaded && completedTasks.length === 0 ? <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 16, textAlign: "center", paddingVertical: 36 }}>No completed tasks have been recorded.</Text> : null}
+              {completedTasks.map((doneTask: any, idx: number) => (
                 <View
                   key={doneTask.id || idx}
                   style={{
@@ -522,7 +483,7 @@ export default function EmployeeTasksScreen() {
                         marginRight: 8,
                       }}
                     >
-                      {doneTask?.title || "Inspection Complete"}
+                      {doneTask.title}
                     </Text>
                     <CheckCircle2 size={26} color="#10b981" />
                   </View>
@@ -534,7 +495,7 @@ export default function EmployeeTasksScreen() {
                       marginBottom: 18,
                     }}
                   >
-                    {doneTask.workOrderCode || "WO-001"} • Verified & Submitted
+                    {doneTask.workOrderCode || "Work order code unavailable"} • Verified & Submitted
                   </Text>
                   <TouchableOpacity
                     onPress={() => router.push("/(employee)/reports" as any)}
@@ -556,7 +517,8 @@ export default function EmployeeTasksScreen() {
                     </Text>
                   </TouchableOpacity>
                 </View>
-              ))
+              ))}
+              </>
             )}
           </View>
         </ScrollView>

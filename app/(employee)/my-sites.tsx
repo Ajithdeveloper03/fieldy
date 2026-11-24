@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { apiClient } from "../../api/client";
 import { useService, ServiceSelectorPill } from "../../context/ServiceContext";
 import {
@@ -30,16 +30,24 @@ import {
 export default function EmployeeMySiteContactsScreen() {
   const { serviceConfig } = useService();
   const [sites, setSites] = useState<any[]>([]);
+  const [sitesLoaded, setSitesLoaded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    apiClient
-      .get("/employee/sites")
-      .then((response) => setSites(response.sites ?? []))
-      .catch(() => {
-        // Fallback gracefully to service sample entities
-      });
-  }, [serviceConfig.key]);
+  useFocusEffect(
+    useCallback(() => {
+      setSitesLoaded(false);
+      apiClient
+        .get("/employee/sites")
+        .then((response) => {
+          setSites(Array.isArray(response?.sites) ? response.sites : []);
+          setSitesLoaded(true);
+        })
+        .catch(() => {
+          setSites([]);
+          setSitesLoaded(true);
+        });
+    }, [serviceConfig.key])
+  );
 
   const SITE_FALLBACK_IMAGES = [
     require("../../assets/images/image2.jpg"),
@@ -55,15 +63,8 @@ export default function EmployeeMySiteContactsScreen() {
       ...s,
       image: s.image || SITE_FALLBACK_IMAGES[idx % SITE_FALLBACK_IMAGES.length],
     }));
-    const seenNames = new Set(apiMapped.map((s: any) => (s.name || "").toLowerCase()));
-    const seenCodes = new Set(apiMapped.map((s: any) => (s.site_code || s.code || "").toLowerCase()));
-    const extraCatalog = serviceConfig.sampleEntities.filter(
-      (e) =>
-        !seenNames.has(e.name.toLowerCase()) &&
-        !seenCodes.has(e.code.toLowerCase())
-    );
-    return [...apiMapped, ...extraCatalog];
-  }, [sites, serviceConfig.sampleEntities]);
+    return apiMapped;
+  }, [sites]);
 
   const displayList = mergedList.filter((item: any) => {
     const q = searchQuery.toLowerCase();
@@ -103,12 +104,17 @@ export default function EmployeeMySiteContactsScreen() {
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 10, paddingBottom: 120, gap: 22 }}>
+          {sitesLoaded && displayList.length === 0 && (
+            <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 16, textAlign: "center", paddingVertical: 36 }}>
+              No project sites are currently assigned to you.
+            </Text>
+          )}
           
           {displayList.map((site: any, idx: number) => {
             const siteId = site.site_contact_id || site.id;
             const siteAddress = site.site_address || site.address || `${site.area || ''}, ${site.city || ''}`;
-            const siteCode = site.site_code || site.code || "REG-VERIFIED";
-            const siteAreaText = site.size ? `${site.size} ${site.sizeUnit || serviceConfig.vocab.sizeUnit}` : (site.site_area ? `${site.site_area} ${serviceConfig.vocab.sizeUnit}` : serviceConfig.vocab.entitySingular);
+            const siteCode = site.site_code || site.code || "";
+            const siteAreaText = site.size ? `${site.size} ${site.sizeUnit || serviceConfig.vocab.sizeUnit}` : (site.site_area ? `${site.site_area} ${serviceConfig.vocab.sizeUnit}` : "Size not provided");
             const siteImage = site.image || SITE_FALLBACK_IMAGES[idx % SITE_FALLBACK_IMAGES.length];
 
             return (

@@ -12,7 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import * as Location from "expo-location";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import MapView, { Circle, Marker, Polyline } from "react-native-maps";
+import MapView, { Circle, Marker, Polyline } from "../../../components/MapView";
 import { FieldEmployeeMarker } from "../../../components/FieldEmployeeMarker";
 import { getAuthUser } from "../../../services/api";
 import {
@@ -49,10 +49,10 @@ export default function TrackingScreen() {
   const lastCoordRef = useRef<{ latitude: number; longitude: number } | null>(null);
 
   const [activeSite, setActiveSite] = useState({
-    name: siteName || serviceConfig.sampleEntities[0]?.name || "Assigned Site",
-    address: siteAddress || serviceConfig.sampleEntities[0]?.address || "Chennai, Tamil Nadu",
-    latitude: lat ? Number(lat) : 13.0827,
-    longitude: lng ? Number(lng) : 80.2707,
+    name: siteName || "",
+    address: siteAddress || "",
+    latitude: lat ? Number(lat) : null,
+    longitude: lng ? Number(lng) : null,
     farmerId: farmerId || "",
     taskId: taskId || id || "",
   });
@@ -68,7 +68,6 @@ export default function TrackingScreen() {
 
   const [showStopModal, setShowStopModal] = useState(false);
   const [stopReason, setStopReason] = useState("");
-  const [adminOtp, setAdminOtp] = useState("");
   const [submittingStop, setSubmittingStop] = useState(false);
   const [staffName, setStaffName] = useState("You");
 
@@ -219,7 +218,7 @@ export default function TrackingScreen() {
 
   const handleAttemptStop = () => setShowStopModal(true);
   const confirmStop = async () => {
-    if (!stopReason.trim() && adminOtp !== "1234") {
+    if (!stopReason.trim()) {
       showToast({
         title: "Reason Required",
         message: "Provide a stop reason or override PIN to abort tracking.",
@@ -254,16 +253,16 @@ export default function TrackingScreen() {
         latitude: currentLocation.coords.latitude,
         longitude: currentLocation.coords.longitude,
       }
-    : {
+    : activeSite.latitude !== null && activeSite.longitude !== null ? {
         latitude: activeSite.latitude,
         longitude: activeSite.longitude,
-      };
+      } : null;
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
 
-      <MapView
+      {activeCoord ? <MapView
         ref={mapRef}
         style={StyleSheet.absoluteFill}
         mapType="standard"
@@ -304,15 +303,15 @@ export default function TrackingScreen() {
           />
         )}
 
-        <Marker
+        {activeSite.latitude !== null && activeSite.longitude !== null ? <Marker
           coordinate={{
             latitude: activeSite.latitude,
             longitude: activeSite.longitude,
           }}
           title={activeSite.name}
           pinColor={accentColor}
-        />
-      </MapView>
+        /> : null}
+      </MapView> : <View style={[StyleSheet.absoluteFill, { alignItems: "center", justifyContent: "center", backgroundColor: "#e2e8f0", padding: 28 }]}><Text style={{ color: "#334155", fontFamily: "Brandon-Bold", fontSize: 17, textAlign: "center" }}>Waiting for a real GPS location. Enable location access to start tracking.</Text></View>}
 
       <SafeAreaView style={styles.overlaySafe} pointerEvents="box-none">
         {/* TOP HEADER & DESTINATION CARD */}
@@ -335,12 +334,12 @@ export default function TrackingScreen() {
             </View>
             <View style={{ flex: 1, marginRight: 8 }}>
               <Text style={styles.siteName} numberOfLines={1}>
-                {activeSite.name}
+                {activeSite.name || "Site not specified"}
               </Text>
               <Text style={styles.siteAddr} numberOfLines={1}>
-                {currentLocation
+                {currentLocation && activeCoord
                   ? `${activeCoord.latitude.toFixed(5)}° N, ${activeCoord.longitude.toFixed(5)}° E`
-                  : activeSite.address}
+                  : activeSite.address || "Address not provided"}
               </Text>
             </View>
             <View style={styles.livePill}>
@@ -424,7 +423,7 @@ export default function TrackingScreen() {
             </View>
 
             <Text style={styles.modalDesc}>
-              Provide a valid reason or Admin Override PIN to end visit tracking early.
+              Add a reason to end visit tracking before check-in.
             </Text>
 
             <Text style={styles.inputLabel}>Reason for stopping early</Text>
@@ -437,19 +436,6 @@ export default function TrackingScreen() {
                 placeholderTextColor="#94a3b8"
                 value={stopReason}
                 onChangeText={setStopReason}
-              />
-            </View>
-
-            <Text style={styles.inputLabel}>Admin Override OTP (Optional)</Text>
-            <View style={styles.inputBox}>
-              <TextInput
-                style={styles.otpInput}
-                placeholder="Enter 4-digit PIN (1234)"
-                placeholderTextColor="#94a3b8"
-                keyboardType="numeric"
-                secureTextEntry
-                value={adminOtp}
-                onChangeText={setAdminOtp}
               />
             </View>
 
