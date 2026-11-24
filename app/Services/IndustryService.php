@@ -335,7 +335,6 @@ class IndustryService
                         ['day' => 'Sun', 'val' => 90, 'rev' => 240],
                     ],
                     'telemetry' => [
-                        ['metric' => 'Guard Mobile Battery Reserves', 'status' => '91% Average Level', 'state' => 'good'],
                         ['metric' => 'Body-cam Live Cloud Stream', 'status' => '18/18 Online HD', 'state' => 'good'],
                         ['metric' => 'Electric Boundary Fence Voltage', 'status' => '8.4 kV (Active Deterrent)', 'state' => 'good'],
                         ['metric' => 'Guard Man-Down Inactivity Watch', 'status' => 'Zero False Alarms', 'state' => 'good'],

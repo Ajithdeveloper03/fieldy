@@ -15,6 +15,7 @@ class EmployeePerformanceService
     {
         $startDate = $start->toDateString();
         $endDate = $end->toDateString();
+        $includesToday = $end->isToday();
 
         $tasks = Task::where('assigned_to', $employee->id)->where('status', '<>', 'cancelled')
             ->where(function ($query) use ($start, $end, $startDate, $endDate) {
@@ -26,8 +27,10 @@ class EmployeePerformanceService
         $done = $tasks->filter(fn ($task) => $task->status === 'done'
             && (! $task->completed_at || $task->completed_at->lte($end)));
         $deadlines = $tasks->filter(fn ($task) => $task->due_date
-            && ($task->due_date->toDateString() < $endDate || ! $end->isToday())
-            && ($task->status !== 'done' || $task->completed_at));
+            && $task->due_date->toDateString() <= $endDate
+            && ($task->status !== 'done' || $task->completed_at)
+            && (! $includesToday || $task->due_date->toDateString() < $endDate
+                || $task->completed_at?->lte($end)));
         $onTimeTasks = $deadlines->filter(fn ($task) => $task->completed_at
             && $task->completed_at->lte($end)
             && $task->completed_at->toDateString() <= $task->due_date->toDateString())->count();
@@ -39,10 +42,11 @@ class EmployeePerformanceService
         $visitDays = $visits->groupBy(fn ($visit) => $visit->farmer_id.'|'.substr($visit->check_in_time, 0, 10));
         $schedules = DB::table('visit_schedules')->where('employee_id', $employee->id)
             ->whereBetween('scheduled_date', [$startDate, $endDate])
-            ->where(fn ($query) => $query->where('scheduled_date', '<', $endDate)
-                ->orWhere('status', 'completed')->orWhere('status', 'missed')
-                ->orWhereIn('farmer_id', $visits->filter(fn ($visit) => str_starts_with($visit->check_in_time, $endDate))->pluck('farmer_id')))
-            ->get()->unique(fn ($schedule) => $schedule->farmer_id.'|'.$schedule->scheduled_date);
+            ->get()->filter(fn ($schedule) => ! $includesToday
+                || $schedule->scheduled_date < $endDate
+                || in_array($schedule->status, ['completed', 'missed'], true)
+                || $visitDays->has($schedule->farmer_id.'|'.$schedule->scheduled_date))
+            ->unique(fn ($schedule) => $schedule->farmer_id.'|'.$schedule->scheduled_date);
         $onTimeVisits = $schedules->filter(fn ($schedule) => $visitDays
             ->has($schedule->farmer_id.'|'.$schedule->scheduled_date))->count();
 
@@ -52,7 +56,7 @@ class EmployeePerformanceService
             && $log->check_out_timestamp->gte($log->check_in_timestamp)
             && $log->check_out_timestamp->lte($end));
         $finishedShifts = $attendance->filter(fn ($log) => $log->date->toDateString() < $endDate
-            || ! $end->isToday() || $closedShifts->contains($log));
+            || ! $includesToday || $closedShifts->contains($log));
         $late = $attendance->where('is_late', true)->count();
         $early = $closedShifts->where('is_early_checkout', true)->count();
         $missing = $finishedShifts->count() - $closedShifts->count();

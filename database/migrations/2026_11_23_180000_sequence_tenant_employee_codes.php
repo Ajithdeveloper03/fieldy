@@ -15,8 +15,15 @@ return new class extends Migration
         });
 
         DB::transaction(function () {
-            $employees = DB::table('users')->join('companies', 'companies.id', '=', 'users.company_id')
-                ->where('users.role', 'employee')->whereNotNull('companies.code')->where('companies.code', '<>', '')
+            $defaultCompany = DB::table('companies')->where('code', 'INF-ORG')->first(['id', 'code']);
+            $employees = DB::table('users')->leftJoin('companies', 'companies.id', '=', 'users.company_id')
+                ->where('users.role', 'employee')
+                ->where(function ($query) use ($defaultCompany) {
+                    $query->where(fn ($linked) => $linked->whereNotNull('companies.code')->where('companies.code', '<>', ''));
+                    if ($defaultCompany) {
+                        $query->orWhereNull('users.company_id');
+                    }
+                })
                 ->select('users.id', 'users.company_id', 'companies.code');
 
             // Move old codes aside before assigning the new sequence, since codes are globally unique.
@@ -28,17 +35,23 @@ return new class extends Migration
             }, 'users.id', 'id');
 
             $sequences = [];
-            $employees->chunkById(500, function ($rows) use (&$sequences) {
+            $assignCodes = function ($rows) use (&$sequences, $defaultCompany) {
                 foreach ($rows as $row) {
-                    $sequence = $sequences[$row->company_id] ?? 0;
+                    $companyId = $row->company_id ?? $defaultCompany->id;
+                    $prefix = $row->code ?? $defaultCompany->code;
+                    $sequence = $sequences[$companyId] ?? 0;
                     do {
-                        $code = $row->code.'-EMP-'.str_pad((string) ++$sequence, 4, '0', STR_PAD_LEFT);
+                        $code = $prefix.'-EMP-'.str_pad((string) ++$sequence, 4, '0', STR_PAD_LEFT);
                     } while (DB::table('employee_details')->where('employee_code', $code)->exists());
 
                     DB::table('employee_details')->updateOrInsert(['user_id' => $row->id], ['employee_code' => $code]);
-                    $sequences[$row->company_id] = $sequence;
+                    $sequences[$companyId] = $sequence;
                 }
-            }, 'users.id', 'id');
+            };
+
+            // Number employees with an assigned service first, then the legacy roster.
+            (clone $employees)->whereNotNull('users.industry')->chunkById(500, $assignCodes, 'users.id', 'id');
+            $employees->whereNull('users.industry')->chunkById(500, $assignCodes, 'users.id', 'id');
 
             foreach ($sequences as $companyId => $sequence) {
                 DB::table('companies')->where('id', $companyId)->update(['employee_sequence' => $sequence]);

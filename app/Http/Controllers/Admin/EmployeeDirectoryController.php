@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
-use App\Models\Company;
 use App\Models\EmployeeDetail;
 use App\Models\FarmerProfile;
 use App\Models\FarmerVisit;
 use App\Models\LocationPoint;
 use App\Models\User;
+use App\Services\EmployeeCodeService;
 use App\Services\EmployeePerformanceService;
 use App\Services\Industry\IndustryCatalog;
 use App\Services\Industry\IndustryContext;
@@ -50,7 +50,7 @@ class EmployeeDirectoryController extends Controller
             $query->whereHas('employeeDetail', fn ($ed) => $ed->where('assigned_region', 'like', "%{$region}%"));
         }
 
-        $employees = $query->orderBy('id')->get()->map(fn ($user) => [
+        $employees = $query->orderBy('id')->get()->sortBy('employeeDetail.employee_code', SORT_NATURAL)->values()->map(fn ($user) => [
             'id' => $user->id,
             'name' => $user->name,
             'phone' => $user->phone,
@@ -306,23 +306,8 @@ class EmployeeDirectoryController extends Controller
             $userAttributes = IndustryContext::tag($userAttributes, 'users', $industryKey);
         }
         DB::transaction(function () use ($userAttributes, $validated) {
-            $company = $userAttributes['company_id']
-                ? Company::whereKey($userAttributes['company_id'])->lockForUpdate()->firstOrFail()
-                : null;
             $user = User::create($userAttributes);
-            $code = 'EMP-'.str_pad((string) $user->id, 4, '0', STR_PAD_LEFT);
-
-            if ($company && filled($company->code)) {
-                do {
-                    $company->employee_sequence++;
-                    $code = $company->code.'-EMP-'.str_pad((string) $company->employee_sequence, 4, '0', STR_PAD_LEFT);
-                } while (EmployeeDetail::where('employee_code', $code)->exists());
-                $company->save();
-            }
-
-            EmployeeDetail::create([
-                'user_id' => $user->id,
-                'employee_code' => $code,
+            app(EmployeeCodeService::class)->ensure($user, [
                 'emergency_phone' => $validated['emergency_phone'] ?? null,
                 'assigned_region' => $validated['assigned_region'] ?? null,
             ]);
@@ -406,14 +391,10 @@ class EmployeeDirectoryController extends Controller
         }
         $user->update($userData);
 
-        EmployeeDetail::updateOrCreate(
-            ['user_id' => $user->id],
-            [
-                'employee_code' => $user->employeeDetail?->employee_code ?? ('FLD-EMP-'.str_pad($user->id, 4, '0', STR_PAD_LEFT)),
-                'assigned_region' => $validated['assigned_region'] ?? null,
-                'emergency_phone' => $validated['emergency_phone'] ?? null,
-            ]
-        );
+        app(EmployeeCodeService::class)->ensure($user, [
+            'assigned_region' => $validated['assigned_region'] ?? null,
+            'emergency_phone' => $validated['emergency_phone'] ?? null,
+        ]);
 
         return redirect()->back()->with('success', $validated['name'].' credentials and profile updated.');
     }
