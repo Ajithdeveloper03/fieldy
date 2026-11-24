@@ -13,6 +13,25 @@ class CompanyIndustryTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_superadmin_dashboard_renders_with_application_assets(): void
+    {
+        $superadmin = User::create([
+            'name' => 'Platform Owner',
+            'phone' => '9000000007',
+            'email' => 'dashboard-owner@test.fieldy',
+            'password' => Hash::make('password'),
+            'role' => 'superadmin',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($superadmin)
+            ->get('/superadmin/dashboard')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Superadmin/Dashboard')
+                ->has('stats.totalCompanies'));
+    }
+
     public function test_superadmin_can_create_a_company_with_a_reference_industry(): void
     {
         $superadmin = User::create([

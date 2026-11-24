@@ -295,28 +295,25 @@ export default function Companies({ companies = [] }) {
                                             type="text"
                                             required
                                             value={data.name}
-                                            onChange={(e) => {
-                                                const v = e.target.value;
-                                                setData('name', v);
-                                                if (!data.code) {
-                                                    const autoCode = v.replace(/[^A-Za-z0-9]/g, '').slice(0, 6).toUpperCase();
-                                                    if (autoCode) setData('code', autoCode);
-                                                }
-                                            }}
+                                            onChange={(e) => setData('name', e.target.value)}
                                             placeholder={t('e.g. Sri Murugan Infra Pvt Ltd')}
                                             className="hp-input"
                                         />
                                         {errors.name && <p className="text-rose-600 text-xs mt-1">{errors.name}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Tenant Prefix Code')}</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Tenant Prefix Code')} *</label>
                                         <input
                                             type="text"
+                                            required
+                                            maxLength={50}
+                                            pattern="[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*"
                                             value={data.code}
                                             onChange={(e) => setData('code', e.target.value.toUpperCase())}
                                             placeholder={t('e.g. SMINF')}
                                             className="hp-input font-mono"
                                         />
+                                        <p className="text-xs text-[var(--color-hp-gray-500)] mt-1">{t('Employee code example')}: {data.code.trim() || 'SMINF'}-EMP-0001</p>
                                         {errors.code && <p className="text-rose-600 text-xs mt-1">{errors.code}</p>}
                                     </div>
                                 </div>

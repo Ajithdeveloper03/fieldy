@@ -10,10 +10,11 @@ class ExampleTest extends TestCase
     /**
      * A basic test example.
      */
-    public function test_the_homepage_redirects_to_admin_login(): void
+    public function test_the_homepage_shows_the_public_landing_page(): void
     {
         $response = $this->get('/');
 
-        $response->assertRedirect('/admin/login');
+        $response->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Landing'));
     }
 }

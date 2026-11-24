@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Models\EmployeeDetail;
 use App\Models\FarmerProfile;
 use App\Models\User;
+use App\Services\EmployeeCodeService;
 use Illuminate\Console\Command;
 
 class GenerateUniqueIds extends Command
@@ -26,7 +26,7 @@ class GenerateUniqueIds extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(EmployeeCodeService $employeeCodes)
     {
         $this->info('Generating unique IDs...');
 
@@ -34,10 +34,8 @@ class GenerateUniqueIds extends Command
         $employees = User::where('role', 'employee')->get();
         $employeeCount = 0;
         foreach ($employees as $employee) {
-            $detail = EmployeeDetail::firstOrCreate(['user_id' => $employee->id]);
-            if (empty($detail->employee_code)) {
-                $detail->employee_code = 'EMP-'.str_pad($employee->id, 3, '0', STR_PAD_LEFT);
-                $detail->save();
+            if (blank($employee->employeeDetail?->employee_code)) {
+                $employeeCodes->ensure($employee);
                 $employeeCount++;
             }
         }

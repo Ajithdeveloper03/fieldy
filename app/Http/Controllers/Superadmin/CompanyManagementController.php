@@ -61,7 +61,7 @@ class CompanyManagementController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:50|unique:companies,code',
+            'code' => ['required', 'string', 'max:50', 'regex:/^[A-Z0-9]+(?:-[A-Z0-9]+)*$/', 'unique:companies,code'],
             'industry' => ['required', 'string', Rule::in(IndustryCatalog::CLIENT_INDUSTRIES)],
             'email' => 'required|email|max:255',
             'phone' => 'required|string|max:50',
@@ -113,17 +113,7 @@ class CompanyManagementController extends Controller
             $slug = $originalSlug . '-' . $counter++;
         }
 
-        $code = ! empty($validated['code'])
-            ? $validated['code']
-            : strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $validated['name']), 0, 6));
-        if (empty($validated['code'])) {
-            $baseCode = $code ?: 'TENANT';
-            $code = $baseCode;
-            $suffix = 1;
-            while (Company::withTrashed()->where('code', $code)->exists()) {
-                $code = $baseCode.'-'.++$suffix;
-            }
-        }
+        $code = $validated['code'];
 
         $fullAddress = collect([
             $validated['address'] ?? null,

@@ -671,6 +671,7 @@ const taPart4 = {
   "Stay Signed In": "உள்நுழைந்தே இரு",
   "Time": "நேரம்",
   "User": "பயனர்",
-  "blocked": "தடுக்கப்பட்டது"
+  "blocked": "தடுக்கப்பட்டது",
+  "Employee code example": "ஊழியர் குறியீடு உதாரணம்"
 };
 export default taPart4;
