@@ -11,19 +11,22 @@ class GlobalSearchController extends Controller
 {
     public function search(Request $request)
     {
-        $query = $request->input('q', '');
+        $query = \App\Support\SqlSafe::cleanInput((string) $request->input('q', ''), 80);
 
-        if (strlen($query) < 2) {
+        if (mb_strlen($query) < 2) {
             return response()->json([]);
         }
 
+        $likeTerm = \App\Support\SqlSafe::likeTerm($query, 80);
+        $companyId = auth()->user()?->company_id;
         $results = [];
 
-        // Search Employees
+        // Search Employees (scoped to current company)
         $employees = User::where('role', 'employee')
-            ->where(function ($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%")
-                    ->orWhere('phone', 'like', "%{$query}%");
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+            ->where(function ($q) use ($likeTerm) {
+                $q->where('name', 'like', $likeTerm)
+                    ->orWhere('phone', 'like', $likeTerm);
             })
             ->take(5)
             ->get();
@@ -37,12 +40,15 @@ class GlobalSearchController extends Controller
             ];
         }
 
-        // Search Farmers
-        $farmers = FarmerProfile::whereHas('user', function ($q) use ($query) {
-            $q->where('name', 'like', "%{$query}%")
-                ->orWhere('phone', 'like', "%{$query}%");
-        })
-            ->orWhere('farmer_code', 'like', "%{$query}%")
+        // Search Project Sites / Clients (scoped to current company)
+        $farmers = FarmerProfile::query()
+            ->when($companyId, fn ($q) => $q->whereHas('user', fn ($u) => $u->where('company_id', $companyId)))
+            ->where(function ($q) use ($likeTerm) {
+                $q->whereHas('user', function ($u) use ($likeTerm) {
+                    $u->where('name', 'like', $likeTerm)
+                        ->orWhere('phone', 'like', $likeTerm);
+                })->orWhere('farmer_code', 'like', $likeTerm);
+            })
             ->with('user')
             ->take(5)
             ->get();

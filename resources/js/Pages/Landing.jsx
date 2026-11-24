@@ -47,7 +47,7 @@ const SOLUTIONS = [
         headline: 'Spotless sites with verified supervisor rounds',
         summary:
             'Monitor multi-site housekeeping crews, restroom & lobby checklists, material consumption, and client SLA scores in real time.',
-        image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1200&q=80',
+        image: 'https://images.pexels.com/photos/7581016/pexels-photo-7581016.jpeg?auto=compress&cs=tinysrgb&w=1200',
         bullets: [
             'Geo-fenced floor inspection checklists',
             'Before & after cleaning photo proof per zone',
@@ -63,7 +63,7 @@ const SOLUTIONS = [
         headline: 'Faster fiber restoration & tower uptime',
         summary:
             'Dispatch linemen to tower outages, splice points, and customer installations with exact GPS coordinates and equipment logs.',
-        image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=1200&q=80',
+        image: 'https://images.pexels.com/photos/8853504/pexels-photo-8853504.jpeg?auto=compress&cs=tinysrgb&w=1200',
         bullets: [
             'Tower & fiber node asset mapping',
             'Outage SLA countdown & escalation alerts',
@@ -79,7 +79,7 @@ const SOLUTIONS = [
         headline: 'Maximize inverter uptime across remote plants',
         summary:
             'Coordinate panel cleaning crews, preventive inverter servicing, and thermal fault inspections across distributed solar sites.',
-        image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=80',
+        image: 'https://images.pexels.com/photos/21832812/pexels-photo-21832812/free-photo-of-solar-panels-on-road.jpeg?auto=compress&cs=tinysrgb&w=1200',
         bullets: [
             'Preventive maintenance schedules per plant',
             'String & inverter serial number tracking',
@@ -95,7 +95,7 @@ const SOLUTIONS = [
         headline: 'Zero-miss AMC visits and rapid breakdown response',
         summary:
             'Automate recurring AMC schedules, spare-part usage notes, and emergency breakdown dispatch for commercial buildings.',
-        image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1200&q=80',
+        image: 'https://images.pexels.com/photos/8853510/pexels-photo-8853510.jpeg?auto=compress&cs=tinysrgb&w=1200',
         bullets: [
             'Automated AMC visit calendar & reminders',
             'Emergency breakdown routing to nearest tech',
@@ -111,7 +111,7 @@ const SOLUTIONS = [
         headline: 'Accountable night patrols with live SOS protection',
         summary:
             'Verify checkpoint patrols, night-shift wakefulness checks, incident photos, and instant emergency SOS alerts from any post.',
-        image: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=1200&q=80',
+        image: 'https://images.pexels.com/photos/7581040/pexels-photo-7581040.jpeg?auto=compress&cs=tinysrgb&w=1200',
         bullets: [
             'Geo-fenced guard post check-ins',
             'Real-time incident & visitor reporting',
@@ -127,7 +127,7 @@ const SOLUTIONS = [
         headline: 'Empower agronomists across rural farm territories',
         summary:
             'Register farms, log crop health inspections, capture pest photos, and track field officer coverage across villages.',
-        image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
+        image: 'https://images.pexels.com/photos/29039800/pexels-photo-29039800/free-photo-of-south-asian-farmer-working-in-rice-fields.jpeg?auto=compress&cs=tinysrgb&w=1200',
         bullets: [
             'Farmer & plot directory with GPS pins',
             'Crop advisory visit forms & photo logs',
@@ -143,7 +143,7 @@ const SOLUTIONS = [
         headline: 'Audit-ready cold delivery and temperature logs',
         summary:
             'Keep pharma and perishable deliveries compliant with timestamped handover proofs, route visibility, and exception alerts.',
-        image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
+        image: 'https://images.pexels.com/photos/31335982/pexels-photo-31335982/free-photo-of-textile-factory-worker-reviewing-documents.jpeg?auto=compress&cs=tinysrgb&w=1200',
         bullets: [
             'Verified pharmacy & warehouse drop-offs',
             'Temperature & seal photo capture',
@@ -159,7 +159,7 @@ const SOLUTIONS = [
         headline: 'Streamlined municipal & pest control operations',
         summary:
             'Manage meter readings, valve inspections, and scheduled pest treatments with complete geographic accountability.',
-        image: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=1200&q=80',
+        image: 'https://images.pexels.com/photos/8293666/pexels-photo-8293666.jpeg?auto=compress&cs=tinysrgb&w=1200',
         bullets: [
             'Zone-wise job batching & route sheets',
             'Chemical & material usage logs',
@@ -174,10 +174,10 @@ const WORKFLOW_STEPS = [
         title: 'Configure Sites & Teams',
         description:
             'Sign in to the Fieldy Web Portal, onboard client sites, set geo-fences, and schedule recurring or urgent work orders.',
-        accent: '#4F46E5',
-        canvasBg: '#EEF2FF',
+        accent: '#0F766E',
+        canvasBg: '#F0FDFA',
         icon: LiquidSitesIcon,
-        image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=80',
+        image: 'https://images.pexels.com/photos/7580648/pexels-photo-7580648.jpeg?auto=compress&cs=tinysrgb&w=900',
     },
     {
         step: '02',
@@ -187,7 +187,7 @@ const WORKFLOW_STEPS = [
         accent: '#059669',
         canvasBg: '#ECFDF5',
         icon: LiquidVisitsIcon,
-        image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=900&q=80',
+        image: 'https://images.pexels.com/photos/9159272/pexels-photo-9159272.jpeg?auto=compress&cs=tinysrgb&w=900',
     },
     {
         step: '03',
@@ -197,7 +197,7 @@ const WORKFLOW_STEPS = [
         accent: '#EA580C',
         canvasBg: '#FFF7ED',
         icon: LiquidAnalyticsIcon,
-        image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=900&q=80',
+        image: 'https://images.pexels.com/photos/9474025/pexels-photo-9474025.jpeg?auto=compress&cs=tinysrgb&w=900',
     },
 ];
 
@@ -293,8 +293,8 @@ export default function Landing() {
             <Head title="Fieldy — Smart Field Operations & Workforce Platform" />
 
             <div className="min-h-screen bg-white text-slate-900 antialiased selection:bg-indigo-100 selection:text-indigo-900">
-                {/* 1. EXACT DEEP-INDIGO TOP NAVIGATION BAR */}
-                <header className="sticky top-0 z-50 bg-[#0D044F] border-b border-white/10">
+                {/* 1. DEEP OCEANIC TEAL TOP NAVIGATION BAR */}
+                <header className="sticky top-0 z-50 bg-[#062426] border-b border-white/10">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
                         {/* Left: Original Fieldy Logo */}
                         <a
@@ -338,7 +338,7 @@ export default function Landing() {
                             </a>
                             <Link
                                 href={loginHref}
-                                className="h-10 px-5 rounded-xl bg-white hover:bg-orange-50 text-[#0D044F] text-[15px] font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-[0_6px_18px_-6px_rgba(0,0,0,0.45),inset_0_1px_0_#ffffff]"
+                                className="h-10 px-5 rounded-xl bg-white hover:bg-orange-50 text-[#062426] text-[15px] font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-[0_6px_18px_-6px_rgba(0,0,0,0.45),inset_0_1px_0_#ffffff]"
                             >
                                 Log in
                             </Link>
@@ -348,7 +348,7 @@ export default function Landing() {
                         <div className="flex md:hidden items-center gap-2">
                             <Link
                                 href={loginHref}
-                                className="h-9 px-4 rounded-lg bg-white text-[#0D044F] text-sm font-bold inline-flex items-center justify-center"
+                                className="h-9 px-4 rounded-lg bg-white text-[#062426] text-sm font-bold inline-flex items-center justify-center"
                             >
                                 Log in
                             </Link>
@@ -364,7 +364,7 @@ export default function Landing() {
                     </div>
 
                     {mobileMenuOpen && (
-                        <div className="md:hidden border-t border-white/10 bg-[#120761] px-4 py-4 space-y-1 shadow-xl">
+                        <div className="md:hidden border-t border-white/10 bg-[#082F32] px-4 py-4 space-y-1 shadow-xl">
                             {[
                                 { label: 'Features', href: '#features' },
                                 { label: 'Solutions', href: '#solutions' },
@@ -395,31 +395,17 @@ export default function Landing() {
                 </header>
 
                 <main id="top">
-                    {/* ANNOUNCEMENT RIBBON BAR */}
-                    <div className="bg-[#180E63] border-b border-white/10 px-4 py-3 text-center">
-                        <p className="text-sm sm:text-base font-medium text-indigo-100/95">
-                            Introducing{' '}
-                            <a
-                                href="#features"
-                                className="text-orange-300 hover:text-orange-200 underline underline-offset-4 font-bold transition-colors"
-                            >
-                                Fieldy AI 
-                            </a>
-                            , the liquid glass command center for live GPS field operations.
-                        </p>
-                    </div>
-
-                    {/* 2. EXACT CANVA-STYLE ROYAL INDIGO HERO SECTION + 7-CARD OVERLAPPING DECK */}
-                    <section className="relative overflow-hidden bg-[#140874] pt-10 pb-16 sm:pt-14 sm:pb-20 lg:pt-16 lg:pb-24">
-                        {/* Subtle Solid Blurred Atmospheric Depth Orbs (Zero Gradients) */}
+                    {/* 2. DEEP EMERALD-TEAL HERO SECTION + 7-CARD OVERLAPPING DECK */}
+                    <section className="relative overflow-hidden bg-[#0A3235] pt-10 pb-16 sm:pt-14 sm:pb-20 lg:pt-16 lg:pb-24">
+                        {/* Subtle Atmospheric Depth Orbs */}
                         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-                            <div className="hp-orb-float absolute top-6 left-1/5 w-[420px] h-[420px] rounded-full bg-orange-500/18 blur-3xl" />
+                            <div className="hp-orb-float absolute top-6 left-1/5 w-[420px] h-[420px] rounded-full bg-amber-400/16 blur-3xl" />
                             <div
-                                className="hp-orb-float absolute bottom-0 right-1/4 w-[420px] h-[420px] rounded-full bg-violet-500/20 blur-3xl"
+                                className="hp-orb-float absolute bottom-0 right-1/4 w-[420px] h-[420px] rounded-full bg-emerald-400/18 blur-3xl"
                                 style={{ animationDelay: '-5s' }}
                             />
                             <div
-                                className="hp-orb-float absolute bottom-4 left-1/2 -translate-x-1/2 w-[520px] h-[240px] rounded-full bg-indigo-500/22 blur-3xl"
+                                className="hp-orb-float absolute bottom-4 left-1/2 -translate-x-1/2 w-[520px] h-[240px] rounded-full bg-cyan-400/16 blur-3xl"
                                 style={{ animationDelay: '-9s' }}
                             />
                         </div>
@@ -442,11 +428,11 @@ export default function Landing() {
 
                             {/* EXACT 7-CARD SYMMETRICAL OVERLAPPING COVERFLOW FAN */}
                             <div className="relative mt-4 sm:mt-2 flex items-center justify-center">
-                                {/* CARD 1 — FAR LEFT EDGE (Mobile Field App Photo) */}
+                                {/* CARD 1 — FAR LEFT EDGE (Indian Field Ops Photo) */}
                                 <div className="hidden xl:block relative z-10 -mr-10 w-[170px] h-[212px] rounded-[22px] bg-[#0284C7] border-2 border-sky-300/75 shadow-2xl overflow-hidden shrink-0 hover:-translate-y-2 transition-transform duration-300">
                                     <img
-                                        src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=500&q=80"
-                                        alt="Field technician with mobile device"
+                                        src="https://images.pexels.com/photos/7581016/pexels-photo-7581016.jpeg?auto=compress&cs=tinysrgb&w=600"
+                                        alt="Indian field operations workspace"
                                         className="w-full h-full object-cover opacity-90"
                                     />
                                     <div className="absolute inset-x-3 bottom-3 bg-white/90 backdrop-blur-md rounded-xl px-2.5 py-1.5 text-xs font-extrabold text-slate-900 shadow">
@@ -491,8 +477,8 @@ export default function Landing() {
                                         </span>
                                         <div className="w-full h-24 rounded-xl overflow-hidden bg-slate-100">
                                             <img
-                                                src="https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=300&q=80"
-                                                alt="Solar site proof"
+                                                src="https://images.pexels.com/photos/21832812/pexels-photo-21832812/free-photo-of-solar-panels-on-road.jpeg?auto=compress&cs=tinysrgb&w=400"
+                                                alt="Indian solar site proof"
                                                 className="w-full h-full object-cover"
                                             />
                                         </div>
@@ -509,8 +495,8 @@ export default function Landing() {
                                         </div>
                                         <div className="w-full h-28 rounded-xl overflow-hidden bg-amber-50 border border-amber-200">
                                             <img
-                                                src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=300&q=80"
-                                                alt="Housekeeping proof"
+                                                src="https://images.pexels.com/photos/8293664/pexels-photo-8293664.jpeg?auto=compress&cs=tinysrgb&w=400"
+                                                alt="Indian site engineer inspection"
                                                 className="w-full h-full object-cover"
                                             />
                                         </div>
@@ -524,8 +510,8 @@ export default function Landing() {
                                         </span>
                                         <div className="w-full h-24 rounded-xl overflow-hidden bg-white">
                                             <img
-                                                src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=300&q=80"
-                                                alt="HVAC inspection"
+                                                src="https://images.pexels.com/photos/29039800/pexels-photo-29039800/free-photo-of-south-asian-farmer-working-in-rice-fields.jpeg?auto=compress&cs=tinysrgb&w=400"
+                                                alt="Indian field visit GPS verification"
                                                 className="w-full h-full object-cover"
                                             />
                                         </div>
@@ -694,8 +680,8 @@ export default function Landing() {
                                 </div>
                                 <div className="mt-7 rounded-2xl overflow-hidden border-4 border-white shadow-lg aspect-[16/9]">
                                     <img
-                                        src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1100&q=80"
-                                        alt="Live GPS map and route tracking"
+                                        src="https://images.pexels.com/photos/29923348/pexels-photo-29923348/free-photo-of-aerial-view-of-solar-panels-on-industrial-building.jpeg?auto=compress&cs=tinysrgb&w=1100"
+                                        alt="Aerial industrial site and GPS route tracking"
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
@@ -721,8 +707,8 @@ export default function Landing() {
                                 </div>
                                 <div className="mt-7 rounded-2xl overflow-hidden border-4 border-white shadow-lg aspect-[4/3]">
                                     <img
-                                        src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=900&q=80"
-                                        alt="On-site photo verification"
+                                        src="https://images.pexels.com/photos/8293664/pexels-photo-8293664.jpeg?auto=compress&cs=tinysrgb&w=900"
+                                        alt="Indian field engineer on-site photo verification"
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
@@ -1162,17 +1148,17 @@ export default function Landing() {
                         </div>
                     </section>
 
-                    {/* 9. BOLD CENTERED FINAL CTA BANNER (SOLID COLOR, ZERO GRADIENTS) */}
+                    {/* 9. BOLD CENTERED FINAL CTA BANNER */}
                     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-22">
-                        <div className="rounded-[32px] bg-[#140874] text-white px-6 py-16 sm:px-14 sm:py-20 text-center relative overflow-hidden shadow-2xl">
-                            <div className="pointer-events-none absolute -top-20 -left-20 w-80 h-80 rounded-full bg-orange-500/25 blur-3xl" />
-                            <div className="pointer-events-none absolute -bottom-24 -right-20 w-80 h-80 rounded-full bg-indigo-400/25 blur-3xl" />
+                        <div className="rounded-[32px] bg-[#0A3235] text-white px-6 py-16 sm:px-14 sm:py-20 text-center relative overflow-hidden shadow-2xl">
+                            <div className="pointer-events-none absolute -top-20 -left-20 w-80 h-80 rounded-full bg-amber-400/20 blur-3xl" />
+                            <div className="pointer-events-none absolute -bottom-24 -right-20 w-80 h-80 rounded-full bg-emerald-400/20 blur-3xl" />
 
                             <div className="relative z-10 max-w-3xl mx-auto space-y-6">
                                 <h2 className="text-4xl sm:text-5xl lg:text-[3.75rem] font-extrabold tracking-tight leading-[1.08]">
                                     Ready to transform your field operations?
                                 </h2>
-                                <p className="text-indigo-100/95 text-lg sm:text-xl leading-relaxed">
+                                <p className="text-teal-100/95 text-lg sm:text-xl leading-relaxed">
                                     Log in to your Fieldy Admin or Superadmin portal and start tracking live routes, visits, and proof today.
                                 </p>
                                 <div className="pt-3 flex flex-wrap items-center justify-center gap-4">

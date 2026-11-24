@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAlert } from '../../Components/AlertSystem';
+import CardPhotoBackdrop from '../../Components/CardPhotoBackdrop';
 import useIndustry from '../../hooks/useIndustry';
 
 export default function TaskManagement({ tasks = [], employees = [], customers = [] }) {
@@ -348,8 +349,9 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
 
             <div className="max-w-7xl mx-auto space-y-5 pb-12">
                 {/* ══════════ HERO CARD ══════════ */}
-                <div className="hp-hero-card p-5 sm:p-7">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                <div className="hp-hero-card relative overflow-hidden p-5 sm:p-7">
+                    <CardPhotoBackdrop photoKey={industry.id} variant="right" opacity={0.28} />
+                    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
                         <div className="max-w-xl">
                             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
@@ -405,16 +407,19 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                     {/* Total Tasks */}
                     <div 
                         onClick={() => { setStatusFilter('all'); setShowOverdueOnly(false); }}
-                        className={`hp-metric-pill-card cursor-pointer ${
+                        className={`hp-metric-pill-card relative overflow-hidden cursor-pointer ${
                             statusFilter === 'all' && !showOverdueOnly ? '!border-hp-primary ring-2 ring-hp-primary/20' : ''
                         }`}
                     >
-                        <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('All')}</span>
-                            <ClipboardList className="w-3.5 h-3.5 text-hp-primary" />
+                        <CardPhotoBackdrop photoKey="documents" variant="corner" opacity={0.24} />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('All')}</span>
+                                <ClipboardList className="w-3.5 h-3.5 text-hp-primary" />
+                            </div>
+                            <div className="text-2xl font-bold text-hp-dark">{metrics.total}</div>
+                            <div className="text-xs text-hp-muted mt-0.5">{t('All tasks')}</div>
                         </div>
-                        <div className="text-2xl font-bold text-hp-dark">{metrics.total}</div>
-                        <div className="text-xs text-hp-muted mt-0.5">{t('All tasks')}</div>
                     </div>
 
                     {/* Pending */}

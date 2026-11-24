@@ -2,6 +2,8 @@ import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import SuperadminLayout from './SuperadminLayout';
+import CardPhotoBackdrop from '../../Components/CardPhotoBackdrop';
+import SessionSecurityPanel from '../../Components/Superadmin/SessionSecurityPanel';
 import { getIndustryById } from '../../data/industriesConfig';
 import {
     Building2, Users2, MapPin, Activity,
@@ -51,8 +53,9 @@ export default function SuperadminDashboard({ stats, companies = [], planBreakdo
             <div className="space-y-6 pb-12 hp-animate-in">
 
                 {/* ══════════ HERO CARD ══════════ */}
-                <div className="hp-hero-card p-6 sm:p-8">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="hp-hero-card relative overflow-hidden p-6 sm:p-8">
+                    <CardPhotoBackdrop photoKey="office" variant="right" opacity={0.28} />
+                    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <div className="max-w-2xl">
                             <div className="flex items-center gap-2.5 mb-3 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
@@ -87,16 +90,20 @@ export default function SuperadminDashboard({ stats, companies = [], planBreakdo
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {statCards.map((card, idx) => {
                         const Icon = card.icon;
+                        const photoKey = idx === 0 ? 'team' : idx === 2 ? 'engineer' : null;
                         return (
-                            <div key={idx} className="hp-metric-pill-card p-5">
-                                <div className="flex items-center justify-between mb-3">
-                                    <span className="text-sm font-bold text-hp-muted uppercase tracking-wide">{card.title}</span>
-                                    <span className="hp-icon-tile !w-10 !h-10" style={{ '--glass-tint': card.color, color: card.color }}>
-                                        <Icon className="w-5 h-5" />
-                                    </span>
+                            <div key={idx} className="hp-metric-pill-card relative overflow-hidden p-5">
+                                {photoKey && <CardPhotoBackdrop photoKey={photoKey} variant="corner" opacity={0.24} />}
+                                <div className="relative z-10">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-sm font-bold text-hp-muted uppercase tracking-wide">{card.title}</span>
+                                        <span className="hp-icon-tile !w-10 !h-10" style={{ '--glass-tint': card.color, color: card.color }}>
+                                            <Icon className="w-5 h-5" />
+                                        </span>
+                                    </div>
+                                    <div className="text-3xl sm:text-4xl font-extrabold text-hp-dark">{card.value}</div>
+                                    <p className="text-sm text-hp-muted mt-1.5 font-medium">{card.subtext}</p>
                                 </div>
-                                <div className="text-3xl sm:text-4xl font-extrabold text-hp-dark">{card.value}</div>
-                                <p className="text-sm text-hp-muted mt-1.5 font-medium">{card.subtext}</p>
                             </div>
                         );
                     })}
@@ -222,6 +229,9 @@ export default function SuperadminDashboard({ stats, companies = [], planBreakdo
                         </div>
                     </div>
                 </div>
+
+                {/* ══════════ SESSION ACTIVITIES, INACTIVITY GUARD & LOGIN SECURITY ══════════ */}
+                <SessionSecurityPanel scopeLabel="Platform-Wide" />
 
             </div>
         </SuperadminLayout>

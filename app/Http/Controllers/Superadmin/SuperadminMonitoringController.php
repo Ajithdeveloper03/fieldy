@@ -22,16 +22,19 @@ class SuperadminMonitoringController extends Controller
         $query = User::with(['company', 'employeeDetail'])
             ->where('role', 'employee');
 
-        if ($companyId) {
-            $query->where('company_id', $companyId);
+        if ($companyId && is_numeric($companyId)) {
+            $query->where('company_id', (int) $companyId);
         }
 
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
-            });
+            $likeSearch = \App\Support\SqlSafe::likeTerm($search);
+            if ($likeSearch !== '') {
+                $query->where(function ($q) use ($likeSearch) {
+                    $q->where('name', 'like', $likeSearch)
+                      ->orWhere('phone', 'like', $likeSearch)
+                      ->orWhere('email', 'like', $likeSearch);
+                });
+            }
         }
 
         $today = Carbon::today();

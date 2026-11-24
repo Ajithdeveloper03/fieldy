@@ -117,6 +117,26 @@ html.lang-ta body,
 @layer components {
   .hp-liquid-shell {
     background-color: #F7F5F2;
+    /* Refined, slightly more compact portal typography scale across ALL Admin & Superadmin pages */
+    --text-xs: 0.71875rem;
+    --text-xs--line-height: 1rem;
+    --text-sm: 0.8125rem;
+    --text-sm--line-height: 1.2rem;
+    --text-base: 0.875rem;
+    --text-base--line-height: 1.35rem;
+    --text-lg: 0.96875rem;
+    --text-lg--line-height: 1.45rem;
+    --text-xl: 1.0625rem;
+    --text-xl--line-height: 1.55rem;
+    --text-2xl: 1.25rem;
+    --text-2xl--line-height: 1.7rem;
+    --text-3xl: 1.5rem;
+    --text-3xl--line-height: 1.95rem;
+    --text-4xl: 1.875rem;
+    --text-4xl--line-height: 2.25rem;
+    --text-5xl: 2.25rem;
+    --text-5xl--line-height: 1.1;
+    font-size: 13.5px;
   }
 
   .hp-liquid-header {
@@ -239,6 +259,7 @@ html.lang-ta body,
     box-shadow: var(--shadow-hp);
     transition: transform .34s cubic-bezier(.34, 1.56, .64, 1), box-shadow .28s ease, border-color .28s ease, background-color .28s ease;
   }
+
   .hp-card::after {
     content: '';
     position: absolute;
@@ -270,35 +291,35 @@ html.lang-ta body,
   }
 
   .hp-card-title {
-    font-size: 19px;
-    line-height: 26px;
+    font-size: 15.5px;
+    line-height: 22px;
     font-weight: 800;
     color: var(--color-hp-dark);
   }
 
   .hp-card-body {
-    padding: 24px;
+    padding: 20px;
   }
 
   /* Page headings */
   .hp-page-title {
-    font-size: 32px;
-    line-height: 40px;
+    font-size: 24px;
+    line-height: 32px;
     font-weight: 800;
     letter-spacing: -0.02em;
     color: var(--color-hp-dark);
   }
 
   .hp-section-title {
-    font-size: 24px;
-    line-height: 32px;
+    font-size: 18px;
+    line-height: 26px;
     font-weight: 800;
     color: var(--color-hp-dark);
   }
 
   .hp-overline {
-    font-size: 13px;
-    line-height: 18px;
+    font-size: 11.5px;
+    line-height: 16px;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -312,11 +333,11 @@ html.lang-ta body,
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    height: 44px;
-    padding: 0 22px;
+    gap: 7px;
+    height: 40px;
+    padding: 0 18px;
     border-radius: 999px;
-    font-size: 15px;
+    font-size: 13.5px;
     font-weight: 700;
     line-height: 1;
     white-space: nowrap;
@@ -358,9 +379,9 @@ html.lang-ta body,
   }
 
   .hp-btn-sm {
-    height: 37px;
-    padding: 0 16px;
-    font-size: 14px;
+    height: 34px;
+    padding: 0 14px;
+    font-size: 12.5px;
     border-radius: 999px;
   }
 
@@ -611,11 +632,11 @@ html.lang-ta body,
   .hp-chip {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    height: 28px;
-    padding: 0 12px;
+    gap: 5px;
+    height: 24px;
+    padding: 0 10px;
     border-radius: 999px;
-    font-size: 13px;
+    font-size: 11.5px;
     font-weight: 700;
     line-height: 1;
     white-space: nowrap;
@@ -664,14 +685,14 @@ html.lang-ta body,
   /* Inputs — Plain Liquid Glass */
   .hp-input {
     width: 100%;
-    height: 44px;
-    padding: 0 15px;
+    height: 40px;
+    padding: 0 13px;
     background: rgba(255, 255, 255, 0.44);
     backdrop-filter: blur(26px) saturate(215%);
     -webkit-backdrop-filter: blur(26px) saturate(215%);
     border: 1.5px solid rgba(255, 255, 255, 0.92);
-    border-radius: 14px;
-    font-size: 15px;
+    border-radius: 13px;
+    font-size: 13.5px;
     color: var(--color-hp-dark);
     box-shadow:
       0 6px 18px -8px rgba(26, 29, 36, 0.10),
@@ -679,8 +700,16 @@ html.lang-ta body,
       inset 0 2px 3px rgba(255, 255, 255, 0.92);
     transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
   }
-  .hp-input::placeholder { color: var(--color-hp-muted); }
-  .hp-input:hover { border-color: #ffffff; background: rgba(255, 255, 255, 0.56); }
+
+  .hp-input::placeholder {
+    color: var(--color-hp-muted);
+  }
+
+  .hp-input:hover {
+    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.56);
+  }
+
   .hp-input:focus {
     outline: none;
     background: rgba(255, 255, 255, 0.72);
@@ -801,11 +830,11 @@ html.lang-ta body,
     overflow: hidden;
     display: flex;
     align-items: center;
-    gap: 11px;
-    height: 48px;
-    padding: 0 12px;
-    border-radius: 18px;
-    font-size: 15px;
+    gap: 10px;
+    height: 42px;
+    padding: 0 11px;
+    border-radius: 16px;
+    font-size: 13.5px;
     font-weight: 600;
     color: var(--color-hp-gray);
     transition: transform .34s cubic-bezier(.34, 1.56, .64, 1), background-color .24s ease, box-shadow .24s ease, border-color .24s ease;
@@ -900,8 +929,8 @@ html.lang-ta body,
   }
 
   .hp-table th {
-    padding: 14px 24px;
-    font-size: 13px;
+    padding: 11px 18px;
+    font-size: 11.5px;
     font-weight: 700;
     color: var(--color-hp-muted);
     background: rgba(247, 245, 242, 0.86);
@@ -909,8 +938,8 @@ html.lang-ta body,
   }
 
   .hp-table td {
-    padding: 16px 24px;
-    font-size: 15px;
+    padding: 12px 18px;
+    font-size: 13px;
     color: var(--color-hp-dark);
     border-bottom: 1px solid rgba(110, 118, 135, 0.12);
   }
@@ -929,9 +958,9 @@ html.lang-ta body,
     overflow: hidden;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    height: 42px;
-    padding: 0 18px;
+    gap: 7px;
+    height: 36px;
+    padding: 0 14px;
     border-radius: 999px;
     background-color: rgba(var(--hp-icon-rgb, var(--hp-accent-rgb)), 0.04);
     background-color: color-mix(in srgb, var(--hp-icon-override, var(--glass-tint, var(--color-hp-primary))) 5%, rgba(255, 255, 255, 0.36));
@@ -942,7 +971,7 @@ html.lang-ta body,
       0 8px 20px -8px rgba(26, 29, 36, 0.13),
       inset 0 2px 3px rgba(255, 255, 255, 0.98),
       inset 0 -3px 6px rgba(26, 29, 36, 0.05);
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--color-hp-dark);
     transition: transform .36s cubic-bezier(.34, 1.56, .64, 1), background-color .24s ease, border-color .24s ease, color .24s ease, box-shadow .24s ease;
@@ -1038,6 +1067,7 @@ html.lang-ta body,
     box-shadow: var(--shadow-hp);
     transition: box-shadow .28s ease, border-color .28s ease, background-color .28s ease;
   }
+
   .hp-hero-card::after {
     content: '';
     position: absolute;
@@ -1052,6 +1082,7 @@ html.lang-ta body,
     transform: translateX(calc((var(--card-mx, 50) - 50) * 0.28px));
     transition: transform .26s cubic-bezier(.22, 1, .36, 1);
   }
+
   .hp-hero-card:hover {
     background: rgba(255, 255, 255, 0.46);
     border-color: #ffffff;
@@ -1100,10 +1131,10 @@ html.lang-ta body,
   .hp-segmented-item {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 7px 16px;
+    gap: 6px;
+    padding: 6px 13px;
     border-radius: 9999px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--color-hp-muted);
     transition: all .2s ease;
@@ -1155,6 +1186,7 @@ html.lang-ta body,
     transform: translateX(calc((var(--card-mx, 50) - 50) * 0.24px));
     transition: transform .24s cubic-bezier(.22, 1, .36, 1);
   }
+
   .hp-metric-pill-card:hover {
     background: rgba(255, 255, 255, 0.48);
     border-color: #ffffff;
@@ -1173,6 +1205,7 @@ html.lang-ta body,
     box-shadow: var(--shadow-hp);
     transition: transform .34s cubic-bezier(.34, 1.56, .64, 1), box-shadow .28s ease, border-color .28s ease, background-color .28s ease;
   }
+
   .hp-bento-card::after {
     content: '';
     position: absolute;
@@ -1196,13 +1229,14 @@ html.lang-ta body,
   }
 
   /* Keep inner card headers/sub-panels & standalone rounded cards plain colorless crystal liquid glass */
-  .hp-liquid-shell .hp-bento-card > .bg-white,
-  .hp-liquid-shell .hp-card > .bg-white,
+  .hp-liquid-shell .hp-bento-card>.bg-white,
+  .hp-liquid-shell .hp-card>.bg-white,
   .hp-liquid-shell .hp-table th {
     background-color: rgba(255, 255, 255, 0.34) !important;
     backdrop-filter: blur(22px) saturate(210%);
     -webkit-backdrop-filter: blur(22px) saturate(210%);
   }
+
   .hp-liquid-shell main [class*="bg-white"][class*="rounded-2xl"]:not(.fixed *),
   .hp-liquid-shell main [class*="bg-white"][class*="rounded-3xl"]:not(.fixed *),
   .hp-liquid-shell main [class*="bg-white"][class*="rounded-xl"][class*="border"]:not(.fixed *) {
@@ -1212,6 +1246,7 @@ html.lang-ta body,
     border: 1.5px solid rgba(255, 255, 255, 0.94) !important;
     box-shadow: var(--shadow-hp);
   }
+
   .hp-liquid-shell .fixed [class*="bg-white"][class*="rounded-2xl"],
   .hp-liquid-shell .fixed [class*="bg-white"][class*="rounded-3xl"] {
     background-color: rgba(255, 255, 255, 0.74) !important;
@@ -1355,17 +1390,28 @@ html.lang-ta body,
     transform: translateY(-8px);
   }
 }
-.hp-animate-in { animation: hp-fade-up .45s ease both; }
-  .hp-pop {
-    animation: hp-pop .16s ease both;
-    background-color: rgba(255, 255, 255, 0.64);
-    backdrop-filter: blur(38px) saturate(235%) brightness(1.04);
-    -webkit-backdrop-filter: blur(38px) saturate(235%) brightness(1.04);
-    border: 1.5px solid rgba(255, 255, 255, 0.94);
-    box-shadow: var(--shadow-hp-lg);
-  }
-.hp-orb-float { animation: hp-float-orb 14s ease-in-out infinite; }
-.hp-float-card { animation: hp-float-slow 5.5s ease-in-out infinite; }
+
+.hp-animate-in {
+  animation: hp-fade-up .45s ease both;
+}
+
+.hp-pop {
+  animation: hp-pop .16s ease both;
+  background-color: rgba(255, 255, 255, 0.64);
+  backdrop-filter: blur(38px) saturate(235%) brightness(1.04);
+  -webkit-backdrop-filter: blur(38px) saturate(235%) brightness(1.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow-hp-lg);
+}
+
+.hp-orb-float {
+  animation: hp-float-orb 14s ease-in-out infinite;
+}
+
+.hp-float-card {
+  animation: hp-float-slow 5.5s ease-in-out infinite;
+}
+
 .hp-gradient-text {
   color: var(--color-hp-primary);
 }

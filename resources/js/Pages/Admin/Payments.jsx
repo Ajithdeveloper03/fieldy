@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import AdminLayout from './AdminLayout';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { 
     Wallet, TrendingUp, IndianRupee, CreditCard, 
     Search, CheckCircle2, XCircle, 
@@ -9,10 +9,13 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAlert } from '../../Components/AlertSystem';
+import CardPhotoBackdrop from '../../Components/CardPhotoBackdrop';
 import useIndustry from '../../hooks/useIndustry';
 
 export default function Payments({ farmer_payments = [], officer_payments = [], payments = [], totals = {}, kpis = {} }) {
     const { t } = useTranslation();
+    const { props } = usePage();
+    const isTenant = Boolean(props.auth?.user?.company_id);
     const { vocab, industry } = useIndustry();
     const alertSystem = useAlert ? useAlert() : {};
     const triggerInfo = alertSystem?.triggerInfo;
@@ -22,7 +25,7 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
 
-    // Default payouts for staff of active vertical
+    // Default payouts for staff of active vertical (never inject sample rows for real tenant companies)
     const effectiveStaffPayouts = useMemo(() => {
         if (payments.length > 0) {
             return payments.map(p => ({
@@ -35,21 +38,23 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                 date: p.payment_date || p.month_year || 'Current Cycle',
             }));
         }
+        if (isTenant) return [];
         return [
             { id: 'PAY-101', officer: `Senior ${vocab.staff.roles[0]}`, region: 'Monthly Fixed Retainer', amount: '28,000', status: 'completed', mode: 'Direct Bank Transfer', date: 'Today' },
             { id: 'PAY-102', officer: `Field ${vocab.staff.roles[1] || vocab.staff.roles[0]}`, region: 'Travel & Field Allowance', amount: '4,500', status: 'completed', mode: 'UPI Instant Payout', date: 'Yesterday' },
             { id: 'PAY-103', officer: `${vocab.staff.roles[2] || vocab.staff.roles[0]} Lead`, region: 'Performance Incentive', amount: '12,000', status: 'pending', mode: 'Awaiting Audit Approval', date: '2 days ago' },
         ];
-    }, [payments, vocab]);
+    }, [payments, vocab, isTenant]);
 
     const effectiveEntityCollections = useMemo(() => {
         if (farmer_payments.length > 0) return farmer_payments;
+        if (isTenant) return [];
         return [
             { id: 'REC-501', farmer: `${industry.shortName} Client Site A`, buyer: 'Enterprise Ops', region: 'Sector 1', amount: '1,50,000', status: 'completed', mode: 'Monthly SLA Retainer', date: 'Today' },
             { id: 'REC-502', farmer: `${industry.shortName} Client Site B`, buyer: 'Corporate Hub', region: 'Sector 2', amount: '85,000', status: 'completed', mode: 'Scheduled Milestone', date: 'Yesterday' },
             { id: 'REC-503', farmer: `${industry.shortName} Client Site C`, buyer: 'Regional Facility', region: 'Sector 3', amount: '42,000', status: 'pending', mode: 'Awaiting Sign-off', date: '3 days ago' },
         ];
-    }, [farmer_payments, industry]);
+    }, [farmer_payments, industry, isTenant]);
 
     const getStatusChip = (status) => {
         const s = String(status || '').toLowerCase();
@@ -114,8 +119,9 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
             <div className="space-y-6 pb-12 hp-animate-in">
 
                 {/* HERO CARD */}
-                <div className="hp-hero-card p-6 sm:p-8">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="hp-hero-card relative overflow-hidden p-6 sm:p-8">
+                    <CardPhotoBackdrop photoKey="manager" variant="right" opacity={0.26} />
+                    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <div className="max-w-2xl">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
@@ -174,19 +180,22 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
 
                 {/* BENTO KPI METRIC CARDS */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div className="hp-bento-card">
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total Disbursed (MTD)')}</span>
-                            <div className="w-10 h-10 rounded-xl bg-hp-primary-light text-hp-primary flex items-center justify-center">
-                                <Wallet className="w-5 h-5" />
+                    <div className="hp-bento-card relative overflow-hidden">
+                        <CardPhotoBackdrop photoKey="office" variant="corner" opacity={0.22} />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total Disbursed (MTD)')}</span>
+                                <div className="w-10 h-10 rounded-xl bg-hp-primary-light text-hp-primary flex items-center justify-center">
+                                    <Wallet className="w-5 h-5" />
+                                </div>
                             </div>
-                        </div>
-                        <p className="text-3xl font-bold text-hp-dark tracking-tight">
-                            ₹{totals.total ? Number(totals.total).toLocaleString('en-IN') : '1,84,000'}
-                        </p>
-                        <div className="flex items-center gap-1.5 text-xs text-hp-success font-bold mt-2">
-                            <TrendingUp className="w-3.5 h-3.5" />
-                            <span>+12.4% {t('operational volume')}</span>
+                            <p className="text-3xl font-bold text-hp-dark tracking-tight">
+                                ₹{totals.total ? Number(totals.total).toLocaleString('en-IN') : (isTenant ? '0' : '1,84,000')}
+                            </p>
+                            <div className="flex items-center gap-1.5 text-xs text-hp-success font-bold mt-2">
+                                <TrendingUp className="w-3.5 h-3.5" />
+                                <span>{totals.total ? t('Active billing cycle') : (isTenant ? t('No payouts recorded yet') : `+12.4% ${t('operational volume')}`)}</span>
+                            </div>
                         </div>
                     </div>
 
@@ -198,7 +207,7 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                             </div>
                         </div>
                         <p className="text-3xl font-bold text-hp-dark tracking-tight">
-                            ₹{totals.total_pending ? Number(totals.total_pending).toLocaleString('en-IN') : '24,000'}
+                            ₹{totals.total_pending ? Number(totals.total_pending).toLocaleString('en-IN') : (isTenant ? '0' : '24,000')}
                         </p>
                         <p className="text-xs text-hp-muted mt-2">
                             {t('Awaiting operations sign-off')}
@@ -213,10 +222,10 @@ export default function Payments({ farmer_payments = [], officer_payments = [], 
                             </div>
                         </div>
                         <p className="text-3xl font-bold text-hp-dark tracking-tight">
-                            {totals.count || activeList.length}
+                            {totals.count ?? activeList.length}
                         </p>
                         <p className="text-xs text-hp-muted mt-2">
-                            100% {t('Verified audit compliance')}
+                            {(totals.count ?? activeList.length) > 0 ? `100% ${t('Verified audit compliance')}` : t('Ready for first payout')}
                         </p>
                     </div>
                 </div>

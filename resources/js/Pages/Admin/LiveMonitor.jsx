@@ -34,6 +34,7 @@ import {
     RefreshCw
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import CardPhotoBackdrop from '../../Components/CardPhotoBackdrop';
 import useIndustry from '../../hooks/useIndustry';
 
 export default function LiveMonitor({ employees: propEmployees = [] }) {
@@ -121,8 +122,9 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
             <div className="space-y-6 pb-12 hp-animate-in">
 
                 {/* HERO CARD */}
-                <div className="hp-card-gradient-slate rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-200">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="hp-card-gradient-slate relative overflow-hidden rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-200">
+                    <CardPhotoBackdrop photoKey="aerial" variant="right" opacity={0.28} />
+                    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <div className="max-w-2xl">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                                 <span className="hp-chip hp-chip-success hp-chip-dot">
@@ -172,15 +174,18 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
 
                 {/* BENTO METRIC CARDS */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="hp-metric-pill-card">
-                        <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t(labels.agentDutyTitle || vocab.monitor.onDuty)}</span>
-                            <span className="w-2 h-2 rounded-full bg-hp-success animate-ping"></span>
+                    <div className="hp-metric-pill-card relative overflow-hidden">
+                        <CardPhotoBackdrop photoKey="mobile" variant="corner" opacity={0.22} />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t(labels.agentDutyTitle || vocab.monitor.onDuty)}</span>
+                                <span className="w-2 h-2 rounded-full bg-hp-success animate-ping"></span>
+                            </div>
+                            <div className="text-2xl sm:text-3xl font-bold text-hp-dark">
+                                {activeCount} <span className="text-sm font-normal text-hp-muted">/ {employees.length}</span>
+                            </div>
+                            <p className="text-xs text-hp-success font-medium mt-1">{t('Actively streaming GPS')}</p>
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-hp-dark">
-                            {activeCount} <span className="text-sm font-normal text-hp-muted">/ {employees.length}</span>
-                        </div>
-                        <p className="text-xs text-hp-success font-medium mt-1">{t('Actively streaming GPS')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
@@ -202,7 +207,9 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">
                             {totalVisits}
                         </div>
-                        <p className="text-xs text-hp-success font-medium mt-1">{industry.complianceRate || '99%'} {t('On-time arrival')}</p>
+                        <p className="text-xs text-hp-success font-medium mt-1">
+                            {employees.length > 0 ? `${Math.round((employees.filter(e => e.within_geofence).length / employees.length) * 100)}%` : '0%'} {t('On-time arrival')}
+                        </p>
                     </div>
 
                     <div className="hp-metric-pill-card">
@@ -211,7 +218,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                             <Wifi className="w-3.5 h-3.5 text-hp-info" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold text-hp-dark">
-                            100%
+                            {employees.length > 0 ? `${Math.round((employees.filter(e => e.within_geofence).length / employees.length) * 100)}%` : '0%'}
                         </div>
                         <p className="text-xs text-hp-muted mt-1">{t('Within {{entity}} bounds', { entity: vocab.entity.singular.toLowerCase() })}</p>
                     </div>

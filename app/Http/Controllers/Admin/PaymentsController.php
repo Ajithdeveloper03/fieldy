@@ -47,8 +47,8 @@ class PaymentsController extends Controller
                 'notes' => $p->notes,
             ]);
 
-        // If no records in DB for this service vertical, supply curated catalog payroll
-        if ($payments->isEmpty()) {
+        // If no records in DB for this service vertical (platform preview only), supply curated catalog payroll
+        if ($payments->isEmpty() && ! $companyId) {
             $catalogPayments = collect(IndustryCatalog::payments($industryKey));
             if ($status) {
                 $catalogPayments = $catalogPayments->filter(fn ($p) => $p['status'] === $status)->values();

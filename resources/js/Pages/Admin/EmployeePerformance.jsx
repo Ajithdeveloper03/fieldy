@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/react';
 import { ArrowUpRight, Download, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AdminLayout from './AdminLayout';
+import CardPhotoBackdrop from '../../Components/CardPhotoBackdrop';
 import { withBase } from '../../basePath';
 import useIndustry from '../../hooks/useIndustry';
 
@@ -58,8 +59,9 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
         <AdminLayout>
             <Head title={t('Employee Performance')} />
             <div className="space-y-6 pb-12 hp-animate-in">
-                <section className="hp-card-gradient-slate rounded-3xl p-6 sm:p-8 border border-slate-200">
-                    <div className="flex flex-wrap items-start justify-between gap-4">
+                <section className="hp-card-gradient-slate relative overflow-hidden rounded-3xl p-6 sm:p-8 border border-slate-200">
+                    <CardPhotoBackdrop photoKey="analytics" variant="right" opacity={0.26} />
+                    <div className="relative z-10 flex flex-wrap items-start justify-between gap-4">
                         <div>
                             <p className="text-sm text-hp-muted">{period}</p>
                             <h1 className="text-2xl sm:text-3xl font-bold text-hp-dark">{t('Employee Performance')}</h1>
@@ -71,7 +73,7 @@ export default function EmployeePerformance({ employees = [], period = '' }) {
                             <Download className="w-4 h-4 mr-1" /> {t('Export CSV')}
                         </button>
                     </div>
-                    <div className="mt-5 flex flex-wrap gap-3">
+                    <div className="relative z-10 mt-5 flex flex-wrap gap-3">
                         <div className="hp-search-pill-bar w-full sm:max-w-sm">
                             <Search className="w-4 h-4 text-hp-muted shrink-0" />
                             <input

@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import SuperadminLayout from './SuperadminLayout';
+import { getIndianPhoto } from '../../Components/CardPhotoBackdrop';
 import {
     Check, X, Sparkles, Shield, Zap, Layers, ArrowRight,
     Smartphone, Globe, Award, HelpCircle, ChevronDown, ChevronUp,
-    Cpu, Building2, Lock, CheckCircle2, Home, ChevronRight, Crown
+    Cpu, Building2, Lock, CheckCircle2, Home, ChevronRight, Crown, Star
 } from 'lucide-react';
 
 export default function Subscriptions() {
@@ -98,8 +99,18 @@ export default function Subscriptions() {
                     <span className="font-semibold text-[var(--color-hp-dark)]">{t('Plans & Add-ons Marketplace')}</span>
                 </div>
 
-                {/* Hero Banner (Zero CSS Gradients) */}
+                {/* Hero Banner with subtle Indian corporate backdrop */}
                 <div className="relative overflow-hidden rounded-3xl bg-[#162332] border border-white/15 text-white p-8 md:p-12 shadow-xl">
+                    <img
+                        src={getIndianPhoto('office')}
+                        alt=""
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 w-full h-full object-cover opacity-20"
+                    />
+                    <div
+                        className="pointer-events-none absolute inset-0"
+                        style={{ background: 'linear-gradient(135deg, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.72) 55%, rgba(10,50,53,0.85) 100%)' }}
+                    />
                     <div className="relative z-10 max-w-3xl mx-auto text-center space-y-5">
                         <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-bold uppercase tracking-wider text-teal-200">
                             <Crown className="w-3.5 h-3.5 text-amber-400" />
@@ -158,8 +169,9 @@ export default function Subscriptions() {
                             >
                                 {/* Top Ribbon for Popular Plan */}
                                 {plan.popular && (
-                                    <div className="bg-[var(--color-hp-primary)] text-white text-center py-2 px-4 rounded-t-[20px] text-xs font-extrabold uppercase tracking-widest">
-                                        ★ {t(plan.discount)}
+                                    <div className="bg-[var(--color-hp-primary)] text-white text-center py-2 px-4 rounded-t-[20px] text-xs font-extrabold uppercase tracking-widest flex items-center justify-center gap-1.5">
+                                        <Star className="w-3.5 h-3.5 fill-current" />
+                                        <span>{t(plan.discount)}</span>
                                     </div>
                                 )}
 

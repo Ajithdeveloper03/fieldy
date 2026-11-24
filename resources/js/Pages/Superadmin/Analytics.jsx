@@ -2,6 +2,7 @@ import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import SuperadminLayout from './SuperadminLayout';
+import CardPhotoBackdrop from '../../Components/CardPhotoBackdrop';
 import {
     BarChart3, TrendingUp, Calendar,
     Building2, Activity, Users, MapPin,
@@ -40,17 +41,20 @@ export default function Analytics({ visitTrends = [], topCompanies = [], summary
 
                 {/* Top Stat Highlights */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="hp-card p-5">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold text-[var(--color-hp-gray-600)]">{t('Lifetime Visits')}</span>
-                            <div className="hp-icon-tile !w-9 !h-9" style={{ '--glass-tint': '#D97706', color: '#D97706' }}>
-                                <MapPin className="w-4 h-4" />
+                    <div className="hp-card relative overflow-hidden p-5">
+                        <CardPhotoBackdrop photoKey="engineer" variant="corner" opacity={0.24} />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold text-[var(--color-hp-gray-600)]">{t('Lifetime Visits')}</span>
+                                <div className="hp-icon-tile !w-9 !h-9" style={{ '--glass-tint': '#D97706', color: '#D97706' }}>
+                                    <MapPin className="w-4 h-4" />
+                                </div>
                             </div>
+                            <div className="mt-2 text-2xl sm:text-3xl font-bold text-[var(--color-hp-dark)] tracking-tight">
+                                {(summary.totalVisitsAllTime || 0).toLocaleString()}
+                            </div>
+                            <p className="text-xs text-[var(--color-hp-gray-500)] mt-1">{t('Total customer visits registered platform-wide')}</p>
                         </div>
-                        <div className="mt-2 text-2xl sm:text-3xl font-bold text-[var(--color-hp-dark)] tracking-tight">
-                            {(summary.totalVisitsAllTime || 0).toLocaleString()}
-                        </div>
-                        <p className="text-xs text-[var(--color-hp-gray-500)] mt-1">{t('Total customer visits registered platform-wide')}</p>
                     </div>
 
                     <div className="hp-card p-5">
@@ -66,17 +70,20 @@ export default function Analytics({ visitTrends = [], topCompanies = [], summary
                         <p className="text-xs text-[var(--color-hp-gray-500)] mt-1">{t('Cumulative shifts logged by field agents')}</p>
                     </div>
 
-                    <div className="hp-card p-5">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold text-[var(--color-hp-gray-600)]">{t('Live GPS Tracking')}</span>
-                            <div className="hp-icon-tile !w-9 !h-9" style={{ '--glass-tint': '#1D4ED8', color: '#1D4ED8' }}>
-                                <Activity className="w-4 h-4" />
+                    <div className="hp-card relative overflow-hidden p-5">
+                        <CardPhotoBackdrop photoKey="aerial" variant="corner" opacity={0.24} />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold text-[var(--color-hp-gray-600)]">{t('Live GPS Tracking')}</span>
+                                <div className="hp-icon-tile !w-9 !h-9" style={{ '--glass-tint': '#1D4ED8', color: '#1D4ED8' }}>
+                                    <Activity className="w-4 h-4" />
+                                </div>
                             </div>
+                            <div className="mt-2 text-2xl sm:text-3xl font-bold text-[var(--color-hp-dark)] tracking-tight">
+                                {summary.activeTrackingSessions ?? 0}
+                            </div>
+                            <p className="text-xs text-[var(--color-hp-gray-500)] mt-1">{t('Active field routes streaming real-time telemetry')}</p>
                         </div>
-                        <div className="mt-2 text-2xl sm:text-3xl font-bold text-[var(--color-hp-dark)] tracking-tight">
-                            {summary.activeTrackingSessions ?? 0}
-                        </div>
-                        <p className="text-xs text-[var(--color-hp-gray-500)] mt-1">{t('Active field routes streaming real-time telemetry')}</p>
                     </div>
                 </div>
 

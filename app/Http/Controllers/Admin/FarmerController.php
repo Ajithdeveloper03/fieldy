@@ -45,8 +45,8 @@ class FarmerController extends Controller
                 'aadhaar_number' => $fp->aadhaar_number ? '**'.substr($fp->aadhaar_number, -4) : 'Not provided',
             ]);
 
-        // If no pending records exist in DB for this service, supply curated pending items from catalog
-        if ($farmers->isEmpty()) {
+        // If no pending records exist in DB for this service (platform preview only), supply curated pending items from catalog
+        if ($farmers->isEmpty() && ! $companyId) {
             $catalogPending = collect(IndustryCatalog::entities($industryKey))
                 ->where('approval_status', 'pending')
                 ->values()
@@ -77,8 +77,9 @@ class FarmerController extends Controller
     public function showPending($id)
     {
         $industryKey = IndustryContext::current();
+        $companyId = auth()->user()?->company_id;
 
-        $catalogEntity = IndustryCatalog::entity($industryKey, $id);
+        $catalogEntity = ! $companyId ? IndustryCatalog::entity($industryKey, $id) : null;
         if ($catalogEntity) {
             return Inertia::render('Admin/Profiles/PendingFarmerDetail', [
                 'farmer' => [

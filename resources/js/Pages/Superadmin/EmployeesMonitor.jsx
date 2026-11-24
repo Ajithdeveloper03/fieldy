@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import SuperadminLayout from './SuperadminLayout';
+import CardPhotoBackdrop from '../../Components/CardPhotoBackdrop';
 import {
     Users, Search, Filter, Building2,
     MapPin, CheckCircle2, Clock, Smartphone,
@@ -42,13 +43,16 @@ export default function EmployeesMonitor({ employees, companies = [], filters = 
                 </div>
 
                 {/* Header */}
-                <div className="pb-2 border-b border-[var(--color-hp-border)]">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-hp-dark)] tracking-tight">
-                        {t('Cross-Company Workforce Intelligence')}
-                    </h1>
-                    <p className="text-xs sm:text-sm text-[var(--color-hp-gray-600)] mt-1">
-                        {t('Monitor active field staff, live GPS sessions, and daily operational milestones across all client companies.')}
-                    </p>
+                <div className="hp-hero-card relative overflow-hidden p-5 sm:p-6">
+                    <CardPhotoBackdrop photoKey="team" variant="right" opacity={0.26} />
+                    <div className="relative z-10">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-hp-dark)] tracking-tight">
+                            {t('Cross-Company Workforce Intelligence')}
+                        </h1>
+                        <p className="text-xs sm:text-sm text-[var(--color-hp-gray-600)] mt-1">
+                            {t('Monitor active field staff, live GPS sessions, and daily operational milestones across all client companies.')}
+                        </p>
+                    </div>
                 </div>
 
                 {/* Filters Bar */}

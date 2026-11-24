@@ -7,6 +7,7 @@ import {
     X, ShieldCheck, Download, Edit3, Trash2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import CardPhotoBackdrop from '../../../Components/CardPhotoBackdrop';
 import useIndustry from '../../../hooks/useIndustry';
 
 const kycBadge = (status) => {
@@ -109,8 +110,9 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                 )}
 
                 {/* HERO CARD */}
-                <div className="hp-card-gradient-slate rounded-2xl p-5 sm:p-7 shadow-xs border border-slate-200/80">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                <div className="hp-card-gradient-slate relative overflow-hidden rounded-2xl p-5 sm:p-7 shadow-xs border border-slate-200/80">
+                    <CardPhotoBackdrop photoKey={industry.id} variant="right" opacity={0.28} />
+                    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
                         <div className="max-w-xl">
                             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
@@ -183,15 +185,18 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
 
                 {/* METRIC CARDS */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-                    <div className="hp-metric-pill-card hover:border-slate-300">
-                        <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total')}</span>
-                            <span className="w-7 h-7 rounded-lg bg-orange-50 text-hp-primary flex items-center justify-center">
-                                <ActiveIcon className="w-3.5 h-3.5" />
-                            </span>
+                    <div className="hp-metric-pill-card relative overflow-hidden hover:border-slate-300">
+                        <CardPhotoBackdrop photoKey="aerial" variant="corner" opacity={0.22} />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total')}</span>
+                                <span className="w-7 h-7 rounded-lg bg-orange-50 text-hp-primary flex items-center justify-center">
+                                    <ActiveIcon className="w-3.5 h-3.5" />
+                                </span>
+                            </div>
+                            <div className="text-2xl font-bold text-hp-dark">{farmers.length}</div>
+                            <p className="text-xs text-hp-muted mt-0.5">{t(vocab.entity.plural)} {t('registered')}</p>
                         </div>
-                        <div className="text-2xl font-bold text-hp-dark">{farmers.length}</div>
-                        <p className="text-xs text-hp-muted mt-0.5">{t(vocab.entity.plural)} {t('registered')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card hover:border-emerald-200">
@@ -219,9 +224,9 @@ export default function FarmerList({ farmers = [], districts = [], filters = {} 
                     <div className="hp-metric-pill-card hover:border-indigo-200">
                         <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Compliance')}</span>
-                            <span className="hp-chip hp-chip-success !h-5 !text-[11px]">{industry.complianceRate || '99%'}</span>
+                            <span className="hp-chip hp-chip-success !h-5 !text-[11px]">{farmers.length > 0 ? `${Math.round((verifiedCount / farmers.length) * 100)}%` : '0%'}</span>
                         </div>
-                        <div className="text-2xl font-bold text-hp-dark">99.2%</div>
+                        <div className="text-2xl font-bold text-hp-dark">{farmers.length > 0 ? `${Math.round((verifiedCount / farmers.length) * 100)}%` : '0%'}</div>
                         <p className="text-xs text-hp-muted mt-0.5">{t('SLA Adherence')}</p>
                     </div>
                 </div>

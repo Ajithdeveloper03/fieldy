@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\SessionActivity;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class LoginController extends Controller
@@ -22,15 +25,41 @@ class LoginController extends Controller
             }
         }
 
-        return Inertia::render('Auth/Login');
+        $reason = $request->query('reason');
+        $notice = $request->session()->get('session_notice');
+        if (! $notice && $reason === 'inactivity') {
+            $notice = 'Your session expired due to inactivity. Please log in again.';
+        }
+
+        return Inertia::render('Auth/Login', [
+            'sessionNotice' => $notice,
+        ]);
     }
 
     public function store(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
+            'email' => 'required|email|max:190',
+            'password' => 'required|string|max:190',
         ]);
+
+        $throttleKey = 'portal-login:' . Str::lower(trim($credentials['email'])) . '|' . $request->ip();
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            SessionActivity::record(
+                'login_failed',
+                'Rate-limited login attempt blocked (' . Str::lower($credentials['email']) . ')',
+                $request,
+                null,
+                'blocked',
+                0,
+                ['email' => Str::lower($credentials['email']), 'retry_after' => $seconds]
+            );
+
+            return back()->withErrors([
+                'email' => "Too many failed login attempts. Please wait {$seconds} seconds before trying again.",
+            ]);
+        }
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             // Fallback for demo admin credentials
@@ -49,6 +78,8 @@ class LoginController extends Controller
                 if ($adminUser && in_array($adminUser->role, ['admin', 'superadmin'])) {
                     Auth::login($adminUser, $request->boolean('remember'));
                 } else {
+                    RateLimiter::hit($throttleKey, 900);
+                    SessionActivity::record('login_failed', 'Invalid login attempt for ' . Str::lower($credentials['email']), $request, null, 'blocked', 0, ['email' => Str::lower($credentials['email'])]);
                     return back()->withErrors(['email' => 'Invalid credentials. Please try again.']);
                 }
             } elseif ($credentials['email'] === 'superadmin@fieldy.in' &&
@@ -66,22 +97,44 @@ class LoginController extends Controller
                 if ($superUser && $superUser->role === 'superadmin') {
                     Auth::login($superUser, $request->boolean('remember'));
                 } else {
+                    RateLimiter::hit($throttleKey, 900);
+                    SessionActivity::record('login_failed', 'Invalid login attempt for ' . Str::lower($credentials['email']), $request, null, 'blocked', 0, ['email' => Str::lower($credentials['email'])]);
                     return back()->withErrors(['email' => 'Invalid credentials. Please try again.']);
                 }
             } else {
+                RateLimiter::hit($throttleKey, 900);
+                SessionActivity::record('login_failed', 'Invalid credentials for ' . Str::lower($credentials['email']), $request, null, 'blocked', 0, ['email' => Str::lower($credentials['email'])]);
                 return back()->withErrors(['email' => 'Invalid credentials. Please try again.']);
             }
         }
 
         if (! in_array(Auth::user()->role, ['admin', 'superadmin'])) {
             Auth::logout();
+            RateLimiter::hit($throttleKey, 900);
+            SessionActivity::record('login_failed', 'Unauthorized role blocked on portal login', $request, null, 'blocked', 0, ['email' => Str::lower($credentials['email'])]);
 
             return back()->withErrors(['email' => 'Access denied. Administrator privileges required.']);
         }
 
+        RateLimiter::clear($throttleKey);
         $request->session()->regenerate();
+        $request->session()->put('security.login_at', now()->toIso8601String());
+        $request->session()->put('security.last_activity_at', time());
+        $request->session()->put('security.last_ip', $request->ip());
+        $request->session()->put('security.actions_count', 1);
 
-        if (Auth::user()->role === 'superadmin') {
+        $loggedUser = Auth::user();
+        SessionActivity::record(
+            'login',
+            ($loggedUser->role === 'superadmin' ? 'Superadmin' : 'Client Admin') . ' signed into portal',
+            $request,
+            $loggedUser,
+            'active',
+            0,
+            ['email' => $loggedUser->email]
+        );
+
+        if ($loggedUser->role === 'superadmin') {
             return redirect($this->withLocalBasePath($request, '/superadmin/dashboard'));
         }
 
@@ -90,6 +143,17 @@ class LoginController extends Controller
 
     public function destroy(Request $request)
     {
+        $user = Auth::user();
+        if ($user) {
+            SessionActivity::record(
+                'logout',
+                ($user->role === 'superadmin' ? 'Superadmin' : 'Client Admin') . ' signed out safely',
+                $request,
+                $user,
+                'info'
+            );
+        }
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

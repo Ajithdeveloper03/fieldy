@@ -49,11 +49,14 @@ class FarmerDirectoryController extends Controller
             $query->where('kyc_status', $kyc);
         }
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                )->orWhere('farmer_code', 'like', "%{$search}%");
-            });
+            $likeSearch = \App\Support\SqlSafe::likeTerm($search);
+            if ($likeSearch !== '') {
+                $query->where(function ($q) use ($likeSearch) {
+                    $q->whereHas('user', fn ($u) => $u->where('name', 'like', $likeSearch)
+                        ->orWhere('phone', 'like', $likeSearch)
+                    )->orWhere('farmer_code', 'like', $likeSearch);
+                });
+            }
         }
 
         $farmers = $query->orderBy('created_at', 'desc')->get()->map(fn ($fp) => [
@@ -79,8 +82,8 @@ class FarmerDirectoryController extends Controller
             'is_sample' => false,
         ]);
 
-        // If no real records exist for this service vertical, supply curated industry catalog data
-        if ($farmers->isEmpty()) {
+        // If no real records exist for this service vertical (platform preview only), supply curated industry catalog data
+        if ($farmers->isEmpty() && ! $companyId) {
             $catalogEntities = IndustryCatalog::entities($industryKey);
             $farmers = collect($catalogEntities)->map(fn ($e) => [
                 'id' => $e['id'],
@@ -123,9 +126,10 @@ class FarmerDirectoryController extends Controller
     public function show($id)
     {
         $industryKey = IndustryContext::current();
+        $companyId = auth()->user()?->company_id;
 
-        // Check sample catalog first for synthetic IDs
-        $catalogEntity = IndustryCatalog::entity($industryKey, $id);
+        // Check sample catalog first for synthetic IDs (platform preview only)
+        $catalogEntity = ! $companyId ? IndustryCatalog::entity($industryKey, $id) : null;
         if ($catalogEntity) {
             $sampleVisits = collect(IndustryCatalog::visits($industryKey))
                 ->where('entity_id', $catalogEntity['id'])

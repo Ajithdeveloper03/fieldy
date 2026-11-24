@@ -9,6 +9,7 @@ import {
     Calendar, LayoutGrid, ListFilter, ArrowUpRight
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import CardPhotoBackdrop from '../../Components/CardPhotoBackdrop';
 import useIndustry from '../../hooks/useIndustry';
 
 export default function Visits({ visits = {}, employees = [], filters = {} }) {
@@ -23,10 +24,10 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
     const [processing, setProcessing] = useState(false);
 
     const visitsData = visits.data || [];
-    const totalVisits = visits.total || visitsData.length;
+    const totalVisits = visits.total ?? visitsData.length;
     const avgDistance = visitsData.length
         ? (visitsData.reduce((acc, v) => acc + parseFloat(v.distance_from_previous_farmer_km || 0), 0) / visitsData.length).toFixed(1)
-        : '3.8';
+        : '0.0';
 
     const handleApplyFilters = (newDays, newSearch) => {
         setProcessing(true);
@@ -68,26 +69,33 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
             .sort((a, b) => b.count - a.count)
             .slice(0, 5);
 
-        const total = visitsData.length || 1;
+        const total = visitsData.length;
         const types = vocab.visit.types || ['Audit', 'Verification', 'Service'];
         const colors = ['bg-hp-primary', 'bg-hp-dark', 'bg-hp-info', 'bg-hp-success'];
         const percentages = [45, 25, 20, 10];
         const purposes = types.slice(0, 4).map((type, idx) => ({
             name: type,
-            count: Math.ceil(total * (percentages[idx] / 100)),
-            percent: percentages[idx],
+            count: total > 0 ? Math.ceil(total * (percentages[idx] / 100)) : 0,
+            percent: total > 0 ? percentages[idx] : 0,
             color: colors[idx % colors.length]
         }));
 
-        const weekDays = [
-            { day: 'Mon', count: 12, height: '65%' },
-            { day: 'Tue', count: 18, height: '90%' },
-            { day: 'Wed', count: 15, height: '75%' },
-            { day: 'Thu', count: 20, height: '100%' },
-            { day: 'Fri', count: 14, height: '70%' },
-            { day: 'Sat', count: 9, height: '45%' },
-            { day: 'Sun', count: 5, height: '25%' }
-        ];
+        const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const dayCounts = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+        visitsData.forEach(v => {
+            if (!v.date) return;
+            const parsed = new Date(v.date);
+            if (!Number.isNaN(parsed.getTime())) {
+                const idx = (parsed.getDay() + 6) % 7;
+                dayCounts[dayNames[idx]] += 1;
+            }
+        });
+        const maxDayCount = Math.max(1, ...Object.values(dayCounts));
+        const weekDays = dayNames.map(day => ({
+            day,
+            count: dayCounts[day],
+            height: dayCounts[day] > 0 ? `${Math.max(12, Math.round((dayCounts[day] / maxDayCount) * 100))}%` : '4%',
+        }));
 
         return { topOfficers, purposes, weekDays };
     }, [visitsData, vocab]);
@@ -97,8 +105,9 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
             <div className="space-y-6 pb-12 hp-animate-in">
 
                 {/* HERO CARD */}
-                <div className="hp-card-gradient-slate rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-200">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="hp-card-gradient-slate relative overflow-hidden rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-200">
+                    <CardPhotoBackdrop photoKey={industry.id} variant="right" opacity={0.28} />
+                    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <div className="max-w-2xl">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
@@ -182,15 +191,18 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
 
                 {/* METRIC CARDS */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="hp-metric-pill-card">
-                        <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total {{visits}}', { visits: vocab.visit.plural })}</span>
-                            <span className="hp-chip hp-chip-primary !h-5 !text-[11px]">{t(dateRange === 'all' ? 'All Time' : `${dateRange}d`)}</span>
+                    <div className="hp-metric-pill-card relative overflow-hidden">
+                        <CardPhotoBackdrop photoKey="engineer" variant="corner" opacity={0.24} />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total {{visits}}', { visits: vocab.visit.plural })}</span>
+                                <span className="hp-chip hp-chip-primary !h-5 !text-[11px]">{t(dateRange === 'all' ? 'All Time' : `${dateRange}d`)}</span>
+                            </div>
+                            <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{totalVisits}</div>
+                            <p className="text-xs text-hp-success font-medium mt-1 flex items-center gap-1">
+                                <CheckCircle2 className="w-3 h-3" /> {totalVisits > 0 ? '100%' : '0%'} {t(isConstruction ? 'Verified Inspections' : 'Verified Check-ins')}
+                            </p>
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{totalVisits}</div>
-                        <p className="text-xs text-hp-success font-medium mt-1 flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" /> 100% {t(isConstruction ? 'Verified Inspections' : 'Verified Check-ins')}
-                        </p>
                     </div>
 
                     <div className="hp-metric-pill-card">
@@ -207,7 +219,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                             <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Punctuality')}</span>
                             <ShieldCheck className="w-3.5 h-3.5 text-hp-success" />
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-hp-success">{industry.complianceRate || '99%'}</div>
+                        <div className="text-2xl sm:text-3xl font-bold text-hp-success">{totalVisits > 0 ? (industry.complianceRate || '100%') : '0%'}</div>
                         <p className="text-xs text-hp-muted mt-1">{t(isConstruction ? 'On-time site arrival' : 'On-time beat arrival')}</p>
                     </div>
 
@@ -216,7 +228,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                             <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Active {{staffPlural}}', { staffPlural: vocab.staff.plural })}</span>
                             <span className="w-2 h-2 rounded-full bg-hp-success animate-ping"></span>
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{employees.length || 8}</div>
+                        <div className="text-2xl sm:text-3xl font-bold text-hp-dark">{employees.length}</div>
                         <p className="text-xs text-hp-muted mt-1">{t('On field duty')}</p>
                     </div>
                 </div>

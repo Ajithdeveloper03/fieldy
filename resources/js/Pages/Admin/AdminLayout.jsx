@@ -1,15 +1,17 @@
 import { asset, withBase, BASE } from '../../basePath';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import {
     LayoutDashboard, FileCheck2, ShieldAlert, ClipboardList,
     Briefcase, MapPin, Search, Bell, Globe, Building2, Sparkles,
-    ChevronDown, ChevronRight, Menu, X, Star,
+    ChevronDown, ChevronRight, Menu, X, Star, Compass,
     PanelLeftClose, PanelLeftOpen, LogOut, HelpCircle, Layers
 } from 'lucide-react';
 import { useAlert } from '../../Components/AlertSystem';
 import { useTranslation } from 'react-i18next';
 import Chatbot from '../../Components/Chatbot';
+import GuidedTour from '../../Components/GuidedTour';
+import SessionInactivityGuard from '../../Components/SessionInactivityGuard';
 import ThemeCustomizerPopover from '../../Components/ThemeCustomizerPopover';
 import { attachLiquidPointerTracking } from '../../lib/dashboardTheme';
 import { INDUSTRIES, getIndustryById } from '../../data/industriesConfig';
@@ -29,36 +31,15 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const { triggerCritical } = useAlert();
     const { t, i18n } = useTranslation();
 
-    const [tutorialStep, setTutorialStep] = useState(() => {
-        try {
-            if (localStorage.getItem('fieldy_admin_tutorial_done')) return -1;
-            const saved = localStorage.getItem('fieldy_admin_tutorial_step');
-            return saved !== null ? parseInt(saved, 10) : 0;
-        } catch {
-            return -1;
-        }
-    });
+    const user = props.auth?.user;
+    const isSuperadmin = user?.role === 'superadmin';
+    const userName = user?.name || (isSuperadmin ? 'Fieldy Platform Owner' : 'Admin');
+    const companyName = user?.company?.name || 'Fieldy Operations';
+    const companyId = user?.company?.id || user?.company_id || null;
+    const companyTourCompleted = user?.company ? Boolean(user.company.tour_completed) : true;
 
-    const TUTORIAL_STEPS = [
-        { title: '1. Add Employee', desc: 'Click Employees in the sidebar, then click Add Employee.', target: '/admin/employees' },
-        { title: '2. Task Assigning', desc: 'Click Today Tasks in the sidebar to assign work.', target: '/admin/tasks' },
-        { title: '3. Live Tracking', desc: 'Click Live Monitor in the sidebar to track GPS live.', target: '/admin/monitor' },
-        { title: '4. Reports Viewing', desc: 'Click Site Visits in the sidebar to view reports.', target: '/admin/visits' },
-    ];
-
-    const advanceTutorial = (nextStep) => {
-        setTutorialStep(nextStep);
-        try {
-            if (nextStep < 0 || nextStep >= TUTORIAL_STEPS.length) {
-                localStorage.setItem('fieldy_admin_tutorial_done', '1');
-                localStorage.removeItem('fieldy_admin_tutorial_step');
-            } else {
-                localStorage.setItem('fieldy_admin_tutorial_step', String(nextStep));
-            }
-        } catch { }
-    };
-
-    const closeTutorial = () => advanceTutorial(-1);
+    const tourDoneKey = companyId ? `fieldy_admin_tour_done_c${companyId}` : 'fieldy_admin_tour_done_platform';
+    const tourStepKey = companyId ? `fieldy_admin_tour_step_c${companyId}` : 'fieldy_admin_tour_step_platform';
 
     // Active service vertical: page prop → server-shared (session-persisted) prop → real_estate
     const activeIndustryId = passedIndustry?.id || props.currentIndustry || 'real_estate';
@@ -66,6 +47,167 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const labels = currentIndustry?.adminLabels || {};
     const vocab = getVocab(currentIndustry?.id);
     const ActiveIndIcon = currentIndustry?.icon || Building2;
+
+    const [tutorialStep, setTutorialStep] = useState(() => {
+        try {
+            const activeSessionStep = sessionStorage.getItem(tourStepKey);
+            if (activeSessionStep !== null) {
+                const parsed = parseInt(activeSessionStep, 10);
+                if (!Number.isNaN(parsed) && parsed >= 0) return parsed;
+            }
+            if (companyId && !companyTourCompleted && !localStorage.getItem(tourDoneKey)) {
+                return 0;
+            }
+            return -1;
+        } catch {
+            return -1;
+        }
+    });
+
+    // Trigger tour automatically when switching into a newly created company via Inertia navigation
+    useEffect(() => {
+        try {
+            const activeSessionStep = sessionStorage.getItem(tourStepKey);
+            if (activeSessionStep !== null) {
+                const parsed = parseInt(activeSessionStep, 10);
+                if (!Number.isNaN(parsed) && parsed >= 0) {
+                    setTutorialStep(parsed);
+                    return;
+                }
+            }
+            if (companyId && !companyTourCompleted && !localStorage.getItem(tourDoneKey)) {
+                setTutorialStep(0);
+            }
+        } catch {
+            // ignore storage errors
+        }
+    }, [companyId, companyTourCompleted, tourDoneKey, tourStepKey]);
+
+    const staffPluralLabel = t(labels.navAgents || vocab.staff.plural);
+    const entityPluralLabel = t(labels.navEntities || vocab.entity.plural);
+    const tasksMenuLabel = t(labels.todayTasksTitle || vocab.task.plural);
+    const monitorMenuLabel = t(vocab.monitor.title);
+    const visitsMenuLabel = t(labels.navVisits || vocab.visit.plural);
+
+    const TUTORIAL_STEPS = useMemo(() => [
+        {
+            id: 'add-employees',
+            target: 'nav-employees',
+            groupId: 'directory',
+            placement: 'right',
+            href: '/admin/employees',
+            title: t('Add {{staff}}', { staff: staffPluralLabel }),
+            desc: t('Start by adding your field team here. Open {{menu}} in the sidebar to create mobile app logins for your staff.', { menu: staffPluralLabel }),
+        },
+        {
+            id: 'add-sites',
+            target: 'nav-farmers',
+            groupId: 'directory',
+            placement: 'right',
+            href: '/admin/farmers',
+            title: t('Add {{entities}}', { entities: entityPluralLabel }),
+            desc: t('Register your work locations and geofences under {{menu}} so staff can check in when arriving on site.', { menu: entityPluralLabel }),
+        },
+        {
+            id: 'assign-tasks',
+            target: 'nav-tasks',
+            groupId: 'operations',
+            placement: 'right',
+            href: '/admin/tasks',
+            title: t('Assign Tasks'),
+            desc: t('Open {{menu}} to schedule daily work orders, attach checklists, and assign jobs to your field team.', { menu: tasksMenuLabel }),
+        },
+        {
+            id: 'live-monitor',
+            target: 'nav-monitor',
+            groupId: 'operations',
+            placement: 'right',
+            href: '/admin/monitor',
+            title: t('Live GPS Tracking'),
+            desc: t('Use {{menu}} to track live GPS locations, attendance check-ins, and route history on the map.', { menu: monitorMenuLabel }),
+        },
+        {
+            id: 'visit-reports',
+            target: 'nav-visits',
+            groupId: 'operations',
+            placement: 'right',
+            href: '/admin/visits',
+            title: t('Inspect Visit Reports'),
+            desc: t('Open {{menu}} to view completed site visits, field notes, timestamps, and photo proof submitted from mobile.', { menu: visitsMenuLabel }),
+        },
+        {
+            id: 'customize-theme',
+            target: 'theme-customizer',
+            groupId: null,
+            placement: 'bottom',
+            href: null,
+            title: t('Customize Your Workspace'),
+            desc: t('Personalize your liquid glass accent colors, icon colors, or switch between English and Tamil anytime from the top bar.'),
+        },
+    ], [t, staffPluralLabel, entityPluralLabel, tasksMenuLabel, monitorMenuLabel, visitsMenuLabel]);
+
+    const persistTourCompletion = useCallback(() => {
+        try {
+            localStorage.setItem(tourDoneKey, '1');
+            sessionStorage.removeItem(tourStepKey);
+        } catch {
+            // ignore
+        }
+        if (companyId) {
+            const urlEndpoint = withBase('/admin/onboarding-tour/complete');
+            if (window.axios) {
+                window.axios.post(urlEndpoint).catch(() => {});
+            } else {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                fetch(urlEndpoint, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': token,
+                    },
+                    body: JSON.stringify({}),
+                }).catch(() => {});
+            }
+        }
+    }, [companyId, tourDoneKey, tourStepKey]);
+
+    const handleStepChange = useCallback((nextStep) => {
+        if (nextStep < 0 || nextStep >= TUTORIAL_STEPS.length) {
+            setTutorialStep(-1);
+            persistTourCompletion();
+            return;
+        }
+        setTutorialStep(nextStep);
+        try {
+            sessionStorage.setItem(tourStepKey, String(nextStep));
+        } catch {
+            // ignore
+        }
+    }, [TUTORIAL_STEPS.length, persistTourCompletion, tourStepKey]);
+
+    const closeTutorial = useCallback(() => {
+        setTutorialStep(-1);
+        persistTourCompletion();
+    }, [persistTourCompletion]);
+
+    const restartTutorial = useCallback(() => {
+        setProfileOpen(false);
+        try {
+            localStorage.removeItem(tourDoneKey);
+            sessionStorage.setItem(tourStepKey, '0');
+        } catch {
+            // ignore
+        }
+        setTutorialStep(0);
+    }, [tourDoneKey, tourStepKey]);
+
+    useEffect(() => {
+        const onStartTour = () => restartTutorial();
+        window.addEventListener('fieldy:start-tour', onStartTour);
+        return () => window.removeEventListener('fieldy:start-tour', onStartTour);
+    }, [restartTutorial]);
 
     // Construction tenants hide the finance pages (Payroll) and Settings from the shell.
     const isConstruction = currentIndustry?.id === 'construction';
@@ -86,10 +228,20 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
 
     useEffect(() => attachLiquidPointerTracking(shellRef.current), []);
 
-    const user = props.auth?.user;
-    const isSuperadmin = user?.role === 'superadmin';
-    const userName = user?.name || (isSuperadmin ? 'Fieldy Platform Owner' : 'Admin');
-    const companyName = user?.company?.name || 'Fieldy Operations';
+    const handlePrepareTourStep = useCallback((step) => {
+        if (!step) return;
+        const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+        if (step.groupId) {
+            setCollapsedGroups((prev) => (prev[step.groupId] ? { ...prev, [step.groupId]: false } : prev));
+            if (isDesktop) {
+                setIsSidebarCollapsed(false);
+            } else {
+                setMobileOpen(true);
+            }
+        } else if (!isDesktop) {
+            setMobileOpen(false);
+        }
+    }, []);
 
     /* Dynamic navigation groups adapted to the active industry */
     const navGroups = [
@@ -97,25 +249,25 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
             id: 'operations',
             label: labels.navFieldWork || 'Field Work',
             items: [
-                { href: '/admin/visits', icon: FileCheck2, color: '#0D9488', label: labels.navVisits || vocab.visit.plural },
-                { href: '/admin/monitor', icon: ShieldAlert, color: '#2563EB', label: vocab.monitor.title, dot: true },
-                { href: '/admin/tasks', icon: ClipboardList, color: '#7C3AED', label: labels.todayTasksTitle || vocab.task.plural },
-                { href: '/admin/alerts', icon: Bell, color: '#DB2777', label: vocab.alerts.title },
+                { href: '/admin/visits', tourId: 'nav-visits', icon: FileCheck2, color: '#0D9488', label: labels.navVisits || vocab.visit.plural },
+                { href: '/admin/monitor', tourId: 'nav-monitor', icon: ShieldAlert, color: '#2563EB', label: vocab.monitor.title, dot: true },
+                { href: '/admin/tasks', tourId: 'nav-tasks', icon: ClipboardList, color: '#7C3AED', label: labels.todayTasksTitle || vocab.task.plural },
+                { href: '/admin/alerts', tourId: 'nav-alerts', icon: Bell, color: '#DB2777', label: vocab.alerts.title },
             ],
         },
         {
             id: 'directory',
             label: labels.navDirectory || 'Properties & Team',
             items: [
-                { href: '/admin/farmers', icon: ActiveIndIcon, color: '#0284C7', label: labels.navEntities || vocab.entity.plural },
-                { href: '/admin/employees', icon: Briefcase, color: '#059669', label: labels.navAgents || vocab.staff.plural },
+                { href: '/admin/farmers', tourId: 'nav-farmers', icon: ActiveIndIcon, color: '#0284C7', label: labels.navEntities || vocab.entity.plural },
+                { href: '/admin/employees', tourId: 'nav-employees', icon: Briefcase, color: '#059669', label: labels.navAgents || vocab.staff.plural },
             ],
         },
         {
             id: 'business',
             label: vocab.finance.group,
             items: [
-                { href: '/admin/performance', icon: MapPin, color: '#D97706', label: vocab.finance.scores },
+                { href: '/admin/performance', tourId: 'nav-performance', icon: MapPin, color: '#D97706', label: vocab.finance.scores },
             ],
         },
     ];
@@ -216,13 +368,19 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const breadcrumbs = getBreadcrumbs();
 
     /* ─────────────── Sidebar item ─────────────── */
-    const NavItem = ({ href, icon: Icon, color = '#0D9488', label, badge, dot, collapsed, allowFavorite = true }) => {
+    const NavItem = ({ href, tourId, enableTour = false, icon: Icon, color = '#0D9488', label, badge, dot, collapsed, allowFavorite = true }) => {
         const active = isActive(href);
         const isFav = favorites.includes(href);
         return (
             <div className="relative group/nav">
                 <Link
                     href={href}
+                    data-tour={enableTour && tourId ? tourId : undefined}
+                    onClick={() => {
+                        if (enableTour && tourId && tutorialStep >= 0 && TUTORIAL_STEPS[tutorialStep]?.target === tourId) {
+                            handleStepChange(tutorialStep + 1);
+                        }
+                    }}
                     title={collapsed ? t(label) : undefined}
                     className={`hp-nav-item ${active ? 'is-active' : ''} ${collapsed ? 'justify-center !px-0' : ''}`}
                     style={active ? { color } : undefined}
@@ -292,7 +450,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                                     </button>
                                 ) : <div className="h-px bg-hp-border mx-2 mb-3" />}
                                 <div className={`space-y-0.5 overflow-hidden transition-all duration-200 ${isClosed ? 'max-h-0 opacity-0' : 'max-h-[400px] opacity-100'}`}>
-                                    {group.items.map(item => <NavItem key={item.href} {...item} collapsed={collapsed} />)}
+                                    {group.items.map(item => <NavItem key={item.href} {...item} enableTour collapsed={collapsed} />)}
                                 </div>
                             </div>
                         );
@@ -392,7 +550,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                         <ShieldAlert className="w-5 h-5" />
                     </button>
                     {/* Live Liquid Glass Accent & Icon Color Customizer */}
-                    <ThemeCustomizerPopover />
+                    <ThemeCustomizerPopover tourId="theme-customizer" />
                     <button
                         type="button"
                         onClick={toggleLanguage}
@@ -461,6 +619,9 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                                         <Globe className="w-[18px] h-[18px] text-hp-muted" /> {t('Language')}
                                         <span className="ml-auto hp-chip hp-chip-gray">{isTamil ? 'தமிழ்' : 'English'}</span>
                                     </button>
+                                    <button type="button" onClick={restartTutorial} className="hp-nav-item w-full">
+                                        <Compass className="w-[18px] h-[18px] text-hp-muted" /> {t('Guided Tour')}
+                                    </button>
                                     <button type="button" onClick={openAssistant} className="hp-nav-item w-full"><HelpCircle className="w-[18px] h-[18px] text-hp-muted" /> {t('Help & support')}</button>
                                 </div>
                                 <div className="p-1.5 border-t border-hp-border">
@@ -517,35 +678,15 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
 
             <Chatbot />
 
-            {tutorialStep >= 0 && tutorialStep < TUTORIAL_STEPS.length && (
-                <div className="fixed bottom-5 left-5 z-[100] bg-slate-900 text-white rounded-2xl shadow-2xl border-2 border-emerald-400 max-w-xs w-full p-4">
-                    <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">
-                            {t('Guide')} • {tutorialStep + 1}/{TUTORIAL_STEPS.length}
-                        </span>
-                        <button onClick={closeTutorial} className="text-[11px] font-semibold text-slate-400 hover:text-white">
-                            {t('Skip')}
-                        </button>
-                    </div>
-                    <h4 className="text-sm font-bold text-white mb-1">{t(TUTORIAL_STEPS[tutorialStep].title)}</h4>
-                    <p className="text-xs text-slate-300 mb-3">{t(TUTORIAL_STEPS[tutorialStep].desc)}</p>
-                    <div className="flex items-center justify-between">
-                        <Link
-                            href={withBase(TUTORIAL_STEPS[tutorialStep].target)}
-                            onClick={() => advanceTutorial(tutorialStep + 1)}
-                            className="px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-bold hover:bg-emerald-400"
-                        >
-                            {t('Open & Next →')}
-                        </Link>
-                        <button
-                            onClick={() => advanceTutorial(tutorialStep + 1)}
-                            className="text-xs font-semibold text-slate-300 hover:text-white"
-                        >
-                            {tutorialStep < TUTORIAL_STEPS.length - 1 ? t('Next') : t('Done')}
-                        </button>
-                    </div>
-                </div>
-            )}
+            <SessionInactivityGuard />
+
+            <GuidedTour
+                steps={TUTORIAL_STEPS}
+                activeStep={tutorialStep}
+                onStepChange={handleStepChange}
+                onComplete={closeTutorial}
+                onPrepareStep={handlePrepareTourStep}
+            />
         </div>
     );
 }

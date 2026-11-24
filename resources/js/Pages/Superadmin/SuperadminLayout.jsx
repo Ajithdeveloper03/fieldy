@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { INDUSTRIES, getIndustryById } from '../../data/industriesConfig';
 import ThemeCustomizerPopover from '../../Components/ThemeCustomizerPopover';
+import SessionInactivityGuard from '../../Components/SessionInactivityGuard';
 import { attachLiquidPointerTracking } from '../../lib/dashboardTheme';
 
 export default function SuperadminLayout({ children, activeIndustry = null, onSelectIndustry = null }) {
@@ -279,6 +280,8 @@ export default function SuperadminLayout({ children, activeIndustry = null, onSe
                     </div>
                 </main>
             </div>
+
+            <SessionInactivityGuard />
         </div>
     );
 }

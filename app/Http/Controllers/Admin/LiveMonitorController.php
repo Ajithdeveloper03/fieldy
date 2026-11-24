@@ -116,8 +116,8 @@ class LiveMonitorController extends Controller
             ];
         });
 
-        // If no employees exist for this service vertical in DB, build curated live map positions
-        if ($employees->isEmpty()) {
+        // If no employees exist for this service vertical in DB (platform preview only), build curated live map positions
+        if ($employees->isEmpty() && ! $companyId) {
             $catalogStaff = IndustryCatalog::staff($industryKey);
             $catalogEntities = IndustryCatalog::entities($industryKey);
 

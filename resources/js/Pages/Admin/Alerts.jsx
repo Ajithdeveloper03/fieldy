@@ -5,6 +5,7 @@ import {
     AlertCircle, TriangleAlert, Info, Bell, CheckCircle, ShieldAlert,
     Search, CheckCircle2, Clock, ArrowRight, X, Sparkles
 } from 'lucide-react';
+import CardPhotoBackdrop from '../../Components/CardPhotoBackdrop';
 import useIndustry from '../../hooks/useIndustry';
 
 export default function Alerts({ alerts = [] }) {
@@ -62,8 +63,9 @@ export default function Alerts({ alerts = [] }) {
             <div className="space-y-6 pb-12 hp-animate-in">
 
                 {/* HERO CARD */}
-                <div className="hp-hero-card p-6 sm:p-8">
-                    <div className="max-w-3xl">
+                <div className="hp-hero-card relative overflow-hidden p-6 sm:p-8">
+                    <CardPhotoBackdrop photoKey="industrial" variant="right" opacity={0.26} />
+                    <div className="relative z-10 max-w-3xl">
                         <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <span className="hp-chip hp-chip-danger hp-chip-dot">
                                 {t('Live Telemetry Stream')}
@@ -125,8 +127,8 @@ export default function Alerts({ alerts = [] }) {
 
                     <div className="hp-metric-pill-card">
                         <span className="text-xs font-bold text-hp-muted uppercase tracking-wider mb-1 block">{t('Health')}</span>
-                        <div className="text-2xl font-bold text-hp-dark">{industry.complianceRate || '99%'}</div>
-                        <p className="text-xs text-hp-muted mt-0.5">{t('Overall compliance')}</p>
+                        <div className="text-2xl font-bold text-hp-dark">{alerts.length > 0 ? `${Math.round((resolvedCount / alerts.length) * 100)}%` : '—'}</div>
+                        <p className="text-xs text-hp-muted mt-0.5">{alerts.length > 0 ? t('Overall compliance') : t('No incidents logged')}</p>
                     </div>
                 </div>
 

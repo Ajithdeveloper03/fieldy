@@ -7,6 +7,7 @@ import {
     UserCheck, ShieldCheck, KeyRound, Copy, Check
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import CardPhotoBackdrop from '../../../Components/CardPhotoBackdrop';
 import useIndustry from '../../../hooks/useIndustry';
 
 function CopyButton({ value }) {
@@ -92,8 +93,9 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                 )}
 
                 {/* HERO CARD */}
-                <div className="hp-hero-card p-5 sm:p-7">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                <div className="hp-hero-card relative overflow-hidden p-5 sm:p-7">
+                    <CardPhotoBackdrop photoKey="team" variant="right" opacity={0.28} />
+                    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
                         <div className="max-w-xl">
                             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                                 <span className="hp-chip hp-chip-primary">
@@ -158,13 +160,16 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
 
                 {/* METRIC CARDS */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-                    <div className="hp-metric-pill-card">
-                        <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total {{staffPlural}}', { staffPlural: vocab.staff.plural })}</span>
-                            <Briefcase className="w-3.5 h-3.5 text-hp-primary" />
+                    <div className="hp-metric-pill-card relative overflow-hidden">
+                        <CardPhotoBackdrop photoKey="workplace" variant="corner" opacity={0.22} />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Total {{staffPlural}}', { staffPlural: vocab.staff.plural })}</span>
+                                <Briefcase className="w-3.5 h-3.5 text-hp-primary" />
+                            </div>
+                            <div className="text-2xl font-bold text-hp-dark">{totalStaff}</div>
+                            <p className="text-xs text-hp-muted mt-0.5">{t('In your organization')}</p>
                         </div>
-                        <div className="text-2xl font-bold text-hp-dark">{totalStaff}</div>
-                        <p className="text-xs text-hp-muted mt-0.5">{t('In your organization')}</p>
                     </div>
 
                     <div className="hp-metric-pill-card">
@@ -181,7 +186,7 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                             <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Attendance Rate')}</span>
                             <ShieldCheck className="w-3.5 h-3.5 text-hp-primary" />
                         </div>
-                        <div className="text-2xl font-bold text-hp-dark">98.5%</div>
+                        <div className="text-2xl font-bold text-hp-dark">{totalStaff > 0 ? `${Math.round((activeCount / totalStaff) * 100)}%` : '0%'}</div>
                         <p className="text-xs text-hp-success font-medium mt-0.5">{t('Clocked in on beat')}</p>
                     </div>
 
@@ -190,7 +195,7 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                             <span className="text-xs font-bold text-hp-muted uppercase tracking-wider">{t('Zones')}</span>
                             <MapPin className="w-3.5 h-3.5 text-hp-info" />
                         </div>
-                        <div className="text-2xl font-bold text-hp-dark">{regions.length || 4}</div>
+                        <div className="text-2xl font-bold text-hp-dark">{regions.length}</div>
                         <p className="text-xs text-hp-muted mt-0.5">{t('Active sectors')}</p>
                     </div>
                 </div>

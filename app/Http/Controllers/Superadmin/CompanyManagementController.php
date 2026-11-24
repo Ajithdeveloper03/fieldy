@@ -152,6 +152,7 @@ class CompanyManagementController extends Controller
                     'estimated_sites' => (int) ($validated['estimated_sites'] ?? 5),
                     'billing_cycle' => $validated['billing_cycle'] ?? 'annual',
                     'admin_designation' => $validated['admin_designation'] ?? 'Operations Director',
+                    'onboarding_tour_completed' => false,
                     'security' => [
                         'force_password_reset' => (bool) ($validated['force_password_reset'] ?? true),
                         'require_gps_geofence' => (bool) ($validated['require_gps_geofence'] ?? true),
@@ -376,7 +377,7 @@ class CompanyManagementController extends Controller
         ]);
     }
 
-    public function impersonate($id)
+    public function impersonate(Request $request, $id)
     {
         $company = Company::with('admins')->findOrFail($id);
         $admin = $company->admins->first();
@@ -385,9 +386,34 @@ class CompanyManagementController extends Controller
             return back()->with('error', 'This company has no active Client Admin account to impersonate.');
         }
 
+        // Clear any previous Superadmin vertical selection so the launched dashboard
+        // strictly opens in this company's configured industry with fresh tenant data.
+        $request->session()->forget(IndustryContext::SESSION_KEY);
+
         // Log in as client admin
         \Illuminate\Support\Facades\Auth::login($admin);
+        $request->session()->regenerate();
+        $request->session()->put('security.login_at', now()->toIso8601String());
+        $request->session()->put('security.last_activity_at', time());
+        $request->session()->put('security.last_ip', $request->ip());
+        $request->session()->put('security.actions_count', 1);
 
-        return redirect('/admin/dashboard')->with('success', "Switched into {$company->name} Client Admin Portal.");
+        \App\Models\SessionActivity::record(
+            'impersonate',
+            "Superadmin launched {$company->name} Admin Portal",
+            $request,
+            $admin,
+            'active',
+            0,
+            ['company_id' => $company->id]
+        );
+
+        $dashboardUrl = ($request->is('fieldy/*') && ! str_ends_with(rtrim(url('/'), '/'), '/fieldy'))
+            ? '/fieldy/admin/dashboard'
+            : '/admin/dashboard';
+
+        return redirect($dashboardUrl)
+            ->with('success', "Switched into {$company->name} Client Admin Portal.")
+            ->with('launched_company_id', $company->id);
     }
 }

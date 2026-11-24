@@ -59,8 +59,8 @@ class TasksController extends Controller
                 'overdue' => $t->due_date && $t->due_date->isPast() && $t->status !== 'done',
             ]);
 
-        // If no tasks exist for this vertical in DB, load curated catalog work orders
-        if ($tasks->isEmpty()) {
+        // If no tasks exist for this vertical in DB (platform preview only), load curated catalog work orders
+        if ($tasks->isEmpty() && ! $companyId) {
             $catalogTasks = collect(\App\Services\Industry\IndustryCatalog::tasks($industryKey))->map(fn ($t) => array_merge($t, [
                 'checklist' => self::getDefaultChecklist($industryKey),
                 'safety_requirements' => self::getDefaultSafety($industryKey),

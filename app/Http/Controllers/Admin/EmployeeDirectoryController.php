@@ -39,15 +39,21 @@ class EmployeeDirectoryController extends Controller
         }
 
         if ($search) {
-            $query->where(function ($sub) use ($search) {
-                $sub->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhereHas('employeeDetail', fn ($ed) => $ed->where('employee_code', 'like', "%{$search}%"));
-            });
+            $likeSearch = \App\Support\SqlSafe::likeTerm($search);
+            if ($likeSearch !== '') {
+                $query->where(function ($sub) use ($likeSearch) {
+                    $sub->where('name', 'like', $likeSearch)
+                        ->orWhere('phone', 'like', $likeSearch)
+                        ->orWhereHas('employeeDetail', fn ($ed) => $ed->where('employee_code', 'like', $likeSearch));
+                });
+            }
         }
 
         if ($region) {
-            $query->whereHas('employeeDetail', fn ($ed) => $ed->where('assigned_region', 'like', "%{$region}%"));
+            $likeRegion = \App\Support\SqlSafe::likeTerm($region);
+            if ($likeRegion !== '') {
+                $query->whereHas('employeeDetail', fn ($ed) => $ed->where('assigned_region', 'like', $likeRegion));
+            }
         }
 
         $employees = $query->orderBy('id')->get()->map(fn ($user) => [
@@ -104,8 +110,9 @@ class EmployeeDirectoryController extends Controller
     public function show($id, EmployeePerformanceService $performance)
     {
         $industryKey = IndustryContext::current();
+        $companyId = auth()->user()?->company_id;
 
-        $catalogMember = IndustryCatalog::staffMember($industryKey, $id);
+        $catalogMember = ! $companyId ? IndustryCatalog::staffMember($industryKey, $id) : null;
         if ($catalogMember) {
             $sampleVisits = collect(IndustryCatalog::visits($industryKey))
                 ->where('staff_id', $catalogMember['id'])
@@ -342,7 +349,8 @@ class EmployeeDirectoryController extends Controller
     public function edit($id)
     {
         $industryKey = IndustryContext::current();
-        $catalogMember = IndustryCatalog::staffMember($industryKey, $id);
+        $companyId = auth()->user()?->company_id;
+        $catalogMember = ! $companyId ? IndustryCatalog::staffMember($industryKey, $id) : null;
         if ($catalogMember) {
             return Inertia::render('Admin/Profiles/EmployeeDetail', [
                 'employee' => [
@@ -379,11 +387,15 @@ class EmployeeDirectoryController extends Controller
     public function update(Request $request, $id)
     {
         $industryKey = IndustryContext::current();
-        if (IndustryCatalog::staffMember($industryKey, $id)) {
+        $companyId = auth()->user()?->company_id;
+        if (! $companyId && IndustryCatalog::staffMember($industryKey, $id)) {
             return redirect()->back()->with('success', 'Staff member updated.');
         }
 
-        $user = User::where('id', $id)->where('role', 'employee')->firstOrFail();
+        $user = User::where('id', $id)
+            ->where('role', 'employee')
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+            ->firstOrFail();
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',

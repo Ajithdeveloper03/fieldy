@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import SuperadminLayout from './SuperadminLayout';
+import CardPhotoBackdrop from '../../Components/CardPhotoBackdrop';
 import { INDUSTRIES, getIndustryById } from '../../data/industriesConfig';
 import {
     Building2, Plus, Shield, ShieldCheck, KeyRound, Eye, EyeOff, Globe,
@@ -147,9 +148,10 @@ export default function Companies({ companies = [] }) {
                     {filteredCompanies.map((company) => (
                         <div
                             key={company.id}
-                            className="hp-card p-5 flex flex-col justify-between"
+                            className="hp-card relative overflow-hidden p-5 flex flex-col justify-between"
                         >
-                            <div>
+                            <CardPhotoBackdrop photoKey={company.industry} variant="corner" opacity={0.2} />
+                            <div className="relative z-10">
                                 {/* Card Header */}
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="flex items-center gap-3">
@@ -230,7 +232,7 @@ export default function Companies({ companies = [] }) {
                             </div>
 
                             {/* Actions */}
-                            <div className="mt-4 pt-3 border-t border-[var(--color-hp-border)] flex items-center justify-between gap-2">
+                            <div className="relative z-10 mt-4 pt-3 border-t border-[var(--color-hp-border)] flex items-center justify-between gap-2">
                                 <Link
                                     href={`/superadmin/companies/${company.id}`}
                                     className="flex-1 hp-btn hp-btn-secondary hp-btn-sm inline-flex items-center justify-center gap-1.5"

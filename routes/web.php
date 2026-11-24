@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\TasksController;
 use App\Http\Controllers\Admin\VisitController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\PortalSessionController;
 use Illuminate\Support\Facades\Route;
 
 // Public Landing Page
@@ -45,6 +46,16 @@ Route::get('/fieldy/images/{path}', function (string $path) {
 
     return response()->file($imagePath);
 })->where('path', '.*');
+
+// ── Authenticated Portal Session Activity, Inactivity & Security Audit Routes ──────
+foreach (['portal/session', 'fieldy/portal/session'] as $sessionPrefix) {
+    Route::prefix($sessionPrefix)->middleware(['auth'])->group(function () {
+        Route::post('/heartbeat', [PortalSessionController::class, 'heartbeat']);
+        Route::post('/idle-event', [PortalSessionController::class, 'idleEvent']);
+        Route::post('/timeout-logout', [PortalSessionController::class, 'timeoutLogout']);
+        Route::get('/feed', [PortalSessionController::class, 'feed']);
+    });
+}
 
 // ── Superadmin Portal (Platform Owner) ──────────────────────────────────────────
 Route::prefix('superadmin')->middleware(['auth', 'superadmin'])->group(function () {
@@ -93,6 +104,7 @@ foreach (['admin', 'fieldy/admin'] as $adminPrefix) {
 
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+        Route::post('/onboarding-tour/complete', [DashboardController::class, 'completeOnboardingTour'])->name('admin.onboarding-tour.complete');
         Route::get('/', fn () => redirect('/admin/dashboard'));
 
         // Alerts

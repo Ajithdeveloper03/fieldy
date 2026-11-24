@@ -36,10 +36,13 @@ class VisitController extends Controller
         }
 
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('farmer', fn ($sub) => $sub->where('name', 'like', "%{$search}%"))
-                  ->orWhereHas('employee', fn ($sub) => $sub->where('name', 'like', "%{$search}%"));
-            });
+            $likeSearch = \App\Support\SqlSafe::likeTerm($search);
+            if ($likeSearch !== '') {
+                $query->where(function ($q) use ($likeSearch) {
+                    $q->whereHas('farmer', fn ($sub) => $sub->where('name', 'like', $likeSearch))
+                      ->orWhereHas('employee', fn ($sub) => $sub->where('name', 'like', $likeSearch));
+                });
+            }
         }
 
         $visits = $query->paginate(20)->through(fn ($v) => [
@@ -55,8 +58,8 @@ class VisitController extends Controller
             'media' => [],
         ]);
 
-        // If no visits recorded in DB for this service vertical, supply curated catalog visits
-        if ($visits->isEmpty()) {
+        // If no visits recorded in DB for this service vertical (platform preview only), supply curated catalog visits
+        if ($visits->isEmpty() && ! $companyId) {
             $catalogVisits = collect(IndustryCatalog::visits($industryKey));
             if ($employeeId) {
                 $catalogVisits = $catalogVisits->filter(fn ($v) => (string) $v['staff_id'] === (string) $employeeId)->values();
@@ -98,7 +101,11 @@ class VisitController extends Controller
                 ->map(fn ($s) => ['id' => $s['id'], 'name' => $s['name']])
                 ->values();
         } else {
-            $employees = User::where('role', 'employee')->select('id', 'name')->orderBy('name')->get();
+            $employees = User::where('role', 'employee')
+                ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+                ->select('id', 'name')
+                ->orderBy('name')
+                ->get();
         }
 
         return Inertia::render('Admin/Visits', [
@@ -112,8 +119,9 @@ class VisitController extends Controller
     public function show(Request $request, $id)
     {
         $industryKey = IndustryContext::current();
+        $companyId = auth()->user()?->company_id;
 
-        $catalogVisit = IndustryCatalog::visit($industryKey, $id);
+        $catalogVisit = ! $companyId ? IndustryCatalog::visit($industryKey, $id) : null;
         if ($catalogVisit) {
             return Inertia::render('Admin/VisitDetail', [
                 'currentIndustry' => $industryKey,

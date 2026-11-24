@@ -8,7 +8,7 @@ import {
     applyDashboardTheme,
 } from '../lib/dashboardTheme';
 
-export default function ThemeCustomizerPopover({ darkTrigger = false }) {
+export default function ThemeCustomizerPopover({ darkTrigger = false, tourId = null }) {
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [prefs, setPrefs] = useState(() => loadThemePrefs());
@@ -39,6 +39,7 @@ export default function ThemeCustomizerPopover({ darkTrigger = false }) {
         <div className="relative" ref={wrapRef}>
             <button
                 type="button"
+                data-tour={tourId || undefined}
                 onClick={() => setOpen((o) => !o)}
                 className={
                     darkTrigger

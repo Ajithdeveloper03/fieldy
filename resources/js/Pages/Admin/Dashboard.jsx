@@ -11,6 +11,11 @@ import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useTranslation } from 'react-i18next';
+import { useAlert } from '../../Components/AlertSystem';
+import AdminSessionBar from '../../Components/Dashboard/AdminSessionBar';
+import InteractiveOpsLab from '../../Components/Dashboard/InteractiveOpsLab';
+import VisualCommandDeck from '../../Components/Dashboard/VisualCommandDeck';
+import ConfettiBurst from '../../Components/Dashboard/ConfettiBurst';
 import { getIndustryById } from '../../data/industriesConfig';
 import { createFieldEmployeeIcon } from '../../lib/mapIcons';
 
@@ -36,14 +41,82 @@ const GROWTH = [
 
 const greetingFor = (h) => (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening');
 
-export default function Dashboard({ currentIndustry: initialIndustry, locationLogs = [], stats = {}, recentVisits = [], recentFarmers = [], pendingApprovals = [], agriStats = {}, growthData = [], telemetry = [] }) {
+export default function Dashboard({ currentIndustry: initialIndustry, isTenant = false, isFreshCompany = false, locationLogs = [], stats = {}, recentVisits = [], recentFarmers = [], pendingApprovals = [], agriStats = {}, growthData = [], telemetry = [] }) {
     const [prompt, setPrompt] = useState('');
     const [showTip, setShowTip] = useState(true);
     const [isFullScreenMap, setIsFullScreenMap] = useState(false);
     const [activeAiTab, setActiveAiTab] = useState('dispatch');
     const { t } = useTranslation();
+    const { triggerSuccess } = useAlert();
     const { props, url } = usePage();
     const firstName = (props.auth?.user?.name || 'Admin').split(' ')[0];
+    const companyId = props.auth?.user?.company?.id || props.auth?.user?.company_id || null;
+    const storagePrefix = companyId ? `fieldy_dash_c${companyId}` : 'fieldy_dash_platform';
+
+    // Interactive session XP, sprints & confetti celebration state (isolated per company)
+    const [sessionXp, setSessionXp] = useState(() => {
+        try {
+            return parseInt(localStorage.getItem(`${storagePrefix}_xp`) || '0', 10) || 0;
+        } catch {
+            return 0;
+        }
+    });
+    const [sprintsDone, setSprintsDone] = useState(() => {
+        try {
+            return parseInt(localStorage.getItem(`${storagePrefix}_sprints`) || '0', 10) || 0;
+        } catch {
+            return 0;
+        }
+    });
+    const [confettiTick, setConfettiTick] = useState(0);
+
+    useEffect(() => {
+        try {
+            setSessionXp(parseInt(localStorage.getItem(`${storagePrefix}_xp`) || '0', 10) || 0);
+            setSprintsDone(parseInt(localStorage.getItem(`${storagePrefix}_sprints`) || '0', 10) || 0);
+        } catch {
+            setSessionXp(0);
+            setSprintsDone(0);
+        }
+    }, [storagePrefix]);
+
+    const realMilestoneXp = ((stats?.totalEmployees ?? 0) > 0 ? 50 : 0)
+        + ((stats?.totalFarmers ?? 0) > 0 ? 50 : 0)
+        + (((stats?.activeWorkOrders ?? 0) + (stats?.completedWorkOrders ?? 0)) > 0 ? 50 : 0)
+        + ((stats?.totalVisits ?? 0) > 0 ? 100 : 0);
+
+    const totalXp = sessionXp + realMilestoneXp;
+
+    const handleEarnXp = (points, message, celebrate = false) => {
+        setSessionXp((prev) => {
+            const next = prev + points;
+            try {
+                localStorage.setItem(`${storagePrefix}_xp`, String(next));
+            } catch {
+                // ignore
+            }
+            return next;
+        });
+        if (celebrate) {
+            setConfettiTick((c) => c + 1);
+        }
+        if (message && triggerSuccess) {
+            triggerSuccess(message);
+        }
+    };
+
+    const handleSprintComplete = () => {
+        setSprintsDone((prev) => {
+            const next = prev + 1;
+            try {
+                localStorage.setItem(`${storagePrefix}_sprints`, String(next));
+            } catch {
+                // ignore
+            }
+            return next;
+        });
+        handleEarnXp(40, t('Focus sprint completed! +40 XP'), true);
+    };
 
     // Determine current industry from prop, query parameter or page props
     const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
@@ -106,6 +179,40 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
         { label: t('Open Map'), icon: MapPin, color: '#2563EB', onClick: () => setIsFullScreenMap(true) },
     ];
 
+    const effectiveIsTenant = isTenant || Boolean(props.auth?.user?.company_id);
+
+    const resolvedKpis = currentIndustry.kpis.map((kpi, idx) => {
+        if (!effectiveIsTenant) return kpi;
+        if (idx === 0) {
+            return {
+                ...kpi,
+                value: `${stats?.activeWorkOrders ?? 0} ${t('Tasks')}`,
+                trend: (stats?.completedWorkOrders ?? 0) > 0 ? `${stats.completedWorkOrders} ${t('Done')}` : t('Today'),
+            };
+        }
+        if (idx === 1) {
+            return {
+                ...kpi,
+                value: `${stats?.todayAttendance ?? 0} ${t('Present')}`,
+                trend: (stats?.totalEmployees ?? 0) > 0
+                    ? `${stats?.activeEmployees ?? 0}/${stats.totalEmployees} ${t('Online')}`
+                    : `0 ${t('Staff')}`,
+            };
+        }
+        if (idx === 2) {
+            return {
+                ...kpi,
+                value: `${stats?.totalVisits ?? 0} ${t('Visits')}`,
+                trend: (stats?.weeklyVisits ?? 0) > 0 ? `+${stats.weeklyVisits} ${t('this week')}` : t('0 this week'),
+            };
+        }
+        return {
+            ...kpi,
+            value: `${stats?.totalVisits ?? 0} ${t('Reports')}`,
+            trend: (stats?.totalVisits ?? 0) > 0 ? t('Verified') : t('No reports yet'),
+        };
+    });
+
     const services = [
         {
             title: t(labels.entityTitle),
@@ -122,16 +229,16 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
             value: stats?.activeEmployees ?? 0,
             icon: Briefcase,
             color: '#0D9488',
-            chip: { cls: 'hp-chip-success hp-chip-dot', label: t('Online') },
+            chip: { cls: 'hp-chip-success hp-chip-dot', label: (stats?.activeEmployees ?? 0) > 0 ? t('Online') : t('Ready') },
             href: '/admin/monitor',
         },
         {
             title: t(labels.todayTasksTitle),
             sub: t(labels.todayTasksSub),
-            value: stats?.activeWorkOrders ?? 8,
+            value: stats?.activeWorkOrders ?? 0,
             icon: FileText,
             color: '#7C3AED',
-            chip: { cls: 'hp-chip-primary', label: `${stats?.slaCompliance || '96.4%'}` },
+            chip: { cls: 'hp-chip-primary', label: `${stats?.slaCompliance ?? '0%'}` },
             href: '/admin/tasks',
         },
         {
@@ -206,8 +313,11 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
             {/* ══════════ HOME HERO — AI-first, hPanel style ══════════ */}
             <section className="hp-animate-in pt-2 lg:pt-6 pb-8">
                 <div className="max-w-[780px] mx-auto text-center">
-                    <p className="text-base sm:text-lg font-semibold text-hp-muted mb-2">{t(greetingFor(new Date().getHours()))}, {firstName} 👋</p>
-                    <h1 className="text-[32px] sm:text-[42px] leading-tight font-extrabold tracking-tight text-hp-dark">
+                    <p className="text-sm sm:text-base font-semibold text-hp-muted mb-1.5 inline-flex items-center justify-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-hp-primary" />
+                        <span>{t(greetingFor(new Date().getHours()))}, {firstName}</span>
+                    </p>
+                    <h1 className="text-[24px] sm:text-[32px] leading-tight font-extrabold tracking-tight text-hp-dark">
                         {t('What would you like to')} <span className="hp-gradient-text">{t('do today?')}</span>
                     </h1>
 
@@ -250,34 +360,33 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                 </div>
             </section>
 
-            {/* ══════════ INDUSTRY-SPECIFIC OPERATIONS SNAPSHOT ══════════ */}
-            <section className="hp-animate-in mb-8">
-                <div className="mb-4">
-                    <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-hp-primary">{currentIndustry.badge}</p>
-                    <h2 className="hp-section-title mt-1">{currentIndustry.shortName} Operations</h2>
-                    <p className="text-sm sm:text-base text-hp-muted mt-1">{currentIndustry.tagline}</p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                    {currentIndustry.kpis.map((kpi, idx) => {
-                        const tint = KPI_TINTS[idx % KPI_TINTS.length];
-                        return (
-                            <article
-                                key={kpi.label}
-                                onClick={() => kpi.href && router.visit(kpi.href)}
-                                className={`hp-card p-5 ${kpi.href ? 'cursor-pointer hover:border-hp-primary transition-colors' : ''}`}
-                            >
-                                <div className="flex items-start justify-between gap-3">
-                                    <span className="hp-icon-tile" style={{ '--glass-tint': tint, color: tint }}><kpi.icon className="w-5 h-5" /></span>
-                                    <span className="hp-chip hp-chip-success">{kpi.trend}</span>
-                                </div>
-                                <p className="text-sm sm:text-[15px] font-bold text-hp-muted mt-4">{t(kpi.label)}</p>
-                                <p className="text-2xl sm:text-3xl font-extrabold text-hp-dark mt-1">{t(kpi.value)}</p>
-                                <p className="text-sm text-hp-muted mt-1.5 leading-snug">{t(kpi.desc)}</p>
-                            </article>
-                        );
-                    })}
-                </div>
-            </section>
+            {/* ══════════ LIVE ADMIN SESSION & FOCUS SPRINT BAR ══════════ */}
+            <ConfettiBurst trigger={confettiTick} />
+            <AdminSessionBar
+                storagePrefix={storagePrefix}
+                xp={totalXp}
+                sprintsDone={sprintsDone}
+                onSprintComplete={handleSprintComplete}
+            />
+
+            {/* ══════════ 4 VISUAL KPI BENTO CARDS ══════════ */}
+            <VisualCommandDeck
+                currentIndustry={currentIndustry}
+                stats={stats}
+                resolvedKpis={resolvedKpis}
+                effectiveIsTenant={effectiveIsTenant}
+                growthData={growthData}
+            />
+
+            {/* ══════════ INTERACTIVE MISSIONS, 7-DAY PULSE & TEAM FUN HUB ══════════ */}
+            <InteractiveOpsLab
+                storagePrefix={storagePrefix}
+                stats={stats}
+                growthData={growthData}
+                labels={labels}
+                currentIndustry={currentIndustry}
+                onEarnXp={handleEarnXp}
+            />
 
             {/* ══════════ PROMO / TIP BANNER ══════════ */}
             {showTip && (
@@ -316,13 +425,13 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                             <div key={idx} className="hp-row cursor-pointer group" onClick={() => router.visit(s.href)}>
                                 <span className="hp-icon-tile" style={{ '--glass-tint': s.color, color: s.color }}><s.icon className="w-5 h-5" /></span>
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2.5 flex-wrap">
-                                        <p className="text-base sm:text-[17px] font-bold text-hp-dark">{s.title}</p>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <p className="text-sm sm:text-[15px] font-bold text-hp-dark">{s.title}</p>
                                         <span className={`hp-chip ${s.chip.cls}`}>{s.chip.label}</span>
                                     </div>
-                                    <p className="text-[15px] text-hp-muted mt-0.5 truncate">{s.sub}</p>
+                                    <p className="text-xs sm:text-sm text-hp-muted mt-0.5 truncate">{s.sub}</p>
                                 </div>
-                                <p className="text-3xl font-extrabold text-hp-dark tabular-nums mr-2 hidden sm:block">{s.value}</p>
+                                <p className="text-2xl font-extrabold text-hp-dark tabular-nums mr-2 hidden sm:block">{s.value}</p>
                                 <button type="button" onClick={(e) => { e.stopPropagation(); router.visit(s.href); }} className="hp-btn hp-btn-sm hp-btn-outline">
                                     {t('Open')}
                                 </button>
@@ -344,8 +453,8 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                                     <todo.icon className="w-5 h-5" />
                                 </span>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-[15px] sm:text-base font-bold text-hp-dark">{todo.title}</p>
-                                    <p className="text-sm text-hp-muted mt-0.5">{todo.sub}</p>
+                                    <p className="text-sm font-bold text-hp-dark">{todo.title}</p>
+                                    <p className="text-xs sm:text-sm text-hp-muted mt-0.5">{todo.sub}</p>
                                 </div>
                                 <button type="button" onClick={() => router.visit(todo.href)} className="hp-btn hp-btn-sm hp-btn-secondary">{todo.cta}</button>
                             </div>
@@ -394,8 +503,8 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                                 </span>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-center gap-2">
-                                        <p className="text-[15px] font-bold text-hp-dark truncate">{log.user}</p>
-                                        <span className="text-xs sm:text-sm text-hp-muted flex-shrink-0">{log.time}</span>
+                                        <p className="text-sm font-bold text-hp-dark truncate">{log.user}</p>
+                                        <span className="text-xs text-hp-muted flex-shrink-0">{log.time}</span>
                                     </div>
                                     <p className="text-sm text-hp-muted mt-0.5 truncate">{log.event}</p>
                                 </div>
@@ -431,8 +540,8 @@ export default function Dashboard({ currentIndustry: initialIndustry, locationLo
                                         <div className="flex items-center gap-3">
                                             <span className="hp-icon-tile !w-10 !h-10"><FileText className="w-4 h-4" /></span>
                                             <div>
-                                                <span className="font-bold block text-[15px] sm:text-base">{visit.farmer}</span>
-                                                <span className="text-sm text-hp-muted">Assignee: {visit.employee}</span>
+                                                <span className="font-bold block text-sm">{visit.farmer}</span>
+                                                <span className="text-xs text-hp-muted">Assignee: {visit.employee}</span>
                                             </div>
                                         </div>
                                     </td>

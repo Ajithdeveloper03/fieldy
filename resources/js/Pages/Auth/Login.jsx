@@ -1,9 +1,11 @@
 import { asset, withBase } from '../../basePath';
 import React from 'react';
-import { Head, useForm } from '@inertiajs/react';
-import { ShieldCheck, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { ShieldCheck, Mail, Lock, ArrowRight, AlertCircle, Clock } from 'lucide-react';
 
-export default function Login() {
+export default function Login({ sessionNotice = null }) {
+    const { props } = usePage();
+    const inactivityNotice = sessionNotice || props.flash?.session_notice || null;
     const { data, setData, post, processing, errors } = useForm({
         email: '',
         password: '',
@@ -44,6 +46,14 @@ export default function Login() {
                             Enter your credentials to access your organization dashboard.
                         </p>
                     </div>
+
+                    {/* Session Inactivity Auto-Logout Notice */}
+                    {inactivityNotice && (
+                        <div className="mb-4 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3.5 py-2.5">
+                            <Clock className="h-4 w-4 text-amber-600 shrink-0" />
+                            <span className="text-amber-800 text-xs font-semibold">{inactivityNotice}</span>
+                        </div>
+                    )}
 
                     {/* Global error banner */}
                     {errors.email && (
@@ -136,9 +146,15 @@ export default function Login() {
                     </div>
                 </div>
 
-                {/* Footer */}
-                <div className="mt-6 text-center text-xs text-[var(--color-hp-gray-500)]">
-                    &copy; 2026 Fieldy Operations Platform. All rights reserved.
+                {/* Security Protection Badge + Footer */}
+                <div className="mt-5 flex flex-col items-center gap-2 text-center">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        SQL Injection Shield • Brute-Force Lock • Auto-Idle Timeout
+                    </span>
+                    <div className="text-xs text-[var(--color-hp-gray-500)]">
+                        &copy; 2026 Fieldy Operations Platform. All rights reserved.
+                    </div>
                 </div>
             </div>
         </div>

@@ -74,27 +74,31 @@ class IndustryService
     }
 
     /**
-     * Build service-specific payload with backend database queries and industry metadata
+     * Build service-specific payload with backend database queries and industry metadata.
+     * Tenant companies ($companyId !== null) ALWAYS receive strictly scoped real DB data
+     * (never demo/catalog fallback numbers), so newly created companies launch 100% fresh.
      */
     public static function getDashboardData(string $industryKey, $companyId = null): array
     {
         $today = Carbon::today();
         $weekStart = Carbon::now()->startOfWeek();
+        $isTenant = ! empty($companyId);
 
         // Query workforce scoped to company & active industry vertical
         $empQuery = User::where('role', 'employee')
-            ->when($companyId, fn($q) => $q->where('company_id', $companyId));
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId));
         $empQuery = IndustryContext::scope($empQuery, $industryKey);
         $empIds = $empQuery->pluck('id');
-        $totalEmployees = (clone $empQuery)->where('status', 'active')->count() ?: count(IndustryCatalog::staff($industryKey));
 
-        $activeEmployees = User::whereIn('id', $empIds)
-            ->whereHas('locationPoints', fn($q) => $q->whereDate('created_at', $today))
-            ->count() ?: count(IndustryCatalog::staff($industryKey));
+        $realTotalEmployees = (clone $empQuery)->where('status', 'active')->count();
+        $realActiveEmployees = User::whereIn('id', $empIds)
+            ->whereHas('locationPoints', fn ($q) => $q->whereDate('created_at', $today))
+            ->count();
+        $realTodayAttendance = AttendanceLog::whereIn('employee_id', $empIds)
+            ->whereDate('date', $today)
+            ->count();
 
-        $todayAttendance = AttendanceLog::whereIn('employee_id', $empIds)->whereDate('date', $today)->count() ?: count(IndustryCatalog::staff($industryKey));
-
-        // Location logs for map scoped strictly to this service's employees
+        // Location logs for map scoped strictly to this tenant/service's employees
         $locationLogs = LocationPoint::whereIn('employee_id', $empIds)
             ->with('employee:id,name')
             ->whereDate('created_at', $today)
@@ -104,7 +108,149 @@ class IndustryService
             ->take(20)
             ->values();
 
-        // If no active GPS points today for this vertical, supply service-specific catalog positions
+        $companyUserIds = $isTenant
+            ? User::where('company_id', $companyId)->pluck('id')
+            : collect();
+
+        // Keep dashboard work-order counts inside both the active vertical and tenant.
+        $tasksQuery = fn () => IndustryContext::scope(Task::query(), $industryKey)
+            ->when($companyId, fn ($query) => $query->where(function ($tenantQuery) use ($companyUserIds) {
+                $tenantQuery->whereIn('assigned_to', $companyUserIds)
+                    ->orWhereIn('created_by', $companyUserIds)
+                    ->orWhereIn('customer_id', $companyUserIds);
+            }));
+
+        $tasksCount = $tasksQuery()->whereIn('status', ['pending', 'in_progress'])->count();
+        $completedTasks = $tasksQuery()->where('status', 'done')->count();
+        $overdueTasks = $tasksQuery()
+            ->whereNotIn('status', ['done', 'cancelled'])
+            ->whereNotNull('due_date')
+            ->whereDate('due_date', '<', $today)
+            ->count();
+
+        if ($isTenant) {
+            // 100% real database queries scoped strictly to this tenant company
+            $visitBase = FarmerVisit::whereIn('employee_id', $empIds);
+            $visitBase = IndustryContext::scope($visitBase, $industryKey);
+
+            $totalVisits = (clone $visitBase)->count();
+            $weeklyVisits = (clone $visitBase)->where('created_at', '>=', $weekStart)->count();
+
+            $recentVisits = (clone $visitBase)
+                ->with(['farmer:id,name', 'employee:id,name'])
+                ->orderBy('created_at', 'desc')
+                ->take(6)
+                ->get()
+                ->map(fn ($v) => [
+                    'id' => $v->id,
+                    'farmer' => $v->farmer?->name ?? 'Site Visit',
+                    'employee' => $v->employee?->name ?? 'Field Staff',
+                    'time' => $v->created_at ? $v->created_at->diffForHumans() : 'Recently',
+                    'date' => $v->created_at ? $v->created_at->format('M d, Y') : now()->format('M d, Y'),
+                ])
+                ->values()
+                ->all();
+
+            $farmerBase = FarmerProfile::whereHas('user', fn ($u) => $u->where('company_id', $companyId));
+            $farmerBase = IndustryContext::scope($farmerBase, $industryKey);
+
+            $totalFarmers = (clone $farmerBase)->count();
+
+            $recentFarmers = (clone $farmerBase)
+                ->with('user:id,name')
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get()
+                ->map(fn ($fp) => [
+                    'id' => $fp->user?->id ?? $fp->id,
+                    'name' => $fp->user?->name ?? 'Unnamed Site',
+                    'farmer_code' => $fp->farmer_code ?? ('SITE-' . str_pad((string) $fp->id, 4, '0', STR_PAD_LEFT)),
+                    'crop' => $fp->soil_type ?: ($fp->customer_category ?: null),
+                    'acres' => $fp->land_size_acres ?? 0,
+                    'photo' => $fp->farmer_photo_path ? Storage::url($fp->farmer_photo_path) : null,
+                    'status' => $fp->approval_status ?? 'approved',
+                    'date' => $fp->created_at ? $fp->created_at->diffForHumans() : 'Recently',
+                ])
+                ->values()
+                ->all();
+
+            $pendingQuery = (clone $farmerBase)->where(function ($q) {
+                $q->where('approval_status', 'pending')
+                    ->orWhere('kyc_status', 'pending');
+            });
+            $pendingFarmersCount = (clone $pendingQuery)->count();
+            $pendingApprovals = $pendingQuery
+                ->with('user:id,name')
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get()
+                ->map(fn ($fp) => [
+                    'id' => $fp->user?->id ?? $fp->id,
+                    'name' => $fp->user?->name ?? 'Pending Record',
+                    'farmer_code' => $fp->farmer_code ?? ('ID-' . $fp->id),
+                    'district' => $fp->district ?: ($fp->village ?: 'Unassigned'),
+                    'date' => $fp->created_at ? $fp->created_at->diffForHumans() : 'Recently',
+                ])
+                ->values()
+                ->all();
+
+            // Real 7-day visit activity (all zeros for a brand-new company)
+            $growthData = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $d = Carbon::today()->subDays($i);
+                $dayVisits = (clone $visitBase)->whereDate('created_at', $d)->count();
+                $dayDoneTasks = $tasksQuery()->where('status', 'done')->whereDate('updated_at', $d)->count();
+                $growthData[] = [
+                    'day' => $d->format('D'),
+                    'val' => $dayVisits,
+                    'rev' => $dayDoneTasks,
+                ];
+            }
+
+            $totalTasksAll = $tasksCount + $completedTasks;
+            $slaCompliance = $totalTasksAll > 0
+                ? round(($completedTasks / $totalTasksAll) * 100, 1) . '%'
+                : '0%';
+
+            $stats = [
+                'totalVisits' => $totalVisits,
+                'weeklyVisits' => $weeklyVisits,
+                'activeEmployees' => $realActiveEmployees,
+                'totalEmployees' => $realTotalEmployees,
+                'totalFarmers' => $totalFarmers,
+                'pendingFarmers' => $pendingFarmersCount,
+                'todayAttendance' => $realTodayAttendance,
+                'activeWorkOrders' => $tasksCount,
+                'completedWorkOrders' => $completedTasks,
+                'overdueWorkOrders' => $overdueTasks,
+                'slaCompliance' => $slaCompliance,
+            ];
+
+            $isFreshCompany = $realTotalEmployees === 0
+                && $totalFarmers === 0
+                && $totalVisits === 0
+                && $tasksCount === 0
+                && $completedTasks === 0;
+
+            return [
+                'currentIndustry' => $industryKey,
+                'isTenant' => true,
+                'isFreshCompany' => $isFreshCompany,
+                'locationLogs' => $locationLogs,
+                'stats' => $stats,
+                'recentVisits' => $recentVisits,
+                'recentFarmers' => $recentFarmers,
+                'pendingApprovals' => $pendingApprovals,
+                'growthData' => $growthData,
+                'telemetry' => [],
+            ];
+        }
+
+        // Platform-level preview fallback (only when no tenant company_id is attached)
+        $totalEmployees = $realTotalEmployees ?: count(IndustryCatalog::staff($industryKey));
+        $activeEmployees = $realActiveEmployees ?: count(IndustryCatalog::staff($industryKey));
+        $todayAttendance = $realTodayAttendance ?: count(IndustryCatalog::staff($industryKey));
+
         if ($locationLogs->isEmpty()) {
             $catalogStaff = IndustryCatalog::staff($industryKey);
             $catalogEntities = IndustryCatalog::entities($industryKey);
@@ -121,25 +267,7 @@ class IndustryService
             })->values();
         }
 
-        $companyUserIds = $companyId
-            ? User::where('company_id', $companyId)->pluck('id')
-            : collect();
-
-        // Industry-specific data providers
         $serviceData = self::getServiceDefinitions($industryKey);
-
-        // Keep dashboard work-order counts inside both the active vertical and tenant.
-        $tasksQuery = fn () => IndustryContext::scope(Task::query(), $industryKey)
-            ->when($companyId, fn ($query) => $query->where(function ($tenantQuery) use ($companyUserIds) {
-                $tenantQuery->whereIn('assigned_to', $companyUserIds)
-                    ->orWhereIn('created_by', $companyUserIds)
-                    ->orWhereIn('customer_id', $companyUserIds);
-            }));
-
-        $tasksCount = $tasksQuery()->whereIn('status', ['pending', 'in_progress'])
-            ->count();
-        $completedTasks = $tasksQuery()->where('status', 'done')
-            ->count();
 
         $stats = [
             'totalVisits' => $serviceData['stats']['totalVisits'],
@@ -151,12 +279,14 @@ class IndustryService
             'todayAttendance' => $todayAttendance,
             'activeWorkOrders' => $tasksCount > 0 ? $tasksCount : $serviceData['stats']['activeWorkOrders'],
             'completedWorkOrders' => $completedTasks > 0 ? $completedTasks : $serviceData['stats']['completedWorkOrders'],
-            'overdueWorkOrders' => 0,
+            'overdueWorkOrders' => $overdueTasks,
             'slaCompliance' => $serviceData['stats']['slaCompliance'],
         ];
 
         return [
             'currentIndustry' => $industryKey,
+            'isTenant' => false,
+            'isFreshCompany' => false,
             'locationLogs' => $locationLogs,
             'stats' => $stats,
             'recentVisits' => $serviceData['recentVisits'],

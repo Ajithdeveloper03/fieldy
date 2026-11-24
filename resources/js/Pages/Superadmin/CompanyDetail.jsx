@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import SuperadminLayout from './SuperadminLayout';
+import CardPhotoBackdrop from '../../Components/CardPhotoBackdrop';
 import { getIndustryById } from '../../data/industriesConfig';
 import {
     Building2, Users, MapPin, Calendar,
     ClipboardList, Wallet, ArrowLeft, ExternalLink,
     Smartphone, CheckCircle2, AlertCircle, Clock,
     Navigation, ShieldCheck, FileText, ChevronRight,
-    Home
+    Home, Lightbulb
 } from 'lucide-react';
 
 export default function CompanyDetail({ company, stats = {}, employees = [], visits = [], farmers = [], tasks = [], payments = [] }) {
@@ -49,8 +50,9 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                 </div>
 
                 {/* Company Header Card */}
-                <div className="hp-card p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
+                <div className="hp-card relative overflow-hidden p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <CardPhotoBackdrop photoKey={company.industry} variant="right" opacity={0.26} />
+                    <div className="relative z-10 flex items-center gap-4">
                         <div className="w-14 h-14 rounded-xl bg-[var(--color-hp-primary-light)] text-[var(--color-hp-primary)] border border-[var(--color-hp-primary)]/20 flex items-center justify-center font-bold text-2xl shrink-0">
                             {company.name.charAt(0)}
                         </div>
@@ -82,7 +84,7 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2.5">
+                    <div className="relative z-10 flex items-center gap-2.5">
                         <button
                             onClick={handleImpersonate}
                             className="hp-btn hp-btn-primary inline-flex items-center gap-2"
@@ -279,7 +281,10 @@ export default function CompanyDetail({ company, stats = {}, employees = [], vis
                                                 <td className="text-xs text-[var(--color-hp-gray-700)] max-w-md">
                                                     <p className="line-clamp-2">{v.notes || t('No remarks recorded')}</p>
                                                     {v.recommendations && (
-                                                        <p className="text-[11px] text-amber-700 mt-1 line-clamp-1">💡 {v.recommendations}</p>
+                                                        <p className="text-[11px] text-amber-700 mt-1 flex items-center gap-1 line-clamp-1">
+                                                            <Lightbulb className="w-3 h-3 shrink-0" />
+                                                            <span className="truncate">{v.recommendations}</span>
+                                                        </p>
                                                     )}
                                                 </td>
                                             </tr>
