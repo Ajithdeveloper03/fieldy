@@ -102,8 +102,9 @@ class FarmerController extends Controller
         FarmerReview::create([
             'visit_id' => $visit->id,
             'farmer_id' => $request->user()->id,
+            'employee_id' => $visit->employee_id,
             'rating' => $validated['rating'],
-            'comment' => $validated['comment'] ?? null,
+            'feedback_comments' => $validated['comment'] ?? null,
         ]);
 
         return response()->json(['status' => 'success', 'message' => 'Review submitted successfully.']);

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class AuthController extends Controller
 {
@@ -171,7 +172,7 @@ class AuthController extends Controller
         $industry = IndustryService::normalize(
             $user->industry ?: $user->company?->industry ?: $request->header('X-Service-Key') ?: 'construction'
         );
-        if (! $user->industry && \Illuminate\Schema\Schema::hasColumn('users', 'industry')) {
+        if (! $user->industry && Schema::hasColumn('users', 'industry')) {
             $user->industry = $industry;
             $user->save();
         }
