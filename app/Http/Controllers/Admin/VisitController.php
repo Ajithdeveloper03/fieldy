@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\FarmerVisit;
+use App\Models\MediaFile;
 use App\Models\User;
 use App\Services\Industry\IndustryCatalog;
 use App\Services\Industry\IndustryContext;
@@ -21,7 +22,12 @@ class VisitController extends Controller
         $companyId = auth()->user()?->company_id;
         $industryKey = IndustryContext::current();
 
-        $query = FarmerVisit::with(['employee:id,name', 'farmer:id,name'])
+        $with = ['employee:id,name', 'farmer:id,name'];
+        if (MediaFile::tableReady()) {
+            $with[] = 'mediaFiles.uploader:id,name';
+        }
+
+        $query = FarmerVisit::with($with)
             ->when($companyId, fn ($q, $cid) => $q->whereHas('employee', fn ($e) => $e->where('company_id', $cid)))
             ->orderBy('created_at', 'desc');
 
@@ -55,7 +61,10 @@ class VisitController extends Controller
             'date' => $v->created_at?->format('M d, Y') ?? 'N/A',
             'farm_condition_notes' => $v->farm_condition_notes ?? 'Service completed.',
             'recommendations' => $v->recommendations ?? 'No recommendations.',
-            'media' => [],
+            'media' => MediaFile::tableReady()
+                ? $v->mediaFiles->map(fn (MediaFile $m) => $m->toPayload(false))->values()->all()
+                : [],
+            'dossier_url' => url("/admin/visits/{$v->id}/dossier"),
         ]);
 
         // If no visits recorded in DB for this service vertical (platform preview only), supply curated catalog visits
@@ -145,7 +154,14 @@ class VisitController extends Controller
             ]);
         }
 
-        $visit = FarmerVisit::with(['employee:id,name', 'farmer:id,name'])->findOrFail($id);
+        $with = ['employee:id,name', 'farmer:id,name'];
+        if (MediaFile::tableReady()) {
+            $with[] = 'mediaFiles.uploader:id,name';
+        }
+
+        $visit = FarmerVisit::with($with)
+            ->when($companyId, fn ($q, $cid) => $q->whereHas('employee', fn ($e) => $e->where('company_id', $cid)))
+            ->findOrFail($id);
 
         return Inertia::render('Admin/VisitDetail', [
             'currentIndustry' => $industryKey,
@@ -159,7 +175,10 @@ class VisitController extends Controller
                 'date' => $visit->created_at?->format('M d, Y') ?? 'N/A',
                 'farm_condition_notes' => $visit->farm_condition_notes ?? 'No notes provided.',
                 'recommendations' => $visit->recommendations ?? 'No recommendations.',
-                'media' => [],
+                'media' => MediaFile::tableReady()
+                    ? $visit->mediaFiles->map(fn (MediaFile $m) => $m->toPayload(false))->values()->all()
+                    : [],
+                'dossier_url' => url("/admin/visits/{$visit->id}/dossier"),
             ],
         ]);
     }

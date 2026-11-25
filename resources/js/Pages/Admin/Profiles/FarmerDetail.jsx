@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import useIndustry from '../../../hooks/useIndustry';
+import MediaVault from '../../../Components/MediaVault';
 
 export default function FarmerDetail({ farmer = {}, visits = [], employees = [] }) {
     const { t } = useTranslation();
@@ -293,6 +294,13 @@ export default function FarmerDetail({ farmer = {}, visits = [], employees = [] 
                                 </div>
                             </div>
                         </div>
+
+                        {/* Site Media Vault: Upload Images, Videos & Files + Download */}
+                        <MediaVault
+                            farmerId={farmer.is_sample ? null : farmer.id}
+                            title="Site Photos, Videos & Documents"
+                            subtitle="Upload site blueprints, inspection photos, walkthrough videos, or compliance documents and download them anytime."
+                        />
                     </div>
                 </div>
 

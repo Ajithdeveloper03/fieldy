@@ -5,12 +5,16 @@ use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
 use App\Models\FarmerProfile;
 use App\Models\FarmerVisit;
+use App\Models\MediaFile;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\IndustryService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 class EmployeeController extends Controller
 {
     public function attendance(Request $request)
@@ -179,6 +183,8 @@ class EmployeeController extends Controller
             'recommendations' => 'nullable|string',
             'before_photo' => 'nullable|string',
             'after_photo' => 'nullable|string',
+            'media_ids' => 'nullable|array',
+            'media_ids.*' => 'integer',
             'customer_otp' => 'nullable|string|max:12',
             'otp_verified' => 'nullable|boolean',
         ]);
@@ -237,7 +243,42 @@ class EmployeeController extends Controller
             ]);
         }
 
-        return response()->json(['status' => 'success', 'visit_id' => $visit->id]);
+        // Attach uploaded images/videos/files to this visit & mirror into visit_media
+        if (! empty($validated['media_ids']) && MediaFile::tableReady()) {
+            $mediaRecords = MediaFile::whereIn('id', $validated['media_ids'])
+                ->where(function ($q) use ($user) {
+                    $q->where('uploaded_by', $user->id);
+                    if ($user->company_id) {
+                        $q->orWhere('company_id', $user->company_id);
+                    }
+                })
+                ->get();
+
+            foreach ($mediaRecords as $media) {
+                $media->update([
+                    'visit_id' => $visit->id,
+                    'task_id' => $task?->id ?? $media->task_id,
+                    'farmer_id' => $farmerId ?: $media->farmer_id,
+                ]);
+                if (in_array($media->category, ['image', 'video'], true) && Schema::hasTable('visit_media')) {
+                    DB::table('visit_media')->insert([
+                        'visit_id' => $visit->id,
+                        'file_path' => $media->stored_path,
+                        'file_type' => $media->category === 'video' ? 'video' : 'photo',
+                        'captured_latitude' => $media->captured_latitude ?? $visit->check_in_latitude,
+                        'captured_longitude' => $media->captured_longitude ?? $visit->check_in_longitude,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'visit_id' => $visit->id,
+            'dossier_url' => URL::temporarySignedRoute('media.signed.visit-dossier', now()->addHours(12), ['id' => $visit->id]),
+        ]);
     }
     public function checkoutVisit(Request $request, $id)
     {
@@ -560,13 +601,22 @@ class EmployeeController extends Controller
     public function visits(Request $request)
     {
         $employeeId = $request->user()->id;
+        $with = ['farmer.farmerProfile'];
+        if (MediaFile::tableReady()) {
+            $with[] = 'mediaFiles.uploader:id,name';
+        }
+
         $visits = FarmerVisit::where('employee_id', $employeeId)
-            ->with(['farmer.farmerProfile'])
+            ->with($with)
             ->orderBy('id', 'desc')
             ->get()
             ->map(function ($v) {
                 $farmer = $v->farmer;
                 $profile = $farmer?->farmerProfile;
+                $media = MediaFile::tableReady()
+                    ? $v->mediaFiles->map(fn (MediaFile $m) => $m->toPayload(true))->values()->all()
+                    : [];
+
                 return [
                     'id' => (string) $v->id,
                     'farmerId' => (string) ($farmer?->id ?? ''),
@@ -582,6 +632,9 @@ class EmployeeController extends Controller
                     'visitFrequency' => null,
                     'remarks' => $v->farm_condition_notes,
                     'recommendations' => $v->recommendations,
+                    'media' => $media,
+                    'media_count' => count($media),
+                    'dossier_url' => URL::temporarySignedRoute('media.signed.visit-dossier', now()->addHours(12), ['id' => $v->id]),
                 ];
             });
 

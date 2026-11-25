@@ -20,4 +20,9 @@ class FarmerVisit extends Model
     {
         return $this->belongsTo(User::class, 'farmer_id');
     }
+
+    public function mediaFiles()
+    {
+        return $this->hasMany(MediaFile::class, 'visit_id')->orderByDesc('id');
+    }
 }

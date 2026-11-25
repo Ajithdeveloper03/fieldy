@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\TasksController;
 use App\Http\Controllers\Admin\VisitController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\MediaFileController;
 use App\Http\Controllers\PortalSessionController;
 use Illuminate\Support\Facades\Route;
 
@@ -54,6 +55,21 @@ foreach (['portal/session', 'fieldy/portal/session'] as $sessionPrefix) {
         Route::post('/idle-event', [PortalSessionController::class, 'idleEvent']);
         Route::post('/timeout-logout', [PortalSessionController::class, 'timeoutLogout']);
         Route::get('/feed', [PortalSessionController::class, 'feed']);
+    });
+}
+
+// ── Media Preview & Download Routes (Session Auth + Signed URLs for Mobile/Hostinger) ──
+Route::get('/media/signed/{id}/view', [MediaFileController::class, 'signedView'])->name('media.signed.view');
+Route::get('/media/signed/{id}/download', [MediaFileController::class, 'signedDownload'])->name('media.signed.download');
+Route::get('/media/signed/visit/{id}/dossier', [MediaFileController::class, 'signedVisitDossier'])->name('media.signed.visit-dossier');
+Route::get('/fieldy/media/signed/{id}/view', [MediaFileController::class, 'signedView']);
+Route::get('/fieldy/media/signed/{id}/download', [MediaFileController::class, 'signedDownload']);
+Route::get('/fieldy/media/signed/visit/{id}/dossier', [MediaFileController::class, 'signedVisitDossier']);
+
+foreach (['media', 'fieldy/media'] as $mediaPrefix) {
+    Route::prefix($mediaPrefix)->middleware(['auth'])->group(function () {
+        Route::get('/{id}/view', [MediaFileController::class, 'view']);
+        Route::get('/{id}/download', [MediaFileController::class, 'download']);
     });
 }
 
@@ -139,6 +155,12 @@ foreach (['admin', 'fieldy/admin'] as $adminPrefix) {
         // Visit Audits
         Route::get('/visits', [VisitController::class, 'index'])->name('visits.index');
         Route::get('/visits/{id}', [VisitController::class, 'show'])->name('visits.show');
+        Route::get('/visits/{id}/dossier', [MediaFileController::class, 'downloadVisitDossier'])->name('visits.dossier');
+
+        // Image, Video & Document Media Vault (Upload / List / Delete)
+        Route::get('/media', [MediaFileController::class, 'index'])->name('media.index');
+        Route::post('/media/upload', [MediaFileController::class, 'upload'])->name('media.upload');
+        Route::delete('/media/{id}', [MediaFileController::class, 'destroy'])->name('media.destroy');
         // Performance Analytics
         Route::get('/performance', [PerformanceController::class, 'index'])->name('performance.index');
 

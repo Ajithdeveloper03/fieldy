@@ -12,6 +12,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useAlert } from '../../Components/AlertSystem';
 import CardPhotoBackdrop from '../../Components/CardPhotoBackdrop';
+import MediaVault from '../../Components/MediaVault';
 import useIndustry from '../../hooks/useIndustry';
 
 export default function TaskManagement({ tasks = [], employees = [], customers = [] }) {
@@ -1358,6 +1359,15 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                                 ))}
                             </div>
                         </div>
+
+                        {/* Task Attachments: Upload Images, Videos & Documents + Download */}
+                        {!selectedTask.is_sample && /^\d+$/.test(String(selectedTask.id)) && (
+                            <MediaVault
+                                taskId={selectedTask.id}
+                                compact
+                                title="Task Attachments (Images, Videos & Files)"
+                            />
+                        )}
 
                         {/* Meta Information Grid */}
                         <div className="grid grid-cols-2 gap-2.5 pt-1">

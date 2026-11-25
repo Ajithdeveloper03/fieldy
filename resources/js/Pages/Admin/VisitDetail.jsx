@@ -1,13 +1,14 @@
 import React from 'react';
-import { asset } from '../../basePath';
+import { asset, withBase } from '../../basePath';
 import AdminLayout from './AdminLayout';
 import { Link } from '@inertiajs/react';
 import { 
-    ArrowLeft, Clock, Camera, AlertCircle, Navigation, 
-    Calendar, Sparkles, Download, FileText
+    ArrowLeft, Clock, AlertCircle, Navigation, 
+    Calendar, Sparkles, Download, FileText, Printer
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import useIndustry from '../../hooks/useIndustry';
+import MediaVault from '../../Components/MediaVault';
 
 export default function VisitDetail({ visit }) {
     const { t } = useTranslation();
@@ -73,14 +74,25 @@ export default function VisitDetail({ visit }) {
                                 </div>
                             </div>
 
-                            <button 
-                                type="button"
-                                onClick={() => window.print()}
-                                className="hp-btn hp-btn-primary !rounded-full"
-                            >
-                                <Download className="w-4 h-4 mr-1" />
-                                <span>{t('Download Dossier')}</span>
-                            </button>
+                            {visit.is_sample ? (
+                                <button
+                                    type="button"
+                                    onClick={() => window.print()}
+                                    className="hp-btn hp-btn-primary !rounded-full"
+                                >
+                                    <Printer className="w-4 h-4 mr-1" />
+                                    <span>{t('Download Dossier')}</span>
+                                </button>
+                            ) : (
+                                <a
+                                    href={visit.dossier_url || withBase(`/admin/visits/${visit.id}/dossier`)}
+                                    download={`fieldy-visit-report-${visit.id}.html`}
+                                    className="hp-btn hp-btn-primary !rounded-full"
+                                >
+                                    <Download className="w-4 h-4 mr-1" />
+                                    <span>{t('Download Dossier')}</span>
+                                </a>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -134,22 +146,16 @@ export default function VisitDetail({ visit }) {
                                 <p className="text-xs text-hp-muted mt-1">{t(isConstruction ? 'Engineer route followed with no deviation.' : 'Optimal route followed with zero deviation.')}</p>
                             </div>
                         </div>
-
-                        <div className="hp-bento-card">
-                            <h3 className="hp-card-title text-sm mb-3 flex items-center gap-2">
-                                <Camera className="w-4 h-4 text-hp-primary" /> {t('Evidence Media')}
-                            </h3>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="aspect-square rounded-xl overflow-hidden border border-hp-border">
-                                    <img src={evidenceImages[0]} className="w-full h-full object-cover" alt={isConstruction ? 'Construction site inspection' : 'Visit evidence'} />
-                                </div>
-                                <div className="aspect-square rounded-xl overflow-hidden border border-hp-border">
-                                    <img src={evidenceImages[1]} className="w-full h-full object-cover" alt={isConstruction ? 'Construction site work' : 'Visit evidence'} />
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
+
+                {/* FULL EVIDENCE MEDIA: IMAGE UPLOAD, VIDEO UPLOAD & FILE DOWNLOAD */}
+                <MediaVault
+                    visitId={visit.is_sample ? null : visit.id}
+                    initialItems={Array.isArray(visit.media) ? visit.media : []}
+                    title="Evidence Media, Videos & Files"
+                    subtitle="Upload site photos, inspection videos (MP4/MOV), or PDF/Excel documents and download any attachment."
+                />
 
             </div>
         </AdminLayout>

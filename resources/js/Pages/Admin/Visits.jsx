@@ -6,10 +6,12 @@ import {
     MapPin, CheckCircle2, Search, X,
     BarChart3, TrendingUp, ShieldCheck,
     Navigation, Sparkles, FileText, ArrowRight,
-    Calendar, LayoutGrid, ListFilter, ArrowUpRight
+    Calendar, LayoutGrid, ListFilter, ArrowUpRight,
+    UploadCloud, Download, Film
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import CardPhotoBackdrop from '../../Components/CardPhotoBackdrop';
+import MediaVault from '../../Components/MediaVault';
 import useIndustry from '../../hooks/useIndustry';
 
 export default function Visits({ visits = {}, employees = [], filters = {} }) {
@@ -176,6 +178,13 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                     <BarChart3 className="w-3.5 h-3.5" />
                                     <span>{t('Analytics')}</span>
                                 </button>
+                                <button
+                                    onClick={() => setActiveTab('media')}
+                                    className={`hp-segmented-item ${activeTab === 'media' ? 'is-active-primary' : ''}`}
+                                >
+                                    <UploadCloud className="w-3.5 h-3.5" />
+                                    <span>{t('Media & Files')}</span>
+                                </button>
                             </div>
 
                             <button 
@@ -293,7 +302,7 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                         <div>
                                             <div className="hp-card-visual h-44 mb-4 flex items-center justify-center relative">
                                                 <img 
-                                                    src={getCoverImage(visit.id)} 
+                                                    src={visit.media?.find((m) => m.category === 'image')?.preview_url || getCoverImage(visit.id)} 
                                                     alt={vocab.entity.singular}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
                                                     onError={(e) => { e.target.style.display = 'none'; }}
@@ -304,6 +313,11 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                                     <span className="hp-chip hp-chip-success !bg-white/90 !text-hp-success backdrop-blur-sm">
                                                         <CheckCircle2 className="w-3 h-3 mr-1" /> {t('Completed')}
                                                     </span>
+                                                    {Array.isArray(visit.media) && visit.media.length > 0 && (
+                                                        <span className="hp-chip !bg-slate-950/75 !text-white backdrop-blur-sm">
+                                                            <Film className="w-3 h-3 mr-1" /> {visit.media.length}
+                                                        </span>
+                                                    )}
                                                 </div>
 
                                                 <div className="absolute bottom-3 left-3 right-3 text-white">
@@ -340,14 +354,24 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                                             </div>
                                         </div>
 
-                                        <div className="mt-5 pt-3 border-t border-hp-border">
+                                        <div className="mt-5 pt-3 border-t border-hp-border flex items-center gap-2">
                                             <Link 
                                                 href={`/admin/visits/${visit.id}?industry=${industry.id}`}
-                                                className="hp-btn hp-btn-outline w-full !rounded-xl !h-10 text-sm font-semibold"
+                                                className="hp-btn hp-btn-outline flex-1 !rounded-xl !h-10 text-sm font-semibold"
                                             >
                                                 <span>{t('View {{visit}} Report', { visit: vocab.visit.singular })}</span>
                                                 <ArrowUpRight className="w-4 h-4 ml-1" />
                                             </Link>
+                                            {!visit.is_sample && visit.dossier_url && (
+                                                <a
+                                                    href={visit.dossier_url}
+                                                    download={`fieldy-visit-report-${visit.id}.html`}
+                                                    className="hp-btn hp-btn-primary !rounded-xl !h-10 !px-3"
+                                                    title={t('Download Dossier')}
+                                                >
+                                                    <Download className="w-4 h-4" />
+                                                </a>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -494,6 +518,14 @@ export default function Visits({ visits = {}, employees = [], filters = {} }) {
                             </div>
                         </div>
                     </div>
+                )}
+
+                {/* TAB CONTENT: MEDIA & FILES */}
+                {activeTab === 'media' && (
+                    <MediaVault
+                        title="Organization Media & Files Vault"
+                        subtitle="Upload site images, walkthrough videos (MP4/MOV/WebM), and PDF/Excel documents — and download files synced from mobile or web."
+                    />
                 )}
 
             </div>

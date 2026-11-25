@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\TrackingController;
 use App\Http\Controllers\Api\V1\TranslationController;
+use App\Http\Controllers\MediaFileController;
 use App\Http\Middleware\DemoAuthMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -51,6 +52,12 @@ Route::prefix('v1')->group(function () {
             Route::post('/visit/submit', [EmployeeController::class, 'submitVisit']);
             Route::post('/reports', [EmployeeController::class, 'submitVisit']);
             Route::post('/visit/{id}/checkout', [EmployeeController::class, 'checkoutVisit']);
+            Route::get('/visits/{id}/download', [MediaFileController::class, 'downloadVisitDossier']);
+
+            // Image, Video & Document Upload / Download endpoints
+            Route::get('/media', [MediaFileController::class, 'index']);
+            Route::post('/media/upload', [MediaFileController::class, 'upload']);
+            Route::delete('/media/{id}', [MediaFileController::class, 'destroy']);
 
             // Tracking endpoints
             Route::prefix('tracking')->group(function () {
