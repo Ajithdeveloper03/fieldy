@@ -1,32 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
-  Image,
   StatusBar,
-  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import * as Location from "expo-location";
-import * as ImagePicker from "expo-image-picker";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   ChevronLeft,
   Camera,
   MapPin,
+  Fingerprint,
   CheckCircle2,
-  AlertTriangle,
-  ArrowRight,
-  RefreshCw,
 } from "lucide-react-native";
+import * as Location from "expo-location";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useService } from "../../../context/ServiceContext";
 import { api } from "../../../services/api";
-import { uploadMediaAsset } from "../../../services/media";
-import { haversineDistanceKm, sendLiveLocationPing } from "../../../utils/locationHelpers";
 import { showToast } from "../../../components/ui/ToastMessage";
+import { LocalMediaAsset, pickImageAsset, uploadMediaAsset } from "../../../services/media";
+import { haversineDistanceKm, sendLiveLocationPing } from "../../../utils/locationHelpers";
 import {
   LiquidGlassBackdrop,
   LiquidGlassButton,
@@ -35,268 +29,160 @@ import {
   LiquidGlassIconButton,
 } from "../../../components/LiquidGlass";
 
-export default function VisitCheckInScreen() {
-  const { taskId, farmerId, siteId, siteName, siteAddress, lat, lng, liveLat, liveLng, distanceKm } =
-    useLocalSearchParams<{
-      taskId?: string;
-      farmerId?: string;
-      siteId?: string;
-      siteName?: string;
-      siteAddress?: string;
-      lat?: string;
-      lng?: string;
-      liveLat?: string;
-      liveLng?: string;
-      distanceKm?: string;
-    }>();
-
+export default function CheckInScreen() {
+  const { id, taskId, farmerId, siteName, lat, lng, distanceKm } = useLocalSearchParams<{
+    id?: string;
+    taskId?: string;
+    farmerId?: string;
+    siteName?: string;
+    lat?: string;
+    lng?: string;
+    distanceKm?: string;
+  }>();
   const { serviceConfig } = useService();
-  const [target, setTarget] = useState<{
-    taskId: string;
-    farmerId: string;
-    siteName: string;
-    siteAddress: string;
-    siteLat: number | null;
-    siteLng: number | null;
-    requiresOtp: boolean;
-  }>({
-    taskId: taskId || "",
-    farmerId: farmerId || siteId || "",
-    siteName: siteName || "",
-    siteAddress: siteAddress || "",
-    siteLat: lat && !Number.isNaN(Number(lat)) ? Number(lat) : null,
-    siteLng: lng && !Number.isNaN(Number(lng)) ? Number(lng) : null,
-    requiresOtp: false,
-  });
-
-  const [coords, setCoords] = useState<{ latitude: number; longitude: number; accuracy: number | null } | null>(
-    liveLat && liveLng && !Number.isNaN(Number(liveLat)) && !Number.isNaN(Number(liveLng))
-      ? { latitude: Number(liveLat), longitude: Number(liveLng), accuracy: null }
-      : null
-  );
-  const [locating, setLocating] = useState(true);
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [photoTaken, setPhotoTaken] = useState(false);
+  const [photoAsset, setPhotoAsset] = useState<LocalMediaAsset | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [coordsText, setCoordsText] = useState("Acquiring live GPS...");
+  const [resolvedSiteName, setResolvedSiteName] = useState(siteName || serviceConfig.vocab.entitySingular);
+  const [targetCoords, setTargetCoords] = useState<{ latitude: number; longitude: number } | null>(
+    lat && lng ? { latitude: Number(lat), longitude: Number(lng) } : null
+  );
+  const [requiresOtp, setRequiresOtp] = useState(false);
 
-  const acquireGps = async () => {
-    setLocating(true);
-    try {
-      const perm = await Location.requestForegroundPermissionsAsync();
-      if (perm.status !== "granted") {
-        showToast({
-          title: "Location Required",
-          message: "Enable GPS access to verify your arrival on site.",
-          type: "error",
-        });
-        setLocating(false);
-        return;
-      }
-      const fix = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-      setCoords({
-        latitude: fix.coords.latitude,
-        longitude: fix.coords.longitude,
-        accuracy: fix.coords.accuracy ?? null,
-      });
-      void sendLiveLocationPing(fix.coords);
-    } catch {
-      showToast({
-        title: "GPS Signal Weak",
-        message: "Tap refresh to retry acquiring satellite lock.",
-        type: "info",
-      });
-    } finally {
-      setLocating(false);
-    }
-  };
-
-  useEffect(() => {
+  React.useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const perm = await Location.requestForegroundPermissionsAsync();
-        if (active && perm.status === "granted") {
-          const fix = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-          if (active) {
-            setCoords({
-              latitude: fix.coords.latitude,
-              longitude: fix.coords.longitude,
-              accuracy: fix.coords.accuracy ?? null,
-            });
-            void sendLiveLocationPing(fix.coords);
+        const storedTaskRaw = await AsyncStorage.getItem("@active_task");
+        if (active && storedTaskRaw) {
+          const parsed = JSON.parse(storedTaskRaw);
+          if (!siteName && (parsed.facility || parsed.targetEntity)) {
+            setResolvedSiteName(parsed.facility || parsed.targetEntity);
           }
-        } else if (active) {
-          showToast({
-            title: "Location Required",
-            message: "Enable GPS access to verify your arrival on site.",
-            type: "error",
-          });
+          if (!lat && parsed.latitude && parsed.longitude) {
+            setTargetCoords({ latitude: Number(parsed.latitude), longitude: Number(parsed.longitude) });
+          }
+          setRequiresOtp(Boolean(parsed.requiresOtp || parsed.requires_otp));
         }
       } catch {
-        if (active) {
-          showToast({
-            title: "GPS Signal Weak",
-            message: "Tap refresh to retry acquiring satellite lock.",
-            type: "info",
-          });
-        }
-      } finally {
-        if (active) setLocating(false);
+        // Ignore parse error
       }
-    })();
 
-    (async () => {
       try {
-        const storedTask = await AsyncStorage.getItem("@active_task");
-        if (storedTask) {
-          const parsed = JSON.parse(storedTask);
-          setTarget((prev) => ({
-            taskId: prev.taskId || (parsed.id ? String(parsed.id) : ""),
-            farmerId: prev.farmerId || (parsed.farmerId ? String(parsed.farmerId) : ""),
-            siteName: prev.siteName || parsed.targetEntity || parsed.facility || parsed.title || "",
-            siteAddress: prev.siteAddress || parsed.address || "",
-            siteLat: prev.siteLat ?? (parsed.latitude != null ? Number(parsed.latitude) : null),
-            siteLng: prev.siteLng ?? (parsed.longitude != null ? Number(parsed.longitude) : null),
-            requiresOtp: Boolean(parsed.requiresOtp),
-          }));
-        }
-
-        if (!farmerId && !siteId && !siteName) {
-          const sitesRes = await api.get("/employee/sites");
-          const firstSite = Array.isArray(sitesRes?.sites) ? sitesRes.sites[0] : null;
-          if (firstSite) {
-            setTarget((prev) => ({
-              ...prev,
-              farmerId: prev.farmerId || String(firstSite.id),
-              siteName: prev.siteName || firstSite.name || "",
-              siteAddress: prev.siteAddress || firstSite.address || "",
-              siteLat: prev.siteLat ?? (firstSite.latitude != null ? Number(firstSite.latitude) : null),
-              siteLng: prev.siteLng ?? (firstSite.longitude != null ? Number(firstSite.longitude) : null),
-            }));
-          }
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (!active) return;
+        if (status === "granted") {
+          const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+          if (!active) return;
+          setCoords({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+          setCoordsText(`${loc.coords.latitude.toFixed(5)}° N, ${loc.coords.longitude.toFixed(5)}° E`);
+          void sendLiveLocationPing(loc.coords);
+        } else {
+          setCoordsText("GPS Permission Needed");
         }
       } catch {
-        // Proceed with available params
+        if (active) setCoordsText("Acquiring GPS signal...");
       }
     })();
-  }, [farmerId, siteId, siteName]);
+    return () => {
+      active = false;
+    };
+  }, [lat, siteName]);
 
-  const captureArrivalPhoto = async () => {
+  const radiusBadgeText = React.useMemo(() => {
+    if (coords && targetCoords) {
+      const meters = Math.round(haversineDistanceKm(coords, targetCoords) * 1000);
+      return meters <= 500
+        ? `Within ${meters}m • ${coordsText}`
+        : `${(meters / 1000).toFixed(1)}km to site • ${coordsText}`;
+    }
+    return `Live GPS • ${coordsText}`;
+  }, [coords, coordsText, targetCoords]);
+
+  const handleCapture = async () => {
     try {
-      const camPerm = await ImagePicker.requestCameraPermissionsAsync();
-      if (camPerm.granted) {
-        const snap = await ImagePicker.launchCameraAsync({ quality: 0.65 });
-        if (!snap.canceled && snap.assets?.[0]?.uri) {
-          setPhotoUri(snap.assets[0].uri);
-          return;
-        }
+      const cameraPicked = await pickImageAsset("camera").catch(() => null);
+      if (cameraPicked) {
+        setPhotoAsset(cameraPicked);
+        setPhotoTaken(true);
+        return;
       }
-      const gallery = await ImagePicker.launchImageLibraryAsync({ quality: 0.65 });
-      if (!gallery.canceled && gallery.assets?.[0]?.uri) {
-        setPhotoUri(gallery.assets[0].uri);
+      const libraryPicked = await pickImageAsset("library").catch(() => null);
+      if (libraryPicked) {
+        setPhotoAsset(libraryPicked);
+        setPhotoTaken(true);
       }
     } catch {
-      showToast({ title: "Camera Notice", message: "Allow camera permission to attach arrival photo.", type: "info" });
+      showToast({
+        title: "Camera Permission",
+        message: "Please grant camera or gallery access to verify arrival.",
+        type: "error",
+      });
     }
   };
 
-  const distanceMeters =
-    coords && target.siteLat != null && target.siteLng != null
-      ? Math.round(
-          haversineDistanceKm(coords, {
-            latitude: target.siteLat,
-            longitude: target.siteLng,
-          }) * 1000
-        )
-      : null;
-
-  const isWithinPerimeter = distanceMeters == null ? Boolean(coords) : distanceMeters <= 250;
-
-  const handleConfirmCheckIn = async () => {
-    if (!coords) {
-      showToast({
-        title: "Waiting for GPS",
-        message: "Please acquire a live GPS lock before checking in.",
-        type: "error",
-      });
-      return;
-    }
-
+  const handleCheckIn = async () => {
+    if (!photoTaken || submitting) return;
     setSubmitting(true);
-    let uploadedMediaId: number | undefined;
-
+    let uploadedSelfieUrl: string | null = photoAsset?.uri || null;
     try {
-      if (photoUri) {
-        try {
-          const uploaded = await uploadMediaAsset({
-            asset: {
-              uri: photoUri,
-              name: `checkin_${Date.now()}.jpg`,
-              mimeType: "image/jpeg",
-              category: "image",
-            },
-            title: "Site Arrival Check-In Photo",
-            taskId: target.taskId || undefined,
-            farmerId: target.farmerId || undefined,
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-          });
-          if (uploaded?.id) {
-            uploadedMediaId = Number(uploaded.id);
-          }
-        } catch {
-          // Continue check-in even if photo upload retries later
+      if (photoAsset) {
+        const uploaded = await uploadMediaAsset({
+          asset: photoAsset,
+          title: `${resolvedSiteName} - Check-In Selfie`,
+          taskId: taskId || id || null,
+          farmerId: farmerId || null,
+          latitude: coords?.latitude ?? null,
+          longitude: coords?.longitude ?? null,
+        }).catch(() => null);
+        if (uploaded?.preview_url) {
+          uploadedSelfieUrl = uploaded.preview_url;
         }
       }
 
-      let visitId = "";
-      let requiresOtp = target.requiresOtp;
+      const checkInRes = await api
+        .post("/employee/visit/check-in", {
+          task_id: taskId || id || undefined,
+          farmer_id: farmerId ? Number(farmerId) : undefined,
+          site_name: resolvedSiteName,
+          latitude: coords?.latitude ?? null,
+          longitude: coords?.longitude ?? null,
+          selfie_url: uploadedSelfieUrl,
+        })
+        .catch(() => null);
 
-      try {
-        const res = await api.post("/employee/visit/check-in", {
-          farmer_id: target.farmerId ? Number(target.farmerId) : undefined,
-          task_id: target.taskId || undefined,
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-          media_id: uploadedMediaId,
-        });
-        if (res?.visit_id) {
-          visitId = String(res.visit_id);
-        }
-        if (typeof res?.requires_otp === "boolean") {
-          requiresOtp = res.requires_otp;
-        }
-      } catch {
-        // Offline fallback — submitVisit will create & complete record
-      }
+      const serverVisitId = checkInRes?.visit_id ? String(checkInRes.visit_id) : "";
+      const otpFlag = Boolean(checkInRes?.requires_otp ?? requiresOtp);
 
       await AsyncStorage.setItem(
         "@active_checkin",
         JSON.stringify({
-          visitId,
-          taskId: target.taskId,
-          farmerId: target.farmerId,
-          siteName: target.siteName || "Field Visit",
-          siteAddress: target.siteAddress,
-          latitude: coords.latitude,
-          longitude: coords.longitude,
+          visitId: serverVisitId,
+          taskId: taskId || id || "",
+          farmerId: farmerId || "",
+          siteName: resolvedSiteName,
+          latitude: coords?.latitude ?? null,
+          longitude: coords?.longitude ?? null,
           distanceKm: distanceKm ? Number(distanceKm) : 0,
-          checkInMediaId: uploadedMediaId || null,
-          photoUri,
-          requiresOtp,
+          requiresOtp: otpFlag,
+          photoUri: uploadedSelfieUrl,
           checkedInAt: new Date().toISOString(),
         })
       );
 
-      router.replace({
+      router.push({
         pathname: "/(employee)/visit/report",
         params: {
-          visitId,
-          taskId: target.taskId,
-          farmerId: target.farmerId,
-          siteName: target.siteName || "Field Visit",
-          lat: String(coords.latitude),
-          lng: String(coords.longitude),
-          distanceKm: distanceKm || "0",
+          id: id || taskId || "",
+          taskId: taskId || id || "",
+          farmerId: farmerId || "",
+          visitId: serverVisitId,
+          siteName: resolvedSiteName,
+          lat: coords?.latitude ? String(coords.latitude) : "",
+          lng: coords?.longitude ? String(coords.longitude) : "",
+          distanceKm: distanceKm || "",
         },
       } as any);
     } finally {
@@ -304,11 +190,9 @@ export default function VisitCheckInScreen() {
     }
   };
 
-  const themeColor = serviceConfig.themeColor || "#059669";
-
   return (
-    <LiquidGlassBackdrop variant="light">
-      <StatusBar barStyle="dark-content" />
+    <LiquidGlassBackdrop variant="dark">
+      <StatusBar barStyle="light-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER */}
@@ -317,156 +201,220 @@ export default function VisitCheckInScreen() {
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
-            paddingHorizontal: 20,
-            paddingTop: 12,
-            paddingBottom: 14,
+            paddingHorizontal: 24,
+            paddingTop: 16,
+            paddingBottom: 24,
           }}
         >
           <LiquidGlassIconButton
-            variant="light"
-            size={44}
-            onPress={() => (router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard"))}
+            variant="dark"
+            size={42}
+            onPress={() =>
+              router.canGoBack()
+                ? router.back()
+                : router.replace("/(employee)/dashboard")
+            }
           >
-            <ChevronLeft size={24} color="#0f172a" />
+            <ChevronLeft size={24} color="#ffffff" />
           </LiquidGlassIconButton>
-
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 21 }}>
-            Site Arrival Check-In
+          <Text
+            style={{
+              color: "#ffffff",
+              fontFamily: "Brandon-Bold",
+              fontSize: 20,
+            }}
+          >
+            {serviceConfig.label} Check-In
           </Text>
-
-          <LiquidGlassIconButton variant="light" size={44} onPress={acquireGps}>
-            <RefreshCw size={19} color="#0f172a" />
-          </LiquidGlassIconButton>
+          <View style={{ width: 42 }} />
         </View>
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120 }}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 150 }}
         >
-          {/* TARGET SITE & LIVE GPS VERIFICATION CARD */}
           <LiquidGlassCard
             variant="dark"
-            borderRadius={28}
-            dropletColor={themeColor}
-            style={{ marginBottom: 18 }}
-            contentStyle={{ padding: 22 }}
+            borderRadius={40}
+            dropletColor={serviceConfig.color}
+            style={{ marginTop: 20 }}
+            contentStyle={{
+              padding: 32,
+              alignItems: "center",
+            }}
           >
-            <Text style={{ color: "#86efac", fontFamily: "Brandon-Bold", fontSize: 11, letterSpacing: 1 }}>
-              ARRIVAL VERIFICATION
-            </Text>
-            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 23, marginTop: 6 }}>
-              {target.siteName || `Assigned ${serviceConfig.vocab.entitySingular}`}
-            </Text>
-            {target.siteAddress ? (
-              <Text style={{ color: "rgba(255,255,255,0.75)", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 4 }}>
-                {target.siteAddress}
-              </Text>
-            ) : null}
-
-            <View
+            {/* Massive Geofence Radar Circle */}
+            <LiquidGlassCard
+              variant="tinted"
+              borderRadius={70}
+              tintColor={`${serviceConfig.color}28`}
+              dropletColor={serviceConfig.color}
               style={{
-                marginTop: 16,
-                padding: 14,
-                borderRadius: 16,
-                backgroundColor: "rgba(255,255,255,0.08)",
+                width: 140,
+                height: 140,
+                marginBottom: 24,
+                shadowColor: serviceConfig.color,
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0.48,
+                shadowRadius: 20,
+                elevation: 10,
+              }}
+              contentStyle={{
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <View
+                style={{
+                  position: "absolute",
+                  width: 100,
+                  height: 100,
+                  borderRadius: 50,
+                  borderWidth: 1,
+                  borderColor: `${serviceConfig.color}66`,
+                  borderStyle: "dashed",
+                }}
+              />
+              <MapPin size={48} color={serviceConfig.color} />
+            </LiquidGlassCard>
+
+            <Text
+              style={{
+                color: "#ffffff",
+                fontFamily: "Brandon-Bold",
+                fontSize: 28,
+                textAlign: "center",
+                marginBottom: 8,
+              }}
+            >
+              Geofence Verified
+            </Text>
+
+            <LiquidGlassCard
+              variant="tinted"
+              borderRadius={999}
+              tintColor={`${serviceConfig.color}28`}
+              style={{ marginBottom: 24 }}
+              contentStyle={{
+                flexDirection: "row",
+                alignItems: "center",
+                paddingHorizontal: 14,
+                paddingVertical: 6,
+              }}
+            >
+              <CheckCircle2
+                size={14}
+                color={serviceConfig.color}
+                style={{ marginRight: 6 }}
+              />
+              <Text
+                style={{
+                  color: serviceConfig.color,
+                  fontFamily: "Brandon-Bold",
+                  fontSize: 12,
+                  letterSpacing: 1,
+                  textTransform: "uppercase",
+                }}
+              >
+                {radiusBadgeText}
+              </Text>
+            </LiquidGlassCard>
+
+            <Text
+              style={{
+                color: "rgba(255,255,255,0.7)",
+                fontFamily: "Brandon-Medium",
+                fontSize: 16,
+                textAlign: "center",
+                lineHeight: 24,
+                marginBottom: 32,
+              }}
+            >
+              You have securely arrived at {resolvedSiteName}. Please
+              verify your physical presence with a selfie.
+            </Text>
+
+            {/* Photo Verification Box */}
+            <LiquidGlassCard
+              variant={photoTaken ? "tinted" : "dark"}
+              tintColor={photoTaken ? `${serviceConfig.color}26` : undefined}
+              dropletColor={photoTaken ? serviceConfig.color : undefined}
+              borderRadius={20}
+              onPress={handleCapture}
+              style={{
+                width: "100%",
+                marginBottom: 32,
+              }}
+              contentStyle={{
+                padding: 16,
                 flexDirection: "row",
                 alignItems: "center",
               }}
             >
-              {locating && !coords ? (
-                <ActivityIndicator color="#4ade80" style={{ marginRight: 12 }} />
-              ) : isWithinPerimeter ? (
-                <CheckCircle2 size={22} color="#4ade80" style={{ marginRight: 12 }} />
-              ) : (
-                <AlertTriangle size={22} color="#fbbf24" style={{ marginRight: 12 }} />
-              )}
-
+              <LiquidGlassIconBadge
+                variant="dark"
+                size={48}
+                borderRadius={16}
+                tintColor={photoTaken ? serviceConfig.color : "#15803d"}
+                style={{ marginRight: 16 }}
+              >
+                {photoTaken ? (
+                  <CheckCircle2 size={24} color="#ffffff" />
+                ) : (
+                  <Camera size={24} color="#ffffff" />
+                )}
+              </LiquidGlassIconBadge>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14 }}>
-                  {!coords
-                    ? "Acquiring Live GPS Coordinates..."
-                    : distanceMeters != null
-                    ? isWithinPerimeter
-                      ? `Within Site Perimeter (${distanceMeters}m from pin)`
-                      : `${distanceMeters < 1000 ? `${distanceMeters}m` : `${(distanceMeters / 1000).toFixed(2)} km`} from Site Pin`
-                    : "Live GPS Coordinates Verified"}
+                <Text
+                  style={{
+                    color: "#ffffff",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 16,
+                    marginBottom: 4,
+                  }}
+                >
+                  {photoTaken ? "Identity Verified ✓" : "Take Field Selfie"}
                 </Text>
-                <Text style={{ color: "rgba(255,255,255,0.7)", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 2 }}>
-                  {coords
-                    ? `${coords.latitude.toFixed(6)}° N, ${coords.longitude.toFixed(6)}° E${
-                        coords.accuracy ? ` (±${Math.round(coords.accuracy)}m)` : ""
-                      }`
-                    : "Please ensure outdoor GPS visibility"}
+                <Text
+                  style={{
+                    color: "rgba(255,255,255,0.6)",
+                    fontFamily: "Brandon-Medium",
+                    fontSize: 13,
+                  }}
+                >
+                  {photoTaken
+                    ? "Geotagged timestamp logged"
+                    : `Required for ${serviceConfig.shortName} compliance`}
                 </Text>
               </View>
-            </View>
-          </LiquidGlassCard>
+            </LiquidGlassCard>
 
-          {/* ARRIVAL PHOTO PROOF */}
-          <LiquidGlassCard
-            variant="light"
-            borderRadius={24}
-            style={{ marginBottom: 24 }}
-            contentStyle={{ padding: 20 }}
-          >
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 17, marginBottom: 4 }}>
-              Arrival Site / Selfie Proof
-            </Text>
-            <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, marginBottom: 14 }}>
-              Optional geo-tagged arrival photo synced directly to Web Admin Media Vault.
-            </Text>
-
-            <TouchableOpacity
-              activeOpacity={0.85}
-              onPress={captureArrivalPhoto}
-              style={{
-                height: 196,
-                borderRadius: 20,
-                borderWidth: photoUri ? 1 : 2,
-                borderStyle: photoUri ? "solid" : "dashed",
-                borderColor: photoUri ? "#10b981" : themeColor,
-                backgroundColor: "rgba(255,255,255,0.6)",
-                alignItems: "center",
-                justifyContent: "center",
-                overflow: "hidden",
-              }}
+            {/* Confirm Check In Action Button */}
+            <LiquidGlassButton
+              onPress={handleCheckIn}
+              disabled={!photoTaken || submitting}
+              variant={photoTaken ? "tinted" : "dark"}
+              tintColor={`${serviceConfig.color}CC`}
+              dropletColor={serviceConfig.color}
+              style={{ width: "100%" }}
+              contentStyle={{ paddingVertical: 18 }}
             >
-              {photoUri ? (
-                <Image source={{ uri: photoUri }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
-              ) : (
-                <View style={{ alignItems: "center" }}>
-                  <LiquidGlassIconBadge size={54} borderRadius={18} variant="light" tintColor={themeColor}>
-                    <Camera size={26} color={themeColor} />
-                  </LiquidGlassIconBadge>
-                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 15, marginTop: 10 }}>
-                    Tap to Capture Arrival Photo
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
+              <Fingerprint
+                size={20}
+                color={photoTaken ? "#ffffff" : "rgba(255,255,255,0.4)"}
+                style={{ marginRight: 10 }}
+              />
+              <Text
+                style={{
+                  color: photoTaken ? "#ffffff" : "rgba(255,255,255,0.4)",
+                  fontFamily: "Brandon-Bold",
+                  fontSize: 16,
+                }}
+              >
+                {submitting ? "Checking In..." : "Confirm Arrival"}
+              </Text>
+            </LiquidGlassButton>
           </LiquidGlassCard>
-
-          {/* CONFIRM CHECK-IN & PROCEED TO REPORT */}
-          <LiquidGlassButton
-            disabled={submitting || !coords}
-            onPress={handleConfirmCheckIn}
-            variant="tinted"
-            tintColor="rgba(6, 34, 20, 0.90)"
-            dropletColor="#4ade80"
-            contentStyle={{ paddingVertical: 17 }}
-          >
-            {submitting ? (
-              <ActivityIndicator color="#ffffff" size="small" />
-            ) : (
-              <>
-                <MapPin size={18} color="#4ade80" style={{ marginRight: 8 }} />
-                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16, marginRight: 6 }}>
-                  Confirm Check-In & Open Report
-                </Text>
-                <ArrowRight size={18} color="#ffffff" />
-              </>
-            )}
-          </LiquidGlassButton>
         </ScrollView>
       </SafeAreaView>
     </LiquidGlassBackdrop>

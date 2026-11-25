@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -17,11 +17,11 @@ import {
   ChevronLeft,
   Check,
   Plus,
+  ChevronDown,
   IndianRupee,
   Video,
   Camera,
   Trash2,
-  ShieldCheck,
 } from "lucide-react-native";
 import { showToast } from "../../../components/ui/ToastMessage";
 import { useService } from "../../../context/ServiceContext";
@@ -45,44 +45,19 @@ import {
 
 export default function SubmitReportScreen() {
   const insets = useSafeAreaInsets();
-  const { id, visitId, taskId, farmerId, siteName, lat, lng, distanceKm, method } =
-    useLocalSearchParams<{
-      id?: string;
-      visitId?: string;
-      taskId?: string;
-      farmerId?: string;
-      siteName?: string;
-      lat?: string;
-      lng?: string;
-      distanceKm?: string;
-      method?: string;
-    }>();
-
+  const { id, taskId, farmerId, visitId, siteName, lat, lng, distanceKm, method } = useLocalSearchParams<{
+    id?: string;
+    taskId?: string;
+    farmerId?: string;
+    visitId?: string;
+    siteName?: string;
+    lat?: string;
+    lng?: string;
+    distanceKm?: string;
+    method?: string;
+  }>();
   const { serviceConfig } = useService();
   const { stopSession } = useTracking();
-
-  const [contextState, setContextState] = useState<{
-    visitId: string;
-    taskId: string;
-    farmerId: string;
-    siteName: string;
-    latitude: number | null;
-    longitude: number | null;
-    distanceKm: number;
-    checkInMediaId: number | null;
-    requiresOtp: boolean;
-  }>({
-    visitId: visitId || "",
-    taskId: taskId || id || "",
-    farmerId: farmerId || "",
-    siteName: siteName || "",
-    latitude: lat && !Number.isNaN(Number(lat)) ? Number(lat) : null,
-    longitude: lng && !Number.isNaN(Number(lng)) ? Number(lng) : null,
-    distanceKm: distanceKm && !Number.isNaN(Number(distanceKm)) ? Number(distanceKm) : 0,
-    checkInMediaId: null,
-    requiresOtp: false,
-  });
-
   const [notes, setNotes] = useState("");
   const [paymentMode, setPaymentMode] = useState("None");
   const [amountCollected, setAmountCollected] = useState("");
@@ -91,43 +66,21 @@ export default function SubmitReportScreen() {
   const [siteVideo, setSiteVideo] = useState<LocalMediaAsset | null>(null);
   const [recommendations, setRecommendations] = useState("");
   const [otpCode, setOtpCode] = useState("");
+  const [requiresOtp, setRequiresOtp] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     (async () => {
       try {
-        const [rawTask, rawCheckin] = await Promise.all([
-          AsyncStorage.getItem("@active_task"),
-          AsyncStorage.getItem("@active_checkin"),
-        ]);
-        const parsedTask = rawTask ? JSON.parse(rawTask) : null;
-        const parsedCheckin = rawCheckin ? JSON.parse(rawCheckin) : null;
-
-        setContextState((prev) => ({
-          visitId: prev.visitId || parsedCheckin?.visitId || "",
-          taskId:
-            prev.taskId ||
-            parsedCheckin?.taskId ||
-            (parsedTask?.id ? String(parsedTask.id) : ""),
-          farmerId:
-            prev.farmerId ||
-            parsedCheckin?.farmerId ||
-            (parsedTask?.farmerId ? String(parsedTask.farmerId) : ""),
-          siteName:
-            prev.siteName ||
-            parsedCheckin?.siteName ||
-            parsedTask?.targetEntity ||
-            parsedTask?.facility ||
-            parsedTask?.title ||
-            "",
-          latitude: prev.latitude ?? parsedCheckin?.latitude ?? parsedTask?.latitude ?? null,
-          longitude: prev.longitude ?? parsedCheckin?.longitude ?? parsedTask?.longitude ?? null,
-          distanceKm: prev.distanceKm || Number(parsedCheckin?.distanceKm || 0),
-          checkInMediaId: parsedCheckin?.checkInMediaId ? Number(parsedCheckin.checkInMediaId) : null,
-          requiresOtp: Boolean(parsedCheckin?.requiresOtp ?? parsedTask?.requiresOtp),
-        }));
+        const storedCheckin = await AsyncStorage.getItem("@active_checkin");
+        if (storedCheckin) {
+          const parsed = JSON.parse(storedCheckin);
+          if (parsed?.requiresOtp) {
+            setRequiresOtp(true);
+          }
+        }
       } catch {
-        // Proceed with URL params
+        // Ignore storage read error
       }
     })();
   }, []);
@@ -179,54 +132,83 @@ export default function SubmitReportScreen() {
     ]);
   };
 
+  const pickBeforePhoto = () => chooseImageSource(setBeforePhoto, "Before Work Photo");
+  const pickAfterPhoto = () => chooseImageSource(setAfterPhoto, "After Work Photo");
+
   const handleSubmit = async () => {
     if (notes.trim().length < 5) {
       showToast({
         title: "Missing Notes",
-        message: "Please write field work notes (at least 5 characters).",
-        type: "error",
-      });
-      return;
-    }
-    if (contextState.requiresOtp && otpCode.trim().length < 4) {
-      showToast({
-        title: "Customer OTP Required",
-        message: "Enter the 4-digit verification OTP for this work order.",
+        message: "Please write work notes (at least 5 characters).",
         type: "error",
       });
       return;
     }
     if (
       paymentMode !== "None" &&
-      (!amountCollected || Number.isNaN(Number(amountCollected)) || Number(amountCollected) <= 0)
+      (!amountCollected ||
+        isNaN(Number(amountCollected)) ||
+        Number(amountCollected) <= 0)
     ) {
       showToast({
         title: "Invalid Amount",
-        message: "Please enter a valid payment amount.",
+        message: "Please enter a valid amount.",
         type: "error",
       });
       return;
     }
-
+    if (requiresOtp && otpCode.trim().length < 4) {
+      showToast({
+        title: "Customer OTP Required",
+        message: "Please enter the customer verification OTP for this task.",
+        type: "error",
+      });
+      return;
+    }
     setLoading(true);
 
-    let resolvedLat = contextState.latitude;
-    let resolvedLng = contextState.longitude;
-    try {
-      const perm = await Location.getForegroundPermissionsAsync();
-      if (perm.granted) {
+    let resolvedLat = lat ? Number(lat) : null;
+    let resolvedLng = lng ? Number(lng) : null;
+    if (!resolvedLat || !resolvedLng) {
+      try {
         const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
         resolvedLat = loc.coords.latitude;
         resolvedLng = loc.coords.longitude;
+      } catch {
+        // Keep null if GPS unavailable
       }
-    } catch {
-      // Retain check-in coordinates
     }
 
-    const resolvedSiteName = contextState.siteName || serviceConfig.vocab.entitySingular;
-    const mediaIds: number[] = contextState.checkInMediaId ? [contextState.checkInMediaId] : [];
-    const uploadedMedia: any[] = [];
+    let resolvedSiteName = siteName || serviceConfig.vocab.entitySingular;
+    let resolvedTaskId = taskId || id || "";
+    let resolvedFarmerId = farmerId || "";
+    let resolvedVisitId = visitId || "";
+    let resolvedDistanceKm = distanceKm ? Number(distanceKm) : 0;
 
+    try {
+      const storedTask = await AsyncStorage.getItem("@active_task");
+      if (storedTask) {
+        const parsed = JSON.parse(storedTask);
+        resolvedSiteName = siteName || parsed.facility || parsed.targetEntity || resolvedSiteName;
+        resolvedTaskId = resolvedTaskId || String(parsed.id || "");
+        resolvedFarmerId = resolvedFarmerId || (parsed.farmerId ? String(parsed.farmerId) : "");
+      }
+      const storedCheckin = await AsyncStorage.getItem("@active_checkin");
+      if (storedCheckin) {
+        const parsedCheckin = JSON.parse(storedCheckin);
+        resolvedLat = resolvedLat ?? parsedCheckin.latitude ?? null;
+        resolvedLng = resolvedLng ?? parsedCheckin.longitude ?? null;
+        resolvedSiteName = parsedCheckin.siteName || resolvedSiteName;
+        resolvedVisitId = resolvedVisitId || String(parsedCheckin.visitId || "");
+        resolvedDistanceKm = resolvedDistanceKm || Number(parsedCheckin.distanceKm || 0);
+      }
+    } catch {
+      // Fallback safely
+    }
+
+    // Upload attached images & video to server first so we can link real media_ids to the visit
+    const uploadedMedia: any[] = [];
+    const mediaIds: number[] = [];
     const assetsToUpload: { asset: LocalMediaAsset; title: string }[] = [];
     if (beforePhoto) assetsToUpload.push({ asset: beforePhoto, title: `${resolvedSiteName} - Before Photo` });
     if (afterPhoto) assetsToUpload.push({ asset: afterPhoto, title: `${resolvedSiteName} - After Photo` });
@@ -237,67 +219,78 @@ export default function SubmitReportScreen() {
         const uploaded = await uploadMediaAsset({
           asset: item.asset,
           title: item.title,
-          visitId: contextState.visitId || null,
-          taskId: contextState.taskId || null,
-          farmerId: contextState.farmerId || null,
+          taskId: resolvedTaskId || null,
+          farmerId: resolvedFarmerId || null,
           latitude: resolvedLat,
           longitude: resolvedLng,
         });
         uploadedMedia.push(uploaded);
         mediaIds.push(uploaded.id);
       } catch {
-        // Continue submission smoothly
+        // Keep local URI fallback if offline
       }
     }
 
-    const combinedNotes =
-      paymentMode !== "None" && Number(amountCollected) > 0
-        ? `${notes.trim()} (Collected ₹${Number(amountCollected)} via ${paymentMode})`
-        : notes.trim();
-
-    const payload = {
-      visit_id: contextState.visitId ? Number(contextState.visitId) : undefined,
-      task_id: contextState.taskId || undefined,
-      farmer_id: contextState.farmerId ? Number(contextState.farmerId) : undefined,
-      farm_condition_notes: combinedNotes,
-      notes: combinedNotes,
-      recommendations: recommendations.trim() || undefined,
-      before_photo: uploadedMedia.find((m) => m.title?.includes("Before"))?.preview_url || undefined,
-      after_photo: uploadedMedia.find((m) => m.title?.includes("After"))?.preview_url || undefined,
-      media_ids: mediaIds,
+    const newReport = {
+      id: `REP-${Date.now()}`,
+      service: serviceConfig.label,
+      siteName: resolvedSiteName,
+      visit_id: resolvedVisitId ? Number(resolvedVisitId) : undefined,
+      task_id: resolvedTaskId || undefined,
+      farmer_id: resolvedFarmerId ? Number(resolvedFarmerId) : undefined,
       customer_otp: otpCode.trim() || undefined,
-      distance_km: contextState.distanceKm > 0 ? contextState.distanceKm : undefined,
-      check_in_latitude: contextState.latitude ?? resolvedLat,
-      check_in_longitude: contextState.longitude ?? resolvedLng,
+      distance_km: resolvedDistanceKm || undefined,
+      method: method || "report",
+      notes: notes.trim(),
+      farm_condition_notes: notes.trim(),
+      paymentMode,
+      amountCollected: paymentMode !== "None" ? Number(amountCollected) : 0,
+      beforePhoto: beforePhoto?.uri || null,
+      afterPhoto: afterPhoto?.uri || null,
+      siteVideo: siteVideo?.uri || null,
+      before_photo: uploadedMedia.find((m) => m.title?.includes("Before"))?.preview_url || beforePhoto?.uri || null,
+      after_photo: uploadedMedia.find((m) => m.title?.includes("After"))?.preview_url || afterPhoto?.uri || null,
+      media_ids: mediaIds,
+      uploadedMedia,
+      otp_verified: otpCode.trim().length >= 4,
+      check_in_latitude: resolvedLat,
+      check_in_longitude: resolvedLng,
       check_out_latitude: resolvedLat,
       check_out_longitude: resolvedLng,
+      recommendations: recommendations.trim(),
+      createdAt: new Date().toISOString(),
+      status: "Submitted",
     };
 
     try {
-      const serverResp = await apiClient.post("/employee/visit/submit", payload);
-
-      const summaryRecord = {
-        visitId: serverResp?.visit_id ? String(serverResp.visit_id) : contextState.visitId,
-        service: serviceConfig.label,
-        siteName: resolvedSiteName,
-        notes: combinedNotes,
-        pointsAwarded: Number(serverResp?.points_awarded || 0),
-        mediaCount: mediaIds.length,
-        dossierUrl: serverResp?.dossier_url || null,
-        createdAt: new Date().toISOString(),
+      const serverResp = await apiClient.post("/employee/visit/submit", newReport);
+      const savedReport = {
+        ...newReport,
+        serverVisitId: serverResp?.visit_id ? String(serverResp.visit_id) : undefined,
+        dossierUrl: serverResp?.dossier_url || undefined,
       };
-
-      await AsyncStorage.setItem("@last_submitted_report", JSON.stringify(summaryRecord));
+      const existing = await AsyncStorage.getItem("@fieldy_reports");
+      const list = existing ? JSON.parse(existing) : [];
+      list.unshift(savedReport);
+      await AsyncStorage.setItem("@fieldy_reports", JSON.stringify(list));
+      await AsyncStorage.setItem("@last_submitted_report", JSON.stringify(savedReport));
       await stopSession().catch(() => null);
       await AsyncStorage.multiRemove(["@active_task", "@active_checkin"]).catch(() => null);
       setLoading(false);
-
-      router.replace("/(employee)/visit/success");
-    } catch (error: any) {
+      showToast({
+        title: "Report Saved",
+        message:
+          mediaIds.length > 0
+            ? `${serviceConfig.vocab.visitSingular} saved with ${mediaIds.length} uploaded file(s).`
+            : `${serviceConfig.vocab.visitSingular} checked out & report saved.`,
+        type: "success",
+      });
+      router.push("/(employee)/visit/success");
+    } catch (err: any) {
       setLoading(false);
       showToast({
-        title: "Unable to Submit Report",
-        message: error?.message || "Please verify your OTP and internet connection.",
+        title: "Submission Failed",
+        message: err?.message || "Unable to submit field report. Please verify OTP and connection.",
         type: "error",
       });
     }
@@ -305,10 +298,14 @@ export default function SubmitReportScreen() {
 
   const headerTitle =
     method === "photo"
-      ? `${serviceConfig.shortName} Photo Report`
+      ? `${serviceConfig.shortName} Photo`
       : method === "video"
-      ? `${serviceConfig.shortName} Video Report`
-      : `Submit ${serviceConfig.vocab.report}`;
+      ? `${serviceConfig.shortName} Video`
+      : method === "checklist"
+      ? `${serviceConfig.vocab.taskSingular} Check`
+      : method === "notes"
+      ? "Quick Notes"
+      : `New ${serviceConfig.vocab.report}`;
 
   return (
     <LiquidGlassBackdrop variant="light">
@@ -336,27 +333,19 @@ export default function SubmitReportScreen() {
             >
               <ChevronLeft size={22} color="#0f172a" />
             </LiquidGlassIconButton>
-            <View style={{ alignItems: "center", flex: 1, marginHorizontal: 10 }}>
-              <Text numberOfLines={1} style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>
-                {headerTitle}
-              </Text>
-              {contextState.siteName ? (
-                <Text numberOfLines={1} style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>
-                  {contextState.siteName}
-                </Text>
-              ) : null}
-            </View>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>
+              {headerTitle}
+            </Text>
             <View style={{ width: 42 }} />
           </View>
 
           <ScrollView
-            style={{ flex: 1, paddingHorizontal: 20 }}
+            style={{ flex: 1, paddingHorizontal: 22 }}
             showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ paddingBottom: 120, paddingTop: 8 }}
+            contentContainerStyle={{ paddingBottom: 120, paddingTop: 10 }}
           >
             {/* Progress Steps */}
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20, paddingHorizontal: 12 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 24, paddingHorizontal: 12 }}>
               {[1, 2, 3, 4].map((step, index) => (
                 <React.Fragment key={step}>
                   <View
@@ -378,21 +367,47 @@ export default function SubmitReportScreen() {
               ))}
             </View>
 
-            {/* Work Notes */}
+            {/* Status */}
             <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, marginBottom: 8 }}>
-              Field Work & Inspection Notes *
+              {serviceConfig.shortName} Status
             </Text>
             <LiquidGlassCard
               variant="light"
-              borderRadius={16}
-              style={{ height: 112, marginBottom: 18 }}
-              contentStyle={{ paddingHorizontal: 14, paddingVertical: 10 }}
+              borderRadius={14}
+              onPress={() => {}}
+              style={{ marginBottom: 20 }}
+              contentStyle={{
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Medium", fontSize: 15 }}>
+                Done & Verified (Good)
+              </Text>
+              <ChevronDown size={20} color="#64748b" />
+            </LiquidGlassCard>
+
+            {/* Notes */}
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, marginBottom: 8 }}>
+              Work Notes *
+            </Text>
+            <LiquidGlassCard
+              variant="light"
+              borderRadius={14}
+              style={{ height: 110, marginBottom: 20 }}
+              contentStyle={{
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+              }}
             >
               <TextInput
                 style={{ flex: 1, color: "#0f172a", fontFamily: "Brandon-Medium", fontSize: 15 }}
                 multiline
                 textAlignVertical="top"
-                placeholder={`Describe work completed at ${contextState.siteName || "site"}...`}
+                placeholder={`Write ${serviceConfig.shortName.toLowerCase()} notes...`}
                 placeholderTextColor="#94a3b8"
                 value={notes}
                 onChangeText={setNotes}
@@ -403,33 +418,35 @@ export default function SubmitReportScreen() {
             <LiquidGlassCard
               variant="light"
               borderRadius={18}
-              style={{ marginBottom: 18 }}
+              style={{ marginBottom: 20 }}
               contentStyle={{ padding: 16 }}
             >
-              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-                <ShieldCheck size={18} color="#059669" style={{ marginRight: 8 }} />
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+                <Check size={18} color="#059669" style={{ marginRight: 8 }} />
                 <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 15 }}>
-                  Client Verification OTP {contextState.requiresOtp ? "*" : "(Optional)"}
+                  OTP Check
                 </Text>
               </View>
               <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12, marginBottom: 10 }}>
-                {contextState.requiresOtp
-                  ? "Enter the 4-digit OTP generated on this work order in Web Admin."
-                  : "Enter client verification code if completing an OTP-protected work order."}
+                {requiresOtp
+                  ? "Enter customer verification OTP (required)"
+                  : "Optional customer sign-off OTP"}
               </Text>
               <View
                 style={{
                   borderWidth: 1,
-                  borderColor: "#cbd5e1",
+                  borderColor: "rgba(255, 255, 255, 0.92)",
                   borderRadius: 12,
                   paddingHorizontal: 14,
                   paddingVertical: 10,
-                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                  backgroundColor: "rgba(255, 255, 255, 0.66)",
+                  flexDirection: "row",
+                  alignItems: "center",
                 }}
               >
                 <TextInput
-                  style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, textAlign: "center", letterSpacing: 4 }}
-                  placeholder="----"
+                  style={{ flex: 1, color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, textAlign: "center" }}
+                  placeholder="Enter OTP"
                   placeholderTextColor="#94a3b8"
                   keyboardType="numeric"
                   maxLength={6}
@@ -439,15 +456,78 @@ export default function SubmitReportScreen() {
               </View>
             </LiquidGlassCard>
 
+            {/* Payment */}
+            <LiquidGlassCard
+              variant="light"
+              borderRadius={18}
+              style={{ marginBottom: 20 }}
+              contentStyle={{ padding: 16 }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+                <IndianRupee size={18} color="#ea580c" style={{ marginRight: 8 }} />
+                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 15 }}>
+                  Payment
+                </Text>
+              </View>
+              <View style={{ flexDirection: "row", gap: 8, marginBottom: paymentMode !== "None" ? 12 : 0 }}>
+                {["None", "Cash", "UPI"].map((mode) => (
+                  <LiquidGlassPill
+                    key={mode}
+                    variant="light"
+                    active={paymentMode === mode}
+                    tintColor="rgba(249, 115, 22, 0.85)"
+                    onPress={() => setPaymentMode(mode)}
+                    style={{ flex: 1 }}
+                    contentStyle={{ paddingVertical: 10, paddingHorizontal: 10 }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: "Brandon-Bold",
+                        fontSize: 13,
+                        color: paymentMode === mode ? "#ffffff" : "#64748b",
+                      }}
+                    >
+                      {mode}
+                    </Text>
+                  </LiquidGlassPill>
+                ))}
+              </View>
+              {paymentMode !== "None" && (
+                <View
+                  style={{
+                    borderWidth: 1,
+                    borderColor: "rgba(255, 255, 255, 0.92)",
+                    borderRadius: 12,
+                    paddingHorizontal: 14,
+                    paddingVertical: 10,
+                    backgroundColor: "rgba(255, 255, 255, 0.66)",
+                    flexDirection: "row",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 18, marginRight: 8 }}>
+                    ₹
+                  </Text>
+                  <TextInput
+                    style={{ flex: 1, color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}
+                    placeholder="Amount"
+                    keyboardType="numeric"
+                    value={amountCollected}
+                    onChangeText={setAmountCollected}
+                  />
+                </View>
+              )}
+            </LiquidGlassCard>
+
             {/* Before & After Photos + Site Video */}
             <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, marginBottom: 8 }}>
-              Photos & Site Video Evidence
+              Photos & Site Video Upload
             </Text>
             <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
               <LiquidGlassCard
                 variant="light"
                 borderRadius={16}
-                onPress={() => chooseImageSource(setBeforePhoto, "Before Work Photo")}
+                onPress={pickBeforePhoto}
                 style={{ flex: 1, height: 112 }}
                 contentStyle={{ alignItems: "center", justifyContent: "center" }}
               >
@@ -466,7 +546,7 @@ export default function SubmitReportScreen() {
               <LiquidGlassCard
                 variant="light"
                 borderRadius={16}
-                onPress={() => chooseImageSource(setAfterPhoto, "After Work Photo")}
+                onPress={pickAfterPhoto}
                 style={{ flex: 1, height: 112 }}
                 contentStyle={{ alignItems: "center", justifyContent: "center" }}
               >
@@ -488,7 +568,7 @@ export default function SubmitReportScreen() {
               variant="light"
               borderRadius={16}
               onPress={chooseVideoSource}
-              style={{ marginBottom: 18 }}
+              style={{ marginBottom: 20 }}
               contentStyle={{
                 paddingHorizontal: 16,
                 paddingVertical: 14,
@@ -517,7 +597,7 @@ export default function SubmitReportScreen() {
                   </Text>
                   <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>
                     {siteVideo
-                      ? `Video attached${siteVideo.durationMs ? ` • ${Math.max(1, Math.round(siteVideo.durationMs / 1000))}s` : ""}`
+                      ? `Video ready to upload${siteVideo.durationMs ? ` • ${Math.max(1, Math.round(siteVideo.durationMs / 1000))}s` : ""}`
                       : "MP4 / MOV walkthrough evidence (up to 60s)"}
                   </Text>
                 </View>
@@ -531,103 +611,42 @@ export default function SubmitReportScreen() {
               )}
             </LiquidGlassCard>
 
-            {/* Collection / Billing (Optional) */}
-            <LiquidGlassCard
-              variant="light"
-              borderRadius={18}
-              style={{ marginBottom: 18 }}
-              contentStyle={{ padding: 16 }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-                <IndianRupee size={17} color="#ea580c" style={{ marginRight: 6 }} />
-                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 15 }}>
-                  Payment Collection (If Applicable)
-                </Text>
-              </View>
-              <View style={{ flexDirection: "row", gap: 8, marginBottom: paymentMode !== "None" ? 12 : 0 }}>
-                {["None", "Cash", "UPI"].map((mode) => (
-                  <LiquidGlassPill
-                    key={mode}
-                    variant="light"
-                    active={paymentMode === mode}
-                    tintColor="rgba(249, 115, 22, 0.85)"
-                    onPress={() => setPaymentMode(mode)}
-                    style={{ flex: 1 }}
-                    contentStyle={{ paddingVertical: 9 }}
-                  >
-                    <Text
-                      style={{
-                        fontFamily: "Brandon-Bold",
-                        fontSize: 13,
-                        color: paymentMode === mode ? "#ffffff" : "#64748b",
-                      }}
-                    >
-                      {mode}
-                    </Text>
-                  </LiquidGlassPill>
-                ))}
-              </View>
-              {paymentMode !== "None" && (
-                <View
-                  style={{
-                    borderWidth: 1,
-                    borderColor: "#cbd5e1",
-                    borderRadius: 12,
-                    paddingHorizontal: 14,
-                    paddingVertical: 10,
-                    backgroundColor: "rgba(255, 255, 255, 0.8)",
-                    flexDirection: "row",
-                    alignItems: "center",
-                  }}
-                >
-                  <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 18, marginRight: 8 }}>
-                    ₹
-                  </Text>
-                  <TextInput
-                    style={{ flex: 1, color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}
-                    placeholder="Amount collected"
-                    placeholderTextColor="#94a3b8"
-                    keyboardType="numeric"
-                    value={amountCollected}
-                    onChangeText={setAmountCollected}
-                  />
-                </View>
-              )}
-            </LiquidGlassCard>
-
-            {/* Recommendations */}
+            {/* Follow-Up Notes */}
             <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, marginBottom: 8 }}>
-              Follow-up Recommendations
+              Follow-up Notes
             </Text>
             <LiquidGlassCard
               variant="light"
-              borderRadius={16}
-              style={{ height: 92, marginBottom: 22 }}
-              contentStyle={{ paddingHorizontal: 14, paddingVertical: 10 }}
+              borderRadius={14}
+              style={{ height: 96, marginBottom: 24 }}
+              contentStyle={{
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+              }}
             >
               <TextInput
                 style={{ flex: 1, color: "#0f172a", fontFamily: "Brandon-Medium", fontSize: 15 }}
                 multiline
                 textAlignVertical="top"
-                placeholder="Optional follow-up actions for Web Admin..."
+                placeholder="Any follow-up notes..."
                 placeholderTextColor="#94a3b8"
                 value={recommendations}
                 onChangeText={setRecommendations}
               />
             </LiquidGlassCard>
 
-            {/* Submit CTA */}
+            {/* Submit */}
             <LiquidGlassButton
               onPress={handleSubmit}
               disabled={loading}
               variant="tinted"
-              tintColor="rgba(6, 34, 20, 0.90)"
-              dropletColor="#4ade80"
+              tintColor={`${serviceConfig.themeColor}D9`}
+              dropletColor={serviceConfig.themeColor}
               style={{ width: "100%" }}
-              contentStyle={{ paddingVertical: 17 }}
+              contentStyle={{ paddingVertical: 16 }}
             >
               <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>
-                {loading ? "Syncing Report..." : `Complete Checkout & Submit ${serviceConfig.vocab.report}`}
+                {loading ? "Saving..." : `Save ${serviceConfig.vocab.report}`}
               </Text>
             </LiquidGlassButton>
           </ScrollView>

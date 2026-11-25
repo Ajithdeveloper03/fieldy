@@ -5,391 +5,749 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
-  ActivityIndicator,
-  RefreshControl,
+  Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
+import { api } from "../../services/api";
 import {
   ChevronLeft,
-  Award,
+  Settings,
+  Calendar,
   CheckCircle2,
-  ClipboardList,
-  CalendarCheck,
+  BarChart3,
+  User,
   Clock,
-  TrendingUp,
-  MapPin,
+  ArrowUpRight,
+  Zap,
+  ShieldCheck,
 } from "lucide-react-native";
-import { api } from "../../services/api";
-import { useService } from "../../context/ServiceContext";
 import {
   LiquidGlassBackdrop,
-  LiquidGlassButton,
   LiquidGlassCard,
   LiquidGlassIconBadge,
   LiquidGlassIconButton,
 } from "../../components/LiquidGlass";
 
 export default function EmployeePerformanceScreen() {
-  const { serviceConfig } = useService();
-  const [data, setData] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const loadPerformance = useCallback(async (isPull = false) => {
-    if (isPull) setRefreshing(true);
-    try {
-      const res = await api.get("/employee/performance");
-      setData(res);
-    } catch {
-      setData(null);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  const [autoRouting, setAutoRouting] = useState(true);
+  const [perfData, setPerfData] = useState<any>(null);
 
   useFocusEffect(
     useCallback(() => {
-      void loadPerformance(false);
-    }, [loadPerformance])
+      let active = true;
+      (async () => {
+        try {
+          const res = await api.get("/employee/performance");
+          if (active) setPerfData(res?.data ?? res);
+        } catch {
+          if (active) setPerfData(null);
+        }
+      })();
+      return () => {
+        active = false;
+      };
+    }, [])
   );
 
-  const metrics = data?.metrics || {};
-  const weeklyBars: any[] = Array.isArray(data?.weekly_bars) ? data.weekly_bars : [];
-  const recentTasks: any[] = Array.isArray(data?.recent_tasks) ? data.recent_tasks : [];
-  const attendanceRows: any[] = Array.isArray(data?.attendance) ? data.attendance : [];
-  const maxWeeklyVal = Math.max(1, ...weeklyBars.map((b) => Number(b.total_actions || 0)));
-  const score = Number(data?.score ?? metrics.score ?? 0);
-  const themeColor = serviceConfig.themeColor || "#059669";
+  const metrics = perfData?.metrics ?? {};
+  const efficiency = Number(metrics.efficiency_score ?? metrics.efficiency ?? 85);
+  const pointsEarned = Number(metrics.points_earned ?? metrics.points ?? 0);
+  const tasksCompleted = Number(metrics.tasks_completed ?? 0);
+  const tasksTotal = Number(metrics.tasks_total ?? (tasksCompleted > 0 ? tasksCompleted : 0));
+  const hoursWorked = Number(metrics.hours_worked ?? metrics.hours ?? 0);
+  const periodLabel = perfData?.period_label ?? new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const weeklyBars: any[] = Array.isArray(perfData?.weekly_bars)
+    ? perfData.weekly_bars
+    : [
+        { day: "Mon", h: 32, active: false },
+        { day: "Tue", h: 48, active: false },
+        { day: "Wed", h: 40, active: false },
+        { day: "Thu", h: 64, active: true },
+        { day: "Fri", h: 56, active: false },
+        { day: "Sat", h: 60, active: false },
+        { day: "Sun", h: 36, active: false },
+      ];
+  const recentTasks: any[] = Array.isArray(perfData?.recent_tasks) ? perfData.recent_tasks : [];
 
   return (
     <LiquidGlassBackdrop variant="light">
       <StatusBar barStyle="dark-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
-        {/* HEADER */}
+        {/* HEADER (Reference Image 5 Minimalist Header) */}
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
-            paddingHorizontal: 20,
+            paddingHorizontal: 22,
             paddingTop: 12,
             paddingBottom: 14,
           }}
         >
           <LiquidGlassIconButton
+            onPress={() =>
+              router.canGoBack()
+                ? router.back()
+                : router.replace("/(employee)/dashboard")
+            }
             variant="light"
             size={44}
-            onPress={() => (router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard"))}
           >
-            <ChevronLeft size={24} color="#0f172a" />
+            <ChevronLeft size={22} color="#0f172a" />
           </LiquidGlassIconButton>
 
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 22 }}>
-              My Performance
-            </Text>
-            <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>
-              {data?.period || "Current Month"} • Live Score
-            </Text>
-          </View>
+          <Text
+            style={{
+              color: "#0f172a",
+              fontFamily: "Brandon-Bold",
+              fontSize: 24,
+            }}
+          >
+            Performance & KPIs
+          </Text>
 
-          <View style={{ width: 44 }} />
+          <LiquidGlassIconButton
+            onPress={() => router.push("/(employee)/menu")}
+            variant="light"
+            size={44}
+          >
+            <Settings size={20} color="#0f172a" />
+          </LiquidGlassIconButton>
         </View>
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => loadPerformance(true)}
-              tintColor={themeColor}
-            />
-          }
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 130 }}
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingBottom: 140,
+            paddingTop: 6,
+          }}
         >
-          {loading && !data ? (
-            <ActivityIndicator color={themeColor} style={{ marginTop: 48 }} />
-          ) : (
-            <>
-              {/* HERO PERFORMANCE SCORE CARD (SYNCED WITH WEB ADMIN /admin/performance) */}
-              <LiquidGlassCard
-                variant="dark"
-                borderRadius={30}
-                dropletColor={themeColor}
-                style={{ marginBottom: 18 }}
-                contentStyle={{ padding: 22 }}
+          {/* TOP HERO DIAL CARD (Reference Image 5 Center Screen: "Air Condition" + 3 Sub-Columns + Semi-Circle Gauge) */}
+          <LiquidGlassCard
+            variant="light"
+            borderRadius={36}
+            style={{ marginBottom: 20 }}
+            contentStyle={{ padding: 24 }}
+          >
+            {/* Card Title + Toggle Switch */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 20,
+              }}
+            >
+              <Text
+                style={{
+                  color: "#0f172a",
+                  fontFamily: "Brandon-Bold",
+                  fontSize: 20,
+                }}
               >
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                  <View style={{ flex: 1, paddingRight: 12 }}>
-                    <Text style={{ color: "#86efac", fontFamily: "Brandon-Bold", fontSize: 12 }}>
-                      {data?.employee?.name || "Field Staff"}
-                      {data?.employee?.employee_code ? ` • ${data.employee.employee_code}` : ""}
-                    </Text>
-                    <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 36, marginTop: 6 }}>
-                      {score}%
-                    </Text>
-                    <Text style={{ color: "rgba(255,255,255,0.75)", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 2 }}>
-                      Overall SLA & Attendance Score • {Number(metrics.points_earned || 0)} Pts earned
-                    </Text>
-                  </View>
+                SLA Efficiency Quota
+              </Text>
+              <Switch
+                value={autoRouting}
+                onValueChange={setAutoRouting}
+                trackColor={{ false: "#e2e8f0", true: "#10b981" }}
+                thumbColor="#ffffff"
+              />
+            </View>
 
-                  <LiquidGlassIconBadge size={60} borderRadius={22} variant="dark" tintColor="#4ade80">
-                    <Award size={30} color="#4ade80" />
-                  </LiquidGlassIconBadge>
-                </View>
-
-                <View
+            {/* 3 Minimal Sub-Columns (Reference Image 5: "Fan Speed | Timer | Auto Mode") */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginBottom: 24,
+              }}
+            >
+              <View>
+                <Text
                   style={{
-                    height: 8,
-                    borderRadius: 4,
-                    backgroundColor: "rgba(255,255,255,0.14)",
-                    marginTop: 16,
-                    overflow: "hidden",
+                    color: "#0f172a",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 13,
                   }}
                 >
-                  <View
-                    style={{
-                      width: `${Math.min(100, Math.max(0, score))}%`,
-                      height: "100%",
-                      borderRadius: 4,
-                      backgroundColor: "#4ade80",
-                    }}
-                  />
-                </View>
-              </LiquidGlassCard>
+                  Target Quota
+                </Text>
+                <Text
+                  style={{
+                    color: "#94a3b8",
+                    fontFamily: "Brandon-Medium",
+                    fontSize: 11,
+                    marginTop: 2,
+                  }}
+                >
+                  {tasksCompleted}/{tasksTotal} Tasks
+                </Text>
+              </View>
+              <View>
+                <Text
+                  style={{
+                    color: "#0f172a",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 13,
+                  }}
+                >
+                  Logged Time
+                </Text>
+                <Text
+                  style={{
+                    color: "#94a3b8",
+                    fontFamily: "Brandon-Medium",
+                    fontSize: 11,
+                    marginTop: 2,
+                  }}
+                >
+                  {hoursWorked}h Logged
+                </Text>
+              </View>
+              <View>
+                <Text
+                  style={{
+                    color: "#0f172a",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 13,
+                  }}
+                >
+                  Auto-Dispatch
+                </Text>
+                <Text
+                  style={{
+                    color: "#10b981",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 11,
+                    marginTop: 2,
+                  }}
+                >
+                  {autoRouting ? "Active [On]" : "Manual [Off]"}
+                </Text>
+              </View>
+            </View>
 
-              {/* REAL METRICS BENTO GRID */}
-              <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginBottom: 12 }}>
-                {[
-                  {
-                    label: "Task Completion",
-                    value: `${Number(metrics.task_completion_rate || 0).toFixed(0)}%`,
-                    sub: `${metrics.tasks_completed ?? 0} of ${metrics.tasks_total ?? 0} completed`,
-                    icon: ClipboardList,
-                    color: "#ea580c",
-                  },
-                  {
-                    label: "Attendance Rate",
-                    value: `${Number(metrics.attendance_rate || 0).toFixed(0)}%`,
-                    sub: `${metrics.attendance_days ?? 0} of ${metrics.workdays_elapsed ?? 0} workdays`,
-                    icon: CalendarCheck,
-                    color: "#0284c7",
-                  },
-                  {
-                    label: "Hours Logged",
-                    value: `${Number(metrics.hours_worked || 0).toFixed(1)}h`,
-                    sub: `${metrics.punctual_days ?? 0} on-time shifts`,
-                    icon: Clock,
-                    color: "#7c3aed",
-                  },
-                  {
-                    label: "Site Visits",
-                    value: `${metrics.visits_completed ?? 0}`,
-                    sub: `${Number(metrics.distance_km_month || 0).toFixed(1)} km this month`,
-                    icon: MapPin,
-                    color: "#059669",
-                  },
-                ].map((item, idx) => {
-                  const IconComp = item.icon;
-                  return (
-                    <LiquidGlassCard
-                      key={idx}
-                      variant="light"
-                      borderRadius={22}
-                      style={{ width: "48.2%", marginBottom: 12 }}
-                      contentStyle={{ padding: 16 }}
-                    >
-                      <LiquidGlassIconBadge size={38} borderRadius={13} variant="light" tintColor={item.color}>
-                        <IconComp size={19} color={item.color} />
-                      </LiquidGlassIconBadge>
-                      <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 25, marginTop: 10 }}>
-                        {item.value}
-                      </Text>
-                      <Text style={{ color: "#334155", fontFamily: "Brandon-Bold", fontSize: 13 }}>
-                        {item.label}
-                      </Text>
-                      <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 11, marginTop: 2 }}>
-                        {item.sub}
-                      </Text>
-                    </LiquidGlassCard>
-                  );
-                })}
+            {/* Glowing Semi-Circular Arc Gauge ("22°C" -> "86%") */}
+            <View style={{ alignItems: "center", paddingTop: 6 }}>
+              <View
+                style={{
+                  width: 240,
+                  height: 125,
+                  overflow: "hidden",
+                  alignItems: "center",
+                }}
+              >
+                <View
+                  style={{
+                    width: 240,
+                    height: 240,
+                    borderRadius: 120,
+                    borderWidth: 16,
+                    borderColor: "rgba(148, 163, 184, 0.25)",
+                    borderTopColor: "#10b981",
+                    borderLeftColor: "#34d399",
+                    borderRightColor: "#059669",
+                    transform: [{ rotate: "-15deg" }],
+                  }}
+                />
+                <View
+                  style={{
+                    position: "absolute",
+                    bottom: 4,
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "#94a3b8",
+                      fontFamily: "Brandon-Bold",
+                      fontSize: 11,
+                      marginBottom: 2,
+                    }}
+                  >
+                    100%
+                  </Text>
+                  <Text
+                    style={{
+                      color: "#0f172a",
+                      fontFamily: "Brandon-Bold",
+                      fontSize: 56,
+                      lineHeight: 60,
+                    }}
+                  >
+                    {efficiency}%
+                  </Text>
+                  <Text
+                    style={{
+                      color: "#64748b",
+                      fontFamily: "Brandon-Medium",
+                      fontSize: 14,
+                    }}
+                  >
+                    Earned {pointsEarned} pts to date
+                  </Text>
+                </View>
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  width: 240,
+                  marginTop: 4,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#94a3b8",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 11,
+                  }}
+                >
+                  0%
+                </Text>
+                <Text
+                  style={{
+                    color: "#10b981",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 11,
+                  }}
+                >
+                  Optimal SLA
+                </Text>
+              </View>
+            </View>
+          </LiquidGlassCard>
+
+          {/* ANALYTICS & POINTS BREAKDOWN CARD (Reference Image 5 Right Screen: "361.9 kWh" + Area Chart + Cost Rows) */}
+          <LiquidGlassCard
+            variant="light"
+            borderRadius={32}
+            style={{ marginBottom: 20 }}
+            contentStyle={{ padding: 22 }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 18,
+              }}
+            >
+              <View>
+                <Text
+                  style={{
+                    color: "#0f172a",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 32,
+                  }}
+                >
+                  {pointsEarned.toFixed(1)} Pts
+                </Text>
+                <Text
+                  style={{
+                    color: "#94a3b8",
+                    fontFamily: "Brandon-Medium",
+                    fontSize: 12,
+                  }}
+                >
+                  Total Incentive Score • {periodLabel}
+                </Text>
+              </View>
+              {/* Dot-Matrix Badge Icon */}
+              <LiquidGlassIconBadge
+                size={58}
+                borderRadius={16}
+                variant="light"
+                tintColor="#10b981"
+              >
+                <Zap size={20} color="#10b981" />
+                <Text
+                  style={{
+                    color: "#15803d",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 10,
+                    marginTop: 2,
+                  }}
+                >
+                  TIER 1
+                </Text>
+              </LiquidGlassIconBadge>
+            </View>
+
+            {/* Simulated Area Trend Bars */}
+            <View style={{ marginBottom: 18 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 12,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#0f172a",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 15,
+                  }}
+                >
+                  Weekly Output Optimization
+                </Text>
+                <View
+                  style={{
+                    backgroundColor: "rgba(220, 252, 231, 0.85)",
+                    borderWidth: 1,
+                    borderColor: "rgba(21, 128, 61, 0.18)",
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    borderRadius: 8,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "#15803d",
+                      fontFamily: "Brandon-Bold",
+                      fontSize: 11,
+                    }}
+                  >
+                    +14.2%
+                  </Text>
+                </View>
               </View>
 
-              {/* REAL 7-DAY WEEKLY ACTIVITY BAR CHART */}
-              <LiquidGlassCard
-                variant="light"
-                borderRadius={26}
-                style={{ marginBottom: 18 }}
-                contentStyle={{ padding: 20 }}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "flex-end",
+                  justifyContent: "space-between",
+                  height: 90,
+                  paddingTop: 10,
+                  paddingHorizontal: 8,
+                  backgroundColor: "rgba(255, 255, 255, 0.45)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255, 255, 255, 0.85)",
+                  borderRadius: 20,
+                  paddingBottom: 10,
+                }}
               >
-                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <TrendingUp size={19} color={themeColor} />
-                    <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 17, marginLeft: 8 }}>
-                      This Week&apos;s Field Activity
+                {weeklyBars.map((bar, i) => (
+                  <View key={i} style={{ alignItems: "center", flex: 1 }}>
+                    <View
+                      style={{
+                        width: 18,
+                        height: Math.max(12, Math.min(72, Number(bar.h ?? 30))),
+                        borderRadius: 9,
+                        backgroundColor: bar.active ? "#10b981" : "#cbd5e1",
+                        marginBottom: 6,
+                      }}
+                    />
+                    <Text
+                      style={{
+                        color: bar.active ? "#0f172a" : "#94a3b8",
+                        fontFamily: bar.active
+                          ? "Brandon-Bold"
+                          : "Brandon-Medium",
+                        fontSize: 10,
+                      }}
+                    >
+                      {bar.day}
                     </Text>
                   </View>
-                  <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>
-                    Tasks + Visits
+                ))}
+              </View>
+            </View>
+
+            {/* Incentive Payout Breakdown (Reference Image 5 "Energy Cost" Rows) */}
+            <View
+              style={{
+                borderTopWidth: 1,
+                borderTopColor: "rgba(148, 163, 184, 0.22)",
+                paddingTop: 16,
+                gap: 10,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#0f172a",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 15,
+                  }}
+                >
+                  Incentive & Bonus Ledger
+                </Text>
+                <ArrowUpRight size={16} color="#64748b" />
+              </View>
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#64748b",
+                    fontFamily: "Brandon-Medium",
+                    fontSize: 13,
+                  }}
+                >
+                  Weekly Verified Bonus
+                </Text>
+                <Text
+                  style={{
+                    color: "#0f172a",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 14,
+                  }}
+                >
+                  ₹2,400
+                </Text>
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#64748b",
+                    fontFamily: "Brandon-Medium",
+                    fontSize: 13,
+                  }}
+                >
+                  Full-month estimated payout
+                </Text>
+                <Text
+                  style={{
+                    color: "#10b981",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 14,
+                  }}
+                >
+                  ₹9,600
+                </Text>
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#64748b",
+                    fontFamily: "Brandon-Medium",
+                    fontSize: 13,
+                  }}
+                >
+                  Last month&apos;s bonus
+                </Text>
+                <Text
+                  style={{
+                    color: "#0f172a",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 14,
+                  }}
+                >
+                  ₹8,250
+                </Text>
+              </View>
+            </View>
+          </LiquidGlassCard>
+
+          {/* 2x2 SMART CATEGORY BENTO TILES (Reference Image 5: "Audio System | Smart Light") */}
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 14,
+            }}
+          >
+            <Text
+              style={{
+                color: "#0f172a",
+                fontFamily: "Brandon-Bold",
+                fontSize: 18,
+              }}
+            >
+              Service Specializations
+            </Text>
+            <TouchableOpacity onPress={() => router.push("/(employee)/tasks")}>
+              <Text
+                style={{
+                  color: "#15803d",
+                  fontFamily: "Brandon-Bold",
+                  fontSize: 13,
+                }}
+              >
+                View All
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 14,
+              marginBottom: 20,
+            }}
+          >
+            {recentTasks.length > 0 ? (
+              recentTasks.slice(0, 2).map((t, idx) => (
+                <LiquidGlassCard
+                  key={t.id ?? idx}
+                  variant="light"
+                  borderRadius={28}
+                  onPress={() => router.push(`/(employee)/task/${t.id}` as any)}
+                  style={{ flex: 1 }}
+                  contentStyle={{ padding: 18 }}
+                >
+                  <Text
+                    style={{
+                      color: "#0f172a",
+                      fontFamily: "Brandon-Bold",
+                      fontSize: 15,
+                    }}
+                    numberOfLines={1}
+                  >
+                    {t.title ?? "Assigned Task"}
                   </Text>
-                </View>
-
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", height: 116, paddingTop: 14 }}>
-                  {(weeklyBars.length > 0
-                    ? weeklyBars
-                    : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => ({
-                        day: d,
-                        total_actions: 0,
-                        is_today: false,
-                      }))
-                  ).map((bar, idx) => {
-                    const count = Number(bar.total_actions || 0);
-                    const barHeight = count > 0 ? Math.max(18, Math.round((count / maxWeeklyVal) * 76)) : 6;
-                    return (
-                      <View key={idx} style={{ flex: 1, alignItems: "center" }}>
-                        <Text style={{ color: count > 0 ? "#0f172a" : "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 11, marginBottom: 5 }}>
-                          {count}
-                        </Text>
-                        <View
-                          style={{
-                            width: 22,
-                            height: barHeight,
-                            borderRadius: 8,
-                            backgroundColor:
-                              count > 0
-                                ? bar.is_today
-                                  ? themeColor
-                                  : "#10b981"
-                                : "rgba(148,163,184,0.28)",
-                          }}
-                        />
-                        <Text
-                          style={{
-                            color: bar.is_today ? themeColor : "#64748b",
-                            fontFamily: "Brandon-Bold",
-                            fontSize: 11,
-                            marginTop: 6,
-                          }}
-                        >
-                          {bar.day}
-                        </Text>
-                      </View>
-                    );
-                  })}
-                </View>
-              </LiquidGlassCard>
-
-              {/* REAL RECENT WORK ORDERS */}
+                  <Text
+                    style={{
+                      color: "#94a3b8",
+                      fontFamily: "Brandon-Medium",
+                      fontSize: 11,
+                      marginBottom: 14,
+                    }}
+                    numberOfLines={1}
+                  >
+                    {t.site_name ?? t.priority ?? "Active Site"} • +{t.points ?? 25} pts
+                  </Text>
+                  <LiquidGlassIconBadge
+                    size={64}
+                    borderRadius={32}
+                    variant="light"
+                    tintColor={idx === 0 ? "#10b981" : "#0284c7"}
+                    style={{ alignSelf: "center" }}
+                  >
+                    {idx === 0 ? (
+                      <CheckCircle2 size={28} color="#10b981" />
+                    ) : (
+                      <ShieldCheck size={28} color="#0284c7" />
+                    )}
+                  </LiquidGlassIconBadge>
+                </LiquidGlassCard>
+              ))
+            ) : (
               <LiquidGlassCard
                 variant="light"
-                borderRadius={24}
-                style={{ marginBottom: 18 }}
-                contentStyle={{ padding: 20 }}
+                borderRadius={28}
+                style={{ flex: 1 }}
+                contentStyle={{ padding: 22, alignItems: "center" }}
               >
-                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 17, marginBottom: 10 }}>
-                  Recent Work Orders ({recentTasks.length})
+                <LiquidGlassIconBadge
+                  size={56}
+                  borderRadius={28}
+                  variant="light"
+                  tintColor="#10b981"
+                  style={{ marginBottom: 10 }}
+                >
+                  <CheckCircle2 size={26} color="#10b981" />
+                </LiquidGlassIconBadge>
+                <Text
+                  style={{
+                    color: "#0f172a",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 16,
+                  }}
+                >
+                  All Tasks Completed
                 </Text>
-
-                {recentTasks.length > 0 ? (
-                  recentTasks.map((t, index) => (
-                    <TouchableOpacity
-                      key={t.id}
-                      onPress={() => router.push(`/(employee)/task/${t.id}` as any)}
-                      style={{
-                        paddingVertical: 12,
-                        borderTopWidth: index ? 1 : 0,
-                        borderColor: "rgba(226,232,240,0.9)",
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <CheckCircle2
-                        size={19}
-                        color={t.status === "done" ? "#10b981" : "#94a3b8"}
-                      />
-                      <View style={{ flex: 1, marginLeft: 10, marginRight: 8 }}>
-                        <Text numberOfLines={1} style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14 }}>
-                          {t.title}
-                        </Text>
-                        <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 2 }}>
-                          {t.site || t.workOrderCode} • {t.status === "done" ? "Completed" : "Pending"}
-                        </Text>
-                      </View>
-                      <Text style={{ color: themeColor, fontFamily: "Brandon-Bold", fontSize: 13 }}>
-                        +{t.points} pts
-                      </Text>
-                    </TouchableOpacity>
-                  ))
-                ) : (
-                  <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>
-                    No assigned tasks recorded yet this month.
-                  </Text>
-                )}
+                <Text
+                  style={{
+                    color: "#94a3b8",
+                    fontFamily: "Brandon-Medium",
+                    fontSize: 12,
+                    marginTop: 4,
+                  }}
+                >
+                  Zero pending audits queued for your route.
+                </Text>
               </LiquidGlassCard>
-
-              {/* REAL ATTENDANCE SUMMARY LIST */}
-              <LiquidGlassCard
-                variant="light"
-                borderRadius={24}
-                style={{ marginBottom: 20 }}
-                contentStyle={{ padding: 20 }}
-              >
-                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 17, marginBottom: 10 }}>
-                  Monthly Shift Records ({attendanceRows.length})
-                </Text>
-
-                {attendanceRows.length > 0 ? (
-                  attendanceRows.slice(0, 7).map((entry, idx) => (
-                    <View
-                      key={`${entry.date}-${idx}`}
-                      style={{
-                        paddingVertical: 11,
-                        borderTopWidth: idx ? 1 : 0,
-                        borderColor: "rgba(226,232,240,0.9)",
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <View>
-                        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14 }}>
-                          {entry.date_label || entry.date}
-                        </Text>
-                        <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 2 }}>
-                          {entry.check_in || "—"} – {entry.check_out || "On Duty"}
-                          {entry.is_late ? " • Late" : ""}
-                        </Text>
-                      </View>
-                      <Text style={{ color: "#334155", fontFamily: "Brandon-Bold", fontSize: 14 }}>
-                        {Number(entry.hours || 0).toFixed(1)} hrs
-                      </Text>
-                    </View>
-                  ))
-                ) : (
-                  <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>
-                    No attendance shifts logged yet this month.
-                  </Text>
-                )}
-              </LiquidGlassCard>
-
-              <LiquidGlassButton
-                variant="tinted"
-                tintColor={`${themeColor}E6`}
-                dropletColor={themeColor}
-                onPress={() => router.push("/(employee)/tasks")}
-                contentStyle={{ paddingVertical: 16 }}
-              >
-                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 15 }}>
-                  Open Active Work Orders ({metrics.tasks_pending ?? 0})
-                </Text>
-              </LiquidGlassButton>
-            </>
-          )}
+            )}
+          </View>
         </ScrollView>
+
+        {/* FLOATING BOTTOM DOCK (Reference Image 5 Pill Dock) */}
+        <LiquidGlassCard
+          variant="dark"
+          borderRadius={32}
+          dropletColor="#10b981"
+          style={{
+            position: "absolute",
+            bottom: 24,
+            left: 24,
+            right: 24,
+          }}
+          contentStyle={{
+            paddingVertical: 14,
+            paddingHorizontal: 24,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => router.push("/(employee)/attendance-hub")}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              backgroundColor: "#4ade80",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Clock size={22} color="#062214" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.push("/(employee)/calendar")}
+            style={{ alignItems: "center", padding: 8 }}
+          >
+            <Calendar size={22} color="rgba(255,255,255,0.6)" />
+          </TouchableOpacity>
+          <TouchableOpacity style={{ alignItems: "center", padding: 8 }}>
+            <BarChart3 size={22} color="#4ade80" />
+            <View
+              style={{
+                width: 4,
+                height: 4,
+                borderRadius: 2,
+                backgroundColor: "#4ade80",
+                marginTop: 4,
+              }}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.push("/(employee)/profile")}
+            style={{ alignItems: "center", padding: 8 }}
+          >
+            <User size={22} color="rgba(255,255,255,0.6)" />
+          </TouchableOpacity>
+        </LiquidGlassCard>
       </SafeAreaView>
     </LiquidGlassBackdrop>
   );

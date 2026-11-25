@@ -1,141 +1,183 @@
-import React, { useCallback, useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StatusBar,
-  ActivityIndicator,
-  Linking,
-} from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import { View, Text, ScrollView, TouchableOpacity, StatusBar, Image, Alert, Platform, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
-  ChevronLeft,
-  MapPin,
-  Navigation,
-  CheckCircle2,
-  Circle,
-  ShieldCheck,
-  Phone,
-  Sparkles,
-  FileText,
-  MapPinned,
+  ChevronLeft, Clock, MapPin, Sparkles, ShieldCheck, Award, Check, Navigation, Camera, Video, Download, FileText
 } from "lucide-react-native";
 import { useService } from "../../../context/ServiceContext";
 import { api } from "../../../services/api";
 import { showToast } from "../../../components/ui/ToastMessage";
 import {
+  ServerMediaFile,
+  downloadRemoteFile,
+  fetchMediaFiles,
+  pickImageAsset,
+  pickVideoAsset,
+  uploadMediaAsset,
+} from "../../../services/media";
+import {
   LiquidGlassBackdrop,
   LiquidGlassButton,
   LiquidGlassCard,
+  LiquidGlassIconBadge,
   LiquidGlassIconButton,
-  LiquidGlassPill,
 } from "../../../components/LiquidGlass";
 
-export default function EmployeeTaskDetailScreen() {
+export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { serviceConfig } = useService();
-  const [task, setTask] = useState<any | null>(null);
-  const [checklist, setChecklist] = useState<{ id: number | string; text: string; done: boolean }[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [savingChecklist, setSavingChecklist] = useState(false);
+  const [liveTask, setLiveTask] = useState<any | null>(null);
+  const [loadingTask, setLoadingTask] = useState(true);
+  const [taskMedia, setTaskMedia] = useState<ServerMediaFile[]>([]);
+  const [uploadingKind, setUploadingKind] = useState<"image" | "video" | null>(null);
+  const [safetyChecklist, setSafetyChecklist] = useState<
+    { id: number; text: string; checked: boolean }[]
+  >([
+    { id: 1, text: `Wear certified PPE & credentials for ${serviceConfig.label}`, checked: false },
+    { id: 2, text: `Verify access clearance at ${serviceConfig.vocab.entitySingular}`, checked: false },
+    { id: 3, text: `Review site hazards and ${serviceConfig.shortName.toLowerCase()} SOP before starting visit`, checked: false },
+  ]);
 
-  const loadTask = useCallback(async () => {
-    try {
-      const res = await api.get("/employee/tasks");
-      const found = (Array.isArray(res?.tasks) ? res.tasks : []).find(
-        (item: any) => String(item.id) === String(id)
-      );
-      setTask(found || null);
-      if (found && Array.isArray(found.checklist)) {
-        setChecklist(
-          found.checklist.map((entry: any, idx: number) =>
-            typeof entry === "string"
-              ? { id: idx + 1, text: entry, done: false }
-              : { id: entry.id ?? idx + 1, text: entry.text || `Step ${idx + 1}`, done: Boolean(entry.done) }
-          )
-        );
-      }
-    } catch {
-      setTask(null);
-    } finally {
-      setLoading(false);
-    }
+  const loadTaskMedia = useCallback(async (taskIdStr?: string) => {
+    const targetId = taskIdStr || id;
+    if (!targetId || !/^\d+$/.test(String(targetId))) return;
+    const files = await fetchMediaFiles({ taskId: String(targetId) }).catch(() => []);
+    setTaskMedia(files);
   }, [id]);
 
-  useFocusEffect(
-    useCallback(() => {
-      void loadTask();
-    }, [loadTask])
-  );
-
-  const toggleChecklistItem = async (index: number) => {
-    if (!task || task.rawStatus === "done" || savingChecklist) return;
-    const next = checklist.map((item, idx) =>
-      idx === index ? { ...item, done: !item.done } : item
-    );
-    setChecklist(next);
-    setSavingChecklist(true);
-    try {
-      const res = await api.post(`/employee/tasks/${task.id}/checklist`, { checklist: next });
-      if (res?.task_status) {
-        setTask((prev: any) => (prev ? { ...prev, rawStatus: res.task_status, status: res.task_status === "in_progress" ? "In Progress" : prev.status } : prev));
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const res = await api.get("/employee/tasks").catch(() => null);
+      if (!active) return;
+      const found = (res?.tasks || []).find((item: any) => String(item.id) === String(id));
+      if (found) {
+        setLiveTask(found);
+        if (Array.isArray(found.checklist) && found.checklist.length > 0) {
+          setSafetyChecklist(
+            found.checklist.map((c: any, idx: number) => ({
+              id: Number(c.id || idx + 1),
+              text: String(c.text || c.title || c.label || `Step ${idx + 1}`),
+              checked: Boolean(c.checked ?? c.done),
+            }))
+          );
+        }
+        await loadTaskMedia(String(found.id));
+      } else if (id) {
+        await loadTaskMedia(id);
       }
-    } catch {
-      showToast({
-        title: "Sync Notice",
-        message: "Could not save checklist step right now.",
-        type: "info",
-      });
-    } finally {
-      setSavingChecklist(false);
-    }
+      if (active) setLoadingTask(false);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [id, loadTaskMedia]);
+
+  const matchedTask = liveTask;
+
+  const task = {
+    id: String(matchedTask?.id || id || ""),
+    workOrderCode: matchedTask?.workOrderCode || `WO-${String(id || "").padStart(4, "0")}`,
+    industry: serviceConfig.label,
+    title: matchedTask?.title || (loadingTask ? "Loading Work Order..." : "Work Order Unavailable"),
+    facility: matchedTask?.facility || matchedTask?.targetEntity || "Assigned Site",
+    address: matchedTask?.address || "Field Location",
+    latitude: matchedTask?.latitude || null,
+    longitude: matchedTask?.longitude || null,
+    farmerId: matchedTask?.farmerId || null,
+    requiresOtp: Boolean(matchedTask?.requires_otp || matchedTask?.requiresOtp),
+    status: matchedTask?.status || "Pending",
+    priority: matchedTask?.priority ? `${String(matchedTask.priority).toUpperCase()} PRIORITY` : "STANDARD PRIORITY",
+    due: matchedTask?.due || "Scheduled",
+    points: Number(matchedTask?.points ?? 40),
+    aiSuggestions:
+      matchedTask?.aiDiagnostic ||
+      `Verify baseline ${serviceConfig.shortName.toLowerCase()} inspection points and capture before/after photos in the field report after arrival & checkout.`,
+    description:
+      matchedTask?.description ||
+      (loadingTask
+        ? "Fetching live task assignment details..."
+        : "This work order could not be found or is no longer assigned."),
   };
 
-  const persistActiveTaskAndNavigate = async (destination: "tracking" | "checkin") => {
-    if (!task) return;
-    try {
-      if (task.rawStatus === "pending") {
-        await api.post(`/employee/tasks/${task.id}/status`, { status: "in_progress" }).catch(() => {});
+  const toggleSafetyItem = (itemId: number) => {
+    setSafetyChecklist((prev) => {
+      const next = prev.map((item) => (item.id === itemId ? { ...item, checked: !item.checked } : item));
+      if (task.id && /^\d+$/.test(task.id)) {
+        void api.post(`/employee/tasks/${task.id}/checklist`, { checklist: next }).catch(() => null);
       }
-      await AsyncStorage.setItem(
-        "@active_task",
-        JSON.stringify({
-          id: String(task.id),
-          workOrderCode: task.workOrderCode,
-          title: task.title,
-          facility: task.targetEntity || "",
-          targetEntity: task.targetEntity || "",
-          farmerId: task.farmerId ? String(task.farmerId) : "",
-          address: task.address || "",
-          latitude: task.latitude ?? null,
-          longitude: task.longitude ?? null,
-          requiresOtp: Boolean(task.requires_otp),
-        })
-      );
-    } catch {
-      // Continue navigation smoothly
-    }
+      return next;
+    });
+  };
 
-    const navParams = {
-      taskId: String(task.id),
-      farmerId: task.farmerId ? String(task.farmerId) : "",
-      siteName: task.targetEntity || task.title || "",
-      siteAddress: task.address || "",
-      lat: task.latitude != null ? String(task.latitude) : "",
-      lng: task.longitude != null ? String(task.longitude) : "",
+  const handleTaskUpload = (kind: "image" | "video") => {
+    const run = async (source: "camera" | "library") => {
+      setUploadingKind(kind);
+      try {
+        const asset = kind === "image" ? await pickImageAsset(source) : await pickVideoAsset(source);
+        if (!asset) return;
+        const uploaded = await uploadMediaAsset({
+          asset,
+          title: `${task.workOrderCode} - ${kind === "image" ? "Photo" : "Video"}`,
+          taskId: /^\d+$/.test(task.id) ? task.id : null,
+          farmerId: task.farmerId || null,
+        });
+        setTaskMedia((prev) => [uploaded, ...prev]);
+        showToast({
+          title: kind === "image" ? "Image Uploaded" : "Video Uploaded",
+          message: `${uploaded.original_name} attached to task.`,
+          type: "success",
+        });
+      } catch (err: any) {
+        showToast({
+          title: "Upload Failed",
+          message: err?.message || "Could not upload media file.",
+          type: "error",
+        });
+      } finally {
+        setUploadingKind(null);
+      }
     };
 
-    if (destination === "tracking") {
-      router.push({ pathname: "/(employee)/visit/tracking", params: navParams } as any);
-    } else {
-      router.push({ pathname: "/(employee)/visit/check-in", params: navParams } as any);
+    if (Platform.OS === "web") {
+      void run("library");
+      return;
     }
+
+    Alert.alert(kind === "image" ? "Upload Task Photo" : "Upload Task Video", "Choose media source", [
+      { text: kind === "image" ? "Take Photo" : "Record Video", onPress: () => void run("camera") },
+      { text: "Choose from Gallery", onPress: () => void run("library") },
+      { text: "Cancel", style: "cancel" },
+    ]);
   };
 
-  const themeColor = serviceConfig.themeColor || "#059669";
+  const handleDownloadAttachment = async (file: ServerMediaFile) => {
+    const ok = await downloadRemoteFile(file.download_url, file.original_name);
+    showToast({
+      title: ok ? "Download Started" : "Download Notice",
+      message: ok ? `Downloading ${file.original_name}...` : "Could not open download link.",
+      type: ok ? "success" : "error",
+    });
+  };
+
+  const handleStartVisit = async () => {
+    await AsyncStorage.setItem("@active_task", JSON.stringify(task));
+    await api.post(`/employee/tasks/${task.id}/status`, { status: "in_progress" }).catch(() => null);
+    router.push({
+      pathname: "/(employee)/visit/tracking",
+      params: {
+        id: task.id,
+        taskId: task.id,
+        siteName: task.facility,
+        siteAddress: task.address,
+        farmerId: task.farmerId ? String(task.farmerId) : "",
+        lat: task.latitude ? String(task.latitude) : "",
+        lng: task.longitude ? String(task.longitude) : "",
+      },
+    } as any);
+  };
 
   return (
     <LiquidGlassBackdrop variant="light">
@@ -143,292 +185,196 @@ export default function EmployeeTaskDetailScreen() {
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            paddingHorizontal: 20,
-            paddingTop: 12,
-            paddingBottom: 14,
-          }}
-        >
-          <LiquidGlassIconButton
-            variant="light"
-            size={44}
-            onPress={() => (router.canGoBack() ? router.back() : router.replace("/(employee)/tasks"))}
-          >
-            <ChevronLeft size={24} color="#0f172a" />
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: "rgba(255, 255, 255, 0.72)", backgroundColor: "rgba(255, 255, 255, 0.34)" }}>
+          <LiquidGlassIconButton variant="light" size={42} onPress={() => router.back()}>
+            <ChevronLeft size={22} color="#0f172a" />
           </LiquidGlassIconButton>
-
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>
-            {serviceConfig.vocab.taskSingular} Details
-          </Text>
-
-          <View style={{ width: 44 }} />
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 22 }}>{serviceConfig.vocab.taskSingular} Details</Text>
+            <Text style={{ color: serviceConfig.color, fontFamily: "Brandon-Bold", fontSize: 13, letterSpacing: 1 }}>{task.workOrderCode}</Text>
+          </View>
+          <View style={{ width: 42 }} />
         </View>
 
-        {loading ? (
-          <ActivityIndicator color={themeColor} style={{ marginTop: 48 }} />
-        ) : !task ? (
-          <View style={{ padding: 24 }}>
-            <LiquidGlassCard variant="light" borderRadius={24} contentStyle={{ padding: 26, alignItems: "center" }}>
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>
-                Work Order Not Found
-              </Text>
-              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 14, textAlign: "center", marginTop: 6 }}>
-                This work order may have been reassigned or removed by your Admin.
-              </Text>
-              <LiquidGlassButton
-                variant="dark"
-                onPress={() => router.replace("/(employee)/tasks")}
-                style={{ marginTop: 18, width: "100%" }}
-                contentStyle={{ paddingVertical: 14 }}
-              >
-                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 15 }}>
-                  Back to {serviceConfig.vocab.tasks}
-                </Text>
-              </LiquidGlassButton>
-            </LiquidGlassCard>
-          </View>
-        ) : (
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 130 }}
-          >
-            {/* MAIN WORK ORDER CARD */}
-            <LiquidGlassCard
-              variant="dark"
-              borderRadius={28}
-              dropletColor={themeColor}
-              style={{ marginBottom: 18 }}
-              contentStyle={{ padding: 22 }}
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 20, paddingBottom: 120 }}>
+          {/* TITLE & FACILITY CARD */}
+          <LiquidGlassCard variant="light" borderRadius={28} style={{ marginBottom: 20 }} contentStyle={{ padding: 22 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+              <View style={{ paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999, backgroundColor: "rgba(254, 226, 226, 0.78)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.85)" }}>
+                <Text style={{ color: "#ef4444", fontFamily: "Brandon-Bold", fontSize: 12 }}>{task.priority}</Text>
+              </View>
+              <View style={{ paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999, backgroundColor: `${serviceConfig.color}18`, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.85)" }}>
+                <Text style={{ color: serviceConfig.color, fontFamily: "Brandon-Bold", fontSize: 12 }}>{task.industry}</Text>
+              </View>
+              <View style={{ flex: 1 }} />
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Clock size={16} color="#64748b" />
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 13, marginLeft: 5 }}>{task.due}</Text>
+              </View>
+            </View>
+
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 24, marginBottom: 10, lineHeight: 30 }}>{task.title}</Text>
+            <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 16, marginBottom: 14, lineHeight: 24 }}>{task.description}</Text>
+
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <MapPin size={15} color={serviceConfig.color} />
+              <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 14, marginLeft: 6 }}>{task.facility}</Text>
+            </View>
+
+            {/* Performance Reward Badge */}
+            <View style={{ marginTop: 16, paddingTop: 14, borderTopWidth: 1, borderTopColor: "rgba(15, 23, 42, 0.08)", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Award size={18} color="#16a34a" style={{ marginRight: 6 }} />
+                <Text style={{ color: "#16a34a", fontFamily: "Brandon-Bold", fontSize: 13 }}>+{task.points} Performance Points</Text>
+              </View>
+              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>After Visit Checkout</Text>
+            </View>
+
+            {/* START VISIT WITH LIVE GPS TRACKING */}
+            <LiquidGlassButton
+              variant="tinted"
+              tintColor={`${serviceConfig.color}CC`}
+              dropletColor={serviceConfig.color}
+              onPress={handleStartVisit}
+              style={{ marginTop: 16 }}
+              contentStyle={{ paddingVertical: 16 }}
             >
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <Text style={{ color: "#93c5fd", fontFamily: "Brandon-Bold", fontSize: 13 }}>
-                  {task.workOrderCode} • +{task.points} PTS
-                </Text>
-                <LiquidGlassPill
-                  variant="dark"
-                  active
-                  tintColor={
-                    task.rawStatus === "done"
-                      ? "rgba(16,185,129,0.85)"
-                      : task.priority === "Urgent"
-                      ? "rgba(239,68,68,0.85)"
-                      : "rgba(245,158,11,0.85)"
-                  }
-                  contentStyle={{ paddingHorizontal: 10, paddingVertical: 4 }}
-                >
-                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 11 }}>
-                    {task.status} • {task.priority}
-                  </Text>
-                </LiquidGlassPill>
-              </View>
-
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 24, lineHeight: 30, marginBottom: 8 }}>
-                {task.title}
+              <Navigation size={18} color="#ffffff" style={{ marginRight: 8 }} />
+              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 15 }}>
+                Start Visit (Live GPS Map)
               </Text>
+            </LiquidGlassButton>
+          </LiquidGlassCard>
 
-              {task.description ? (
-                <Text style={{ color: "rgba(255,255,255,0.8)", fontFamily: "Brandon-Medium", fontSize: 14, lineHeight: 21, marginBottom: 14 }}>
-                  {task.description}
-                </Text>
-              ) : null}
+          {/* ADVISORY BOX */}
+          <LiquidGlassCard variant="light" borderRadius={20} style={{ marginBottom: 20 }} contentStyle={{ padding: 18 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+              <Sparkles size={18} color="#ca8a04" style={{ marginRight: 6 }} />
+              <Text style={{ color: "#854d0e", fontFamily: "Brandon-Bold", fontSize: 14 }}>{serviceConfig.shortName} Field Brief</Text>
+            </View>
+            <Text style={{ color: "#713f12", fontFamily: "Brandon-Medium", fontSize: 13, lineHeight: 20 }}>
+              {task.aiSuggestions}
+            </Text>
+            <Text style={{ color: "#a16207", fontFamily: "Brandon-Medium", fontSize: 11, marginTop: 6 }}>
+              Field reports (before/after photos, notes & OTP) unlock automatically after arrival Check-In & Checkout.
+            </Text>
+          </LiquidGlassCard>
 
-              <View
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.08)",
-                  borderRadius: 18,
-                  padding: 14,
-                  gap: 8,
-                }}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <MapPin size={16} color="#4ade80" />
-                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14, marginLeft: 8, flex: 1 }}>
-                    {task.targetEntity || "General Field Assignment"}
-                  </Text>
-                </View>
-                {task.address ? (
-                  <Text style={{ color: "rgba(255,255,255,0.72)", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 24 }}>
-                    {task.address}
-                  </Text>
-                ) : null}
-                <Text style={{ color: "rgba(255,255,255,0.72)", fontFamily: "Brandon-Medium", fontSize: 12, marginLeft: 24 }}>
-                  Deadline: {task.due}
-                  {task.requires_otp ? " • Client OTP Required on Completion" : ""}
-                </Text>
-              </View>
-
-              {task.sitePhone ? (
-                <LiquidGlassButton
-                  variant="dark"
-                  onPress={() => Linking.openURL(`tel:${task.sitePhone}`)}
-                  style={{ marginTop: 14 }}
-                  contentStyle={{ paddingVertical: 11 }}
+          {/* MANDATORY SAFETY & PPE CHECKLIST */}
+          <LiquidGlassCard variant="light" borderRadius={20} style={{ marginBottom: 20 }} contentStyle={{ padding: 20 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
+              <ShieldCheck size={20} color={serviceConfig.color} style={{ marginRight: 8 }} />
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>Pre-Visit Safety Checklist</Text>
+            </View>
+            <View style={{ gap: 10 }}>
+              {safetyChecklist.map((item) => (
+                <LiquidGlassCard
+                  key={item.id}
+                  variant="light"
+                  borderRadius={12}
+                  onPress={() => toggleSafetyItem(item.id)}
+                  contentStyle={{ flexDirection: "row", alignItems: "center", padding: 12 }}
                 >
-                  <Phone size={16} color="#38bdf8" style={{ marginRight: 8 }} />
-                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14 }}>
-                    Call Site Contact ({task.sitePhone})
-                  </Text>
-                </LiquidGlassButton>
-              ) : null}
-            </LiquidGlassCard>
+                  <View style={{ width: 22, height: 22, borderRadius: 6, backgroundColor: item.checked ? "#16a34a" : "rgba(255, 255, 255, 0.72)", borderWidth: item.checked ? 0 : 2, borderColor: "#cbd5e1", alignItems: "center", justifyContent: "center", marginRight: 12 }}>
+                    {item.checked && <Check size={14} color="#ffffff" strokeWidth={3} />}
+                  </View>
+                  <Text style={{ flex: 1, color: item.checked ? "#166534" : "#475569", fontFamily: "Brandon-Bold", fontSize: 13 }}>{item.text}</Text>
+                </LiquidGlassCard>
+              ))}
+            </View>
+          </LiquidGlassCard>
 
-            {/* AI / ADMIN GUIDANCE */}
-            {task.aiDiagnostic ? (
-              <LiquidGlassCard
-                variant="light"
-                borderRadius={22}
-                style={{ marginBottom: 18 }}
-                contentStyle={{ padding: 16, flexDirection: "row", alignItems: "flex-start" }}
+          {/* TASK MEDIA: UPLOAD PHOTOS / VIDEOS & DOWNLOAD FILES */}
+          <LiquidGlassCard variant="light" borderRadius={20} style={{ marginBottom: 20 }} contentStyle={{ padding: 20 }}>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16, marginBottom: 4 }}>
+              Task Attachments & Downloads ({taskMedia.length})
+            </Text>
+            <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12, marginBottom: 14 }}>
+              Upload task photos or videos, or download files shared by your admin.
+            </Text>
+
+            <View style={{ flexDirection: "row", gap: 10, marginBottom: taskMedia.length > 0 ? 14 : 0 }}>
+              <LiquidGlassButton
+                onPress={() => handleTaskUpload("image")}
+                disabled={uploadingKind !== null}
+                variant="tinted"
+                tintColor="rgba(16, 185, 129, 0.85)"
+                style={{ flex: 1 }}
+                contentStyle={{ paddingVertical: 11 }}
               >
-                <Sparkles size={20} color={themeColor} style={{ marginRight: 12, marginTop: 2 }} />
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14 }}>
-                    Operational Instructions
-                  </Text>
-                  <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 13, lineHeight: 19, marginTop: 3 }}>
-                    {task.aiDiagnostic}
-                  </Text>
-                </View>
-              </LiquidGlassCard>
-            ) : null}
-
-            {/* INTERACTIVE CHECKLIST */}
-            {checklist.length > 0 && (
-              <LiquidGlassCard
-                variant="light"
-                borderRadius={24}
-                style={{ marginBottom: 18 }}
-                contentStyle={{ padding: 20 }}
+                {uploadingKind === "image" ? <ActivityIndicator size="small" color="#ffffff" /> : <Camera size={15} color="#ffffff" />}
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12, marginLeft: 6 }}>Upload Image</Text>
+              </LiquidGlassButton>
+              <LiquidGlassButton
+                onPress={() => handleTaskUpload("video")}
+                disabled={uploadingKind !== null}
+                variant="tinted"
+                tintColor="rgba(2, 132, 199, 0.85)"
+                style={{ flex: 1 }}
+                contentStyle={{ paddingVertical: 11 }}
               >
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 17 }}>
-                    Field Execution Checklist
-                  </Text>
-                  <Text style={{ color: themeColor, fontFamily: "Brandon-Bold", fontSize: 13 }}>
-                    {checklist.filter((c) => c.done).length}/{checklist.length} Done
-                  </Text>
-                </View>
+                {uploadingKind === "video" ? <ActivityIndicator size="small" color="#ffffff" /> : <Video size={15} color="#ffffff" />}
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12, marginLeft: 6 }}>Upload Video</Text>
+              </LiquidGlassButton>
+            </View>
 
-                <View style={{ gap: 10 }}>
-                  {checklist.map((item, idx) => (
-                    <TouchableOpacity
-                      key={item.id ?? idx}
-                      activeOpacity={0.8}
-                      disabled={task.rawStatus === "done"}
-                      onPress={() => toggleChecklistItem(idx)}
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        padding: 12,
-                        borderRadius: 14,
-                        backgroundColor: item.done ? "rgba(16,185,129,0.10)" : "rgba(241,245,249,0.8)",
-                        borderWidth: 1,
-                        borderColor: item.done ? "rgba(16,185,129,0.35)" : "rgba(226,232,240,0.9)",
-                      }}
-                    >
-                      {item.done ? (
-                        <CheckCircle2 size={20} color="#10b981" style={{ marginRight: 10 }} />
-                      ) : (
-                        <Circle size={20} color="#94a3b8" style={{ marginRight: 10 }} />
-                      )}
-                      <Text
-                        style={{
-                          flex: 1,
-                          color: item.done ? "#065f46" : "#1e293b",
-                          fontFamily: "Brandon-Medium",
-                          fontSize: 14,
-                          textDecorationLine: item.done ? "line-through" : "none",
-                        }}
+            {taskMedia.length > 0 && (
+              <View style={{ gap: 10 }}>
+                {taskMedia.map((item) => (
+                  <View
+                    key={item.id}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: "rgba(255,255,255,0.72)",
+                      borderRadius: 14,
+                      padding: 10,
+                      borderWidth: 1,
+                      borderColor: "rgba(15, 23, 42, 0.08)",
+                    }}
+                  >
+                    {item.category === "image" ? (
+                      <Image source={{ uri: item.preview_url }} style={{ width: 42, height: 42, borderRadius: 10, marginRight: 10, backgroundColor: "#e2e8f0" }} />
+                    ) : (
+                      <LiquidGlassIconBadge
+                        size={42}
+                        borderRadius={10}
+                        variant="light"
+                        tintColor={item.category === "video" ? "#0284c7" : "#0f766e"}
+                        style={{ marginRight: 10 }}
                       >
-                        {item.text}
+                        {item.category === "video" ? <Video size={18} color="#0284c7" /> : <FileText size={18} color="#0f766e" />}
+                      </LiquidGlassIconBadge>
+                    )}
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 13 }} numberOfLines={1}>
+                        {item.title}
                       </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </LiquidGlassCard>
-            )}
-
-            {/* SAFETY / PPE TAGS */}
-            {Array.isArray(task.safety_requirements) && task.safety_requirements.length > 0 && (
-              <LiquidGlassCard
-                variant="light"
-                borderRadius={22}
-                style={{ marginBottom: 22 }}
-                contentStyle={{ padding: 18 }}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-                  <ShieldCheck size={18} color="#0284c7" />
-                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 15, marginLeft: 8 }}>
-                    Required Safety & Equipment
-                  </Text>
-                </View>
-                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                  {task.safety_requirements.map((req: string, idx: number) => (
-                    <View
-                      key={idx}
-                      style={{
-                        backgroundColor: "rgba(224,242,254,0.8)",
-                        paddingHorizontal: 10,
-                        paddingVertical: 5,
-                        borderRadius: 10,
-                      }}
-                    >
-                      <Text style={{ color: "#0369a1", fontFamily: "Brandon-Bold", fontSize: 12 }}>
-                        {req}
+                      <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 11 }}>
+                        {item.category.toUpperCase()} • {item.size_human}
                       </Text>
                     </View>
-                  ))}
-                </View>
-              </LiquidGlassCard>
-            )}
-
-            {/* PRIMARY EXECUTION CTAs */}
-            {task.rawStatus === "done" ? (
-              <LiquidGlassButton
-                variant="tinted"
-                tintColor="rgba(16, 185, 129, 0.86)"
-                dropletColor="#34d399"
-                onPress={() => router.push("/(employee)/reports")}
-                contentStyle={{ paddingVertical: 16 }}
-              >
-                <FileText size={18} color="#ffffff" style={{ marginRight: 8 }} />
-                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>
-                  View Submitted {serviceConfig.vocab.report}s
-                </Text>
-              </LiquidGlassButton>
-            ) : (
-              <View style={{ gap: 12 }}>
-                <LiquidGlassButton
-                  variant="tinted"
-                  tintColor="rgba(6, 34, 20, 0.90)"
-                  dropletColor="#4ade80"
-                  onPress={() => persistActiveTaskAndNavigate("tracking")}
-                  contentStyle={{ paddingVertical: 17 }}
-                >
-                  <Navigation size={19} color="#4ade80" style={{ marginRight: 8 }} />
-                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>
-                    Start Live GPS & Navigate to Site
-                  </Text>
-                </LiquidGlassButton>
-
-                <LiquidGlassButton
-                  variant="light"
-                  onPress={() => persistActiveTaskAndNavigate("checkin")}
-                  contentStyle={{ paddingVertical: 15 }}
-                >
-                  <MapPinned size={18} color="#0f172a" style={{ marginRight: 8 }} />
-                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 15 }}>
-                    Already at Site • Check In Now
-                  </Text>
-                </LiquidGlassButton>
+                    <TouchableOpacity
+                      onPress={() => void handleDownloadAttachment(item)}
+                      style={{
+                        backgroundColor: "#0f766e",
+                        paddingHorizontal: 10,
+                        paddingVertical: 7,
+                        borderRadius: 9,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      <Download size={13} color="#ffffff" />
+                      <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 11 }}>Download</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
               </View>
             )}
-          </ScrollView>
-        )}
+          </LiquidGlassCard>
+        </ScrollView>
       </SafeAreaView>
     </LiquidGlassBackdrop>
   );

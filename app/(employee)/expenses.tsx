@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   ChevronLeft,
   Receipt,
@@ -21,8 +20,6 @@ import {
   Wrench,
   CheckCircle2,
 } from "lucide-react-native";
-import { getAuthUser } from "../../services/api";
-import { pickImageAsset, uploadMediaAsset } from "../../services/media";
 import {
   LiquidGlassBackdrop,
   LiquidGlassButton,
@@ -37,19 +34,9 @@ export default function ExpensesScreen() {
   const [expenseType, setExpenseType] = useState("Fuel & Travel");
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
-  const [receiptName, setReceiptName] = useState<string | null>(null);
-  const [storageKey, setStorageKey] = useState("@fieldy_expenses_default");
-  const [expenses, setExpenses] = useState<any[]>([]);
+  const [receiptAttached, setReceiptAttached] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const user = await getAuthUser();
-      const key = `@fieldy_expenses_${user?.id || "staff"}`;
-      setStorageKey(key);
-      const raw = await AsyncStorage.getItem(key);
-      setExpenses(raw ? JSON.parse(raw) : []);
-    })();
-  }, []);
+  const [expenses, setExpenses] = useState<any[]>([]);
 
   const categories = [
     { label: "Fuel & Travel", icon: Fuel, color: "#f97316" },
@@ -58,50 +45,38 @@ export default function ExpensesScreen() {
     { label: "Tools & Equipment", icon: Wrench, color: "#8b5cf6" },
   ];
 
-  const attachReceipt = async () => {
-    try {
-      const picked = await pickImageAsset("library");
-      if (!picked) return;
-      setReceiptName(picked.name);
-      await uploadMediaAsset({ asset: picked, title: `Expense Receipt - ${expenseType}` }).catch(() => {});
-    } catch {
-      // Ignore picker cancel
-    }
-  };
-
-  const handleSubmitExpense = async () => {
-    if (!amount || Number.isNaN(Number(amount)) || Number(amount) <= 0) {
+  const handleSubmitExpense = () => {
+    if (!amount || isNaN(Number(amount))) {
       Alert.alert("Missing Amount", "Please enter a valid expense amount in Rupees.");
       return;
     }
 
     const newExpense = {
-      id: `EXP-${Date.now().toString().slice(-4)}`,
+      id: `EXP-${Math.floor(100 + Math.random() * 900)}`,
       category: expenseType,
-      amount: String(Number(amount)),
-      date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-      status: "Submitted",
+      amount: amount,
+      date: "Just Now",
+      status: "Pending Approval",
       statusColor: "#f59e0b",
-      note: note.trim() || `${expenseType} claim`,
+      note: note || "Routine field allowance claim",
     };
 
-    const next = [newExpense, ...expenses];
-    setExpenses(next);
-    await AsyncStorage.setItem(storageKey, JSON.stringify(next));
+    setExpenses([newExpense, ...expenses]);
     setAmount("");
     setNote("");
-    setReceiptName(null);
+    setReceiptAttached(false);
     setActiveTab("claims");
-    Alert.alert("Claim Logged", "Your field expense entry has been recorded.");
+    Alert.alert("Claim Submitted!", "Your expense claim has been logged and sent to your manager for approval.");
   };
 
-  const totalClaimed = expenses.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+  const totalClaimed = expenses.reduce((acc, curr) => acc + Number(curr.amount), 0);
 
   return (
     <LiquidGlassBackdrop variant="dark">
       <StatusBar barStyle="light-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
+        {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16 }}>
           <LiquidGlassIconButton
             onPress={() => (router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard"))}
@@ -110,40 +85,56 @@ export default function ExpensesScreen() {
           >
             <ChevronLeft size={24} color="#ffffff" />
           </LiquidGlassIconButton>
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 19 }}>Field Expense Claims</Text>
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>Field Expense Claims</Text>
           <View style={{ width: 42 }} />
         </View>
 
+        {/* TOP SUMMARY CARD */}
         <LiquidGlassCard
           variant="dark"
           borderRadius={24}
           dropletColor="#10b981"
-          style={{ marginHorizontal: 20, marginBottom: 18 }}
-          contentStyle={{ padding: 20, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}
+          style={{ marginHorizontal: 20, marginBottom: 20 }}
+          contentStyle={{ padding: 20 }}
         >
-          <View>
-            <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 11, letterSpacing: 1 }}>
-              TOTAL LOGGED CLAIMS
-            </Text>
-            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 30, marginTop: 4 }}>
-              ₹{totalClaimed.toLocaleString()}
-            </Text>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+            <View>
+              <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12, letterSpacing: 1 }}>OCTOBER CLAIMS</Text>
+              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 32, marginTop: 2 }}>
+                ₹{totalClaimed.toLocaleString()}
+              </Text>
+            </View>
+            <LiquidGlassIconBadge size={48} borderRadius={16} variant="dark" tintColor="#10b981">
+              <Receipt size={24} color="#10b981" />
+            </LiquidGlassIconBadge>
           </View>
-          <LiquidGlassIconBadge size={48} borderRadius={16} variant="dark" tintColor="#10b981">
-            <Receipt size={24} color="#10b981" />
-          </LiquidGlassIconBadge>
+          <View style={{ flexDirection: "row", gap: 8, marginTop: 16 }}>
+            <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", padding: 10, borderRadius: 12 }}>
+              <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 10 }}>APPROVED</Text>
+              <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 15, marginTop: 2 }}>₹450</Text>
+            </View>
+            <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", padding: 10, borderRadius: 12 }}>
+              <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 10 }}>UNDER REVIEW</Text>
+              <Text style={{ color: "#f59e0b", fontFamily: "Brandon-Bold", fontSize: 15, marginTop: 2 }}>₹180</Text>
+            </View>
+            <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", padding: 10, borderRadius: 12 }}>
+              <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 10 }}>PAID OUT</Text>
+              <Text style={{ color: "#38bdf8", fontFamily: "Brandon-Bold", fontSize: 15, marginTop: 2 }}>₹320</Text>
+            </View>
+          </View>
         </LiquidGlassCard>
 
-        <View style={{ flexDirection: "row", marginHorizontal: 20, marginBottom: 18, gap: 10 }}>
+        {/* TABS */}
+        <View style={{ flexDirection: "row", marginHorizontal: 20, marginBottom: 20, gap: 10 }}>
           <LiquidGlassPill
             variant="dark"
             active={activeTab === "claims"}
             tintColor="rgba(16, 185, 129, 0.72)"
             onPress={() => setActiveTab("claims")}
             style={{ flex: 1 }}
-            contentStyle={{ paddingVertical: 11 }}
+            contentStyle={{ paddingVertical: 11, paddingHorizontal: 14 }}
           >
-            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13 }}>
+            <Text style={{ color: activeTab === "claims" ? "#ffffff" : "#cbd5e1", fontFamily: "Brandon-Bold", fontSize: 13 }}>
               My Claims ({expenses.length})
             </Text>
           </LiquidGlassPill>
@@ -153,9 +144,9 @@ export default function ExpensesScreen() {
             tintColor="rgba(16, 185, 129, 0.72)"
             onPress={() => setActiveTab("new")}
             style={{ flex: 1 }}
-            contentStyle={{ paddingVertical: 11 }}
+            contentStyle={{ paddingVertical: 11, paddingHorizontal: 14 }}
           >
-            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13 }}>
+            <Text style={{ color: activeTab === "new" ? "#ffffff" : "#cbd5e1", fontFamily: "Brandon-Bold", fontSize: 13 }}>
               + Log New Claim
             </Text>
           </LiquidGlassPill>
@@ -163,105 +154,126 @@ export default function ExpensesScreen() {
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}>
           {activeTab === "claims" ? (
-            expenses.length > 0 ? (
-              <View style={{ gap: 12 }}>
-                {expenses.map((item) => (
-                  <LiquidGlassCard key={item.id} variant="dark" borderRadius={20} contentStyle={{ padding: 16 }}>
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                      <View>
+            <View style={{ gap: 12 }}>
+              {expenses.map((item) => (
+                <LiquidGlassCard
+                  key={item.id}
+                  variant="dark"
+                  borderRadius={20}
+                  dropletColor={item.statusColor}
+                  contentStyle={{ padding: 16 }}
+                >
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <View>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                         <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>{item.category}</Text>
-                        <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 2 }}>
-                          {item.date} • {item.id}
-                        </Text>
+                        <View style={{ backgroundColor: `${item.statusColor}20`, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                          <Text style={{ color: item.statusColor, fontFamily: "Brandon-Bold", fontSize: 10 }}>{item.status.toUpperCase()}</Text>
+                        </View>
                       </View>
-                      <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 18 }}>₹{item.amount}</Text>
+                      <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 4 }}>{item.date} • {item.id}</Text>
                     </View>
-                    {item.note ? (
-                      <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 8 }}>
-                        {item.note}
-                      </Text>
-                    ) : null}
-                  </LiquidGlassCard>
-                ))}
-              </View>
-            ) : (
-              <LiquidGlassCard variant="dark" borderRadius={22} contentStyle={{ padding: 26, alignItems: "center" }}>
-                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>
-                  No Expense Claims Logged Yet
-                </Text>
-                <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, textAlign: "center", marginTop: 4 }}>
-                  Tap + Log New Claim above to record field travel or material expenses.
-                </Text>
-              </LiquidGlassCard>
-            )
+                    <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 18 }}>₹{item.amount}</Text>
+                  </View>
+                  {item.note && (
+                    <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 10, backgroundColor: "rgba(255,255,255,0.06)", padding: 8, borderRadius: 8 }}>
+                      {item.note}
+                    </Text>
+                  )}
+                </LiquidGlassCard>
+              ))}
+            </View>
           ) : (
-            <LiquidGlassCard variant="dark" borderRadius={24} contentStyle={{ padding: 20, gap: 16 }}>
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                {categories.map((c) => {
-                  const Icon = c.icon;
-                  const isSelected = expenseType === c.label;
-                  return (
-                    <LiquidGlassPill
-                      key={c.label}
-                      variant="dark"
-                      active={isSelected}
-                      tintColor="rgba(16, 185, 129, 0.72)"
-                      onPress={() => setExpenseType(c.label)}
-                      contentStyle={{ paddingHorizontal: 12, paddingVertical: 8 }}
-                    >
-                      <Icon size={14} color={isSelected ? "#ffffff" : c.color} style={{ marginRight: 6 }} />
-                      <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12 }}>{c.label}</Text>
-                    </LiquidGlassPill>
-                  );
-                })}
+            <LiquidGlassCard
+              variant="dark"
+              borderRadius={24}
+              contentStyle={{ padding: 20, gap: 18 }}
+            >
+              {/* Category Picker */}
+              <View>
+                <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 12, letterSpacing: 1, marginBottom: 10 }}>EXPENSE CATEGORY</Text>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                  {categories.map((c) => {
+                    const Icon = c.icon;
+                    const isSelected = expenseType === c.label;
+                    return (
+                      <LiquidGlassPill
+                        key={c.label}
+                        variant="dark"
+                        active={isSelected}
+                        tintColor="rgba(16, 185, 129, 0.72)"
+                        onPress={() => setExpenseType(c.label)}
+                        contentStyle={{ paddingHorizontal: 12, paddingVertical: 8 }}
+                      >
+                        <Icon size={14} color={isSelected ? "#ffffff" : c.color} style={{ marginRight: 6 }} />
+                        <Text style={{ color: isSelected ? "#ffffff" : "#cbd5e1", fontFamily: "Brandon-Bold", fontSize: 12 }}>{c.label}</Text>
+                      </LiquidGlassPill>
+                    );
+                  })}
+                </View>
               </View>
 
-              <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 14, paddingHorizontal: 16 }}>
-                <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 20, marginRight: 8 }}>₹</Text>
+              {/* Amount Input */}
+              <View>
+                <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 12, letterSpacing: 1, marginBottom: 8 }}>AMOUNT (INR)</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 14, borderWidth: 1, borderColor: "rgba(255,255,255,0.18)", paddingHorizontal: 16 }}>
+                  <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 20, marginRight: 8 }}>₹</Text>
+                  <TextInput
+                    keyboardType="numeric"
+                    placeholder="0.00"
+                    placeholderTextColor="#64748b"
+                    value={amount}
+                    onChangeText={setAmount}
+                    style={{ flex: 1, height: 50, color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}
+                  />
+                </View>
+              </View>
+
+              {/* Receipt Upload simulation */}
+              <View>
+                <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 12, letterSpacing: 1, marginBottom: 8 }}>PROOF OF BILL / RECEIPT</Text>
+                <TouchableOpacity
+                  onPress={() => setReceiptAttached(!receiptAttached)}
+                  style={{ height: 90, borderRadius: 16, borderStyle: "dashed", borderWidth: 1.5, borderColor: receiptAttached ? "#10b981" : "rgba(255,255,255,0.24)", backgroundColor: receiptAttached ? "rgba(16, 185, 129, 0.14)" : "rgba(255, 255, 255, 0.05)", alignItems: "center", justifyContent: "center", gap: 6 }}
+                >
+                  {receiptAttached ? (
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                      <CheckCircle2 size={20} color="#10b981" />
+                      <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 13 }}>Receipt_Bill_2026.jpg attached</Text>
+                    </View>
+                  ) : (
+                    <>
+                      <Camera size={22} color="#94a3b8" />
+                      <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Medium", fontSize: 12 }}>Tap to snap bill receipt</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {/* Remarks Input */}
+              <View>
+                <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 12, letterSpacing: 1, marginBottom: 8 }}>REMARKS / PURPOSE</Text>
                 <TextInput
-                  keyboardType="numeric"
-                  placeholder="0.00"
+                  placeholder="e.g. Fuel for 45 km round trip to customer sites"
                   placeholderTextColor="#64748b"
-                  value={amount}
-                  onChangeText={setAmount}
-                  style={{ flex: 1, height: 50, color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}
+                  value={note}
+                  onChangeText={setNote}
+                  multiline
+                  numberOfLines={2}
+                  style={{ backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 14, borderWidth: 1, borderColor: "rgba(255,255,255,0.18)", padding: 14, color: "#ffffff", fontFamily: "Brandon-Medium", fontSize: 13, height: 70 }}
                 />
               </View>
 
-              <TouchableOpacity
-                onPress={attachReceipt}
-                style={{ height: 76, borderRadius: 14, borderStyle: "dashed", borderWidth: 1.5, borderColor: "rgba(255,255,255,0.24)", alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 }}
-              >
-                {receiptName ? (
-                  <>
-                    <CheckCircle2 size={18} color="#10b981" />
-                    <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 13 }}>{receiptName}</Text>
-                  </>
-                ) : (
-                  <>
-                    <Camera size={18} color="#94a3b8" />
-                    <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Medium", fontSize: 13 }}>Attach Bill / Receipt Photo</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-
-              <TextInput
-                placeholder="Purpose / trip remarks"
-                placeholderTextColor="#64748b"
-                value={note}
-                onChangeText={setNote}
-                multiline
-                style={{ backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 14, padding: 14, color: "#ffffff", fontFamily: "Brandon-Medium", fontSize: 14, height: 72 }}
-              />
-
+              {/* Submit Button */}
               <LiquidGlassButton
                 onPress={handleSubmitExpense}
                 variant="tinted"
-                tintColor="rgba(16, 185, 129, 0.82)"
+                tintColor="rgba(16, 185, 129, 0.78)"
                 dropletColor="#34D399"
+                style={{ marginTop: 8 }}
                 contentStyle={{ paddingVertical: 15 }}
               >
-                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>Submit Claim</Text>
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>Submit for Approval</Text>
               </LiquidGlassButton>
             </LiquidGlassCard>
           )}

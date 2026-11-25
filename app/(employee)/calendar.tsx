@@ -1,25 +1,23 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StatusBar,
-  RefreshControl,
-  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
 import {
   ChevronLeft,
-  ChevronRight,
+  CalendarDays,
   Target,
-  FileText,
-  MapPin,
   Clock,
   ArrowRight,
-  CheckCircle2,
+  MapPin,
+  FileText,
 } from "lucide-react-native";
+
 import { api } from "../../services/api";
 import {
   LiquidGlassBackdrop,
@@ -29,334 +27,301 @@ import {
 } from "../../components/LiquidGlass";
 
 export default function EmployeeCalendarScreen() {
-  const now = useMemo(() => new Date(), []);
-  const [cursorYear, setCursorYear] = useState(now.getFullYear());
-  const [cursorMonth, setCursorMonth] = useState(now.getMonth()); // 0-indexed
-  const [selectedDay, setSelectedDay] = useState(now.getDate());
-  const [visits, setVisits] = useState<any[]>([]);
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [todayDate] = useState(() => new Date());
+  const currentDay = todayDate.getDate();
+  const [selectedDay, setSelectedDay] = useState(currentDay);
+  const [workReports, setWorkReports] = useState<Record<number, any>>({});
 
-  const loadCalendarData = useCallback(async (isPull = false) => {
-    if (isPull) setRefreshing(true);
-    try {
-      const [vRes, tRes] = await Promise.all([
-        api.get("/employee/visits"),
-        api.get("/employee/tasks"),
-      ]);
-      setVisits(Array.isArray(vRes?.visits) ? vRes.visits : []);
-      setTasks(Array.isArray(tRes?.tasks) ? tRes.tasks : []);
-    } catch {
-      setVisits([]);
-      setTasks([]);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      void loadCalendarData(false);
-    }, [loadCalendarData])
-  );
-
-  const daysInMonthCount = new Date(cursorYear, cursorMonth + 1, 0).getDate();
-  const firstJsDay = new Date(cursorYear, cursorMonth, 1).getDay(); // 0=Sun..6=Sat
-  const startDayOffset = firstJsDay === 0 ? 6 : firstJsDay - 1; // Monday=0..Sunday=6
-  const monthLabel = new Date(cursorYear, cursorMonth, 1).toLocaleDateString("en-US", {
+  const daysInMonthCount = new Date(
+    todayDate.getFullYear(),
+    todayDate.getMonth() + 1,
+    0
+  ).getDate();
+  const daysInMonth = Array.from({ length: daysInMonthCount }, (_, i) => i + 1);
+  const startDayOffset =
+    (new Date(todayDate.getFullYear(), todayDate.getMonth(), 1).getDay() + 6) %
+    7;
+  const monthName = todayDate.toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
   });
 
-  const changeMonth = (delta: number) => {
-    const next = new Date(cursorYear, cursorMonth + delta, 1);
-    setCursorYear(next.getFullYear());
-    setCursorMonth(next.getMonth());
-    setSelectedDay(1);
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      (async () => {
+        try {
+          const [visitsRes, tasksRes] = await Promise.all([
+            api.get("/employee/visits").catch(() => ({ data: [] })),
+            api.get("/employee/tasks").catch(() => ({ data: [] })),
+          ]);
+          if (!active) return;
+          const visitsList: any[] = Array.isArray(visitsRes?.data)
+            ? visitsRes.data
+            : Array.isArray(visitsRes)
+            ? visitsRes
+            : [];
+          const tasksList: any[] = Array.isArray(tasksRes?.data)
+            ? tasksRes.data
+            : Array.isArray(tasksRes)
+            ? tasksRes
+            : [];
+
+          const reports: Record<number, any> = {};
+          visitsList.forEach((v: any) => {
+            const rawDate = v.created_at ?? v.visit_date;
+            if (!rawDate) return;
+            const d = new Date(rawDate);
+            if (
+              d.getMonth() === todayDate.getMonth() &&
+              d.getFullYear() === todayDate.getFullYear()
+            ) {
+              const dayNum = d.getDate();
+              if (!reports[dayNum]) {
+                reports[dayNum] = { goalsDone: 0, visits: [] };
+              }
+              if (v.status === "completed") {
+                reports[dayNum].goalsDone += 1;
+              }
+              reports[dayNum].visits.push({
+                site_contact: v.site?.name ?? v.client_name ?? "Site Visit",
+                location: v.site?.city ?? v.site?.address ?? "Assigned Sector",
+                time: d.toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                status:
+                  v.status === "completed"
+                    ? "Completed"
+                    : v.status === "in_progress"
+                    ? "In Progress"
+                    : "Scheduled",
+                note: v.summary ?? v.purpose ?? "Site inspection log verified.",
+              });
+            }
+          });
+
+          tasksList.forEach((t: any) => {
+            const rawDate = t.due_date ?? t.created_at;
+            if (!rawDate) return;
+            const d = new Date(rawDate);
+            if (
+              d.getMonth() === todayDate.getMonth() &&
+              d.getFullYear() === todayDate.getFullYear()
+            ) {
+              const dayNum = d.getDate();
+              if (!reports[dayNum]) {
+                reports[dayNum] = { goalsDone: 0, visits: [] };
+              }
+              if (t.status === "completed") {
+                reports[dayNum].goalsDone += 1;
+              }
+              reports[dayNum].visits.push({
+                site_contact: t.site?.name ?? t.title ?? "Assigned Task",
+                location: t.site?.city ?? "On-site",
+                time: "Due Today",
+                status: t.status === "completed" ? "Completed" : "Pending",
+                note: t.description ?? "Work order protocol.",
+              });
+            }
+          });
+
+          setWorkReports(reports);
+        } catch {
+          if (active) setWorkReports({});
+        }
+      })();
+      return () => {
+        active = false;
+      };
+    }, [todayDate])
+  );
+
+  const renderDay = (day: number) => {
+    const isToday = day === currentDay;
+    const isSelected = day === selectedDay;
+    const isFuture = day > currentDay;
+    const hasData = workReports[day] !== undefined;
+
+    let bgColor = "rgba(255,255,255,0.05)";
+    let textColor = "#ffffff";
+    let borderColor = "transparent";
+
+    if (isFuture) {
+      textColor = "rgba(255,255,255,0.2)";
+    } else if (isSelected) {
+      bgColor = "#0284c7";
+      textColor = "#ffffff";
+      borderColor = "#38bdf8";
+    } else if (isToday) {
+      bgColor = "rgba(2, 132, 199, 0.2)";
+      textColor = "#38bdf8";
+      borderColor = "#0284c7";
+    } else if (hasData) {
+      bgColor = "rgba(16, 185, 129, 0.1)";
+      textColor = "#10b981";
+    }
+
+    return (
+      <TouchableOpacity
+        key={day}
+        disabled={isFuture}
+        onPress={() => setSelectedDay(day)}
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          backgroundColor: bgColor,
+          borderWidth: 1,
+          borderColor: borderColor,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Text style={{ color: textColor, fontFamily: "Brandon-Bold", fontSize: 16 }}>{day}</Text>
+        {hasData && !isSelected && !isToday && (
+          <View style={{ position: "absolute", bottom: 4, width: 4, height: 4, borderRadius: 2, backgroundColor: "#10b981" }} />
+        )}
+      </TouchableOpacity>
+    );
   };
-
-  const formatIso = (year: number, month0: number, day: number) =>
-    `${year}-${String(month0 + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-
-  const activityByIso = useMemo(() => {
-    const map: Record<string, { visits: any[]; tasks: any[] }> = {};
-    visits.forEach((v) => {
-      const iso = v.dateIso;
-      if (!iso) return;
-      if (!map[iso]) map[iso] = { visits: [], tasks: [] };
-      map[iso].visits.push(v);
-    });
-    tasks.forEach((t) => {
-      const iso = t.dueDateIso || t.createdAtIso;
-      if (!iso) return;
-      if (!map[iso]) map[iso] = { visits: [], tasks: [] };
-      map[iso].tasks.push(t);
-    });
-    return map;
-  }, [visits, tasks]);
-
-  const selectedIso = formatIso(cursorYear, cursorMonth, selectedDay);
-  const selectedData = activityByIso[selectedIso] || { visits: [], tasks: [] };
-  const isCurrentMonth = cursorYear === now.getFullYear() && cursorMonth === now.getMonth();
 
   return (
     <LiquidGlassBackdrop variant="dark">
       <StatusBar barStyle="light-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
+        
         {/* HEADER */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            paddingHorizontal: 20,
-            paddingTop: 12,
-            paddingBottom: 16,
-          }}
-        >
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}>
           <LiquidGlassIconButton
             variant="dark"
             size={42}
-            onPress={() => (router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard"))}
+            onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")}
           >
             <ChevronLeft size={24} color="#ffffff" />
           </LiquidGlassIconButton>
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 22 }}>
-            Work Calendar
-          </Text>
-          <View style={{ width: 42 }} />
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 25 }}>Work Calendar</Text>
+          <LiquidGlassIconButton variant="dark" size={42}>
+            <CalendarDays size={20} color="#ffffff" />
+          </LiquidGlassIconButton>
         </View>
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => loadCalendarData(true)}
-              tintColor="#38bdf8"
-            />
-          }
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 130 }}
-        >
-          {/* DYNAMIC REAL MONTH CALENDAR */}
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 150 }}>
+          
+          {/* EXACT CALENDAR LAYOUT */}
           <LiquidGlassCard
             variant="dark"
-            borderRadius={30}
-            style={{ marginBottom: 24 }}
-            contentStyle={{ padding: 20 }}
+            borderRadius={34}
+            style={{ marginBottom: 32 }}
+            contentStyle={{ padding: 24 }}
           >
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-              <LiquidGlassIconButton variant="dark" size={36} onPress={() => changeMonth(-1)}>
-                <ChevronLeft size={18} color="#ffffff" />
-              </LiquidGlassIconButton>
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 21 }}>
-                {monthLabel}
-              </Text>
-              <LiquidGlassIconButton variant="dark" size={36} onPress={() => changeMonth(1)}>
-                <ChevronRight size={18} color="#ffffff" />
-              </LiquidGlassIconButton>
-            </View>
-
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
+            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 28, marginBottom: 24, textAlign: "center" }}>{monthName}</Text>
+            
+            {/* Days of week */}
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 16, paddingHorizontal: 8 }}>
               {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
-                <View key={i} style={{ width: "13.5%", alignItems: "center" }}>
-                  <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 13 }}>{d}</Text>
+                <View key={i} style={{ width: 40, alignItems: "center" }}>
+                  <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 15 }}>{d}</Text>
                 </View>
               ))}
             </View>
 
-            <View style={{ flexDirection: "row", flexWrap: "wrap", rowGap: 8 }}>
+            {/* Grid */}
+            <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 8, paddingHorizontal: 8 }}>
               {Array.from({ length: startDayOffset }).map((_, i) => (
-                <View key={`pad-${i}`} style={{ width: "14.28%", height: 40 }} />
+                <View key={`empty-${i}`} style={{ width: 40, height: 40 }} />
               ))}
-
-              {Array.from({ length: daysInMonthCount }, (_, i) => i + 1).map((day) => {
-                const iso = formatIso(cursorYear, cursorMonth, day);
-                const hasActivity = Boolean(activityByIso[iso]);
-                const isToday = isCurrentMonth && day === now.getDate();
-                const isSelected = day === selectedDay;
-
-                return (
-                  <View key={day} style={{ width: "14.28%", alignItems: "center" }}>
-                    <TouchableOpacity
-                      onPress={() => setSelectedDay(day)}
-                      style={{
-                        width: 38,
-                        height: 38,
-                        borderRadius: 19,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor: isSelected
-                          ? "#0284c7"
-                          : isToday
-                          ? "rgba(56,189,248,0.2)"
-                          : hasActivity
-                          ? "rgba(16,185,129,0.16)"
-                          : "rgba(255,255,255,0.04)",
-                        borderWidth: isSelected || isToday ? 1.5 : 0,
-                        borderColor: isSelected ? "#7dd3fc" : "#38bdf8",
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: isSelected ? "#ffffff" : hasActivity ? "#34d399" : "#e2e8f0",
-                          fontFamily: "Brandon-Bold",
-                          fontSize: 14,
-                        }}
-                      >
-                        {day}
-                      </Text>
-                      {hasActivity && !isSelected && (
-                        <View
-                          style={{
-                            position: "absolute",
-                            bottom: 4,
-                            width: 4,
-                            height: 4,
-                            borderRadius: 2,
-                            backgroundColor: "#34d399",
-                          }}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                );
-              })}
+              {daysInMonth.map(renderDay)}
             </View>
           </LiquidGlassCard>
 
-          {/* SELECTED DATE AGENDA & LOGS */}
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 14 }}>
-            {isCurrentMonth && selectedDay === now.getDate()
-              ? "Today's Activity"
-              : new Date(cursorYear, cursorMonth, selectedDay).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
+          {/* DETAILED WORK REPORT FOR SELECTED DATE */}
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 24, marginBottom: 18 }}>
+            {selectedDay === currentDay ? "Today's Agenda" : `Work Report: Day ${selectedDay}`}
           </Text>
 
-          {loading ? (
-            <ActivityIndicator color="#38bdf8" style={{ marginTop: 24 }} />
-          ) : selectedData.visits.length === 0 && selectedData.tasks.length === 0 ? (
-            <LiquidGlassCard
-              variant="dark"
-              borderRadius={24}
-              contentStyle={{ padding: 28, alignItems: "center" }}
-            >
-              <Clock size={38} color="#64748b" style={{ marginBottom: 10 }} />
-              <Text style={{ color: "#e2e8f0", fontFamily: "Brandon-Bold", fontSize: 16 }}>
-                No Visits or Tasks Logged
-              </Text>
-              <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, textAlign: "center", marginTop: 4 }}>
-                No field visits or scheduled work orders were recorded on this date.
-              </Text>
-            </LiquidGlassCard>
-          ) : (
-            <View style={{ gap: 14 }}>
-              {selectedData.tasks.map((task: any) => (
+          {workReports[selectedDay] ? (
+            <View>
+              {/* Daily Stats Summary */}
+              {selectedDay !== currentDay && (
                 <LiquidGlassCard
-                  key={`task-${task.id}`}
-                  variant="dark"
-                  borderRadius={24}
-                  onPress={() => router.push(`/(employee)/task/${task.id}` as any)}
-                  contentStyle={{ padding: 18 }}
+                  variant="tinted"
+                  tintColor="rgba(16, 185, 129, 0.18)"
+                  dropletColor="#10b981"
+                  borderRadius={20}
+                  style={{ marginBottom: 24 }}
+                  contentStyle={{ flexDirection: "row", alignItems: "center", padding: 18 }}
                 >
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                    <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      <Target size={16} color="#38bdf8" style={{ marginRight: 7 }} />
-                      <Text style={{ color: "#38bdf8", fontFamily: "Brandon-Bold", fontSize: 12 }}>
-                        {task.workOrderCode} • {task.status}
-                      </Text>
-                    </View>
-                    <Text style={{ color: "#4ade80", fontFamily: "Brandon-Bold", fontSize: 12 }}>
-                      +{task.points} Pts
-                    </Text>
-                  </View>
-                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18, marginTop: 6 }}>
-                    {task.title}
-                  </Text>
-                  {task.targetEntity ? (
-                    <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 3 }}>
-                      {task.targetEntity}
-                    </Text>
-                  ) : null}
+                  <Target size={22} color="#10b981" style={{ marginRight: 12 }} />
+                  <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 18 }}>Goals Accomplished: {workReports[selectedDay].goalsDone} Tasks</Text>
                 </LiquidGlassCard>
-              ))}
+              )}
 
-              {selectedData.visits.map((visit: any) => {
-                const isDone = visit.status === "completed";
-                return (
+              {/* Visits List */}
+              <View style={{ gap: 18 }}>
+                {workReports[selectedDay].visits.map((visit: any, index: number) => (
                   <LiquidGlassCard
-                    key={`visit-${visit.id}`}
+                    key={index}
                     variant="dark"
-                    borderRadius={24}
-                    contentStyle={{ padding: 18 }}
+                    borderRadius={28}
+                    contentStyle={{ padding: 22 }}
                   >
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-                      <View style={{ flex: 1, marginRight: 10 }}>
-                        <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>
-                          {visit.farmerName}
-                        </Text>
-                        <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-                          <MapPin size={13} color="#94a3b8" />
-                          <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 5 }}>
-                            {visit.address || visit.visitCode}
-                          </Text>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+                      <View style={{ flex: 1, paddingRight: 10 }}>
+                        <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 21 }}>{visit.site_contact}</Text>
+                        <View style={{ flexDirection: "row", alignItems: "center", marginTop: 6 }}>
+                          <MapPin size={14} color="#94a3b8" />
+                          <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 15, marginLeft: 5 }}>{visit.location}</Text>
                         </View>
                       </View>
                       <View style={{ alignItems: "flex-end" }}>
-                        <Text style={{ color: "#38bdf8", fontFamily: "Brandon-Bold", fontSize: 13 }}>
-                          {visit.checkInTime}
-                        </Text>
-                        <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-                          <CheckCircle2 size={13} color={isDone ? "#34d399" : "#fbbf24"} style={{ marginRight: 4 }} />
-                          <Text style={{ color: isDone ? "#34d399" : "#fbbf24", fontFamily: "Brandon-Bold", fontSize: 11 }}>
-                            {isDone ? "Completed" : "Active"}
-                          </Text>
+                        <Text style={{ color: "#38bdf8", fontFamily: "Brandon-Bold", fontSize: 16 }}>{visit.time}</Text>
+                        <View style={{ backgroundColor: visit.status === "Flagged Issue" ? "rgba(239, 68, 68, 0.18)" : "rgba(16, 185, 129, 0.18)", borderWidth: 1, borderColor: visit.status === "Flagged Issue" ? "rgba(239, 68, 68, 0.35)" : "rgba(16, 185, 129, 0.35)", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, marginTop: 6 }}>
+                          <Text style={{ color: visit.status === "Flagged Issue" ? "#ef4444" : "#10b981", fontFamily: "Brandon-Bold", fontSize: 12, textTransform: "uppercase" }}>{visit.status}</Text>
                         </View>
                       </View>
                     </View>
-
-                    {visit.remarks ? (
-                      <View
-                        style={{
-                          backgroundColor: "rgba(255,255,255,0.06)",
-                          padding: 12,
-                          borderRadius: 14,
-                          marginTop: 12,
-                          flexDirection: "row",
-                        }}
-                      >
-                        <FileText size={15} color="#94a3b8" style={{ marginRight: 8, marginTop: 2 }} />
-                        <Text style={{ flex: 1, color: "#cbd5e1", fontFamily: "Brandon-Medium", fontSize: 13, lineHeight: 19 }}>
-                          {visit.remarks}
+                    
+                    <View style={{ backgroundColor: "rgba(0,0,0,0.22)", borderWidth: 1, borderColor: "rgba(255,255,255,0.10)", padding: 18, borderRadius: 18, marginTop: 8 }}>
+                      <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                        <FileText size={18} color="#64748b" style={{ marginRight: 10, marginTop: 2 }} />
+                        <Text style={{ flex: 1, color: "#cbd5e1", fontFamily: "Brandon-Medium", fontSize: 15, lineHeight: 22 }}>
+                          <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold" }}>Visit Notes: </Text>
+                          {visit.note}
                         </Text>
                       </View>
-                    ) : null}
+                    </View>
 
-                    {isDone && (
-                      <LiquidGlassButton
-                        variant="dark"
-                        dropletColor="#38bdf8"
-                        onPress={() => router.push(`/(employee)/report/${visit.id}` as any)}
-                        style={{ marginTop: 12 }}
-                        contentStyle={{ paddingVertical: 11 }}
-                      >
-                        <Text style={{ color: "#38bdf8", fontFamily: "Brandon-Bold", fontSize: 14 }}>
-                          View Submitted Report
-                        </Text>
-                        <ArrowRight size={15} color="#38bdf8" style={{ marginLeft: 6 }} />
-                      </LiquidGlassButton>
+                    {visit.status === "Completed" && (
+                       <LiquidGlassButton
+                         variant="dark"
+                         dropletColor="#38bdf8"
+                         onPress={() => router.push("/(employee)/report/1")}
+                         style={{ marginTop: 18 }}
+                         contentStyle={{ paddingVertical: 14 }}
+                       >
+                         <Text style={{ color: "#38bdf8", fontFamily: "Brandon-Bold", fontSize: 16 }}>View Submitted Report</Text>
+                         <ArrowRight size={18} color="#38bdf8" style={{ marginLeft: 6 }} />
+                       </LiquidGlassButton>
                     )}
                   </LiquidGlassCard>
-                );
-              })}
+                ))}
+              </View>
             </View>
+          ) : (
+            <LiquidGlassCard
+              variant="dark"
+              borderRadius={24}
+              contentStyle={{ padding: 32, alignItems: "center" }}
+            >
+              <Clock size={48} color="#64748b" style={{ marginBottom: 16 }} />
+              <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 16, textAlign: "center" }}>
+                {selectedDay > currentDay ? "No goals scheduled for this upcoming date yet." : "No visits or work logged on this date."}
+              </Text>
+            </LiquidGlassCard>
           )}
+
         </ScrollView>
       </SafeAreaView>
     </LiquidGlassBackdrop>

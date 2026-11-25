@@ -52,12 +52,12 @@ export default function LoginScreen() {
   useEffect(() => {
     (async () => {
       try {
-        const rememberedPhone = await AsyncStorage.getItem("userPhone");
-        if (rememberedPhone) {
-          setMobile(rememberedPhone);
+        const savedPhone = await AsyncStorage.getItem("userPhone");
+        if (savedPhone) {
+          setMobile(savedPhone);
         }
       } catch {
-        // Ignore storage read errors
+        // Ignore storage read error
       }
     })();
   }, []);
@@ -88,24 +88,20 @@ export default function LoginScreen() {
           await AsyncStorage.multiRemove([
             "@active_task",
             "@active_checkin",
+            "@fieldy_reports",
             "@last_submitted_report",
-            "@submitted_reports_v2",
             "@current_tracking_session",
             "isClockedIn",
           ]);
         }
         await setAuthSession(res.token, res.user);
-        await AsyncStorage.setItem("userName", res.user?.name || "");
+        await AsyncStorage.setItem("userName", res.user?.name || "Field Executive");
         await AsyncStorage.setItem("userRole", res.user?.role || "employee");
         await AsyncStorage.setItem("userPhone", res.user?.phone || trimmed);
         if (res.user?.industry && ALL_SERVICE_KEYS.includes(res.user.industry)) {
           await setService(res.user.industry);
         }
-        if (res.user?.role === "farmer") {
-          router.replace("/(site-contact)/dashboard" as any);
-        } else {
-          router.replace("/(employee)/dashboard");
-        }
+        router.replace("/(employee)/dashboard");
       } else {
         setError(res?.message || "Invalid credentials. Please try again.");
       }
@@ -120,10 +116,10 @@ export default function LoginScreen() {
         lower.includes("connectexception");
       if (isNetworkFailure) {
         setError(
-          `Cannot reach server (${resolveApiBaseUrl()}). Verify internet or backend URL.`
+          `Cannot reach backend (${resolveApiBaseUrl()}). Start Laravel with: php artisan serve --host=0.0.0.0 --port=8000`
         );
       } else {
-        setError(msg || "Unable to sign in. Check your credentials and try again.");
+        setError(msg || "Unable to sign in. Check server connection and credentials.");
       }
     } finally {
       setLoading(false);
@@ -152,7 +148,7 @@ export default function LoginScreen() {
             }}
           >
             <LiquidGlassIconButton
-              onPress={() => (router.canGoBack() ? router.back() : router.replace("/intro"))}
+              onPress={() => router.back()}
               size={42}
               variant="dark"
             >
@@ -215,11 +211,11 @@ export default function LoginScreen() {
                   textAlign: "center",
                 }}
               >
-                Sign in with the credentials issued by your company admin
+                Enter your phone or email and password
               </Text>
             </View>
 
-            {/* Frosted Liquid Glass Form Card */}
+            {/* Frosted Apple Liquid Glass Form Card */}
             <LiquidGlassCard
               variant="dark"
               borderRadius={30}
@@ -251,7 +247,7 @@ export default function LoginScreen() {
                 </View>
               ) : null}
 
-              {/* Phone / Email Input */}
+              {/* Phone Input */}
               <View style={{ marginBottom: 16 }}>
                 <Text
                   style={{
@@ -264,7 +260,7 @@ export default function LoginScreen() {
                     textTransform: "uppercase",
                   }}
                 >
-                  Phone or Email
+                  Phone or Username / Email
                 </Text>
                 <View
                   style={{
@@ -296,7 +292,7 @@ export default function LoginScreen() {
                         fontSize: 16,
                         color: "#ffffff",
                       }}
-                      placeholder="Enter mobile number or email"
+                      placeholder="Phone number or email"
                       placeholderTextColor="rgba(255,255,255,0.38)"
                       keyboardType="default"
                       autoCapitalize="none"
@@ -352,7 +348,7 @@ export default function LoginScreen() {
                         fontSize: 16,
                         color: "#ffffff",
                       }}
-                      placeholder="Enter your password"
+                      placeholder="Password"
                       placeholderTextColor="rgba(255,255,255,0.38)"
                       secureTextEntry={!showPassword}
                       value={password}
@@ -372,7 +368,7 @@ export default function LoginScreen() {
                 </View>
               </View>
 
-              {/* Login CTA */}
+              {/* Apple Liquid Glass Login CTA */}
               <LiquidGlassButton
                 onPress={handleLogin}
                 disabled={loading}

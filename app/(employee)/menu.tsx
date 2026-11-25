@@ -67,7 +67,7 @@ export default function MenuScreen() {
   ];
 
   const handleLogout = async () => {
-    await stopSession().catch(() => {});
+    await stopSession().catch(() => { });
     await clearAuthSession();
     router.replace("/intro");
   };
