@@ -227,7 +227,7 @@ export default function SubmitReportScreen() {
     const mediaIds: number[] = contextState.checkInMediaId ? [contextState.checkInMediaId] : [];
     const uploadedMedia: any[] = [];
 
-    const assetsToUpload: Array<{ asset: LocalMediaAsset; title: string }> = [];
+    const assetsToUpload: { asset: LocalMediaAsset; title: string }[] = [];
     if (beforePhoto) assetsToUpload.push({ asset: beforePhoto, title: `${resolvedSiteName} - Before Photo` });
     if (afterPhoto) assetsToUpload.push({ asset: afterPhoto, title: `${resolvedSiteName} - After Photo` });
     if (siteVideo) assetsToUpload.push({ asset: siteVideo, title: `${resolvedSiteName} - Site Video` });

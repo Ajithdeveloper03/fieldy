@@ -33,7 +33,7 @@ import {
 export default function SOSScreen() {
   const [sosTriggered, setSosTriggered] = useState(false);
   const [dispatching, setDispatching] = useState(false);
-  const [contacts, setContacts] = useState<Array<{ role: string; phone: string; available: string }>>([
+  const [contacts, setContacts] = useState<{ role: string; phone: string; available: string }[]>([
     {
       role: "National Emergency Response (Police / Ambulance / Fire)",
       phone: "112",

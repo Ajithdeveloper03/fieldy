@@ -2,13 +2,11 @@ import React from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   StatusBar,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import { X, Camera, Video, ClipboardCheck, FileText, History } from "lucide-react-native";
 import { useService } from "../../../context/ServiceContext";
 import {

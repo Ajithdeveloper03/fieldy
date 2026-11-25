@@ -20,7 +20,6 @@ import {
   ArrowRight,
   CheckCircle2,
 } from "lucide-react-native";
-import { useService } from "../../context/ServiceContext";
 import { api } from "../../services/api";
 import {
   LiquidGlassBackdrop,
@@ -30,7 +29,6 @@ import {
 } from "../../components/LiquidGlass";
 
 export default function EmployeeCalendarScreen() {
-  const { serviceConfig } = useService();
   const now = useMemo(() => new Date(), []);
   const [cursorYear, setCursorYear] = useState(now.getFullYear());
   const [cursorMonth, setCursorMonth] = useState(now.getMonth()); // 0-indexed

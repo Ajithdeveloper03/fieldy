@@ -289,7 +289,11 @@ export default function TrackingScreen() {
     try {
       await stopSession();
       setShowStopModal(false);
-      router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard");
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace("/(employee)/dashboard");
+      }
     } finally {
       setSubmittingStop(false);
     }

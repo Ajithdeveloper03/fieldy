@@ -32,7 +32,7 @@ import {
 } from "../../components/LiquidGlass";
 
 function buildDatePills() {
-  const pills: Array<{ key: string; dayLabel: string; numLabel: string }> = [
+  const pills: { key: string; dayLabel: string; numLabel: string }[] = [
     { key: "all", dayLabel: "ALL", numLabel: "All" },
   ];
   const base = new Date();

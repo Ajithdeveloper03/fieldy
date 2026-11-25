@@ -104,7 +104,6 @@ if (OriginalText && !(OriginalText as any).__infinityPatched) {
     const { style, className, children, ...rest } = props;
     const font = resolveFontFamily(style, children, className);
     const isTamil = currentAppLanguage === "ta" || hasTamilGlyphs(children);
-    const flat = StyleSheet.flatten(style) || {};
 
     const mergedStyle = [
       style,

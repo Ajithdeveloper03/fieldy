@@ -110,7 +110,39 @@ export default function VisitCheckInScreen() {
   };
 
   useEffect(() => {
-    void acquireGps();
+    let active = true;
+    (async () => {
+      try {
+        const perm = await Location.requestForegroundPermissionsAsync();
+        if (active && perm.status === "granted") {
+          const fix = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+          if (active) {
+            setCoords({
+              latitude: fix.coords.latitude,
+              longitude: fix.coords.longitude,
+              accuracy: fix.coords.accuracy ?? null,
+            });
+            void sendLiveLocationPing(fix.coords);
+          }
+        } else if (active) {
+          showToast({
+            title: "Location Required",
+            message: "Enable GPS access to verify your arrival on site.",
+            type: "error",
+          });
+        }
+      } catch {
+        if (active) {
+          showToast({
+            title: "GPS Signal Weak",
+            message: "Tap refresh to retry acquiring satellite lock.",
+            type: "info",
+          });
+        }
+      } finally {
+        if (active) setLocating(false);
+      }
+    })();
 
     (async () => {
       try {

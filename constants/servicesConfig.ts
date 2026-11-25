@@ -116,14 +116,14 @@ export interface ServiceDefinition {
   sampleEntities: ServiceEntity[];
   sampleVisits: ServiceVisit[];
   sampleTasks: ServiceTask[];
-  quickActions: Array<{
+  quickActions: {
     title: string;
     subtitle: string;
     icon: string;
     route: string;
     color: string;
     bg: string;
-  }>;
+  }[];
 }
 
 const RAW_SERVICES_CONFIG: Record<ServiceKey, any> = {

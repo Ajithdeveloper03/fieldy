@@ -30,7 +30,7 @@ export default function InventoryScreen() {
   const [newName, setNewName] = useState("");
   const [newUnit, setNewUnit] = useState("Units");
   const [storageKey, setStorageKey] = useState("@fieldy_inventory_default");
-  const [items, setItems] = useState<Array<{ id: string; name: string; qty: number; unit: string }>>([]);
+  const [items, setItems] = useState<{ id: string; name: string; qty: number; unit: string }[]>([]);
 
   useEffect(() => {
     (async () => {

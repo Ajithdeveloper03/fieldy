@@ -54,7 +54,6 @@ export default function ClockInScreen() {
           message: "Enable GPS access to clock in for your shift.",
           type: "error",
         });
-        setLocating(false);
         return;
       }
 
@@ -77,7 +76,48 @@ export default function ClockInScreen() {
   };
 
   useEffect(() => {
-    void fetchGpsAndAnchor();
+    let active = true;
+    (async () => {
+      try {
+        const attRes = await api.get("/employee/attendance").catch(() => null);
+        if (active && attRes?.target_site) {
+          setTargetSite(attRes.target_site);
+        }
+
+        const perm = await Location.requestForegroundPermissionsAsync();
+        if (!active) return;
+        if (perm.status !== "granted") {
+          showToast({
+            title: "Location Permission Required",
+            message: "Enable GPS access to clock in for your shift.",
+            type: "error",
+          });
+          return;
+        }
+
+        const fix = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+        if (!active) return;
+        setCoords({
+          latitude: fix.coords.latitude,
+          longitude: fix.coords.longitude,
+          accuracy: fix.coords.accuracy ?? null,
+        });
+        void sendLiveLocationPing(fix.coords);
+      } catch {
+        if (active) {
+          showToast({
+            title: "GPS Lock Pending",
+            message: "Tap refresh to acquire live coordinates.",
+            type: "info",
+          });
+        }
+      } finally {
+        if (active) setLocating(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const captureSelfie = async () => {

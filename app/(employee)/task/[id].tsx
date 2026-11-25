@@ -38,7 +38,7 @@ export default function EmployeeTaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { serviceConfig } = useService();
   const [task, setTask] = useState<any | null>(null);
-  const [checklist, setChecklist] = useState<Array<{ id: number | string; text: string; done: boolean }>>([]);
+  const [checklist, setChecklist] = useState<{ id: number | string; text: string; done: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingChecklist, setSavingChecklist] = useState(false);
 
