@@ -27,6 +27,19 @@ class IndustryService
         }
 
         $user->loadMissing('company');
+
+        // Tenant employees are strictly bound to their company's service vertical so
+        // stale mobile headers never hide or misroute company tasks, sites, or visits.
+        if ($user->company_id && $user->company?->industry) {
+            $companyIndustry = self::normalize($user->company->industry);
+            if (IndustryContext::hasColumn('users') && $user->industry !== $companyIndustry) {
+                $user->industry = $companyIndustry;
+                $user->save();
+            }
+
+            return $companyIndustry;
+        }
+
         $headerService = $request?->header('X-Service-Key') ?? $request?->input('industry') ?? $request?->input('service');
 
         if ($headerService) {

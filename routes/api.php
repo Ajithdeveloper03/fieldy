@@ -36,6 +36,7 @@ Route::prefix('v1')->group(function () {
 
         // Current user info
         Route::get('/user', fn (Request $request) => $request->user());
+        Route::get('/auth/me', [AuthController::class, 'me']);
 
         // Employee endpoints
         Route::prefix('employee')->group(function () {
@@ -43,16 +44,23 @@ Route::prefix('v1')->group(function () {
             Route::get('/performance', [EmployeeController::class, 'performance']);
             Route::get('/tasks', [EmployeeController::class, 'tasks']);
             Route::post('/tasks/{id}/status', [EmployeeController::class, 'updateTaskStatus']);
+            Route::post('/tasks/{id}/checklist', [EmployeeController::class, 'updateTaskChecklist']);
             Route::get('/sites', [EmployeeController::class, 'sites']);
             Route::get('/farmers', [EmployeeController::class, 'myFarmers']);
             Route::get('/visits', [EmployeeController::class, 'visits']);
+            Route::get('/attendance', [EmployeeController::class, 'attendanceOverview']);
             Route::post('/attendance', [EmployeeController::class, 'attendance']);
             Route::post('/location-ping', [EmployeeController::class, 'locationPing']);
             Route::post('/farmer/register', [EmployeeController::class, 'registerFarmer']);
+            Route::post('/visit/check-in', [EmployeeController::class, 'checkInVisit']);
             Route::post('/visit/submit', [EmployeeController::class, 'submitVisit']);
             Route::post('/reports', [EmployeeController::class, 'submitVisit']);
             Route::post('/visit/{id}/checkout', [EmployeeController::class, 'checkoutVisit']);
             Route::get('/visits/{id}/download', [MediaFileController::class, 'downloadVisitDossier']);
+            Route::get('/notifications', [EmployeeController::class, 'notifications']);
+            Route::get('/sos-contacts', [EmployeeController::class, 'sosContacts']);
+            Route::post('/sos', [EmployeeController::class, 'triggerSos']);
+            Route::put('/profile', [EmployeeController::class, 'updateProfile']);
 
             // Image, Video & Document Upload / Download endpoints
             Route::get('/media', [MediaFileController::class, 'index']);

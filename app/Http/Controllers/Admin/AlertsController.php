@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
+use App\Models\EmergencyAlert;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\Industry\IndustryCatalog;
@@ -25,6 +26,35 @@ class AlertsController extends Controller
             $today = Carbon::today();
             $companyUserIds = User::where('company_id', $companyId)->pluck('id');
             $empIds = User::where('company_id', $companyId)->where('role', 'employee')->pluck('id');
+
+            // 0. Live Emergency SOS & GPS/App critical dispatches from field staff
+            $emergencyAlerts = EmergencyAlert::whereIn('employee_id', $empIds)
+                ->where('is_resolved', false)
+                ->with('employee:id,name,phone')
+                ->latest()
+                ->take(15)
+                ->get();
+
+            foreach ($emergencyAlerts as $sos) {
+                $label = match ($sos->alert_type) {
+                    'sos_manual' => 'CRITICAL SOS DISPATCH',
+                    'gps_turned_off' => 'GPS Disabled Alert',
+                    'app_killed' => 'Tracking Interrupted',
+                    default => 'Field Safety Alert',
+                };
+                $alerts[] = [
+                    'id' => 'sos-' . $sos->id,
+                    'type' => 'critical',
+                    'title' => $label . ': ' . ($sos->employee?->name ?? 'Field Staff'),
+                    'message' => 'Emergency alert triggered from mobile app'
+                        . ($sos->employee?->phone ? ' (Phone: ' . $sos->employee->phone . ').' : '.'),
+                    'location' => $sos->latitude !== null && $sos->longitude !== null
+                        ? "Lat: {$sos->latitude}, Lng: {$sos->longitude}"
+                        : 'Live GPS Pending',
+                    'timestamp' => $sos->created_at ? $sos->created_at->diffForHumans() : 'Just now',
+                    'resolved' => (bool) $sos->is_resolved,
+                ];
+            }
 
             // 1. Real overdue tasks for this company
             $overdueTasks = IndustryContext::scope(Task::query(), $industryKey)
