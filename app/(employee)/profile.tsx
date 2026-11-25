@@ -27,6 +27,13 @@ import {
 } from "lucide-react-native";
 import { useService, ALL_SERVICE_KEYS } from "../../context/ServiceContext";
 import { api, getAuthUser } from "../../services/api";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+} from "../../components/LiquidGlass";
 
 const SERVICE_CARD_IMAGES: Record<string, any> = {
   real_estate: require("../../assets/images/image1.jpg"),
@@ -94,33 +101,8 @@ export default function EmployeeProfileScreen() {
     })();
   }, [serviceConfig.key]);
   return (
-    <View style={{ flex: 1, backgroundColor: "#062214" }}>
+    <LiquidGlassBackdrop variant="dark">
       <StatusBar barStyle="light-content" />
-
-      {/* Cinematic Gradient Background */}
-      <LinearGradient
-        colors={[
-          "#042616",
-          "#0a331c",
-          "#062214",
-        ]}
-        locations={[0, 0.35, 1]}
-        style={StyleSheet.absoluteFillObject}
-      />
-
-      {/* Glow */}
-      <View
-        style={{
-          position: "absolute",
-          top: "12%",
-          left: "50%",
-          marginLeft: -150,
-          width: 300,
-          height: 300,
-          borderRadius: 150,
-          backgroundColor: "rgba(16, 185, 129, 0.16)",
-        }}
-      />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER */}
@@ -134,22 +116,17 @@ export default function EmployeeProfileScreen() {
             paddingBottom: 12,
           }}
         >
-          <TouchableOpacity
+          <LiquidGlassIconButton
             onPress={() =>
               router.canGoBack()
                 ? router.back()
                 : router.replace("/(employee)/dashboard")
             }
-            style={{
-              backgroundColor: "rgba(255,255,255,0.1)",
-              padding: 10,
-              borderRadius: 999,
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.15)",
-            }}
+            size={44}
+            variant="dark"
           >
             <ChevronLeft size={22} color="#ffffff" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
           <Text
             style={{
               color: "#ffffff",
@@ -160,30 +137,20 @@ export default function EmployeeProfileScreen() {
             {serviceConfig.vocab.staffRole}
           </Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <TouchableOpacity
+            <LiquidGlassIconButton
               onPress={() => router.push("/(employee)/notifications")}
-              style={{
-                backgroundColor: "rgba(255,255,255,0.1)",
-                padding: 10,
-                borderRadius: 999,
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.15)",
-              }}
+              size={42}
+              variant="dark"
             >
               <Bell size={20} color="#ffffff" />
-            </TouchableOpacity>
-            <TouchableOpacity
+            </LiquidGlassIconButton>
+            <LiquidGlassIconButton
               onPress={() => router.push("/(employee)/menu")}
-              style={{
-                backgroundColor: "rgba(255,255,255,0.1)",
-                padding: 10,
-                borderRadius: 999,
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.15)",
-              }}
+              size={42}
+              variant="dark"
             >
               <Settings size={20} color="#ffffff" />
-            </TouchableOpacity>
+            </LiquidGlassIconButton>
           </View>
         </View>
 
@@ -195,17 +162,13 @@ export default function EmployeeProfileScreen() {
             paddingTop: 8,
           }}
         >
-          {/* HERO PROFILE CARD WITH REAL EMPLOYEE & SERVICE TELEMETRY */}
-          <View
-            style={{
-              backgroundColor: "rgba(15, 23, 42, 0.75)",
-              borderRadius: 36,
-              padding: 24,
-              borderWidth: 1,
-              borderColor: "rgba(255, 255, 255, 0.14)",
-              marginBottom: 18,
-              alignItems: "center",
-            }}
+          {/* HERO PROFILE CARD WITH APPLE LIQUID GLASS */}
+          <LiquidGlassCard
+            variant="dark"
+            borderRadius={36}
+            dropletColor="#10B981"
+            style={{ marginBottom: 18 }}
+            contentStyle={{ padding: 24, alignItems: "center" }}
           >
             {/* Avatar Flanked by Real Left & Right Metrics */}
             <View
@@ -337,21 +300,13 @@ export default function EmployeeProfileScreen() {
               {companyName} • {isClockedIn ? "On Duty" : "Ready for Shift"}
             </Text>
 
-            {/* Dual Outlined Pill Buttons */}
+            {/* Dual Liquid Glass Pill Buttons */}
             <View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
-              <TouchableOpacity
+              <LiquidGlassButton
                 onPress={() => router.push("/(employee)/attendance-hub")}
-                style={{
-                  flex: 1,
-                  borderRadius: 999,
-                  paddingVertical: 14,
-                  borderWidth: 1.2,
-                  borderColor: "rgba(255, 255, 255, 0.45)",
-                  backgroundColor: "rgba(255, 255, 255, 0.08)",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexDirection: "row",
-                }}
+                variant="dark"
+                style={{ flex: 1 }}
+                contentStyle={{ paddingVertical: 14, paddingHorizontal: 14 }}
               >
                 <Fingerprint size={17} color="#ffffff" style={{ marginRight: 6 }} />
                 <Text
@@ -363,21 +318,15 @@ export default function EmployeeProfileScreen() {
                 >
                   Attendance
                 </Text>
-              </TouchableOpacity>
+              </LiquidGlassButton>
 
-              <TouchableOpacity
+              <LiquidGlassButton
                 onPress={() => router.push("/(employee)/edit-profile")}
-                style={{
-                  flex: 1,
-                  borderRadius: 999,
-                  paddingVertical: 14,
-                  borderWidth: 1.2,
-                  borderColor: "#4ade80",
-                  backgroundColor: "rgba(74, 222, 128, 0.14)",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexDirection: "row",
-                }}
+                variant="tinted"
+                tintColor="rgba(16, 185, 129, 0.24)"
+                dropletColor="#4ADE80"
+                style={{ flex: 1 }}
+                contentStyle={{ paddingVertical: 14, paddingHorizontal: 14 }}
               >
                 <Award size={17} color="#4ade80" style={{ marginRight: 6 }} />
                 <Text
@@ -389,9 +338,9 @@ export default function EmployeeProfileScreen() {
                 >
                   My Credentials
                 </Text>
-              </TouchableOpacity>
+              </LiquidGlassButton>
             </View>
-          </View>
+          </LiquidGlassCard>
 
           {/* SPLIT BENTO FEATURE CARDS */}
           <View
@@ -402,15 +351,17 @@ export default function EmployeeProfileScreen() {
               height: 238,
             }}
           >
-            {/* Left Light Bento Card */}
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: "#e2e8f0",
-                borderRadius: 32,
+            {/* Left Light Crystal Liquid Glass Bento Card */}
+            <LiquidGlassCard
+              variant="light"
+              borderRadius={32}
+              style={{ flex: 1 }}
+              contentStyle={{
                 padding: 18,
                 alignItems: "center",
                 justifyContent: "space-between",
+                flex: 1,
+                backgroundColor: "rgba(255, 255, 255, 0.72)",
               }}
             >
               <View style={{ alignItems: "center" }}>
@@ -461,15 +412,11 @@ export default function EmployeeProfileScreen() {
                 </Text>
               </View>
 
-              <TouchableOpacity
+              <LiquidGlassButton
                 onPress={() => router.push("/(employee)/tasks")}
-                style={{
-                  backgroundColor: "#0f172a",
-                  width: "100%",
-                  paddingVertical: 12,
-                  borderRadius: 999,
-                  alignItems: "center",
-                }}
+                variant="dark"
+                style={{ width: "100%" }}
+                contentStyle={{ paddingVertical: 11, paddingHorizontal: 14 }}
               >
                 <Text
                   style={{
@@ -480,8 +427,8 @@ export default function EmployeeProfileScreen() {
                 >
                   Work Orders
                 </Text>
-              </TouchableOpacity>
-            </View>
+              </LiquidGlassButton>
+            </LiquidGlassCard>
 
             {/* Right Scenic Image Card */}
             <TouchableOpacity
@@ -535,18 +482,18 @@ export default function EmployeeProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* WIDE HORIZONTAL FEATURE CARD */}
-          <TouchableOpacity
-            activeOpacity={0.9}
+          {/* WIDE HORIZONTAL LIQUID GLASS FEATURE CARD */}
+          <LiquidGlassCard
+            variant="light"
+            borderRadius={32}
             onPress={() => router.push("/(employee)/calendar")}
-            style={{
-              backgroundColor: "#e2e8f0",
-              borderRadius: 32,
+            style={{ marginBottom: 24, height: 164 }}
+            contentStyle={{
               padding: 8,
               flexDirection: "row",
               alignItems: "center",
-              marginBottom: 24,
-              height: 164,
+              flex: 1,
+              backgroundColor: "rgba(255, 255, 255, 0.72)",
             }}
           >
             <View
@@ -614,7 +561,7 @@ export default function EmployeeProfileScreen() {
                 resizeMode="cover"
               />
             </View>
-          </TouchableOpacity>
+          </LiquidGlassCard>
 
           {/* OPERATIONAL IMPACT METRICS GRID */}
           <Text
@@ -664,32 +611,24 @@ export default function EmployeeProfileScreen() {
                 route: "/(employee)/performance",
               },
             ].map((metric, idx) => (
-              <TouchableOpacity
+              <LiquidGlassCard
                 key={idx}
+                variant="dark"
+                borderRadius={26}
+                dropletColor={metric.color}
                 onPress={() => router.push(metric.route as any)}
-                style={{
-                  width: "48%",
-                  backgroundColor: "rgba(255,255,255,0.08)",
-                  borderRadius: 26,
-                  padding: 20,
-                  marginBottom: 16,
-                  borderWidth: 1,
-                  borderColor: "rgba(255,255,255,0.12)",
-                }}
+                style={{ width: "48%", marginBottom: 16 }}
+                contentStyle={{ padding: 20 }}
               >
-                <View
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 16,
-                    backgroundColor: `${metric.color}22`,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginBottom: 12,
-                  }}
+                <LiquidGlassIconBadge
+                  size={48}
+                  borderRadius={16}
+                  variant="dark"
+                  tintColor={metric.color}
+                  style={{ marginBottom: 12 }}
                 >
                   <metric.icon size={24} color={metric.color} />
-                </View>
+                </LiquidGlassIconBadge>
                 <Text
                   style={{
                     color: "#ffffff",
@@ -702,18 +641,18 @@ export default function EmployeeProfileScreen() {
                 </Text>
                 <Text
                   style={{
-                    color: "rgba(255,255,255,0.7)",
+                    color: "rgba(255,255,255,0.74)",
                     fontFamily: "Brandon-Medium",
                     fontSize: 15,
                   }}
                 >
                   {metric.label}
                 </Text>
-              </TouchableOpacity>
+              </LiquidGlassCard>
             ))}
           </View>
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

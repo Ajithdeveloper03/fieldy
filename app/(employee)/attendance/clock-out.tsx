@@ -2,16 +2,12 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
-  StyleSheet,
   ScrollView,
   ActivityIndicator,
-  Image,
   StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import {
   ChevronLeft,
   CheckCircle2,
@@ -23,6 +19,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import { useLanguage } from "../../../context/LanguageContext";
 import { api } from "../../../services/api";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+} from "../../../components/LiquidGlass";
 
 export default function ClockOutScreen() {
   const { t, language } = useLanguage();
@@ -83,14 +86,8 @@ export default function ClockOutScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#062214" }}>
+    <LiquidGlassBackdrop variant="dark">
       <StatusBar barStyle="light-content" />
-
-      {/* GRADIENT BACKGROUND */}
-      <LinearGradient
-        colors={["#062214", "#0a331c", "#000000"]}
-        style={StyleSheet.absoluteFillObject}
-      />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER */}
@@ -103,23 +100,17 @@ export default function ClockOutScreen() {
             paddingTop: 16,
           }}
         >
-          <TouchableOpacity
+          <LiquidGlassIconButton
+            variant="dark"
+            size={44}
             onPress={() =>
               router.canGoBack()
                 ? router.back()
                 : router.replace("/(employee)/dashboard")
             }
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: "rgba(255,255,255,0.1)",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
           >
             <ChevronLeft size={24} color="#ffffff" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
           <Text
             style={{
               color: "#ffffff",
@@ -174,14 +165,10 @@ export default function ClockOutScreen() {
             </Text>
           </View>
 
-          <View
-            style={{
-              backgroundColor: "rgba(255,255,255,0.06)",
-              borderRadius: 32,
-              padding: 24,
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.12)",
-            }}
+          <LiquidGlassCard
+            variant="dark"
+            borderRadius={32}
+            contentStyle={{ padding: 24 }}
           >
             <Text
               style={{
@@ -196,14 +183,14 @@ export default function ClockOutScreen() {
             </Text>
 
             {/* TIMELINE */}
-            <View
-              style={{
+            <LiquidGlassCard
+              variant="dark"
+              borderRadius={20}
+              style={{ marginBottom: 32 }}
+              contentStyle={{
                 flexDirection: "row",
                 alignItems: "center",
-                marginBottom: 32,
-                backgroundColor: "rgba(0,0,0,0.3)",
                 padding: 16,
-                borderRadius: 20,
               }}
             >
               <View style={{ alignItems: "center", flex: 1 }}>
@@ -255,7 +242,7 @@ export default function ClockOutScreen() {
                   ~ 8h 15m
                 </Text>
               </View>
-            </View>
+            </LiquidGlassCard>
 
             <Text
               style={{
@@ -270,34 +257,28 @@ export default function ClockOutScreen() {
             </Text>
 
             {/* STEP 1: LOCATION */}
-            <View
-              style={{
+            <LiquidGlassCard
+              variant="dark"
+              borderRadius={20}
+              style={{ marginBottom: 32 }}
+              contentStyle={{
                 flexDirection: "row",
                 alignItems: "center",
-                marginBottom: 32,
-                backgroundColor: "rgba(0,0,0,0.3)",
                 padding: 16,
-                borderRadius: 20,
               }}
             >
-              <View
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 24,
-                  backgroundColor: locationVerified
-                    ? "rgba(74,222,128,0.2)"
-                    : "rgba(255,255,255,0.1)",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginRight: 16,
-                }}
+              <LiquidGlassIconBadge
+                variant="dark"
+                size={48}
+                borderRadius={24}
+                tintColor={locationVerified ? "#4ade80" : "#94a3b8"}
+                style={{ marginRight: 16 }}
               >
                 <MapPin
                   size={24}
                   color={locationVerified ? "#4ade80" : "#ffffff"}
                 />
-              </View>
+              </LiquidGlassIconBadge>
               <View style={{ flex: 1 }}>
                 <Text
                   style={{
@@ -345,26 +326,16 @@ export default function ClockOutScreen() {
                 )}
               </View>
               {locationVerified && <CheckCircle2 size={24} color="#4ade80" />}
-            </View>
+            </LiquidGlassCard>
 
             {/* CLOCK OUT BUTTON */}
-            <TouchableOpacity
+            <LiquidGlassButton
               disabled={!locationVerified || loading}
-              style={{
-                backgroundColor: !locationVerified
-                  ? "rgba(255,255,255,0.1)"
-                  : "#ef4444",
-                borderRadius: 999,
-                paddingVertical: 18,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                shadowColor: !locationVerified ? "transparent" : "#ef4444",
-                shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.4,
-                shadowRadius: 16,
-                elevation: 8,
-              }}
+              variant={!locationVerified ? "dark" : "tinted"}
+              tintColor="rgba(239, 68, 68, 0.78)"
+              dropletColor="#f87171"
+              style={{ width: "100%" }}
+              contentStyle={{ paddingVertical: 18 }}
               onPress={handleClockOut}
             >
               {loading ? (
@@ -392,10 +363,10 @@ export default function ClockOutScreen() {
                   </Text>
                 </>
               )}
-            </TouchableOpacity>
-          </View>
+            </LiquidGlassButton>
+          </LiquidGlassCard>
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

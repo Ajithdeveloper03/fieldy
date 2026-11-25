@@ -7,41 +7,76 @@ interface InputProps extends TextInputProps {
   error?: string;
   icon?: React.ReactNode;
   secureTextEntry?: boolean;
+  dark?: boolean;
 }
 
 export const Input = forwardRef<React.ComponentRef<typeof TextInput>, InputProps>(
-  ({ label, error, icon, secureTextEntry, className = '', ...props }, ref) => {
+  ({ label, error, icon, secureTextEntry, dark = false, className = '', ...props }, ref) => {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [focused, setFocused] = useState(false);
     const isPassword = secureTextEntry;
 
     return (
       <View className={`mb-4 ${className}`}>
-        {label && <Text className="text-gray-700 font-brandon-medium mb-1">{label}</Text>}
-        
+        {label && (
+          <Text
+            className="font-brandon-medium mb-1.5"
+            style={{ color: dark ? '#E2E8F0' : '#334155', fontSize: 13 }}
+          >
+            {label}
+          </Text>
+        )}
+
         <View
-          className={`flex-row items-center border rounded-xl bg-white px-3 h-14 ${
-            error ? 'border-red-500' : 'border-gray-300'
-          }`}
+          style={{
+            borderRadius: 14,
+            height: 52,
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 14,
+            backgroundColor: dark ? '#102820' : '#FFFFFF',
+            borderWidth: 1.5,
+            borderColor: error
+              ? '#EF4444'
+              : focused
+              ? '#0D9488'
+              : dark
+              ? 'rgba(255,255,255,0.18)'
+              : '#CBD5E1',
+          }}
         >
-          {icon && <View className="mr-2">{icon}</View>}
-          
+          {icon && <View style={{ marginRight: 10 }}>{icon}</View>}
+
           <TextInput
             ref={ref}
-            className="flex-1 text-base text-gray-900 h-full"
-            placeholderTextColor="#9ca3af"
+            style={{
+              flex: 1,
+              fontSize: 15,
+              height: '100%',
+              color: dark ? '#FFFFFF' : '#0F172A',
+            }}
+            placeholderTextColor={dark ? 'rgba(255,255,255,0.45)' : '#94A3B8'}
             secureTextEntry={isPassword && !isPasswordVisible}
+            onFocus={(e) => {
+              setFocused(true);
+              props.onFocus?.(e);
+            }}
+            onBlur={(e) => {
+              setFocused(false);
+              props.onBlur?.(e);
+            }}
             {...props}
           />
 
           {isPassword && (
             <TouchableOpacity
               onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-              className="p-2"
+              style={{ padding: 6 }}
             >
               {isPasswordVisible ? (
-                <EyeOff size={20} color="#6b7280" />
+                <EyeOff size={19} color={dark ? 'rgba(255,255,255,0.7)' : '#64748B'} />
               ) : (
-                <Eye size={20} color="#6b7280" />
+                <Eye size={19} color={dark ? 'rgba(255,255,255,0.7)' : '#64748B'} />
               )}
             </TouchableOpacity>
           )}

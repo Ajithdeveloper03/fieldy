@@ -15,7 +15,6 @@ import {
   Animated,
   Image,
   Text,
-  View,
 } from "react-native";
 import { Asset } from "expo-asset";
 import "react-native-reanimated";
@@ -25,6 +24,7 @@ import "../global.css";
 import { TrackingProvider } from "../context/TrackingContext";
 import { LanguageProvider } from "../context/LanguageContext";
 import { ServiceProvider } from "../context/ServiceContext";
+import { LiquidGlassBackdrop, LiquidGlassCard } from "../components/LiquidGlass";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -83,17 +83,20 @@ export default function RootLayout() {
           require("../assets/images/image8.jpg"),
         ];
 
-        // Preload local assets
+        // Preload local assets with a hard failsafe timeout so splash never stalls
         const localPromises = localImages.map((img) =>
           Asset.fromModule(img).downloadAsync().catch(() => null)
         );
 
-        // Preload remote assets in parallel
-        const remotePromises = REMOTE_ASSETS_TO_PREFETCH.map((url) =>
-          Image.prefetch(url).catch(() => null)
-        );
+        // Prefetch remote avatars in background (never block app startup)
+        REMOTE_ASSETS_TO_PREFETCH.forEach((url) => {
+          Image.prefetch(url).catch(() => null);
+        });
 
-        await Promise.all([...localPromises, ...remotePromises]);
+        await Promise.race([
+          Promise.all(localPromises),
+          new Promise((resolve) => setTimeout(resolve, 2500)),
+        ]);
       } catch (e) {
         console.warn("Asset preloading notice:", e);
       } finally {
@@ -110,13 +113,12 @@ export default function RootLayout() {
     }
   }, [loaded, error, assetsLoaded]);
 
-  // Branded App Starting Loading Screen
+  // Branded App Starting Loading Screen (Apple Liquid Glass)
   if ((!loaded && !error) || !assetsLoaded) {
     return (
-      <View
+      <LiquidGlassBackdrop
+        variant="dark"
         style={{
-          flex: 1,
-          backgroundColor: "#061c14",
           alignItems: "center",
           justifyContent: "center",
           paddingHorizontal: 24,
@@ -128,32 +130,28 @@ export default function RootLayout() {
             transform: [{ scale: pulseAnim }],
             alignItems: "center",
             justifyContent: "center",
+            marginBottom: 22,
           }}
         >
-          <View
-            style={{
-              width: 150,
-              height: 80,
-              borderRadius: 20,
-              backgroundColor: "rgba(255, 255, 255, 0.95)",
+          <LiquidGlassCard
+            variant="light"
+            borderRadius={26}
+            style={{ width: 176, height: 88 }}
+            contentStyle={{
+              flex: 1,
               alignItems: "center",
               justifyContent: "center",
-              shadowColor: "#10b981",
-              shadowOffset: { width: 0, height: 10 },
-              shadowOpacity: 0.35,
-              shadowRadius: 20,
-              elevation: 10,
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              marginBottom: 20,
+              paddingHorizontal: 14,
+              paddingVertical: 10,
+              backgroundColor: "#FFFFFF",
             }}
           >
             <Image
               source={require("../assets/images/logo.png")}
-              style={{ width: "100%", height: "100%" }}
+              style={{ width: 144, height: 60 }}
               resizeMode="contain"
             />
-          </View>
+          </LiquidGlassCard>
         </Animated.View>
 
         <Text
@@ -181,8 +179,8 @@ export default function RootLayout() {
           Field Operations & Management
         </Text>
 
-        <ActivityIndicator size="small" color="#10b981" />
-      </View>
+        <ActivityIndicator size="small" color="#34d399" />
+      </LiquidGlassBackdrop>
     );
   }
 

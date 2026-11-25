@@ -2,15 +2,11 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   ScrollView,
-  Image,
-  StyleSheet,
   StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import {
   ChevronLeft,
   Camera,
@@ -23,6 +19,13 @@ import * as Location from "expo-location";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useService } from "../../../context/ServiceContext";
 import { sendLiveLocationPing } from "../../../utils/locationHelpers";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+} from "../../../components/LiquidGlass";
 
 export default function CheckInScreen() {
   const { id, taskId, farmerId, siteName } = useLocalSearchParams<{
@@ -113,33 +116,8 @@ export default function CheckInScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#062214" }}>
+    <LiquidGlassBackdrop variant="dark">
       <StatusBar barStyle="light-content" />
-
-      {/* Gradient Background */}
-      <LinearGradient
-        colors={[
-          "#062214",
-          "#0b3d22",
-          "#04140b",
-        ]}
-        locations={[0, 0.4, 1]}
-        style={StyleSheet.absoluteFillObject}
-      />
-
-      {/* Glow behind center card */}
-      <View
-        style={{
-          position: "absolute",
-          top: "20%",
-          left: "50%",
-          marginLeft: -150,
-          width: 300,
-          height: 300,
-          borderRadius: 150,
-          backgroundColor: `${serviceConfig.color}33`,
-        }}
-      />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER */}
@@ -153,20 +131,17 @@ export default function CheckInScreen() {
             paddingBottom: 24,
           }}
         >
-          <TouchableOpacity
+          <LiquidGlassIconButton
+            variant="dark"
+            size={42}
             onPress={() =>
               router.canGoBack()
                 ? router.back()
                 : router.replace("/(employee)/dashboard")
             }
-            style={{
-              padding: 8,
-              backgroundColor: "rgba(255,255,255,0.1)",
-              borderRadius: 999,
-            }}
           >
             <ChevronLeft size={24} color="#ffffff" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
           <Text
             style={{
               color: "#ffffff",
@@ -176,41 +151,42 @@ export default function CheckInScreen() {
           >
             {serviceConfig.label} Check-In
           </Text>
-          <View style={{ width: 40 }} />
+          <View style={{ width: 42 }} />
         </View>
 
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 150 }}
         >
-          <View
-            style={{
-              backgroundColor: "rgba(255,255,255,0.06)",
-              borderRadius: 40,
+          <LiquidGlassCard
+            variant="dark"
+            borderRadius={40}
+            dropletColor={serviceConfig.color}
+            style={{ marginTop: 20 }}
+            contentStyle={{
               padding: 32,
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.12)",
               alignItems: "center",
-              marginTop: 20,
             }}
           >
             {/* Massive Geofence Radar Circle */}
-            <View
+            <LiquidGlassCard
+              variant="tinted"
+              borderRadius={70}
+              tintColor={`${serviceConfig.color}28`}
+              dropletColor={serviceConfig.color}
               style={{
                 width: 140,
                 height: 140,
-                borderRadius: 70,
-                backgroundColor: `${serviceConfig.color}20`,
-                alignItems: "center",
-                justifyContent: "center",
-                borderWidth: 2,
-                borderColor: serviceConfig.color,
                 marginBottom: 24,
                 shadowColor: serviceConfig.color,
                 shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 0.5,
+                shadowOpacity: 0.48,
                 shadowRadius: 20,
                 elevation: 10,
+              }}
+              contentStyle={{
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <View
@@ -225,7 +201,7 @@ export default function CheckInScreen() {
                 }}
               />
               <MapPin size={48} color={serviceConfig.color} />
-            </View>
+            </LiquidGlassCard>
 
             <Text
               style={{
@@ -239,15 +215,16 @@ export default function CheckInScreen() {
               Geofence Verified
             </Text>
 
-            <View
-              style={{
+            <LiquidGlassCard
+              variant="tinted"
+              borderRadius={999}
+              tintColor={`${serviceConfig.color}28`}
+              style={{ marginBottom: 24 }}
+              contentStyle={{
                 flexDirection: "row",
                 alignItems: "center",
-                backgroundColor: `${serviceConfig.color}25`,
-                paddingHorizontal: 12,
+                paddingHorizontal: 14,
                 paddingVertical: 6,
-                borderRadius: 8,
-                marginBottom: 24,
               }}
             >
               <CheckCircle2
@@ -266,7 +243,7 @@ export default function CheckInScreen() {
               >
                 Within 25m Radius • {coordsText}
               </Text>
-            </View>
+            </LiquidGlassCard>
 
             <Text
               style={{
@@ -283,39 +260,35 @@ export default function CheckInScreen() {
             </Text>
 
             {/* Photo Verification Box */}
-            <TouchableOpacity
+            <LiquidGlassCard
+              variant={photoTaken ? "tinted" : "dark"}
+              tintColor={photoTaken ? `${serviceConfig.color}26` : undefined}
+              dropletColor={photoTaken ? serviceConfig.color : undefined}
+              borderRadius={20}
               onPress={handleCapture}
               style={{
                 width: "100%",
-                padding: 16,
-                borderRadius: 20,
-                borderWidth: 1,
-                backgroundColor: photoTaken
-                  ? `${serviceConfig.color}20`
-                  : "rgba(255,255,255,0.05)",
-                borderColor: photoTaken ? serviceConfig.color : "rgba(255,255,255,0.1)",
-                flexDirection: "row",
-                alignItems: "center",
                 marginBottom: 32,
               }}
+              contentStyle={{
+                padding: 16,
+                flexDirection: "row",
+                alignItems: "center",
+              }}
             >
-              <View
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 16,
-                  backgroundColor: photoTaken ? serviceConfig.color : "#15803d",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginRight: 16,
-                }}
+              <LiquidGlassIconBadge
+                variant="dark"
+                size={48}
+                borderRadius={16}
+                tintColor={photoTaken ? serviceConfig.color : "#15803d"}
+                style={{ marginRight: 16 }}
               >
                 {photoTaken ? (
                   <CheckCircle2 size={24} color="#ffffff" />
                 ) : (
                   <Camera size={24} color="#ffffff" />
                 )}
-              </View>
+              </LiquidGlassIconBadge>
               <View style={{ flex: 1 }}>
                 <Text
                   style={{
@@ -339,25 +312,17 @@ export default function CheckInScreen() {
                     : `Required for ${serviceConfig.shortName} compliance`}
                 </Text>
               </View>
-            </TouchableOpacity>
+            </LiquidGlassCard>
 
             {/* Confirm Check In Action Button */}
-            <TouchableOpacity
-              activeOpacity={0.8}
+            <LiquidGlassButton
               onPress={handleCheckIn}
               disabled={!photoTaken}
-              style={{
-                width: "100%",
-                backgroundColor: photoTaken
-                  ? serviceConfig.color
-                  : "rgba(255,255,255,0.1)",
-                borderRadius: 999,
-                paddingVertical: 18,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: photoTaken ? 1 : 0.5,
-              }}
+              variant={photoTaken ? "tinted" : "dark"}
+              tintColor={`${serviceConfig.color}CC`}
+              dropletColor={serviceConfig.color}
+              style={{ width: "100%" }}
+              contentStyle={{ paddingVertical: 18 }}
             >
               <Fingerprint
                 size={20}
@@ -373,10 +338,10 @@ export default function CheckInScreen() {
               >
                 Confirm Arrival
               </Text>
-            </TouchableOpacity>
-          </View>
+            </LiquidGlassButton>
+          </LiquidGlassCard>
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

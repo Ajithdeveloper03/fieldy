@@ -22,6 +22,12 @@ import {
 } from "lucide-react-native";
 
 import { useService } from "../../context/ServiceContext";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconButton,
+} from "../../components/LiquidGlass";
 
 export default function EmployeeCalendarScreen() {
   const { serviceConfig } = useService();
@@ -120,29 +126,35 @@ export default function EmployeeCalendarScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0f172a" }}>
+    <LiquidGlassBackdrop variant="dark">
       <StatusBar barStyle="light-content" />
-
-      {/* Ambient background glow */}
-      <View style={{ position: "absolute", top: -100, right: -100, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(2, 132, 199, 0.15)" }} />
 
       <SafeAreaView style={{ flex: 1 }}>
         
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}>
-          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 8, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 999 }}>
+          <LiquidGlassIconButton
+            variant="dark"
+            size={42}
+            onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")}
+          >
             <ChevronLeft size={24} color="#ffffff" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
           <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 25 }}>Work Calendar</Text>
-          <TouchableOpacity style={{ padding: 8, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 999 }}>
+          <LiquidGlassIconButton variant="dark" size={42}>
             <CalendarDays size={20} color="#ffffff" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 150 }}>
           
           {/* EXACT CALENDAR LAYOUT */}
-          <View style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 34, padding: 24, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)", marginBottom: 32 }}>
+          <LiquidGlassCard
+            variant="dark"
+            borderRadius={34}
+            style={{ marginBottom: 32 }}
+            contentStyle={{ padding: 24 }}
+          >
             <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 28, marginBottom: 24, textAlign: "center" }}>October 2026</Text>
             
             {/* Days of week */}
@@ -161,7 +173,7 @@ export default function EmployeeCalendarScreen() {
               ))}
               {daysInMonth.map(renderDay)}
             </View>
-          </View>
+          </LiquidGlassCard>
 
           {/* DETAILED WORK REPORT FOR SELECTED DATE */}
           <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 24, marginBottom: 18 }}>
@@ -172,16 +184,28 @@ export default function EmployeeCalendarScreen() {
             <View>
               {/* Daily Stats Summary */}
               {selectedDay !== currentDay && (
-                <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "rgba(16, 185, 129, 0.12)", padding: 18, borderRadius: 20, marginBottom: 24, borderWidth: 1, borderColor: "rgba(16, 185, 129, 0.3)" }}>
+                <LiquidGlassCard
+                  variant="tinted"
+                  tintColor="rgba(16, 185, 129, 0.18)"
+                  dropletColor="#10b981"
+                  borderRadius={20}
+                  style={{ marginBottom: 24 }}
+                  contentStyle={{ flexDirection: "row", alignItems: "center", padding: 18 }}
+                >
                   <Target size={22} color="#10b981" style={{ marginRight: 12 }} />
                   <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 18 }}>Goals Accomplished: {workReports[selectedDay].goalsDone} Tasks</Text>
-                </View>
+                </LiquidGlassCard>
               )}
 
               {/* Visits List */}
               <View style={{ gap: 18 }}>
                 {workReports[selectedDay].visits.map((visit: any, index: number) => (
-                  <View key={index} style={{ backgroundColor: "#1e293b", borderRadius: 28, padding: 22, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
+                  <LiquidGlassCard
+                    key={index}
+                    variant="dark"
+                    borderRadius={28}
+                    contentStyle={{ padding: 22 }}
+                  >
                     <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
                       <View style={{ flex: 1, paddingRight: 10 }}>
                         <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 21 }}>{visit.site_contact}</Text>
@@ -192,13 +216,13 @@ export default function EmployeeCalendarScreen() {
                       </View>
                       <View style={{ alignItems: "flex-end" }}>
                         <Text style={{ color: "#38bdf8", fontFamily: "Brandon-Bold", fontSize: 16 }}>{visit.time}</Text>
-                        <View style={{ backgroundColor: visit.status === "Flagged Issue" ? "rgba(239, 68, 68, 0.15)" : "rgba(16, 185, 129, 0.15)", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, marginTop: 6 }}>
+                        <View style={{ backgroundColor: visit.status === "Flagged Issue" ? "rgba(239, 68, 68, 0.18)" : "rgba(16, 185, 129, 0.18)", borderWidth: 1, borderColor: visit.status === "Flagged Issue" ? "rgba(239, 68, 68, 0.35)" : "rgba(16, 185, 129, 0.35)", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, marginTop: 6 }}>
                           <Text style={{ color: visit.status === "Flagged Issue" ? "#ef4444" : "#10b981", fontFamily: "Brandon-Bold", fontSize: 12, textTransform: "uppercase" }}>{visit.status}</Text>
                         </View>
                       </View>
                     </View>
                     
-                    <View style={{ backgroundColor: "rgba(0,0,0,0.22)", padding: 18, borderRadius: 18, marginTop: 8 }}>
+                    <View style={{ backgroundColor: "rgba(0,0,0,0.22)", borderWidth: 1, borderColor: "rgba(255,255,255,0.10)", padding: 18, borderRadius: 18, marginTop: 8 }}>
                       <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
                         <FileText size={18} color="#64748b" style={{ marginRight: 10, marginTop: 2 }} />
                         <Text style={{ flex: 1, color: "#cbd5e1", fontFamily: "Brandon-Medium", fontSize: 15, lineHeight: 22 }}>
@@ -209,29 +233,36 @@ export default function EmployeeCalendarScreen() {
                     </View>
 
                     {visit.status === "Completed" && (
-                       <TouchableOpacity
+                       <LiquidGlassButton
+                         variant="dark"
+                         dropletColor="#38bdf8"
                          onPress={() => router.push("/(employee)/report/1")}
-                         style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.08)", paddingVertical: 14, borderRadius: 14, marginTop: 18 }}
+                         style={{ marginTop: 18 }}
+                         contentStyle={{ paddingVertical: 14 }}
                        >
                          <Text style={{ color: "#38bdf8", fontFamily: "Brandon-Bold", fontSize: 16 }}>View Submitted Report</Text>
                          <ArrowRight size={18} color="#38bdf8" style={{ marginLeft: 6 }} />
-                       </TouchableOpacity>
+                       </LiquidGlassButton>
                     )}
-                  </View>
+                  </LiquidGlassCard>
                 ))}
               </View>
             </View>
           ) : (
-            <View style={{ backgroundColor: "rgba(255,255,255,0.02)", borderRadius: 24, padding: 32, alignItems: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.05)" }}>
-              <Clock size={48} color="#334155" style={{ marginBottom: 16 }} />
+            <LiquidGlassCard
+              variant="dark"
+              borderRadius={24}
+              contentStyle={{ padding: 32, alignItems: "center" }}
+            >
+              <Clock size={48} color="#64748b" style={{ marginBottom: 16 }} />
               <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 16, textAlign: "center" }}>
                 {selectedDay > currentDay ? "No goals scheduled for this upcoming date yet." : "No visits or work logged on this date."}
               </Text>
-            </View>
+            </LiquidGlassCard>
           )}
 
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

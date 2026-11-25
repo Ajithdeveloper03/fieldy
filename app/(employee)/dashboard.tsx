@@ -30,6 +30,13 @@ import {
 import { useLanguage, LanguageTogglePill } from "../../context/LanguageContext";
 import { useService, ServiceSelectorPill, ALL_SERVICE_KEYS } from "../../context/ServiceContext";
 import { api, getAuthUser } from "../../services/api";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+} from "../../components/LiquidGlass";
 
 const SITE_CARD_IMAGES = [
   require("../../assets/images/image2.jpg"),
@@ -145,7 +152,7 @@ export default function EmployeeDashboardScreen() {
     }
   };
   return (
-    <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+    <LiquidGlassBackdrop variant="light">
       <StatusBar barStyle="light-content" />
       <SafeAreaView style={{ flex: 1 }} edges={["left", "right"]}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 140 }}>
@@ -256,37 +263,29 @@ export default function EmployeeDashboardScreen() {
                     </View>
                   </View>
                 </View>
-                <TouchableOpacity
+                <LiquidGlassIconButton
                   onPress={() => router.push("/(employee)/notifications")}
-                  style={{
-                    width: 46,
-                    height: 46,
-                    borderRadius: 23,
-                    backgroundColor: "rgba(0,0,0,0.36)",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.24)",
-                  }}
+                  size={46}
+                  variant="dark"
+                  style={{ flexShrink: 0 }}
                 >
                   <Bell size={22} color="#ffffff" />
                   <View
                     style={{
                       position: "absolute",
-                      top: 11,
-                      right: 11,
+                      top: 10,
+                      right: 10,
                       width: 9,
                       height: 9,
                       borderRadius: 5,
                       backgroundColor: "#ef4444",
                     }}
                   />
-                </TouchableOpacity>
+                </LiquidGlassIconButton>
               </View>
               <View style={{ flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 8, marginTop: 12 }}>
                 <ServiceSelectorPill dark compact />
-                <LanguageTogglePill />
+                <LanguageTogglePill dark />
               </View>
             </View>
 
@@ -321,25 +320,25 @@ export default function EmployeeDashboardScreen() {
                     {isClockedIn ? "On Duty" : "Off Duty"}
                   </Text>
                 </View>
-                <TouchableOpacity
+                <LiquidGlassButton
                   onPress={() => router.push("/(employee)/performance")}
-                  style={{
-                    backgroundColor: "rgba(56, 189, 248, 0.24)",
+                  variant="tinted"
+                  tintColor="rgba(37, 99, 235, 0.42)"
+                  contentStyle={{
                     paddingHorizontal: 12,
                     paddingVertical: 6,
-                    borderRadius: 999,
                   }}
                 >
                   <Text
                     style={{
-                      color: "#7dd3fc",
+                      color: "#ffffff",
                       fontFamily: "Brandon-Bold",
                       fontSize: 13,
                     }}
                   >
                     {serviceConfig.kpis.points}
                   </Text>
-                </TouchableOpacity>
+                </LiquidGlassButton>
               </View>
 
               <View style={{ alignItems: "center", marginVertical: 4 }}>
@@ -394,8 +393,7 @@ export default function EmployeeDashboardScreen() {
                   </View>
                 </View>
 
-                <TouchableOpacity
-                  activeOpacity={0.85}
+                <LiquidGlassButton
                   onPress={() =>
                     router.push(
                       isClockedIn
@@ -403,20 +401,19 @@ export default function EmployeeDashboardScreen() {
                         : "/(employee)/attendance/clock-in"
                     )
                   }
+                  variant="tinted"
+                  tintColor={
+                    isClockedIn
+                      ? "rgba(225, 29, 72, 0.72)"
+                      : "rgba(13, 148, 136, 0.74)"
+                  }
                   style={{
-                    backgroundColor: isClockedIn ? "#ef4444" : serviceConfig.themeColor,
-                    paddingHorizontal: 30,
-                    paddingVertical: 14,
-                    borderRadius: 999,
-                    flexDirection: "row",
-                    alignItems: "center",
                     marginTop: 12,
                     marginBottom: 18,
-                    shadowColor: isClockedIn ? "#ef4444" : serviceConfig.themeColor,
-                    shadowOffset: { width: 0, height: 6 },
-                    shadowOpacity: 0.4,
-                    shadowRadius: 12,
-                    elevation: 6,
+                  }}
+                  contentStyle={{
+                    paddingHorizontal: 30,
+                    paddingVertical: 14,
                   }}
                 >
                   <Sparkles size={18} color="#ffffff" style={{ marginRight: 8 }} />
@@ -430,7 +427,7 @@ export default function EmployeeDashboardScreen() {
                     {isClockedIn ? "Clock Out" : "Clock In"}
                   </Text>
                   <ArrowRight size={18} color="#ffffff" style={{ marginLeft: 8 }} />
-                </TouchableOpacity>
+                </LiquidGlassButton>
               </View>
 
               <View
@@ -525,7 +522,7 @@ export default function EmployeeDashboardScreen() {
           </ImageBackground>
 
           <View style={{ paddingHorizontal: 22, paddingTop: 22 }}>
-          {/* DUAL BENTO SUMMARY CARDS */}
+          {/* DUAL BENTO SUMMARY CARDS (Plain Colorless Apple Liquid Glass) */}
           <View
             style={{
               flexDirection: "row",
@@ -534,22 +531,12 @@ export default function EmployeeDashboardScreen() {
             }}
           >
             {/* Left Bento Card: Active Work Orders with Avatar Stack */}
-            <TouchableOpacity
-              activeOpacity={0.9}
+            <LiquidGlassCard
+              variant="light"
+              borderRadius={30}
               onPress={() => router.push("/(employee)/tasks")}
-              style={{
-                flex: 1,
-                backgroundColor: "#ffffff",
-                borderRadius: 30,
-                padding: 20,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.06,
-                shadowRadius: 14,
-                elevation: 4,
-                borderWidth: 1,
-                borderColor: serviceConfig.borderTint,
-              }}
+              style={{ flex: 1 }}
+              contentStyle={{ padding: 20 }}
             >
               <Text
                 style={{
@@ -601,7 +588,9 @@ export default function EmployeeDashboardScreen() {
                 ))}
                 <View
                   style={{
-                    backgroundColor: serviceConfig.lightBg,
+                    backgroundColor: "rgba(255, 255, 255, 0.72)",
+                    borderWidth: 1,
+                    borderColor: "rgba(255, 255, 255, 0.96)",
                     paddingHorizontal: 8,
                     paddingVertical: 4,
                     borderRadius: 999,
@@ -632,26 +621,15 @@ export default function EmployeeDashboardScreen() {
               >
                 {serviceConfig.sampleTasks[0]?.title || "SLA compliance on schedule"}
               </Text>
-            </TouchableOpacity>
+            </LiquidGlassCard>
 
             {/* Right Bento Card: Assigned Facilities & Reports */}
-            <TouchableOpacity
-              activeOpacity={0.9}
+            <LiquidGlassCard
+              variant="light"
+              borderRadius={30}
               onPress={() => router.push("/(employee)/my-sites")}
-              style={{
-                flex: 1,
-                backgroundColor: "#ffffff",
-                borderRadius: 30,
-                padding: 20,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.06,
-                shadowRadius: 14,
-                elevation: 4,
-                borderWidth: 1,
-                borderColor: "#e0f2fe",
-                justifyContent: "space-between",
-              }}
+              style={{ flex: 1 }}
+              contentStyle={{ padding: 20, justifyContent: "space-between", flex: 1 }}
             >
               <View
                 style={{
@@ -660,18 +638,14 @@ export default function EmployeeDashboardScreen() {
                   alignItems: "flex-start",
                 }}
               >
-                <View
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 28,
-                    backgroundColor: "#e0f2fe",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
+                <LiquidGlassIconBadge
+                  size={56}
+                  borderRadius={28}
+                  variant="light"
+                  tintColor="#0284c7"
                 >
                   <Users size={28} color="#0284c7" />
-                </View>
+                </LiquidGlassIconBadge>
                 <MoreVertical size={20} color="#94a3b8" />
               </View>
 
@@ -714,7 +688,7 @@ export default function EmployeeDashboardScreen() {
                   </Text>
                 </View>
               </View>
-            </TouchableOpacity>
+            </LiquidGlassCard>
           </View>
 
           {/* COLORFUL BENTO CARDS */}
@@ -766,7 +740,6 @@ export default function EmployeeDashboardScreen() {
                 <ArrowRight size={16} color="#ffffff" />
               </View>
             </TouchableOpacity>
-
             <View style={{ flex: 1, gap: 14 }}>
               <TouchableOpacity
                 activeOpacity={0.9}
@@ -838,7 +811,7 @@ export default function EmployeeDashboardScreen() {
             </View>
           </View>
 
-          {/* QUICK SERVICE ACTIONS */}
+          {/* QUICK SERVICE ACTIONS (Plain Colorless Apple Liquid Glass Tiles) */}
           <View
             style={{
               flexDirection: "row",
@@ -847,37 +820,27 @@ export default function EmployeeDashboardScreen() {
             }}
           >
             {serviceConfig.quickActions.map((action, idx) => (
-              <TouchableOpacity
+              <LiquidGlassCard
                 key={idx}
+                variant="light"
+                borderRadius={26}
                 onPress={() => router.push(action.route as any)}
-                style={{
-                  flex: 1,
-                  backgroundColor: "#ffffff",
-                  borderRadius: 26,
+                style={{ flex: 1, marginHorizontal: 4 }}
+                contentStyle={{
                   paddingVertical: 16,
                   paddingHorizontal: 8,
                   alignItems: "center",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 5 },
-                  shadowOpacity: 0.05,
-                  shadowRadius: 12,
-                  elevation: 4,
-                  marginHorizontal: 4,
                 }}
               >
-                <View
-                  style={{
-                    width: 54,
-                    height: 54,
-                    borderRadius: 27,
-                    backgroundColor: action.bg,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginBottom: 10,
-                  }}
+                <LiquidGlassIconBadge
+                  size={54}
+                  borderRadius={27}
+                  variant="light"
+                  tintColor={action.color}
+                  style={{ marginBottom: 10 }}
                 >
                   {renderActionIcon(action.icon, action.color)}
-                </View>
+                </LiquidGlassIconBadge>
                 <Text
                   numberOfLines={2}
                   style={{
@@ -890,7 +853,7 @@ export default function EmployeeDashboardScreen() {
                 >
                   {action.title}
                 </Text>
-              </TouchableOpacity>
+              </LiquidGlassCard>
             ))}
           </View>
 
@@ -944,26 +907,18 @@ export default function EmployeeDashboardScreen() {
                     : entity.image || SITE_CARD_IMAGES[idx % SITE_CARD_IMAGES.length];
 
                 return (
-                  <TouchableOpacity
+                  <LiquidGlassCard
                     key={`${entity.id}-${idx}`}
-                    activeOpacity={0.9}
+                    variant="light"
+                    borderRadius={34}
                     onPress={() =>
                       router.push(`/(employee)/site/${entity.id}` as any)
                     }
-                    style={{
-                      width: 196,
-                      backgroundColor: "#ffffff",
-                      borderRadius: 34,
+                    style={{ width: 196 }}
+                    contentStyle={{
                       paddingVertical: 20,
                       paddingHorizontal: 14,
                       alignItems: "center",
-                      borderWidth: 1,
-                      borderColor: "#e2e8f0",
-                      shadowColor: "#0f172a",
-                      shadowOffset: { width: 0, height: 8 },
-                      shadowOpacity: 0.09,
-                      shadowRadius: 16,
-                      elevation: 5,
                     }}
                   >
                     <View
@@ -1017,7 +972,7 @@ export default function EmployeeDashboardScreen() {
                         {entity.area || entity.city}
                       </Text>
                     </View>
-                  </TouchableOpacity>
+                  </LiquidGlassCard>
                 );
               })}
             </ScrollView>
@@ -1151,24 +1106,16 @@ export default function EmployeeDashboardScreen() {
 
           <View style={{ gap: 16, marginBottom: 28 }}>
             {serviceConfig.sampleVisits.slice(0, 2).map((visit, vIdx) => (
-              <TouchableOpacity
+              <LiquidGlassCard
                 key={visit.id}
+                variant="light"
+                borderRadius={26}
                 onPress={() => router.push(`/(employee)/visit/${visit.id}` as any)}
-                activeOpacity={0.85}
-                style={{
-                  backgroundColor: "#ffffff",
-                  borderRadius: 26,
+                contentStyle={{
                   padding: 18,
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.05,
-                  shadowRadius: 10,
-                  elevation: 3,
-                  borderWidth: 1,
-                  borderColor: "#f1f5f9",
                 }}
               >
                 <Image
@@ -1211,10 +1158,10 @@ export default function EmployeeDashboardScreen() {
                     style={{
                       backgroundColor:
                         visit.status === "Completed"
-                          ? "#dcfce7"
+                          ? "rgba(13, 148, 136, 0.14)"
                           : visit.status === "In Progress"
-                          ? "#fef3c7"
-                          : "#f1f5f9",
+                          ? "rgba(217, 119, 6, 0.14)"
+                          : "rgba(100, 116, 139, 0.12)",
                       paddingHorizontal: 12,
                       paddingVertical: 6,
                       borderRadius: 999,
@@ -1224,7 +1171,7 @@ export default function EmployeeDashboardScreen() {
                       style={{
                         color:
                           visit.status === "Completed"
-                            ? "#15803d"
+                            ? "#0f766e"
                             : visit.status === "In Progress"
                             ? "#b45309"
                             : "#475569",
@@ -1235,40 +1182,34 @@ export default function EmployeeDashboardScreen() {
                       {visit.status}
                     </Text>
                   </View>
-                  <ArrowRight size={18} color="#94a3b8" />
+                  <ArrowRight size={18} color="#64748b" />
                 </View>
-              </TouchableOpacity>
+              </LiquidGlassCard>
             ))}
           </View>
 
-          {/* COMPACT SOS SAFETY BAR */}
-          <TouchableOpacity
+          {/* COMPACT SOS SAFETY BAR (Liquid Glass) */}
+          <LiquidGlassCard
+            variant="light"
+            dropletColor="#EF4444"
+            borderRadius={24}
             onPress={() => router.push("/(employee)/sos")}
-            activeOpacity={0.85}
-            style={{
-              backgroundColor: "#fef2f2",
-              borderRadius: 24,
+            contentStyle={{
               padding: 18,
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",
-              borderWidth: 1,
-              borderColor: "#fecaca",
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 14, flex: 1 }}>
-              <View
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 26,
-                  backgroundColor: "#fee2e2",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+              <LiquidGlassIconBadge
+                size={52}
+                borderRadius={26}
+                variant="light"
+                tintColor="#DC2626"
               >
                 <AlertOctagon size={26} color="#dc2626" />
-              </View>
+              </LiquidGlassIconBadge>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: "#991b1b", fontFamily: "Brandon-Bold", fontSize: 19 }}>
                   Field Emergency SOS
@@ -1279,10 +1220,10 @@ export default function EmployeeDashboardScreen() {
               </View>
             </View>
             <ArrowRight size={20} color="#dc2626" />
-          </TouchableOpacity>
+          </LiquidGlassCard>
         </View>
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

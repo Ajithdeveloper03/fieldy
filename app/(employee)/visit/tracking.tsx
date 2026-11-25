@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   Modal,
   TextInput,
@@ -30,6 +29,12 @@ import {
   haversineDistanceKm,
   sendLiveLocationPing,
 } from "../../../utils/locationHelpers";
+import {
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+} from "../../../components/LiquidGlass";
 
 export default function TrackingScreen() {
   const { id, taskId, siteName, siteAddress, farmerId, lat, lng } =
@@ -318,21 +323,44 @@ export default function TrackingScreen() {
         {/* TOP HEADER & DESTINATION CARD */}
         <View style={styles.topSection} pointerEvents="box-none">
           <View style={styles.headerRow}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.circleBtn}>
+            <LiquidGlassIconButton
+              variant="light"
+              size={42}
+              onPress={() => router.back()}
+            >
               <ChevronLeft size={22} color="#0f172a" />
-            </TouchableOpacity>
-            <View style={styles.titlePill}>
+            </LiquidGlassIconButton>
+            <LiquidGlassCard
+              variant="light"
+              borderRadius={999}
+              contentStyle={styles.titlePillContent}
+            >
               <Text style={styles.titlePillText}>{serviceConfig.shortName} Live GPS</Text>
-            </View>
-            <TouchableOpacity onPress={recenterOnUser} style={styles.circleBtn}>
+            </LiquidGlassCard>
+            <LiquidGlassIconButton
+              variant="light"
+              size={42}
+              onPress={recenterOnUser}
+            >
               <Crosshair size={20} color="#0f172a" />
-            </TouchableOpacity>
+            </LiquidGlassIconButton>
           </View>
 
-          <View style={styles.siteCard}>
-            <View style={[styles.siteIconBox, { backgroundColor: `${accentColor}15` }]}>
+          <LiquidGlassCard
+            variant="light"
+            borderRadius={20}
+            style={styles.siteCardOuter}
+            contentStyle={styles.siteCardInner}
+          >
+            <LiquidGlassIconBadge
+              variant="light"
+              size={42}
+              borderRadius={21}
+              tintColor={accentColor}
+              style={{ marginRight: 12 }}
+            >
               <Navigation size={20} color={accentColor} />
-            </View>
+            </LiquidGlassIconBadge>
             <View style={{ flex: 1, marginRight: 8 }}>
               <Text style={styles.siteName} numberOfLines={1}>
                 {activeSite.name}
@@ -347,11 +375,16 @@ export default function TrackingScreen() {
               <View style={styles.liveDot} />
               <Text style={styles.liveText}>LIVE</Text>
             </View>
-          </View>
+          </LiquidGlassCard>
         </View>
 
         {/* BOTTOM HUD CARD */}
-        <View style={styles.bottomCard}>
+        <LiquidGlassCard
+          variant="light"
+          borderRadius={28}
+          style={styles.bottomCardOuter}
+          contentStyle={styles.bottomCardInner}
+        >
           <View style={styles.durationWrap}>
             <Text style={styles.durationLabel}>Visit Transit Duration</Text>
             <Text style={[styles.durationValue, { color: accentColor }]}>
@@ -380,8 +413,7 @@ export default function TrackingScreen() {
             </View>
           </View>
 
-          <TouchableOpacity
-            activeOpacity={0.85}
+          <LiquidGlassButton
             onPress={() =>
               router.push({
                 pathname: "/(employee)/visit/check-in",
@@ -393,34 +425,50 @@ export default function TrackingScreen() {
                 },
               } as any)
             }
-            style={[styles.primaryBtn, { backgroundColor: "#16a34a" }]}
+            variant="tinted"
+            tintColor="rgba(22, 163, 74, 0.84)"
+            dropletColor="#22c55e"
+            style={{ width: "100%" }}
+            contentStyle={{ paddingVertical: 15, paddingHorizontal: 18 }}
           >
             <Text style={styles.btnText}>
               Arrived at {serviceConfig.vocab.entitySingular}? Field Check-In
             </Text>
-          </TouchableOpacity>
+          </LiquidGlassButton>
 
-          <TouchableOpacity
-            activeOpacity={0.85}
+          <LiquidGlassButton
             onPress={handleAttemptStop}
-            style={[styles.primaryBtn, { backgroundColor: "#ea580c", marginTop: 10 }]}
+            variant="tinted"
+            tintColor="rgba(234, 88, 12, 0.84)"
+            dropletColor="#f97316"
+            style={{ width: "100%", marginTop: 10 }}
+            contentStyle={{ paddingVertical: 15, paddingHorizontal: 18 }}
           >
             <Text style={styles.btnText}>Cancel / Stop Visit Early</Text>
-          </TouchableOpacity>
-        </View>
+          </LiquidGlassButton>
+        </LiquidGlassCard>
       </SafeAreaView>
 
       <Modal visible={showStopModal} transparent animationType="slide">
         <View style={styles.modalBackdrop}>
-          <View style={styles.modalSheet}>
+          <LiquidGlassCard
+            variant="light"
+            borderRadius={28}
+            style={styles.modalSheetOuter}
+            contentStyle={styles.modalSheetInner}
+          >
             <View style={styles.modalHeader}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <ShieldAlert size={24} color="#ef4444" style={{ marginRight: 10 }} />
                 <Text style={styles.modalTitle}>Stop Tracking?</Text>
               </View>
-              <TouchableOpacity onPress={() => setShowStopModal(false)} style={styles.closeBtn}>
-                <X size={20} color="#64748b" />
-              </TouchableOpacity>
+              <LiquidGlassIconButton
+                variant="light"
+                size={36}
+                onPress={() => setShowStopModal(false)}
+              >
+                <X size={18} color="#64748b" />
+              </LiquidGlassIconButton>
             </View>
 
             <Text style={styles.modalDesc}>
@@ -453,14 +501,18 @@ export default function TrackingScreen() {
               />
             </View>
 
-            <TouchableOpacity
+            <LiquidGlassButton
               disabled={submittingStop}
               onPress={confirmStop}
-              style={[styles.primaryBtn, { backgroundColor: "#ef4444" }]}
+              variant="tinted"
+              tintColor="rgba(239, 68, 68, 0.84)"
+              dropletColor="#ef4444"
+              style={{ width: "100%" }}
+              contentStyle={{ paddingVertical: 15 }}
             >
               <Text style={styles.btnText}>{submittingStop ? "Stopping..." : "Confirm & Proceed"}</Text>
-            </TouchableOpacity>
-          </View>
+            </LiquidGlassButton>
+          </LiquidGlassCard>
         </View>
       </Modal>
     </View>
@@ -485,61 +537,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  circleBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: "#ffffff",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  titlePill: {
-    backgroundColor: "#ffffff",
+  titlePillContent: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 4,
   },
   titlePillText: {
     color: "#0f172a",
     fontFamily: "Brandon-Bold",
     fontSize: 14,
   },
-  siteCard: {
+  siteCardOuter: {
     marginTop: 10,
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
+  },
+  siteCardInner: {
     padding: 14,
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  siteIconBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
   },
   siteName: {
     color: "#0f172a",
@@ -553,7 +566,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   livePill: {
-    backgroundColor: "#fff7ed",
+    backgroundColor: "rgba(255, 247, 237, 0.86)",
     borderWidth: 1,
     borderColor: "#fed7aa",
     paddingHorizontal: 10,
@@ -574,19 +587,12 @@ const styles = StyleSheet.create({
     fontFamily: "Brandon-Bold",
     fontSize: 11,
   },
-  bottomCard: {
+  bottomCardOuter: {
     marginHorizontal: 16,
     marginBottom: 18,
-    backgroundColor: "#ffffff",
-    borderRadius: 28,
+  },
+  bottomCardInner: {
     padding: 20,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 14,
-    elevation: 10,
   },
   durationWrap: {
     alignItems: "center",
@@ -627,14 +633,7 @@ const styles = StyleSheet.create({
   statDivider: {
     width: 1,
     height: 28,
-    backgroundColor: "#e2e8f0",
-  },
-  primaryBtn: {
-    width: "100%",
-    borderRadius: 999,
-    paddingVertical: 15,
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: "rgba(15, 23, 42, 0.12)",
   },
   btnText: {
     color: "#ffffff",
@@ -647,10 +646,10 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(15, 23, 42, 0.55)",
     justifyContent: "flex-end",
   },
-  modalSheet: {
-    backgroundColor: "#ffffff",
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+  modalSheetOuter: {
+    width: "100%",
+  },
+  modalSheetInner: {
     padding: 24,
     paddingBottom: 36,
   },
@@ -664,11 +663,6 @@ const styles = StyleSheet.create({
     color: "#0f172a",
     fontFamily: "Brandon-Bold",
     fontSize: 20,
-  },
-  closeBtn: {
-    padding: 8,
-    backgroundColor: "#f1f5f9",
-    borderRadius: 999,
   },
   modalDesc: {
     color: "#64748b",
@@ -684,11 +678,11 @@ const styles = StyleSheet.create({
   },
   textAreaBox: {
     borderWidth: 1,
-    borderColor: "#cbd5e1",
+    borderColor: "rgba(255, 255, 255, 0.92)",
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    backgroundColor: "#f8fafc",
+    backgroundColor: "rgba(255, 255, 255, 0.66)",
     height: 92,
     marginBottom: 14,
   },
@@ -700,11 +694,11 @@ const styles = StyleSheet.create({
   },
   inputBox: {
     borderWidth: 1,
-    borderColor: "#cbd5e1",
+    borderColor: "rgba(255, 255, 255, 0.92)",
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    backgroundColor: "#f8fafc",
+    backgroundColor: "rgba(255, 255, 255, 0.66)",
     marginBottom: 20,
   },
   otpInput: {

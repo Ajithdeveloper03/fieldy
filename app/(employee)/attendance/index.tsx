@@ -2,15 +2,11 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   ScrollView,
-  Image,
-  StyleSheet,
   StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import {
   ChevronLeft,
   Clock,
@@ -21,6 +17,13 @@ import {
 } from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLanguage } from "../../../context/LanguageContext";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+} from "../../../components/LiquidGlass";
 
 export default function AttendanceScreen() {
   const { t, language } = useLanguage();
@@ -37,14 +40,8 @@ export default function AttendanceScreen() {
   }, []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0f172a" }}>
+    <LiquidGlassBackdrop variant="dark">
       <StatusBar barStyle="light-content" />
-
-      {/* GRADIENT BACKGROUND */}
-      <LinearGradient
-        colors={["#0f172a", "#1e293b", "#0f172a"]}
-        style={StyleSheet.absoluteFillObject}
-      />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER */}
@@ -57,23 +54,17 @@ export default function AttendanceScreen() {
             paddingTop: 16,
           }}
         >
-          <TouchableOpacity
+          <LiquidGlassIconButton
+            variant="dark"
+            size={44}
             onPress={() =>
               router.canGoBack()
                 ? router.back()
                 : router.replace("/(employee)/dashboard")
             }
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: "rgba(255,255,255,0.1)",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
           >
             <ChevronLeft size={24} color="#ffffff" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
           <Text
             style={{
               color: "#ffffff",
@@ -142,19 +133,11 @@ export default function AttendanceScreen() {
           </View>
 
           {/* ACTION CARD */}
-          <View
-            style={{
-              backgroundColor: "rgba(255,255,255,0.05)",
-              borderRadius: 32,
-              padding: 24,
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.1)",
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 12 },
-              shadowOpacity: 0.2,
-              shadowRadius: 24,
-              marginBottom: 32,
-            }}
+          <LiquidGlassCard
+            variant="dark"
+            borderRadius={32}
+            style={{ marginBottom: 32 }}
+            contentStyle={{ padding: 24 }}
           >
             <View
               style={{
@@ -163,19 +146,15 @@ export default function AttendanceScreen() {
                 marginBottom: 24,
               }}
             >
-              <View
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 24,
-                  backgroundColor: "rgba(59,130,246,0.2)",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginRight: 16,
-                }}
+              <LiquidGlassIconBadge
+                variant="dark"
+                size={48}
+                borderRadius={24}
+                tintColor="#3b82f6"
+                style={{ marginRight: 16 }}
               >
                 <MapPin size={24} color="#60a5fa" />
-              </View>
+              </LiquidGlassIconBadge>
               <View style={{ flex: 1 }}>
                 <Text
                   style={{
@@ -200,21 +179,13 @@ export default function AttendanceScreen() {
             </View>
 
             {!isClockedIn ? (
-              <TouchableOpacity
+              <LiquidGlassButton
                 onPress={() => router.push("/(employee)/attendance/clock-in")}
-                style={{
-                  backgroundColor: "#16a34a",
-                  borderRadius: 999,
-                  paddingVertical: 18,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  shadowColor: "#16a34a",
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.4,
-                  shadowRadius: 16,
-                  elevation: 8,
-                }}
+                variant="tinted"
+                tintColor="rgba(22, 163, 74, 0.78)"
+                dropletColor="#4ade80"
+                style={{ width: "100%" }}
+                contentStyle={{ paddingVertical: 18 }}
               >
                 <LogIn size={20} color="#ffffff" style={{ marginRight: 8 }} />
                 <Text
@@ -226,23 +197,15 @@ export default function AttendanceScreen() {
                 >
                   Clock In Now
                 </Text>
-              </TouchableOpacity>
+              </LiquidGlassButton>
             ) : (
-              <TouchableOpacity
+              <LiquidGlassButton
                 onPress={() => router.push("/(employee)/attendance/clock-out")}
-                style={{
-                  backgroundColor: "#ef4444",
-                  borderRadius: 999,
-                  paddingVertical: 18,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  shadowColor: "#ef4444",
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.4,
-                  shadowRadius: 16,
-                  elevation: 8,
-                }}
+                variant="tinted"
+                tintColor="rgba(239, 68, 68, 0.78)"
+                dropletColor="#f87171"
+                style={{ width: "100%" }}
+                contentStyle={{ paddingVertical: 18 }}
               >
                 <LogOut size={20} color="#ffffff" style={{ marginRight: 8 }} />
                 <Text
@@ -254,9 +217,9 @@ export default function AttendanceScreen() {
                 >
                   Clock Out Securely
                 </Text>
-              </TouchableOpacity>
+              </LiquidGlassButton>
             )}
-          </View>
+          </LiquidGlassCard>
 
           {/* WEEKLY LOG */}
           <Text
@@ -294,16 +257,14 @@ export default function AttendanceScreen() {
                 status: "completed",
               },
             ].map((log, index) => (
-              <View
+              <LiquidGlassCard
                 key={index}
-                style={{
+                variant="dark"
+                borderRadius={20}
+                contentStyle={{
                   flexDirection: "row",
                   alignItems: "center",
-                  backgroundColor: "rgba(255,255,255,0.05)",
                   padding: 16,
-                  borderRadius: 20,
-                  borderWidth: 1,
-                  borderColor: "rgba(255,255,255,0.05)",
                 }}
               >
                 <View
@@ -386,11 +347,11 @@ export default function AttendanceScreen() {
                     </Text>
                   </View>
                 </View>
-              </View>
+              </LiquidGlassCard>
             ))}
           </View>
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

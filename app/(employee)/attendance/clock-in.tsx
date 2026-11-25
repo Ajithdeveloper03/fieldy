@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
-  StyleSheet,
   StatusBar,
   ActivityIndicator,
   Image,
@@ -12,7 +10,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { LinearGradient } from "expo-linear-gradient";
 import {
   ChevronLeft,
   MapPin,
@@ -26,6 +23,13 @@ import * as Location from "expo-location";
 import * as ImagePicker from "expo-image-picker";
 import { api } from "../../../services/api";
 import { showToast } from "../../../components/ui/ToastMessage";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+} from "../../../components/LiquidGlass";
 
 export default function ClockInScreen() {
   const { t, language } = useLanguage();
@@ -116,14 +120,8 @@ export default function ClockInScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#062214" }}>
+    <LiquidGlassBackdrop variant="dark">
       <StatusBar barStyle="light-content" />
-
-      {/* GRADIENT BACKGROUND */}
-      <LinearGradient
-        colors={["#062214", "#0a331c", "#04140b"]}
-        style={StyleSheet.absoluteFillObject}
-      />
 
       <SafeAreaView style={{ flex: 1, justifyContent: "space-between" }}>
         {/* HEADER */}
@@ -136,23 +134,17 @@ export default function ClockInScreen() {
             paddingTop: 16,
           }}
         >
-          <TouchableOpacity
+          <LiquidGlassIconButton
+            variant="dark"
+            size={44}
             onPress={() =>
               router.canGoBack()
                 ? router.back()
                 : router.replace("/(employee)/dashboard")
             }
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: "rgba(255,255,255,0.1)",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
           >
             <ChevronLeft size={24} color="#ffffff" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
           <Text
             style={{
               color: "#ffffff",
@@ -206,14 +198,10 @@ export default function ClockInScreen() {
             </Text>
           </View>
 
-          <View
-            style={{
-              backgroundColor: "rgba(255,255,255,0.06)",
-              borderRadius: 32,
-              padding: 24,
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.12)",
-            }}
+          <LiquidGlassCard
+            variant="dark"
+            borderRadius={32}
+            contentStyle={{ padding: 24 }}
           >
             <Text
               style={{
@@ -228,34 +216,28 @@ export default function ClockInScreen() {
             </Text>
 
             {/* STEP 1: LOCATION */}
-            <View
-              style={{
+            <LiquidGlassCard
+              variant="dark"
+              borderRadius={20}
+              style={{ marginBottom: 20 }}
+              contentStyle={{
                 flexDirection: "row",
                 alignItems: "center",
-                marginBottom: 20,
-                backgroundColor: "rgba(0,0,0,0.3)",
                 padding: 16,
-                borderRadius: 20,
               }}
             >
-              <View
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 24,
-                  backgroundColor: locationVerified
-                    ? "rgba(74,222,128,0.2)"
-                    : "rgba(255,255,255,0.1)",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginRight: 16,
-                }}
+              <LiquidGlassIconBadge
+                variant="dark"
+                size={48}
+                borderRadius={24}
+                tintColor={locationVerified ? "#4ade80" : "#94a3b8"}
+                style={{ marginRight: 16 }}
               >
                 <MapPin
                   size={24}
                   color={locationVerified ? "#4ade80" : "#ffffff"}
                 />
-              </View>
+              </LiquidGlassIconBadge>
               <View style={{ flex: 1 }}>
                 <Text
                   style={{
@@ -303,44 +285,51 @@ export default function ClockInScreen() {
                 )}
               </View>
               {locationVerified && <CheckCircle2 size={24} color="#4ade80" />}
-            </View>
+            </LiquidGlassCard>
 
             {/* STEP 2: CAMERA/SELFIE */}
-            <TouchableOpacity
-              activeOpacity={0.8}
+            <LiquidGlassCard
+              variant="dark"
+              borderRadius={20}
               onPress={handleCameraVerify}
-              style={{
+              style={{ marginBottom: 32 }}
+              contentStyle={{
                 flexDirection: "row",
                 alignItems: "center",
-                marginBottom: 32,
-                backgroundColor: "rgba(0,0,0,0.3)",
                 padding: 16,
-                borderRadius: 20,
               }}
             >
-              <View
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 24,
-                  backgroundColor: cameraVerified
-                    ? "rgba(74,222,128,0.2)"
-                    : "rgba(59,130,246,0.2)",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginRight: 16,
-                  overflow: "hidden",
-                }}
-              >
-                {cameraVerified ? (
+              {cameraVerified ? (
+                <View
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 24,
+                    backgroundColor: "rgba(74,222,128,0.2)",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginRight: 16,
+                    overflow: "hidden",
+                    borderWidth: 1.5,
+                    borderColor: "rgba(74,222,128,0.65)",
+                  }}
+                >
                   <Image
                     source={require("../../../assets/images/image1.jpg")}
                     style={{ width: "100%", height: "100%" }}
                   />
-                ) : (
+                </View>
+              ) : (
+                <LiquidGlassIconBadge
+                  variant="dark"
+                  size={48}
+                  borderRadius={24}
+                  tintColor="#3b82f6"
+                  style={{ marginRight: 16 }}
+                >
                   <Camera size={24} color="#60a5fa" />
-                )}
-              </View>
+                </LiquidGlassIconBadge>
+              )}
               <View style={{ flex: 1 }}>
                 <Text
                   style={{
@@ -363,30 +352,16 @@ export default function ClockInScreen() {
                 </Text>
               </View>
               {cameraVerified && <CheckCircle2 size={24} color="#4ade80" />}
-            </TouchableOpacity>
+            </LiquidGlassCard>
 
             {/* CLOCK IN BUTTON */}
-            <TouchableOpacity
+            <LiquidGlassButton
               disabled={!locationVerified || !cameraVerified || isProcessing}
-              style={{
-                backgroundColor:
-                  !locationVerified || !cameraVerified
-                    ? "rgba(255,255,255,0.1)"
-                    : "#10b981",
-                borderRadius: 999,
-                paddingVertical: 18,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                shadowColor:
-                  !locationVerified || !cameraVerified
-                    ? "transparent"
-                    : "#10b981",
-                shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.4,
-                shadowRadius: 16,
-                elevation: 8,
-              }}
+              variant={!locationVerified || !cameraVerified ? "dark" : "tinted"}
+              tintColor="rgba(16, 185, 129, 0.78)"
+              dropletColor="#4ade80"
+              style={{ width: "100%" }}
+              contentStyle={{ paddingVertical: 18 }}
               onPress={handleClockIn}
             >
               {isProcessing ? (
@@ -417,10 +392,10 @@ export default function ClockInScreen() {
                   </Text>
                 </>
               )}
-            </TouchableOpacity>
-          </View>
+            </LiquidGlassButton>
+          </LiquidGlassCard>
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

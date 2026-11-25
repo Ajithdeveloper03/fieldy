@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  Animated,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { XCircle, RefreshCw } from "lucide-react-native";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Button } from "../components/ui/Button";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+} from "../components/LiquidGlass";
 
 export default function ErrorScreen() {
   const { message = "Something went wrong. Please try again.", redirect } =
@@ -21,26 +20,10 @@ export default function ErrorScreen() {
   useEffect(() => {
     Animated.parallel([
       Animated.sequence([
-        Animated.timing(shake, {
-          toValue: 10,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.timing(shake, {
-          toValue: -10,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.timing(shake, {
-          toValue: 10,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.timing(shake, {
-          toValue: 0,
-          duration: 100,
-          useNativeDriver: true,
-        }),
+        Animated.timing(shake, { toValue: 10, duration: 100, useNativeDriver: true }),
+        Animated.timing(shake, { toValue: -10, duration: 100, useNativeDriver: true }),
+        Animated.timing(shake, { toValue: 10, duration: 100, useNativeDriver: true }),
+        Animated.timing(shake, { toValue: 0, duration: 100, useNativeDriver: true }),
       ]),
       Animated.timing(opacity, {
         toValue: 1,
@@ -59,39 +42,56 @@ export default function ErrorScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 items-center justify-center px-6">
-        <Animated.View
-          style={{ transform: [{ translateX: shake }], opacity }}
-          className="items-center"
-        >
-          <View className="w-32 h-32 bg-red-50 rounded-full items-center justify-center mb-8">
-            <View className="w-24 h-24 bg-red-100 rounded-full items-center justify-center shadow-xl">
-              <XCircle size={64} color="#ef4444" />
-            </View>
-          </View>
-          <Text className="text-gray-900 font-brandon-bold text-3xl text-center mb-4 leading-10">
-            Oops!
-          </Text>
-          <Text className="text-gray-500 font-brandon text-lg text-center mb-12 px-4 leading-6">
-            {message}
-          </Text>
-        </Animated.View>
-
-        <Animated.View style={{ opacity, width: "100%" }}>
-          <TouchableOpacity
-            onPress={handleRetry}
-            activeOpacity={0.8}
-            className="w-full bg-[#ef4444] py-4 rounded-xl shadow-md flex-row justify-center items-center"
+    <LiquidGlassBackdrop variant="light">
+      <SafeAreaView style={{ flex: 1 }}>
+        <View className="flex-1 items-center justify-center px-6">
+          <LiquidGlassCard
+            variant="light"
+            borderRadius={32}
+            dropletColor="#EF4444"
+            style={{ width: "100%" }}
+            contentStyle={{ padding: 28, alignItems: "center" }}
           >
-            <RefreshCw size={20} color="#fff" className="mr-2" />
-            <Text className="text-gray-900 font-brandon-bold text-lg tracking-wide">
-              Try Again
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
-      </View>
-    </SafeAreaView>
+            <Animated.View
+              style={{ transform: [{ translateX: shake }], opacity, alignItems: "center" }}
+            >
+              <LiquidGlassIconBadge
+                size={104}
+                borderRadius={52}
+                variant="light"
+                tintColor="#EF4444"
+                style={{ marginBottom: 24 }}
+              >
+                <XCircle size={56} color="#EF4444" />
+              </LiquidGlassIconBadge>
+              <Text className="text-gray-900 font-brandon-bold text-3xl text-center mb-3 leading-10">
+                Oops!
+              </Text>
+              <Text className="text-gray-600 font-brandon text-base text-center mb-8 px-2 leading-6">
+                {message}
+              </Text>
+            </Animated.View>
+
+            <Animated.View style={{ opacity, width: "100%" }}>
+              <LiquidGlassButton
+                onPress={handleRetry}
+                variant="tinted"
+                tintColor="rgba(225, 29, 72, 0.78)"
+                dropletColor="#FB7185"
+                style={{ width: "100%" }}
+                contentStyle={{ paddingVertical: 16 }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                  <RefreshCw size={18} color="#FFFFFF" />
+                  <Text style={{ color: "#FFFFFF", fontFamily: "Brandon-Bold", fontSize: 17 }}>
+                    Try Again
+                  </Text>
+                </View>
+              </LiquidGlassButton>
+            </Animated.View>
+          </LiquidGlassCard>
+        </View>
+      </SafeAreaView>
+    </LiquidGlassBackdrop>
   );
 }
-

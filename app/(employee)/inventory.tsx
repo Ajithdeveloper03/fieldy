@@ -23,6 +23,11 @@ import {
   ArrowRight,
   TrendingDown,
 } from "lucide-react-native";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassCard,
+  LiquidGlassIconButton,
+} from "../../components/LiquidGlass";
 
 export default function InventoryScreen() {
   const [search, setSearch] = useState("");
@@ -99,30 +104,38 @@ export default function InventoryScreen() {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0f172a" }}>
+    <LiquidGlassBackdrop variant="dark">
       <StatusBar barStyle="light-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16 }}>
-          <TouchableOpacity
+          <LiquidGlassIconButton
             onPress={() => (router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard"))}
-            style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.1)", alignItems: "center", justifyContent: "center" }}
+            variant="dark"
+            size={42}
           >
             <ChevronLeft size={24} color="#ffffff" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
           <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>Field Boot Kit & Materials</Text>
-          <TouchableOpacity
+          <LiquidGlassIconButton
             onPress={() => Alert.alert("Barcode Scanner", "Point camera at item QR/Barcode sticker to identify material.")}
-            style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "rgba(16, 185, 129, 0.2)", alignItems: "center", justifyContent: "center" }}
+            variant="tinted"
+            tintColor="rgba(16, 185, 129, 0.28)"
+            dropletColor="#10b981"
+            size={42}
           >
-            <QrCode size={20} color="#10b981" />
-          </TouchableOpacity>
+            <QrCode size={20} color="#34d399" />
+          </LiquidGlassIconButton>
         </View>
 
         {/* SEARCH BAR */}
         <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "rgba(30, 41, 59, 0.8)", borderRadius: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", paddingHorizontal: 14 }}>
+          <LiquidGlassCard
+            variant="dark"
+            borderRadius={16}
+            contentStyle={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 14 }}
+          >
             <Search size={18} color="#94a3b8" />
             <TextInput
               placeholder="Search tools, materials, fertilisers..."
@@ -131,21 +144,32 @@ export default function InventoryScreen() {
               onChangeText={setSearch}
               style={{ flex: 1, height: 44, color: "#ffffff", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 8 }}
             />
-          </View>
+          </LiquidGlassCard>
         </View>
 
         {/* SUMMARY STATS */}
         <View style={{ flexDirection: "row", paddingHorizontal: 20, gap: 10, marginBottom: 20 }}>
-          <View style={{ flex: 1, backgroundColor: "rgba(30, 41, 59, 0.8)", padding: 14, borderRadius: 18, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
+          <LiquidGlassCard
+            variant="dark"
+            borderRadius={18}
+            style={{ flex: 1 }}
+            contentStyle={{ padding: 14 }}
+          >
             <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 11 }}>TOTAL SKUS</Text>
             <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 22, marginTop: 2 }}>{items.length}</Text>
-          </View>
-          <View style={{ flex: 1, backgroundColor: "rgba(30, 41, 59, 0.8)", padding: 14, borderRadius: 18, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
+          </LiquidGlassCard>
+          <LiquidGlassCard
+            variant="dark"
+            borderRadius={18}
+            dropletColor="#f59e0b"
+            style={{ flex: 1 }}
+            contentStyle={{ padding: 14 }}
+          >
             <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 11 }}>STOCK REQUISITION</Text>
             <Text style={{ color: "#f59e0b", fontFamily: "Brandon-Bold", fontSize: 22, marginTop: 2 }}>
               {items.filter((i) => i.qty <= i.threshold).length} Low
             </Text>
-          </View>
+          </LiquidGlassCard>
         </View>
 
         {/* LIST */}
@@ -153,9 +177,12 @@ export default function InventoryScreen() {
           {filteredItems.map((item) => {
             const isLow = item.qty <= item.threshold;
             return (
-              <View
+              <LiquidGlassCard
                 key={item.id}
-                style={{ backgroundColor: "rgba(30, 41, 59, 0.7)", borderRadius: 20, padding: 16, borderWidth: 1, borderColor: isLow ? "rgba(245, 158, 11, 0.3)" : "rgba(255,255,255,0.08)" }}
+                variant="dark"
+                borderRadius={20}
+                dropletColor={isLow ? "#f59e0b" : undefined}
+                contentStyle={{ padding: 16 }}
               >
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <View style={{ flex: 1, paddingRight: 10 }}>
@@ -175,7 +202,7 @@ export default function InventoryScreen() {
                 </View>
 
                 {/* Stock Controls */}
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.06)" }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)" }}>
                   <View>
                     <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Bold", fontSize: 14 }}>
                       {item.qty} {item.unit} in Van
@@ -183,25 +210,29 @@ export default function InventoryScreen() {
                     <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 11 }}>{item.reserved} allocated for today&apos;s visits</Text>
                   </View>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                    <TouchableOpacity
+                    <LiquidGlassIconButton
                       onPress={() => handleAdjustStock(item.id, -1)}
-                      style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.08)", alignItems: "center", justifyContent: "center" }}
+                      variant="dark"
+                      size={36}
                     >
                       <Minus size={16} color="#ffffff" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </LiquidGlassIconButton>
+                    <LiquidGlassIconButton
                       onPress={() => handleAdjustStock(item.id, 1)}
-                      style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: "#10b981", alignItems: "center", justifyContent: "center" }}
+                      variant="tinted"
+                      tintColor="rgba(16, 185, 129, 0.72)"
+                      dropletColor="#34d399"
+                      size={36}
                     >
                       <Plus size={16} color="#ffffff" />
-                    </TouchableOpacity>
+                    </LiquidGlassIconButton>
                   </View>
                 </View>
-              </View>
+              </LiquidGlassCard>
             );
           })}
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

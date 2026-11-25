@@ -10,12 +10,10 @@ import {
   TextInput,
   ActivityIndicator,
   StatusBar,
-  StyleSheet,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { LinearGradient } from "expo-linear-gradient";
 import {
   Phone,
   Lock,
@@ -27,6 +25,13 @@ import {
 import { api, resolveApiBaseUrl, setAuthSession } from "../../services/api";
 import { useService, ServiceSelectorPill, ALL_SERVICE_KEYS } from "../../context/ServiceContext";
 import { SERVICES_CONFIG } from "../../constants/servicesConfig";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconButton,
+  SafeBlurView,
+} from "../../components/LiquidGlass";
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
@@ -35,7 +40,6 @@ export default function LoginScreen() {
   const { serviceConfig, setService } = useService();
 
   const config = serviceConfig || SERVICES_CONFIG.facility_fmcg;
-  const themeColor = config.themeColor || "#059669";
   const accentColor = config.accentColor || "#34d399";
   const vocab = config.vocab || SERVICES_CONFIG.facility_fmcg.vocab;
 
@@ -99,289 +103,279 @@ export default function LoginScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={["#062214", "#0f172a", "#062214"]}
-      style={{ flex: 1 }}
-    >
+    <LiquidGlassBackdrop variant="dark">
       <StatusBar barStyle="light-content" />
 
       <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}>
-            <KeyboardAvoidingView
-              behavior={Platform.OS === "ios" ? "padding" : "height"}
-              style={{ flex: 1 }}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          {/* Top Bar */}
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingHorizontal: 20,
+              paddingTop: 12,
+              paddingBottom: 8,
+              zIndex: 20,
+            }}
+          >
+            <LiquidGlassIconButton
+              onPress={() => router.back()}
+              size={42}
+              variant="dark"
             >
-              {/* Top Bar */}
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
+              <ChevronLeft size={22} color="#ffffff" />
+            </LiquidGlassIconButton>
+            <ServiceSelectorPill dark compact />
+          </View>
+
+          <ScrollView
+            contentContainerStyle={{
+              flexGrow: 1,
+              justifyContent: "center",
+              paddingHorizontal: 22,
+              paddingBottom: 32,
+            }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Logo & Simple Title */}
+            <View style={{ alignItems: "center", marginBottom: 28 }}>
+              <LiquidGlassCard
+                variant="light"
+                borderRadius={24}
+                dropletColor={accentColor}
+                style={{ width: 176, height: 86, marginBottom: 20 }}
+                contentStyle={{
+                  flex: 1,
                   alignItems: "center",
-                  paddingHorizontal: 20,
-                  paddingTop: 12,
-                  paddingBottom: 8,
-                  zIndex: 20,
-                }}
-              >
-                <TouchableOpacity
-                  onPress={() => router.back()}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 20,
-                    backgroundColor: "rgba(255,255,255,0.12)",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <ChevronLeft size={22} color="#ffffff" />
-                </TouchableOpacity>
-                <ServiceSelectorPill dark compact />
-              </View>
-
-              <ScrollView
-                contentContainerStyle={{
-                  flexGrow: 1,
                   justifyContent: "center",
-                  paddingHorizontal: 22,
-                  paddingBottom: 32,
+                  paddingHorizontal: 14,
+                  paddingVertical: 10,
+                  backgroundColor: "#FFFFFF",
                 }}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
               >
-                {/* Logo & Simple Title */}
-                <View style={{ alignItems: "center", marginBottom: 28 }}>
-                  <View
-                    style={{
-                      width: 170,
-                      height: 80,
-                      borderRadius: 22,
-                      backgroundColor: "#ffffff",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderWidth: 2,
-                      borderColor: "rgba(74, 222, 128, 0.4)",
-                      marginBottom: 20,
-                      paddingHorizontal: 14,
-                      shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 8 },
-                      shadowOpacity: 0.2,
-                      shadowRadius: 16,
-                      elevation: 8,
-                    }}
-                  >
-                    <Image
-                      source={require("../../assets/images/logo.png")}
-                      style={{ width: 140, height: 60 }}
-                      resizeMode="contain"
-                    />
-                  </View>
+                <Image
+                  source={require("../../assets/images/logo.png")}
+                  style={{ width: 144, height: 58 }}
+                  resizeMode="contain"
+                />
+              </LiquidGlassCard>
 
-                  <Text
-                    style={{
-                      color: "#ffffff",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 28,
-                      textAlign: "center",
-                    }}
-                  >
-                    {role === "site_contact"
-                      ? `${vocab.customerRole || "Client"} Login`
-                      : `${vocab.staffRole || "Staff"} Login`}
-                  </Text>
-                  <Text
-                    style={{
-                      color: "rgba(255,255,255,0.7)",
-                      fontFamily: "Brandon-Medium",
-                      fontSize: 14,
-                      marginTop: 4,
-                      textAlign: "center",
-                    }}
-                  >
-                    Enter your phone or email and password
-                  </Text>
-                </View>
+              <Text
+                style={{
+                  color: "#ffffff",
+                  fontFamily: "Brandon-Bold",
+                  fontSize: 28,
+                  textAlign: "center",
+                }}
+              >
+                {role === "site_contact"
+                  ? `${vocab.customerRole || "Client"} Login`
+                  : `${vocab.staffRole || "Staff"} Login`}
+              </Text>
+              <Text
+                style={{
+                  color: "rgba(255,255,255,0.72)",
+                  fontFamily: "Brandon-Medium",
+                  fontSize: 14,
+                  marginTop: 4,
+                  textAlign: "center",
+                }}
+              >
+                Enter your phone or email and password
+              </Text>
+            </View>
 
-                {/* Form Card */}
+            {/* Frosted Apple Liquid Glass Form Card */}
+            <LiquidGlassCard
+              variant="dark"
+              borderRadius={30}
+              intensity={76}
+              dropletColor={accentColor}
+              contentStyle={{ padding: 22 }}
+            >
+              {error ? (
                 <View
                   style={{
-                    backgroundColor: "rgba(15, 23, 42, 0.92)",
-                    borderRadius: 28,
-                    padding: 22,
+                    backgroundColor: "rgba(239,68,68,0.22)",
+                    padding: 12,
+                    borderRadius: 14,
+                    marginBottom: 16,
                     borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.14)",
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 12 },
-                    shadowOpacity: 0.35,
-                    shadowRadius: 24,
-                    elevation: 12,
+                    borderColor: "rgba(248,113,113,0.45)",
                   }}
                 >
-                  {error ? (
-                    <View
-                      style={{
-                        backgroundColor: "rgba(239,68,68,0.2)",
-                        padding: 12,
-                        borderRadius: 12,
-                        marginBottom: 16,
-                        borderWidth: 1,
-                        borderColor: "rgba(239,68,68,0.4)",
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: "#fca5a5",
-                          fontFamily: "Brandon-Medium",
-                          fontSize: 13,
-                          textAlign: "center",
-                        }}
-                      >
-                        {error}
-                      </Text>
-                    </View>
-                  ) : null}
-
-                  {/* Phone Input */}
-                  <View style={{ marginBottom: 16 }}>
-                    <Text
-                      style={{
-                        color: "rgba(255,255,255,0.7)",
-                        fontFamily: "Brandon-Bold",
-                        fontSize: 11,
-                        letterSpacing: 1,
-                        marginBottom: 6,
-                        marginLeft: 4,
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      Phone or Username / Email
-                    </Text>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        backgroundColor: "rgba(0,0,0,0.4)",
-                        borderRadius: 16,
-                        paddingHorizontal: 16,
-                        height: 54,
-                        borderWidth: 1,
-                        borderColor: "rgba(255,255,255,0.12)",
-                      }}
-                    >
-                      <Phone size={18} color={accentColor} />
-                      <TextInput
-                        style={{
-                          flex: 1,
-                          marginLeft: 12,
-                          fontFamily: "Brandon-Bold",
-                          fontSize: 16,
-                          color: "#ffffff",
-                        }}
-                        placeholder="Phone number or email"
-                        placeholderTextColor="rgba(255,255,255,0.3)"
-                        keyboardType="default"
-                        autoCapitalize="none"
-                        value={mobile}
-                        onChangeText={setMobile}
-                      />
-                    </View>
-                  </View>
-
-                  {/* Password Input */}
-                  <View style={{ marginBottom: 24 }}>
-                    <Text
-                      style={{
-                        color: "rgba(255,255,255,0.7)",
-                        fontFamily: "Brandon-Bold",
-                        fontSize: 11,
-                        letterSpacing: 1,
-                        marginBottom: 6,
-                        marginLeft: 4,
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      Password
-                    </Text>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        backgroundColor: "rgba(0,0,0,0.4)",
-                        borderRadius: 16,
-                        paddingHorizontal: 16,
-                        height: 54,
-                        borderWidth: 1,
-                        borderColor: "rgba(255,255,255,0.12)",
-                      }}
-                    >
-                      <Lock size={18} color={accentColor} />
-                      <TextInput
-                        style={{
-                          flex: 1,
-                          marginLeft: 12,
-                          fontFamily: "Brandon-Bold",
-                          fontSize: 16,
-                          color: "#ffffff",
-                        }}
-                        placeholder="Password"
-                        placeholderTextColor="rgba(255,255,255,0.3)"
-                        secureTextEntry={!showPassword}
-                        value={password}
-                        onChangeText={setPassword}
-                      />
-                      <TouchableOpacity
-                        onPress={() => setShowPassword(!showPassword)}
-                        style={{ padding: 6 }}
-                      >
-                        {showPassword ? (
-                          <EyeOff size={18} color="rgba(255,255,255,0.5)" />
-                        ) : (
-                          <Eye size={18} color="rgba(255,255,255,0.5)" />
-                        )}
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  {/* Login Button */}
-                  <TouchableOpacity
-                    onPress={handleLogin}
-                    disabled={loading}
-                    activeOpacity={0.85}
+                  <Text
                     style={{
-                      backgroundColor: themeColor,
-                      borderRadius: 999,
-                      height: 54,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      shadowColor: themeColor,
-                      shadowOffset: { width: 0, height: 6 },
-                      shadowOpacity: 0.4,
-                      shadowRadius: 14,
-                      elevation: 8,
+                      color: "#fecaca",
+                      fontFamily: "Brandon-Medium",
+                      fontSize: 13,
+                      textAlign: "center",
                     }}
                   >
-                    {loading ? (
-                      <ActivityIndicator color="#ffffff" size="small" />
-                    ) : (
-                      <>
-                        <Text
-                          style={{
-                            color: "#ffffff",
-                            fontFamily: "Brandon-Bold",
-                            fontSize: 17,
-                            marginRight: 8,
-                          }}
-                        >
-                          Login
-                        </Text>
-                        <ArrowRight size={18} color="#ffffff" />
-                      </>
-                    )}
-                  </TouchableOpacity>
+                    {error}
+                  </Text>
                 </View>
-              </ScrollView>
-            </KeyboardAvoidingView>
+              ) : null}
+
+              {/* Phone Input */}
+              <View style={{ marginBottom: 16 }}>
+                <Text
+                  style={{
+                    color: "rgba(255,255,255,0.76)",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 11,
+                    letterSpacing: 1,
+                    marginBottom: 6,
+                    marginLeft: 4,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Phone or Username / Email
+                </Text>
+                <View
+                  style={{
+                    borderRadius: 16,
+                    height: 54,
+                    overflow: "hidden",
+                    borderWidth: 1.4,
+                    borderColor: "rgba(255,255,255,0.22)",
+                  }}
+                >
+                  <SafeBlurView
+                    intensity={46}
+                    tint="dark"
+                    style={{
+                      flex: 1,
+                      borderRadius: 16,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: "rgba(255,255,255,0.08)",
+                      paddingHorizontal: 16,
+                    }}
+                  >
+                    <Phone size={18} color={accentColor} />
+                    <TextInput
+                      style={{
+                        flex: 1,
+                        marginLeft: 12,
+                        fontFamily: "Brandon-Bold",
+                        fontSize: 16,
+                        color: "#ffffff",
+                      }}
+                      placeholder="Phone number or email"
+                      placeholderTextColor="rgba(255,255,255,0.38)"
+                      keyboardType="default"
+                      autoCapitalize="none"
+                      value={mobile}
+                      onChangeText={setMobile}
+                    />
+                  </SafeBlurView>
+                </View>
+              </View>
+
+              {/* Password Input */}
+              <View style={{ marginBottom: 24 }}>
+                <Text
+                  style={{
+                    color: "rgba(255,255,255,0.76)",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 11,
+                    letterSpacing: 1,
+                    marginBottom: 6,
+                    marginLeft: 4,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Password
+                </Text>
+                <View
+                  style={{
+                    borderRadius: 16,
+                    height: 54,
+                    overflow: "hidden",
+                    borderWidth: 1.4,
+                    borderColor: "rgba(255,255,255,0.22)",
+                  }}
+                >
+                  <SafeBlurView
+                    intensity={46}
+                    tint="dark"
+                    style={{
+                      flex: 1,
+                      borderRadius: 16,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: "rgba(255,255,255,0.08)",
+                      paddingHorizontal: 16,
+                    }}
+                  >
+                    <Lock size={18} color={accentColor} />
+                    <TextInput
+                      style={{
+                        flex: 1,
+                        marginLeft: 12,
+                        fontFamily: "Brandon-Bold",
+                        fontSize: 16,
+                        color: "#ffffff",
+                      }}
+                      placeholder="Password"
+                      placeholderTextColor="rgba(255,255,255,0.38)"
+                      secureTextEntry={!showPassword}
+                      value={password}
+                      onChangeText={setPassword}
+                    />
+                    <TouchableOpacity
+                      onPress={() => setShowPassword(!showPassword)}
+                      style={{ padding: 6 }}
+                    >
+                      {showPassword ? (
+                        <EyeOff size={18} color="rgba(255,255,255,0.65)" />
+                      ) : (
+                        <Eye size={18} color="rgba(255,255,255,0.65)" />
+                      )}
+                    </TouchableOpacity>
+                  </SafeBlurView>
+                </View>
+              </View>
+
+              {/* Apple Liquid Glass Login CTA */}
+              <LiquidGlassButton
+                onPress={handleLogin}
+                disabled={loading}
+                variant="tinted"
+                tintColor="rgba(13, 148, 136, 0.74)"
+                dropletColor={accentColor}
+                style={{ width: "100%" }}
+                contentStyle={{ height: 54, paddingVertical: 0 }}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#ffffff" size="small" />
+                ) : (
+                  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+                    <Text
+                      style={{
+                        color: "#ffffff",
+                        fontFamily: "Brandon-Bold",
+                        fontSize: 17,
+                        marginRight: 8,
+                      }}
+                    >
+                      Login
+                    </Text>
+                    <ArrowRight size={18} color="#ffffff" />
+                  </View>
+                )}
+              </LiquidGlassButton>
+            </LiquidGlassCard>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </View>
-    </LinearGradient>
+    </LiquidGlassBackdrop>
   );
 }

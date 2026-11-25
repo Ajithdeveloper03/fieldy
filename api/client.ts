@@ -18,11 +18,15 @@ export const apiClient = {
       data,
     });
   },
+  delete: async (endpoint: string, options: RequestOptions = {}) => {
+    return request(endpoint, { ...options, method: "DELETE" });
+  },
+  upload: async (endpoint: string, formData: FormData, options: RequestOptions = {}) => {
+    return uploadRequest(endpoint, formData, options);
+  },
 };
 
-async function request(endpoint: string, options: RequestOptions) {
-  const url = `${API_BASE_URL}${endpoint}`;
-  
+async function buildAuthHeaders(extraHeaders?: HeadersInit, isJson = true): Promise<HeadersInit> {
   const token = await AsyncStorage.getItem("token");
   const authUserRaw = await AsyncStorage.getItem("@auth_user");
   const activeService = await AsyncStorage.getItem("@fieldy_active_service");
@@ -36,14 +40,40 @@ async function request(endpoint: string, options: RequestOptions) {
     throw new Error("Please sign in again to continue.");
   }
 
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
+  return {
+    ...(isJson ? { "Content-Type": "application/json" } : {}),
     Accept: "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(userPhone ? { "X-Demo-Phone": userPhone } : {}),
     ...(activeService ? { "X-Service-Key": activeService } : {}),
-    ...(options.headers || {}),
+    ...(extraHeaders || {}),
   };
+}
+
+async function uploadRequest(endpoint: string, formData: FormData, options: RequestOptions) {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const headers = await buildAuthHeaders(options.headers, false);
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.message || "File upload failed");
+    }
+    return data;
+  } catch (error) {
+    console.log("API Upload notice:", url);
+    throw error;
+  }
+}
+
+async function request(endpoint: string, options: RequestOptions) {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const headers = await buildAuthHeaders(options.headers, true);
 
   const config: RequestInit = {
     method: options.method,

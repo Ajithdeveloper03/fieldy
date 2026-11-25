@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   Image,
   StyleSheet,
   StatusBar,
@@ -15,12 +14,17 @@ import {
   ChevronLeft,
   Calendar,
   Filter,
-  CheckCircle2,
   FileText,
   MapPin,
   Clock,
   ArrowRight
 } from "lucide-react-native";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassCard,
+  LiquidGlassIconButton,
+  LiquidGlassPill,
+} from "../../components/LiquidGlass";
 
 export default function EmployeeVisitHistoryScreen() {
   const history = [
@@ -63,13 +67,13 @@ export default function EmployeeVisitHistoryScreen() {
   ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+    <LiquidGlassBackdrop variant="light">
       <StatusBar barStyle="light-content" />
 
       {/* Header Gradient */}
       <View style={{ position: "absolute", top: 0, left: 0, right: 0, height: 250 }}>
         <LinearGradient
-          colors={["#0f172a", "#1e293b", "#f8fafc"]}
+          colors={["#0f172a", "#1e293b", "rgba(243, 241, 236, 0)"]}
           style={StyleSheet.absoluteFill}
         />
       </View>
@@ -78,42 +82,50 @@ export default function EmployeeVisitHistoryScreen() {
         
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24 }}>
-          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 10, backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 999 }}>
+          <LiquidGlassIconButton
+            variant="dark"
+            size={44}
+            onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")}
+          >
             <ChevronLeft size={26} color="#ffffff" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
           <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 25 }}>Visit History</Text>
-          <TouchableOpacity style={{ padding: 10, backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 999 }}>
+          <LiquidGlassIconButton variant="dark" size={44}>
             <Filter size={22} color="#ffffff" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 10, paddingBottom: 110 }}>
           
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
             <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>Showing 44 past visits</Text>
-            <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255,255,255,0.2)", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 14 }}>
+            <LiquidGlassPill
+              variant="dark"
+              contentStyle={{ paddingHorizontal: 14, paddingVertical: 8 }}
+            >
               <Calendar size={16} color="#ffffff" style={{ marginRight: 6 }} />
               <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14 }}>This Month</Text>
-            </View>
+            </LiquidGlassPill>
           </View>
 
           {/* Visit Cards */}
           <View style={{ gap: 20 }}>
             {history.map((visit) => (
-              <TouchableOpacity 
-                key={visit.id} 
-                activeOpacity={0.9}
+              <LiquidGlassCard
+                key={visit.id}
+                variant="light"
+                borderRadius={28}
                 onPress={() => router.push(`/(employee)/report/${visit.id}` as any)}
-                style={{ backgroundColor: "#ffffff", borderRadius: 28, padding: 22, shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.08, shadowRadius: 14, elevation: 5 }}
+                contentStyle={{ padding: 22 }}
               >
                 
                 {/* Status Bar */}
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 18, borderBottomWidth: 1, borderBottomColor: "#f1f5f9", paddingBottom: 14 }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 18, borderBottomWidth: 1, borderBottomColor: "rgba(15, 23, 42, 0.08)", paddingBottom: 14 }}>
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <Clock size={16} color="#64748b" style={{ marginRight: 6 }} />
                     <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 14 }}>{visit.date}</Text>
                   </View>
-                  <View style={{ backgroundColor: visit.status === "Flagged Issue" ? "#fee2e2" : "#dcfce7", paddingHorizontal: 12, paddingVertical: 5, borderRadius: 10 }}>
+                  <View style={{ backgroundColor: visit.status === "Flagged Issue" ? "rgba(254, 226, 226, 0.85)" : "rgba(220, 252, 231, 0.85)", paddingHorizontal: 12, paddingVertical: 5, borderRadius: 10 }}>
                     <Text style={{ color: visit.status === "Flagged Issue" ? "#ef4444" : "#16a34a", fontFamily: "Brandon-Bold", fontSize: 12 }}>{visit.status.toUpperCase()}</Text>
                   </View>
                 </View>
@@ -133,7 +145,7 @@ export default function EmployeeVisitHistoryScreen() {
                 </View>
 
                 {/* Actions */}
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "#f8fafc", paddingHorizontal: 18, paddingVertical: 14, borderRadius: 18 }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.62)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.92)", paddingHorizontal: 18, paddingVertical: 14, borderRadius: 18 }}>
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <FileText size={18} color="#0284c7" />
                     <Text style={{ color: "#0284c7", fontFamily: "Brandon-Bold", fontSize: 16, marginLeft: 8 }}>View Report #{visit.id}</Text>
@@ -141,12 +153,12 @@ export default function EmployeeVisitHistoryScreen() {
                   <ArrowRight size={18} color="#0284c7" />
                 </View>
 
-              </TouchableOpacity>
+              </LiquidGlassCard>
             ))}
           </View>
 
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

@@ -3,21 +3,20 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
-  StyleSheet,
   StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import {
   ChevronLeft,
-  Calendar,
-  Clock,
-  CheckCircle2,
   MapPin,
   Fingerprint
 } from "lucide-react-native";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassCard,
+  LiquidGlassIconButton,
+} from "../../components/LiquidGlass";
 
 export default function EmployeeAttendanceScreen() {
   const [isCheckedIn, setIsCheckedIn] = useState(false);
@@ -34,19 +33,20 @@ export default function EmployeeAttendanceScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0f172a" }}>
+    <LiquidGlassBackdrop variant="dark">
       <StatusBar barStyle="light-content" />
-
-      {/* Background ambient glow */}
-      <View style={{ position: "absolute", top: -100, right: -100, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(16, 185, 129, 0.2)" }} />
 
       <SafeAreaView style={{ flex: 1 }}>
         
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 22, paddingTop: 16, paddingBottom: 24 }}>
-          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 10, backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 999 }}>
+          <LiquidGlassIconButton
+            variant="dark"
+            size={44}
+            onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")}
+          >
             <ChevronLeft size={26} color="#ffffff" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
           <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 25 }}>Attendance Hub</Text>
           <View style={{ width: 44 }} />
         </View>
@@ -55,10 +55,22 @@ export default function EmployeeAttendanceScreen() {
           
           {/* BIG CLOCK IN BUTTON */}
           <View style={{ alignItems: "center", marginBottom: 34 }}>
-            <TouchableOpacity 
-              activeOpacity={0.8}
+            <LiquidGlassCard
+              variant="tinted"
+              borderRadius={98}
+              tintColor={isCheckedIn ? "rgba(16, 185, 129, 0.24)" : "rgba(59, 130, 246, 0.24)"}
+              dropletColor={isCheckedIn ? "#10b981" : "#3b82f6"}
               onPress={() => setIsCheckedIn(!isCheckedIn)}
-              style={{ width: 196, height: 196, borderRadius: 98, backgroundColor: isCheckedIn ? "rgba(16, 185, 129, 0.18)" : "rgba(59, 130, 246, 0.18)", alignItems: "center", justifyContent: "center", borderWidth: 3, borderColor: isCheckedIn ? "#10b981" : "#3b82f6", shadowColor: isCheckedIn ? "#10b981" : "#3b82f6", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 30, elevation: 10 }}
+              style={{
+                width: 196,
+                height: 196,
+                shadowColor: isCheckedIn ? "#10b981" : "#3b82f6",
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0.48,
+                shadowRadius: 30,
+                elevation: 12,
+              }}
+              contentStyle={{ alignItems: "center", justifyContent: "center" }}
             >
               <Fingerprint size={68} color={isCheckedIn ? "#10b981" : "#3b82f6"} style={{ marginBottom: 10 }} />
               <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 22 }}>
@@ -67,17 +79,27 @@ export default function EmployeeAttendanceScreen() {
               <Text style={{ color: "rgba(255,255,255,0.75)", fontFamily: "Brandon-Medium", fontSize: 14, marginTop: 4 }}>
                 09:01 AM
               </Text>
-            </TouchableOpacity>
+            </LiquidGlassCard>
             
-            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 24, backgroundColor: "rgba(255,255,255,0.08)", paddingHorizontal: 18, paddingVertical: 10, borderRadius: 999 }}>
+            <LiquidGlassCard
+              variant="dark"
+              borderRadius={999}
+              style={{ marginTop: 24 }}
+              contentStyle={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18, paddingVertical: 10 }}
+            >
               <MapPin size={16} color="#94a3b8" />
               <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Bold", fontSize: 15, marginLeft: 8 }}>HQ Geofence • Connected</Text>
-            </View>
+            </LiquidGlassCard>
           </View>
 
           {/* NEAT CALENDAR LAYOUT */}
           <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 24, marginBottom: 16 }}>January 2026</Text>
-          <View style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 32, padding: 24, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", marginBottom: 32 }}>
+          <LiquidGlassCard
+            variant="dark"
+            borderRadius={32}
+            style={{ marginBottom: 32 }}
+            contentStyle={{ padding: 24 }}
+          >
             
             {/* Days of week */}
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 16 }}>
@@ -115,11 +137,15 @@ export default function EmployeeAttendanceScreen() {
                 <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12 }}>Today</Text>
               </View>
             </View>
-          </View>
+          </LiquidGlassCard>
 
           {/* TIMELINE OF TODAY */}
           <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20, marginBottom: 16 }}>Today&apos;s Log</Text>
-          <View style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 32, padding: 24, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" }}>
+          <LiquidGlassCard
+            variant="dark"
+            borderRadius={32}
+            contentStyle={{ padding: 24 }}
+          >
             
             <View style={{ flexDirection: "row", marginBottom: 20 }}>
               <View style={{ alignItems: "center", marginRight: 16 }}>
@@ -142,10 +168,10 @@ export default function EmployeeAttendanceScreen() {
               </View>
             </View>
 
-          </View>
+          </LiquidGlassCard>
 
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeBlurView } from "../components/LiquidGlass";
 import {
   Check,
   ChevronDown,
@@ -154,50 +155,72 @@ export const ServiceSelectorPill: React.FC<{
       activeOpacity={0.85}
       onPress={openSwitcher}
       style={{
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: dark
-          ? "rgba(15, 23, 42, 0.85)"
-          : "rgba(255, 255, 255, 0.95)",
-        borderWidth: 1.2,
-        borderColor: themeColor,
-        paddingHorizontal: compact ? 9 : 12,
-        paddingVertical: compact ? 5 : 7,
         borderRadius: 999,
-        shadowColor: themeColor,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        elevation: 3,
+        overflow: "hidden",
+        borderWidth: 1.4,
+        borderColor: dark ? "rgba(255, 255, 255, 0.46)" : "rgba(255, 255, 255, 0.92)",
+        shadowColor: "#1F1917",
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: dark ? 0.3 : 0.15,
+        shadowRadius: 12,
+        elevation: 5,
       }}
     >
-      <View
+      <SafeBlurView
+        intensity={64}
+        tint={dark ? "dark" : "light"}
         style={{
-          width: 7,
-          height: 7,
-          borderRadius: 4,
-          backgroundColor: themeColor,
-          marginRight: 5,
-        }}
-      />
-      <Text
-        numberOfLines={1}
-        style={{
-          color: dark ? "#ffffff" : "#0f172a",
-          fontFamily: "Brandon-Bold",
-          fontSize: compact ? 11 : 12,
-          letterSpacing: 0.4,
-          maxWidth: compact ? 96 : 150,
+          borderRadius: 999,
+          flexDirection: "row",
+          alignItems: "center",
+          backgroundColor: dark
+            ? "rgba(8, 22, 18, 0.74)"
+            : "rgba(255, 255, 255, 0.92)",
+          paddingHorizontal: compact ? 10 : 13,
+          paddingVertical: compact ? 5 : 7,
         }}
       >
-        {label}
-      </Text>
-      <View style={{ marginLeft: 3 }}>
-        <ChevronDown
-          size={13}
-          color={dark ? "rgba(255,255,255,0.7)" : "#64748b"}
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 12,
+            right: 12,
+            height: 1.5,
+            backgroundColor: dark
+              ? "rgba(255, 255, 255, 0.65)"
+              : "rgba(255, 255, 255, 0.96)",
+          }}
         />
-      </View>
+        <View
+          style={{
+            width: 7,
+            height: 7,
+            borderRadius: 4,
+            backgroundColor: themeColor,
+            marginRight: 5,
+          }}
+        />
+        <Text
+          numberOfLines={1}
+          style={{
+            color: dark ? "#ffffff" : "#1F1917",
+            fontFamily: "Brandon-Bold",
+            fontSize: compact ? 11 : 12,
+            letterSpacing: 0.4,
+            maxWidth: compact ? 96 : 150,
+          }}
+        >
+          {label}
+        </Text>
+        <View style={{ marginLeft: 3 }}>
+          <ChevronDown
+            size={13}
+            color={dark ? "rgba(255,255,255,0.8)" : "#574D48"}
+          />
+        </View>
+      </SafeBlurView>
     </TouchableOpacity>
   );
 };
@@ -221,22 +244,37 @@ export const ServiceSwitcherModal: React.FC<{
       <View
         style={{
           flex: 1,
-          backgroundColor: "rgba(0,0,0,0.65)",
+          backgroundColor: "rgba(3, 12, 10, 0.55)",
           justifyContent: "flex-end",
         }}
       >
         <View
           style={{
-            backgroundColor: "#0f172a",
             borderTopLeftRadius: 36,
             borderTopRightRadius: 36,
-            paddingTop: 24,
-            paddingBottom: 40,
+            overflow: "hidden",
             maxHeight: "88%",
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.12)",
+            borderWidth: 1.5,
+            borderBottomWidth: 0,
+            borderColor: "rgba(255,255,255,0.28)",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: -12 },
+            shadowOpacity: 0.45,
+            shadowRadius: 30,
+            elevation: 24,
           }}
         >
+          <SafeBlurView
+            intensity={82}
+            tint="dark"
+            style={{
+              borderTopLeftRadius: 36,
+              borderTopRightRadius: 36,
+              backgroundColor: "rgba(8, 20, 18, 0.86)",
+              paddingTop: 24,
+              paddingBottom: 40,
+            }}
+          >
           {/* Header */}
           <View
             style={{
@@ -423,6 +461,7 @@ export const ServiceSwitcherModal: React.FC<{
               );
             })}
           </ScrollView>
+          </SafeBlurView>
         </View>
       </View>
     </Modal>

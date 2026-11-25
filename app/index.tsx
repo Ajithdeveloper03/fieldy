@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { View, Animated, StyleSheet, Text } from "react-native";
+import { Animated, Image, StyleSheet, Text } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { LiquidGlassBackdrop, LiquidGlassCard } from "../components/LiquidGlass";
 
 export default function IndexScreen() {
   const [scaleAnim] = useState(() => new Animated.Value(0.3));
@@ -9,8 +10,7 @@ export default function IndexScreen() {
   const [textOpacityAnim] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
-    // 1. Bouncy Logo Reveal
-    Animated.sequence([
+    const introAnim = Animated.sequence([
       Animated.parallel([
         Animated.spring(scaleAnim, {
           toValue: 1,
@@ -24,77 +24,79 @@ export default function IndexScreen() {
           useNativeDriver: true,
         }),
       ]),
-      // 2. Text Fade In
       Animated.timing(textOpacityAnim, {
         toValue: 1,
         duration: 500,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]);
+    introAnim.start();
 
-    // 3. Route after delay
     const timer = setTimeout(() => {
       router.replace("/intro");
-    }, 2800);
+    }, 2400);
 
-    return () => clearTimeout(timer);
-  }, []);
+    return () => {
+      introAnim.stop();
+      clearTimeout(timer);
+    };
+  }, [opacityAnim, scaleAnim, textOpacityAnim]);
 
   return (
-    <View style={styles.container}>
+    <LiquidGlassBackdrop variant="dark" style={styles.container}>
       <StatusBar style="light" />
 
-      {/* LOGO CONTAINER */}
+      {/* FLOATING LIQUID GLASS LOGO CAPSULE */}
       <Animated.View
-        style={[
-          styles.logoContainer,
-          {
-            opacity: opacityAnim,
-            transform: [{ scale: scaleAnim }],
-          },
-        ]}
+        style={{
+          opacity: opacityAnim,
+          transform: [{ scale: scaleAnim }],
+        }}
       >
-        <Animated.Image
-          source={require("../assets/images/logo.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        <LiquidGlassCard
+          variant="light"
+          borderRadius={28}
+          dropletColor="#10B981"
+          style={styles.logoCard}
+          contentStyle={styles.logoCardContent}
+        >
+          <Image
+            source={require("../assets/images/logo.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </LiquidGlassCard>
       </Animated.View>
-      
+
       {/* TEXT */}
       <Animated.View style={[styles.textContainer, { opacity: textOpacityAnim }]}>
         <Text style={styles.title}>FIELDY</Text>
         <Text style={styles.subtitle}>Field Operations & Management Platform</Text>
       </Animated.View>
-
-    </View>
+    </LiquidGlassBackdrop>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#062214", // Solid Dark Green
     alignItems: "center",
     justifyContent: "center",
   },
-  logoContainer: {
-    width: 220,
-    height: 120,
-    borderRadius: 24,
-    backgroundColor: "#ffffff", // White background for logo
+  logoCard: {
+    width: 224,
+    height: 112,
+  },
+  logoCardContent: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 16,
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.3,
-    shadowRadius: 24,
-    elevation: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    backgroundColor: "#FFFFFF",
   },
   logo: {
-    width: 190,
-    height: 90,
+    width: 184,
+    height: 76,
   },
   textContainer: {
     marginTop: 40,

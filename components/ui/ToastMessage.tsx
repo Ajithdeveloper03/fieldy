@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Animated, Text, View, StyleSheet, Dimensions, DeviceEventEmitter } from 'react-native';
+import { Animated, Text, View, StyleSheet, DeviceEventEmitter } from 'react-native';
 import { AlertCircle, CheckCircle2, Info } from 'lucide-react-native';
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { width } = Dimensions.get('window');
+import { LiquidGlassCard } from '../LiquidGlass';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -25,9 +23,9 @@ export function ToastMessage() {
   useEffect(() => {
     const subscription = DeviceEventEmitter.addListener('SHOW_TOAST', (data: ToastData) => {
       setToast(data);
-      
+
       Animated.spring(translateY, {
-        toValue: 50, // drop down from top
+        toValue: 54,
         useNativeDriver: true,
         bounciness: 12,
       }).start();
@@ -48,46 +46,50 @@ export function ToastMessage() {
 
   if (!toast) return null;
 
+  const accentColor =
+    toast.type === 'success' ? '#0D9488' : toast.type === 'error' ? '#EF4444' : '#2563EB';
+
   const getIcon = () => {
     switch (toast.type) {
-      case 'success': return <CheckCircle2 size={24} color="#15803d" />;
-      case 'error': return <AlertCircle size={24} color="#ef4444" />;
-      default: return <Info size={24} color="#3b82f6" />;
-    }
-  };
-
-  const getBorderColor = () => {
-    switch (toast.type) {
-      case 'success': return 'border-[#15803d]';
-      case 'error': return 'border-red-500';
-      default: return 'border-blue-500';
+      case 'success':
+        return <CheckCircle2 size={22} color="#0D9488" />;
+      case 'error':
+        return <AlertCircle size={22} color="#EF4444" />;
+      default:
+        return <Info size={22} color="#2563EB" />;
     }
   };
 
   return (
-    <Animated.View 
-      style={[
-        styles.container, 
-        { transform: [{ translateY }] }
-      ]}
-      className="absolute z-50 self-center"
+    <Animated.View
+      style={[styles.container, { transform: [{ translateY }] }]}
       pointerEvents="none"
     >
-      <View className={`bg-white/95 rounded-2xl p-4 shadow-xl border-l-4 ${getBorderColor()} flex-row items-center w-[90%] self-center`}>
-        <View className="mr-3">
-          {getIcon()}
-        </View>
-        <View className="flex-1">
+      <LiquidGlassCard
+        variant="light"
+        borderRadius={22}
+        dropletColor={accentColor}
+        style={{ width: '90%' }}
+        contentStyle={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 16,
+          paddingVertical: 14,
+        }}
+      >
+        <View style={{ marginRight: 12 }}>{getIcon()}</View>
+        <View style={{ flex: 1 }}>
           <Text className="text-gray-900 font-brandon-bold text-base mb-0.5">{toast.title}</Text>
-          <Text className="text-gray-500 font-brandon text-sm leading-5">{toast.message}</Text>
+          <Text className="text-gray-600 font-brandon text-sm leading-5">{toast.message}</Text>
         </View>
-      </View>
+      </LiquidGlassCard>
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
@@ -95,5 +97,5 @@ const styles = StyleSheet.create({
     width: '100%',
     elevation: 100,
     zIndex: 9999,
-  }
+  },
 });

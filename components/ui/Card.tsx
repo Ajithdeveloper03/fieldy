@@ -1,21 +1,29 @@
 import React from 'react';
-import { View, ViewProps } from 'react-native';
+import { ViewProps } from 'react-native';
+import { LiquidGlassCard } from '../LiquidGlass';
 
 interface CardProps extends ViewProps {
   children: React.ReactNode;
   className?: string;
   noPadding?: boolean;
+  variant?: 'light' | 'dark' | 'tinted';
 }
 
-export const Card = ({ children, className = '', noPadding = false, ...props }: CardProps) => {
+export const Card = ({
+  children,
+  className = '',
+  noPadding = false,
+  variant = 'light',
+  style,
+}: CardProps) => {
   return (
-    <View
-      className={`bg-white rounded-[24px] shadow-sm ${
-        noPadding ? '' : 'p-5'
-      } ${className}`}
-      {...props}
+    <LiquidGlassCard
+      variant={variant}
+      borderRadius={24}
+      style={style}
+      contentStyle={noPadding ? undefined : { padding: 20 }}
     >
       {children}
-    </View>
+    </LiquidGlassCard>
   );
 };

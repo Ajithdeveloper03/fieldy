@@ -17,6 +17,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ChevronLeft, Lock, Camera, Save, User, Mail, Phone, Building } from "lucide-react-native";
 import { useService } from "../../context/ServiceContext";
 import { api, getAuthUser } from "../../services/api";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+} from "../../components/LiquidGlass";
 
 export default function EditProfileScreen() {
   const { serviceConfig } = useService();
@@ -60,7 +67,7 @@ export default function EditProfileScreen() {
   }, [serviceConfig.name]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#f8faf9" }}>
+    <LiquidGlassBackdrop variant="light">
       <StatusBar barStyle="dark-content" />
       
       <SafeAreaView style={{ flex: 1 }}>
@@ -70,9 +77,13 @@ export default function EditProfileScreen() {
         >
           {/* HEADER */}
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 22, paddingTop: 16, paddingBottom: 24 }}>
-            <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/profile")} style={{ padding: 10, backgroundColor: "#ffffff", borderRadius: 999, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}>
+            <LiquidGlassIconButton
+              onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/profile")}
+              variant="light"
+              size={44}
+            >
               <ChevronLeft size={26} color="#0f172a" />
-            </TouchableOpacity>
+            </LiquidGlassIconButton>
             <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 24 }}>Officer Credentials</Text>
             <View style={{ width: 44 }} />
           </View>
@@ -84,52 +95,88 @@ export default function EditProfileScreen() {
           >
             {/* AVATAR EDIT */}
             <View style={{ alignItems: "center", marginBottom: 28 }}>
-              <View style={{ width: 120, height: 120, borderRadius: 60, borderWidth: 4, borderColor: "#ffffff", shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.12, shadowRadius: 10, elevation: 5 }}>
+              <View style={{ width: 120, height: 120, borderRadius: 60, borderWidth: 4, borderColor: "rgba(255, 255, 255, 0.94)", shadowColor: "#1A1D24", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.14, shadowRadius: 16, elevation: 6 }}>
                 <Image source={require("../../assets/images/image3.jpg")} style={{ width: "100%", height: "100%", borderRadius: 56 }} />
-                <TouchableOpacity style={{ position: "absolute", bottom: -4, right: -4, width: 40, height: 40, borderRadius: 20, backgroundColor: "#15803d", alignItems: "center", justifyContent: "center", borderWidth: 3, borderColor: "#ffffff" }}>
+                <LiquidGlassIconButton
+                  variant="tinted"
+                  tintColor="rgba(21, 128, 61, 0.84)"
+                  dropletColor="#4ade80"
+                  size={40}
+                  style={{ position: "absolute", bottom: -4, right: -4 }}
+                >
                   <Camera size={18} color="#ffffff" />
-                </TouchableOpacity>
+                </LiquidGlassIconButton>
               </View>
             </View>
 
             {/* IT LOCK MESSAGE */}
-            <View style={{ backgroundColor: "#e0f2fe", padding: 18, borderRadius: 20, marginBottom: 28, flexDirection: "row", alignItems: "flex-start", borderWidth: 1, borderColor: "#bae6fd" }}>
-              <Lock size={22} color="#0284c7" style={{ marginTop: 2, marginRight: 12 }} />
+            <LiquidGlassCard
+              variant="light"
+              borderRadius={20}
+              style={{ marginBottom: 28 }}
+              contentStyle={{ padding: 18, flexDirection: "row", alignItems: "flex-start" }}
+            >
+              <LiquidGlassIconBadge
+                size={38}
+                borderRadius={12}
+                variant="light"
+                tintColor="#0284c7"
+                style={{ marginRight: 12 }}
+              >
+                <Lock size={18} color="#0284c7" />
+              </LiquidGlassIconBadge>
               <Text style={{ flex: 1, color: "#0369a1", fontFamily: "Brandon-Medium", fontSize: 15, lineHeight: 22 }}>
                 Service role & Employee ID are synced from {serviceConfig.name}. Contact your Admin to change core HR records.
               </Text>
-            </View>
+            </LiquidGlassCard>
 
             {/* FORM */}
             <View style={{ gap: 20 }}>
               
               <View>
                 <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 13, marginLeft: 4, marginBottom: 8 }}>FULL NAME</Text>
-                <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#f1f5f9", borderRadius: 18, paddingHorizontal: 18, height: 60 }}>
+                <LiquidGlassCard
+                  variant="light"
+                  borderRadius={18}
+                  intensity={64}
+                  style={{ height: 60 }}
+                  contentStyle={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18 }}
+                >
                   <User size={22} color="#64748b" />
                   <TextInput
                     style={{ flex: 1, marginLeft: 12, fontFamily: "Brandon-Bold", fontSize: 18, color: "#334155" }}
                     value={form.fullName}
                     editable={false}
                   />
-                </View>
+                </LiquidGlassCard>
               </View>
 
               <View>
                 <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 13, marginLeft: 4, marginBottom: 8 }}>SERVICE / DEPARTMENT & ID</Text>
-                <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#f1f5f9", borderRadius: 18, paddingHorizontal: 18, height: 60 }}>
+                <LiquidGlassCard
+                  variant="light"
+                  borderRadius={18}
+                  intensity={64}
+                  style={{ height: 60 }}
+                  contentStyle={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18 }}
+                >
                   <Building size={22} color="#64748b" />
                   <TextInput
                     style={{ flex: 1, marginLeft: 12, fontFamily: "Brandon-Bold", fontSize: 17, color: "#334155" }}
                     value={`${form.department} (${form.empId})`}
                     editable={false}
                   />
-                </View>
+                </LiquidGlassCard>
               </View>
 
               <View>
                 <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 13, marginLeft: 4, marginBottom: 8 }}>MOBILE NUMBER</Text>
-                <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#ffffff", borderRadius: 18, paddingHorizontal: 18, height: 60, borderWidth: 1, borderColor: "#cbd5e1" }}>
+                <LiquidGlassCard
+                  variant="light"
+                  borderRadius={18}
+                  style={{ height: 60 }}
+                  contentStyle={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18 }}
+                >
                   <Phone size={22} color="#15803d" />
                   <TextInput
                     style={{ flex: 1, marginLeft: 12, fontFamily: "Brandon-Bold", fontSize: 18, color: "#0f172a" }}
@@ -137,12 +184,17 @@ export default function EditProfileScreen() {
                     onChangeText={(val) => setForm({ ...form, mobile: val })}
                     keyboardType="phone-pad"
                   />
-                </View>
+                </LiquidGlassCard>
               </View>
 
               <View>
                 <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 13, marginLeft: 4, marginBottom: 8 }}>EMAIL ADDRESS</Text>
-                <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#ffffff", borderRadius: 18, paddingHorizontal: 18, height: 60, borderWidth: 1, borderColor: "#cbd5e1" }}>
+                <LiquidGlassCard
+                  variant="light"
+                  borderRadius={18}
+                  style={{ height: 60 }}
+                  contentStyle={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18 }}
+                >
                   <Mail size={22} color="#15803d" />
                   <TextInput
                     style={{ flex: 1, marginLeft: 12, fontFamily: "Brandon-Bold", fontSize: 18, color: "#0f172a" }}
@@ -151,12 +203,12 @@ export default function EditProfileScreen() {
                     keyboardType="email-address"
                     autoCapitalize="none"
                   />
-                </View>
+                </LiquidGlassCard>
               </View>
             </View>
 
             {/* SAVE BUTTON */}
-            <TouchableOpacity
+            <LiquidGlassButton
               onPress={async () => {
                 const existing = await getAuthUser();
                 await AsyncStorage.setItem(
@@ -173,15 +225,19 @@ export default function EditProfileScreen() {
                   { text: "OK", onPress: () => router.canGoBack() ? router.back() : router.replace("/(employee)/profile") }
                 ]);
               }}
-              style={{ backgroundColor: "#15803d", borderRadius: 999, paddingVertical: 18, flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 36, shadowColor: "#15803d", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 8 }}
+              variant="tinted"
+              tintColor="rgba(21, 128, 61, 0.84)"
+              dropletColor="#4ade80"
+              style={{ marginTop: 36 }}
+              contentStyle={{ paddingVertical: 18 }}
             >
               <Save size={22} color="#ffffff" style={{ marginRight: 8 }} />
               <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>Save Changes</Text>
-            </TouchableOpacity>
+            </LiquidGlassButton>
 
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

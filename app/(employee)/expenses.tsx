@@ -26,6 +26,14 @@ import {
   IndianRupee,
   X,
 } from "lucide-react-native";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+  LiquidGlassPill,
+} from "../../components/LiquidGlass";
 
 export default function ExpensesScreen() {
   const [activeTab, setActiveTab] = useState<"claims" | "new">("claims");
@@ -98,24 +106,31 @@ export default function ExpensesScreen() {
   const totalClaimed = expenses.reduce((acc, curr) => acc + Number(curr.amount), 0);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0f172a" }}>
+    <LiquidGlassBackdrop variant="dark">
       <StatusBar barStyle="light-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16 }}>
-          <TouchableOpacity
+          <LiquidGlassIconButton
             onPress={() => (router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard"))}
-            style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.1)", alignItems: "center", justifyContent: "center" }}
+            variant="dark"
+            size={42}
           >
             <ChevronLeft size={24} color="#ffffff" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
           <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>Field Expense Claims</Text>
-          <View style={{ width: 40 }} />
+          <View style={{ width: 42 }} />
         </View>
 
         {/* TOP SUMMARY CARD */}
-        <View style={{ marginHorizontal: 20, marginBottom: 20, padding: 20, backgroundColor: "rgba(30, 41, 59, 0.8)", borderRadius: 24, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" }}>
+        <LiquidGlassCard
+          variant="dark"
+          borderRadius={24}
+          dropletColor="#10b981"
+          style={{ marginHorizontal: 20, marginBottom: 20 }}
+          contentStyle={{ padding: 20 }}
+        >
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
             <View>
               <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12, letterSpacing: 1 }}>OCTOBER CLAIMS</Text>
@@ -123,53 +138,64 @@ export default function ExpensesScreen() {
                 ₹{totalClaimed.toLocaleString()}
               </Text>
             </View>
-            <View style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: "rgba(16, 185, 129, 0.15)", alignItems: "center", justifyContent: "center" }}>
+            <LiquidGlassIconBadge size={48} borderRadius={16} variant="dark" tintColor="#10b981">
               <Receipt size={24} color="#10b981" />
-            </View>
+            </LiquidGlassIconBadge>
           </View>
           <View style={{ flexDirection: "row", gap: 8, marginTop: 16 }}>
-            <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.05)", padding: 10, borderRadius: 12 }}>
+            <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", padding: 10, borderRadius: 12 }}>
               <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 10 }}>APPROVED</Text>
               <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 15, marginTop: 2 }}>₹450</Text>
             </View>
-            <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.05)", padding: 10, borderRadius: 12 }}>
+            <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", padding: 10, borderRadius: 12 }}>
               <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 10 }}>UNDER REVIEW</Text>
               <Text style={{ color: "#f59e0b", fontFamily: "Brandon-Bold", fontSize: 15, marginTop: 2 }}>₹180</Text>
             </View>
-            <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.05)", padding: 10, borderRadius: 12 }}>
+            <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", padding: 10, borderRadius: 12 }}>
               <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 10 }}>PAID OUT</Text>
               <Text style={{ color: "#38bdf8", fontFamily: "Brandon-Bold", fontSize: 15, marginTop: 2 }}>₹320</Text>
             </View>
           </View>
-        </View>
+        </LiquidGlassCard>
 
         {/* TABS */}
-        <View style={{ flexDirection: "row", marginHorizontal: 20, backgroundColor: "rgba(15, 23, 42, 0.6)", borderRadius: 16, padding: 4, marginBottom: 20, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
-          <TouchableOpacity
+        <View style={{ flexDirection: "row", marginHorizontal: 20, marginBottom: 20, gap: 10 }}>
+          <LiquidGlassPill
+            variant="dark"
+            active={activeTab === "claims"}
+            tintColor="rgba(16, 185, 129, 0.72)"
             onPress={() => setActiveTab("claims")}
-            style={{ flex: 1, paddingVertical: 10, borderRadius: 12, backgroundColor: activeTab === "claims" ? "#10b981" : "transparent", alignItems: "center" }}
+            style={{ flex: 1 }}
+            contentStyle={{ paddingVertical: 11, paddingHorizontal: 14 }}
           >
-            <Text style={{ color: activeTab === "claims" ? "#ffffff" : "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 13 }}>
+            <Text style={{ color: activeTab === "claims" ? "#ffffff" : "#cbd5e1", fontFamily: "Brandon-Bold", fontSize: 13 }}>
               My Claims ({expenses.length})
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </LiquidGlassPill>
+          <LiquidGlassPill
+            variant="dark"
+            active={activeTab === "new"}
+            tintColor="rgba(16, 185, 129, 0.72)"
             onPress={() => setActiveTab("new")}
-            style={{ flex: 1, paddingVertical: 10, borderRadius: 12, backgroundColor: activeTab === "new" ? "#10b981" : "transparent", alignItems: "center" }}
+            style={{ flex: 1 }}
+            contentStyle={{ paddingVertical: 11, paddingHorizontal: 14 }}
           >
-            <Text style={{ color: activeTab === "new" ? "#ffffff" : "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 13 }}>
+            <Text style={{ color: activeTab === "new" ? "#ffffff" : "#cbd5e1", fontFamily: "Brandon-Bold", fontSize: 13 }}>
               + Log New Claim
             </Text>
-          </TouchableOpacity>
+          </LiquidGlassPill>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}>
           {activeTab === "claims" ? (
             <View style={{ gap: 12 }}>
               {expenses.map((item) => (
-                <View
+                <LiquidGlassCard
                   key={item.id}
-                  style={{ backgroundColor: "rgba(30, 41, 59, 0.7)", borderRadius: 20, padding: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}
+                  variant="dark"
+                  borderRadius={20}
+                  dropletColor={item.statusColor}
+                  contentStyle={{ padding: 16 }}
                 >
                   <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <View>
@@ -184,15 +210,19 @@ export default function ExpensesScreen() {
                     <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 18 }}>₹{item.amount}</Text>
                   </View>
                   {item.note && (
-                    <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 10, backgroundColor: "rgba(255,255,255,0.03)", padding: 8, borderRadius: 8 }}>
+                    <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 10, backgroundColor: "rgba(255,255,255,0.06)", padding: 8, borderRadius: 8 }}>
                       {item.note}
                     </Text>
                   )}
-                </View>
+                </LiquidGlassCard>
               ))}
             </View>
           ) : (
-            <View style={{ backgroundColor: "rgba(30, 41, 59, 0.8)", borderRadius: 24, padding: 20, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", gap: 18 }}>
+            <LiquidGlassCard
+              variant="dark"
+              borderRadius={24}
+              contentStyle={{ padding: 20, gap: 18 }}
+            >
               {/* Category Picker */}
               <View>
                 <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 12, letterSpacing: 1, marginBottom: 10 }}>EXPENSE CATEGORY</Text>
@@ -201,14 +231,17 @@ export default function ExpensesScreen() {
                     const Icon = c.icon;
                     const isSelected = expenseType === c.label;
                     return (
-                      <TouchableOpacity
+                      <LiquidGlassPill
                         key={c.label}
+                        variant="dark"
+                        active={isSelected}
+                        tintColor="rgba(16, 185, 129, 0.72)"
                         onPress={() => setExpenseType(c.label)}
-                        style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: isSelected ? "#10b981" : "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: isSelected ? "#10b981" : "rgba(255,255,255,0.1)" }}
+                        contentStyle={{ paddingHorizontal: 12, paddingVertical: 8 }}
                       >
-                        <Icon size={14} color={isSelected ? "#ffffff" : c.color} />
+                        <Icon size={14} color={isSelected ? "#ffffff" : c.color} style={{ marginRight: 6 }} />
                         <Text style={{ color: isSelected ? "#ffffff" : "#cbd5e1", fontFamily: "Brandon-Bold", fontSize: 12 }}>{c.label}</Text>
-                      </TouchableOpacity>
+                      </LiquidGlassPill>
                     );
                   })}
                 </View>
@@ -217,7 +250,7 @@ export default function ExpensesScreen() {
               {/* Amount Input */}
               <View>
                 <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 12, letterSpacing: 1, marginBottom: 8 }}>AMOUNT (INR)</Text>
-                <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "rgba(15, 23, 42, 0.8)", borderRadius: 14, borderWidth: 1, borderColor: "rgba(255,255,255,0.15)", paddingHorizontal: 16 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 14, borderWidth: 1, borderColor: "rgba(255,255,255,0.18)", paddingHorizontal: 16 }}>
                   <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 20, marginRight: 8 }}>₹</Text>
                   <TextInput
                     keyboardType="numeric"
@@ -235,7 +268,7 @@ export default function ExpensesScreen() {
                 <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 12, letterSpacing: 1, marginBottom: 8 }}>PROOF OF BILL / RECEIPT</Text>
                 <TouchableOpacity
                   onPress={() => setReceiptAttached(!receiptAttached)}
-                  style={{ height: 90, borderRadius: 16, borderStyle: "dashed", borderWidth: 1.5, borderColor: receiptAttached ? "#10b981" : "rgba(255,255,255,0.2)", backgroundColor: receiptAttached ? "rgba(16, 185, 129, 0.1)" : "rgba(15, 23, 42, 0.5)", alignItems: "center", justifyContent: "center", gap: 6 }}
+                  style={{ height: 90, borderRadius: 16, borderStyle: "dashed", borderWidth: 1.5, borderColor: receiptAttached ? "#10b981" : "rgba(255,255,255,0.24)", backgroundColor: receiptAttached ? "rgba(16, 185, 129, 0.14)" : "rgba(255, 255, 255, 0.05)", alignItems: "center", justifyContent: "center", gap: 6 }}
                 >
                   {receiptAttached ? (
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -261,21 +294,25 @@ export default function ExpensesScreen() {
                   onChangeText={setNote}
                   multiline
                   numberOfLines={2}
-                  style={{ backgroundColor: "rgba(15, 23, 42, 0.8)", borderRadius: 14, borderWidth: 1, borderColor: "rgba(255,255,255,0.15)", padding: 14, color: "#ffffff", fontFamily: "Brandon-Medium", fontSize: 13, height: 70 }}
+                  style={{ backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 14, borderWidth: 1, borderColor: "rgba(255,255,255,0.18)", padding: 14, color: "#ffffff", fontFamily: "Brandon-Medium", fontSize: 13, height: 70 }}
                 />
               </View>
 
               {/* Submit Button */}
-              <TouchableOpacity
+              <LiquidGlassButton
                 onPress={handleSubmitExpense}
-                style={{ backgroundColor: "#10b981", borderRadius: 16, height: 52, alignItems: "center", justifyContent: "center", marginTop: 8 }}
+                variant="tinted"
+                tintColor="rgba(16, 185, 129, 0.78)"
+                dropletColor="#34D399"
+                style={{ marginTop: 8 }}
+                contentStyle={{ paddingVertical: 15 }}
               >
                 <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>Submit for Approval</Text>
-              </TouchableOpacity>
-            </View>
+              </LiquidGlassButton>
+            </LiquidGlassCard>
           )}
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

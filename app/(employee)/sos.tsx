@@ -22,6 +22,13 @@ import {
   CheckCircle2,
   Users,
 } from "lucide-react-native";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+  LiquidGlassPill,
+} from "../../components/LiquidGlass";
 
 export default function SOSScreen() {
   const [sosTriggered, setSosTriggered] = useState(false);
@@ -55,30 +62,19 @@ export default function SOSScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0b0f19" }}>
+    <LiquidGlassBackdrop variant="dark">
       <StatusBar barStyle="light-content" />
-
-      {/* Red ambient halo if SOS active */}
-      <View
-        style={{
-          position: "absolute",
-          top: -50,
-          left: 0,
-          right: 0,
-          height: 300,
-          backgroundColor: sosTriggered ? "rgba(239, 68, 68, 0.25)" : "rgba(220, 38, 38, 0.1)",
-        }}
-      />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 14, paddingBottom: 16 }}>
-          <TouchableOpacity
+          <LiquidGlassIconButton
             onPress={() => (router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard"))}
-            style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" }}
+            variant="dark"
+            size={44}
           >
             <ChevronLeft size={26} color="#ffffff" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
           <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 24 }}>Worker Safety & SOS</Text>
           <View style={{ width: 44 }} />
         </View>
@@ -86,23 +82,25 @@ export default function SOSScreen() {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 10, paddingBottom: 110 }}>
           {/* BIG SOS PANIC BUTTON */}
           <View style={{ alignItems: "center", marginVertical: 24 }}>
-            <TouchableOpacity
-              activeOpacity={0.8}
+            <LiquidGlassCard
+              variant="tinted"
+              tintColor={sosTriggered ? "rgba(220, 38, 38, 0.78)" : "rgba(239, 68, 68, 0.34)"}
+              dropletColor="#ef4444"
+              borderRadius={102}
               onPress={handleTriggerSOS}
               style={{
                 width: 204,
                 height: 204,
-                borderRadius: 102,
-                backgroundColor: sosTriggered ? "#dc2626" : "rgba(239, 68, 68, 0.22)",
-                borderWidth: 4,
-                borderColor: "#ef4444",
-                alignItems: "center",
-                justifyContent: "center",
                 shadowColor: "#ef4444",
                 shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 0.8,
+                shadowOpacity: 0.75,
                 shadowRadius: 30,
                 elevation: 15,
+              }}
+              contentStyle={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <AlertOctagon size={76} color="#ffffff" style={{ marginBottom: 8 }} />
@@ -112,14 +110,18 @@ export default function SOSScreen() {
               <Text style={{ color: "rgba(255,255,255,0.85)", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 4 }}>
                 Instant Dispatch
               </Text>
-            </TouchableOpacity>
+            </LiquidGlassCard>
 
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 22, backgroundColor: "rgba(255,255,255,0.08)", paddingHorizontal: 18, paddingVertical: 10, borderRadius: 999 }}>
-              <Radio size={16} color={sosTriggered ? "#ef4444" : "#10b981"} />
+            <LiquidGlassPill
+              variant="dark"
+              style={{ marginTop: 22 }}
+              contentStyle={{ paddingHorizontal: 18, paddingVertical: 10 }}
+            >
+              <Radio size={16} color={sosTriggered ? "#ef4444" : "#10b981"} style={{ marginRight: 8 }} />
               <Text style={{ color: "#e2e8f0", fontFamily: "Brandon-Bold", fontSize: 14 }}>
                 {sosTriggered ? "High-Priority GPS Streaming" : "GPS Satellite Lock • Ready"}
               </Text>
-            </View>
+            </LiquidGlassPill>
           </View>
 
           {/* QUICK INCIDENT REPORT */}
@@ -127,29 +129,47 @@ export default function SOSScreen() {
             HAZARD & INCIDENT TYPE
           </Text>
           <View style={{ flexDirection: "row", gap: 12, marginBottom: 26 }}>
-            <TouchableOpacity
+            <LiquidGlassCard
+              variant="dark"
+              borderRadius={20}
+              dropletColor="#38bdf8"
               onPress={() => Alert.alert("Medical Alert", "Connecting with nearest emergency paramedic...")}
-              style={{ flex: 1, backgroundColor: "rgba(30, 41, 59, 0.85)", padding: 16, borderRadius: 20, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", alignItems: "center", gap: 8 }}
+              style={{ flex: 1 }}
+              contentStyle={{ padding: 16, alignItems: "center", gap: 8 }}
             >
-              <Ambulance size={30} color="#38bdf8" />
+              <LiquidGlassIconBadge size={48} borderRadius={16} variant="dark" tintColor="#38bdf8">
+                <Ambulance size={26} color="#38bdf8" />
+              </LiquidGlassIconBadge>
               <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14, textAlign: "center" }}>Medical Injury</Text>
-            </TouchableOpacity>
+            </LiquidGlassCard>
 
-            <TouchableOpacity
+            <LiquidGlassCard
+              variant="dark"
+              borderRadius={20}
+              dropletColor="#f97316"
               onPress={() => Alert.alert("Field Hazard", "Hazard report flagged on route map.")}
-              style={{ flex: 1, backgroundColor: "rgba(30, 41, 59, 0.85)", padding: 16, borderRadius: 20, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", alignItems: "center", gap: 8 }}
+              style={{ flex: 1 }}
+              contentStyle={{ padding: 16, alignItems: "center", gap: 8 }}
             >
-              <Flame size={30} color="#f97316" />
+              <LiquidGlassIconBadge size={48} borderRadius={16} variant="dark" tintColor="#f97316">
+                <Flame size={26} color="#f97316" />
+              </LiquidGlassIconBadge>
               <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14, textAlign: "center" }}>Fire / Hazard</Text>
-            </TouchableOpacity>
+            </LiquidGlassCard>
 
-            <TouchableOpacity
+            <LiquidGlassCard
+              variant="dark"
+              borderRadius={20}
+              dropletColor="#a855f7"
               onPress={() => Alert.alert("Vehicle Breakdown", "Roadside assistance ticket raised.")}
-              style={{ flex: 1, backgroundColor: "rgba(30, 41, 59, 0.85)", padding: 16, borderRadius: 20, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", alignItems: "center", gap: 8 }}
+              style={{ flex: 1 }}
+              contentStyle={{ padding: 16, alignItems: "center", gap: 8 }}
             >
-              <ShieldAlert size={30} color="#a855f7" />
+              <LiquidGlassIconBadge size={48} borderRadius={16} variant="dark" tintColor="#a855f7">
+                <ShieldAlert size={26} color="#a855f7" />
+              </LiquidGlassIconBadge>
               <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14, textAlign: "center" }}>Breakdown</Text>
-            </TouchableOpacity>
+            </LiquidGlassCard>
           </View>
 
           {/* EMERGENCY CONTACTS LIST */}
@@ -158,25 +178,30 @@ export default function SOSScreen() {
           </Text>
           <View style={{ gap: 12 }}>
             {emergencyContacts.map((contact, idx) => (
-              <View
+              <LiquidGlassCard
                 key={idx}
-                style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "rgba(30, 41, 59, 0.78)", padding: 18, borderRadius: 22, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" }}
+                variant="dark"
+                borderRadius={22}
+                contentStyle={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 18 }}
               >
                 <View style={{ flex: 1, paddingRight: 10 }}>
                   <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>{contact.role}</Text>
                   <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 14, marginTop: 4 }}>{contact.available} • {contact.phone}</Text>
                 </View>
-                <TouchableOpacity
+                <LiquidGlassIconButton
                   onPress={() => handleCall(contact.phone)}
-                  style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: "#10b981", alignItems: "center", justifyContent: "center" }}
+                  variant="tinted"
+                  tintColor="rgba(16, 185, 129, 0.78)"
+                  dropletColor="#34d399"
+                  size={52}
                 >
                   <PhoneCall size={24} color="#ffffff" />
-                </TouchableOpacity>
-              </View>
+                </LiquidGlassIconButton>
+              </LiquidGlassCard>
             ))}
           </View>
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

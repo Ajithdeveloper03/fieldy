@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text } from 'react-native';
 import { MapPin, Calendar, Clock, ChevronRight } from 'lucide-react-native';
+import { LiquidGlassCard } from './LiquidGlass';
 
 interface VisitProps {
   id: string;
@@ -12,44 +13,70 @@ interface VisitProps {
   onPress: () => void;
 }
 
-export const VisitCard = ({ site_contactName, farmLocation, date, time, status, onPress }: VisitProps) => {
-  let statusColor = 'bg-yellow-100 text-yellow-800';
-  if (status === 'completed') statusColor = 'bg-green-100 text-green-800';
-  if (status === 'missed') statusColor = 'bg-red-100 text-red-800';
+export const VisitCard = ({
+  site_contactName,
+  farmLocation,
+  date,
+  time,
+  status,
+  onPress,
+}: VisitProps) => {
+  const statusStyles =
+    status === 'completed'
+      ? { bg: 'rgba(13, 148, 136, 0.14)', text: '#0F766E' }
+      : status === 'missed'
+      ? { bg: 'rgba(225, 29, 72, 0.14)', text: '#BE123C' }
+      : { bg: 'rgba(217, 119, 6, 0.14)', text: '#B45309' };
 
   return (
-    <TouchableOpacity 
+    <LiquidGlassCard
+      variant="light"
+      borderRadius={22}
       onPress={onPress}
-      className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-3"
+      style={{ marginBottom: 12 }}
+      contentStyle={{ padding: 16 }}
     >
       <View className="flex-row justify-between items-start mb-3">
-        <View>
+        <View style={{ flex: 1, paddingRight: 10 }}>
           <Text className="text-lg font-brandon-bold text-gray-900">{site_contactName}</Text>
           <View className="flex-row items-center mt-1">
-            <MapPin size={14} color="#6b7280" />
-            <Text className="text-sm text-gray-500 ml-1 font-brandon">{farmLocation}</Text>
+            <MapPin size={14} color="#64748B" />
+            <Text className="text-sm text-gray-600 ml-1 font-brandon">{farmLocation}</Text>
           </View>
         </View>
-        <View className={`px-2 py-1 rounded-md ${statusColor.split(' ')[0]}`}>
-          <Text className={`text-xs font-brandon-medium ${statusColor.split(' ')[1]}`}>
+        <View
+          style={{
+            paddingHorizontal: 10,
+            paddingVertical: 4,
+            borderRadius: 999,
+            backgroundColor: statusStyles.bg,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 11,
+              fontFamily: 'Brandon-Bold',
+              color: statusStyles.text,
+            }}
+          >
             {status.toUpperCase()}
           </Text>
         </View>
       </View>
 
-      <View className="flex-row items-center justify-between pt-3 border-t border-gray-100">
-        <View className="flex-row space-x-4">
+      <View className="flex-row items-center justify-between pt-3 border-t border-slate-200/70">
+        <View className="flex-row items-center">
           <View className="flex-row items-center">
-            <Calendar size={14} color="#6b7280" />
-            <Text className="text-sm text-gray-600 ml-1 font-brandon">{date}</Text>
+            <Calendar size={14} color="#64748B" />
+            <Text className="text-sm text-gray-700 ml-1.5 font-brandon">{date}</Text>
           </View>
           <View className="flex-row items-center ml-4">
-            <Clock size={14} color="#6b7280" />
-            <Text className="text-sm text-gray-600 ml-1 font-brandon">{time}</Text>
+            <Clock size={14} color="#64748B" />
+            <Text className="text-sm text-gray-700 ml-1.5 font-brandon">{time}</Text>
           </View>
         </View>
-        <ChevronRight size={20} color="#9ca3af" />
+        <ChevronRight size={20} color="#64748B" />
       </View>
-    </TouchableOpacity>
+    </LiquidGlassCard>
   );
 };

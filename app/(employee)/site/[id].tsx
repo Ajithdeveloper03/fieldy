@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,11 +9,30 @@ import {
   StatusBar,
   Linking,
   Alert,
+  Platform,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { useService, ServiceSelectorPill } from "../../../context/ServiceContext";
+import { showToast } from "../../../components/ui/ToastMessage";
+import {
+  ServerMediaFile,
+  downloadRemoteFile,
+  fetchMediaFiles,
+  pickImageAsset,
+  pickVideoAsset,
+  uploadMediaAsset,
+} from "../../../services/media";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+  LiquidGlassPill,
+} from "../../../components/LiquidGlass";
 import {
   ChevronLeft,
   MapPin,
@@ -26,6 +45,8 @@ import {
   ShieldCheck,
   Navigation,
   Camera,
+  Video,
+  Download,
 } from "lucide-react-native";
 
 export default function EmployeeSiteContactProfileScreen() {
@@ -34,13 +55,74 @@ export default function EmployeeSiteContactProfileScreen() {
   const [selectedService, setSelectedService] = useState<"audit" | "full">(
     "audit"
   );
+  const [siteMedia, setSiteMedia] = useState<ServerMediaFile[]>([]);
+  const [uploadingKind, setUploadingKind] = useState<"image" | "video" | null>(null);
+
+  const loadSiteMedia = useCallback(async () => {
+    if (!id || !/^\d+$/.test(String(id))) return;
+    const files = await fetchMediaFiles({ farmerId: String(id) }).catch(() => []);
+    setSiteMedia(files);
+  }, [id]);
+
+  useEffect(() => {
+    void loadSiteMedia();
+  }, [loadSiteMedia]);
+
+  const handleSiteUpload = (kind: "image" | "video") => {
+    const run = async (source: "camera" | "library") => {
+      setUploadingKind(kind);
+      try {
+        const asset = kind === "image" ? await pickImageAsset(source) : await pickVideoAsset(source);
+        if (!asset) return;
+        const uploaded = await uploadMediaAsset({
+          asset,
+          title: `${matchedEntity?.name || "Site"} - ${kind === "image" ? "Photo" : "Video"}`,
+          farmerId: id && /^\d+$/.test(String(id)) ? String(id) : null,
+        });
+        setSiteMedia((prev) => [uploaded, ...prev]);
+        showToast({
+          title: kind === "image" ? "Image Uploaded" : "Video Uploaded",
+          message: `${uploaded.original_name} synced to site files.`,
+          type: "success",
+        });
+      } catch (err: any) {
+        showToast({
+          title: "Upload Failed",
+          message: err?.message || "Could not upload media file.",
+          type: "error",
+        });
+      } finally {
+        setUploadingKind(null);
+      }
+    };
+
+    if (Platform.OS === "web") {
+      void run("library");
+      return;
+    }
+
+    Alert.alert(kind === "image" ? "Upload Site Photo" : "Upload Site Video", "Choose media source", [
+      { text: kind === "image" ? "Take Photo" : "Record Video", onPress: () => void run("camera") },
+      { text: "Choose from Gallery", onPress: () => void run("library") },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  };
+
+  const handleSiteDownload = async (file: ServerMediaFile) => {
+    const ok = await downloadRemoteFile(file.download_url, file.original_name);
+    showToast({
+      title: ok ? "Download Started" : "Download Notice",
+      message: ok ? `Downloading ${file.original_name}...` : "Could not open download link.",
+      type: ok ? "success" : "error",
+    });
+  };
 
   const matchedEntity =
     serviceConfig.sampleEntities.find((e) => e.id === String(id) || e.code === String(id)) ||
     serviceConfig.sampleEntities[0];
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#e2e8f0" }}>
+    <LiquidGlassBackdrop variant="light">
       <StatusBar barStyle="light-content" />
 
       <ScrollView
@@ -91,40 +173,24 @@ export default function EmployeeSiteContactProfileScreen() {
                   paddingTop: 10,
                 }}
               >
-                <TouchableOpacity
+                <LiquidGlassIconButton
+                  variant="dark"
+                  size={44}
                   onPress={() =>
                     router.canGoBack()
                       ? router.back()
                       : router.replace("/(employee)/my-sites")
                   }
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 22,
-                    backgroundColor: "rgba(0,0,0,0.45)",
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.25)",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
                 >
                   <ChevronLeft size={22} color="#ffffff" />
-                </TouchableOpacity>
-                <TouchableOpacity
+                </LiquidGlassIconButton>
+                <LiquidGlassIconButton
+                  variant="dark"
+                  size={44}
                   onPress={() => router.push("/(employee)/reports")}
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 22,
-                    backgroundColor: "rgba(0,0,0,0.45)",
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.25)",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
                 >
                   <MoreVertical size={20} color="#ffffff" />
-                </TouchableOpacity>
+                </LiquidGlassIconButton>
               </View>
             </SafeAreaView>
 
@@ -137,17 +203,11 @@ export default function EmployeeSiteContactProfileScreen() {
                 right: 22,
               }}
             >
-              <View
-                style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.22)",
-                  borderWidth: 1,
-                  borderColor: "rgba(255, 255, 255, 0.4)",
-                  paddingHorizontal: 14,
-                  paddingVertical: 6,
-                  borderRadius: 999,
-                  alignSelf: "flex-start",
-                  marginBottom: 10,
-                }}
+              <LiquidGlassCard
+                variant="dark"
+                borderRadius={999}
+                style={{ alignSelf: "flex-start", marginBottom: 10 }}
+                contentStyle={{ paddingHorizontal: 14, paddingVertical: 6 }}
               >
                 <Text
                   style={{
@@ -158,7 +218,7 @@ export default function EmployeeSiteContactProfileScreen() {
                 >
                   {matchedEntity.type} • {serviceConfig.badge}
                 </Text>
-              </View>
+              </LiquidGlassCard>
 
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Text
@@ -170,16 +230,15 @@ export default function EmployeeSiteContactProfileScreen() {
                 >
                   {matchedEntity.name}
                 </Text>
-                <View
-                  style={{
-                    backgroundColor: serviceConfig.themeColor,
-                    borderRadius: 12,
-                    padding: 4,
-                    marginLeft: 10,
-                  }}
+                <LiquidGlassIconBadge
+                  size={26}
+                  borderRadius={13}
+                  variant="dark"
+                  tintColor={serviceConfig.themeColor}
+                  style={{ marginLeft: 10 }}
                 >
                   <ShieldCheck size={15} color="#ffffff" />
-                </View>
+                </LiquidGlassIconBadge>
               </View>
 
               <View
@@ -220,33 +279,110 @@ export default function EmployeeSiteContactProfileScreen() {
           </Text>
 
           {/* Option 1 with Floating Top-Left Badge */}
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={() => setSelectedService("audit")}
-            style={{
-              backgroundColor:
-                selectedService === "audit" ? "#ffffff" : "#f1f5f9",
-              borderRadius: 22,
-              paddingHorizontal: 18,
-              paddingVertical: 18,
-              borderWidth: selectedService === "audit" ? 1.8 : 1,
-              borderColor: selectedService === "audit" ? serviceConfig.themeColor : "#cbd5e1",
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 12,
-            }}
-          >
+          <View style={{ position: "relative", marginBottom: 12 }}>
+            <LiquidGlassCard
+              variant="light"
+              borderRadius={22}
+              onPress={() => setSelectedService("audit")}
+              style={{
+                borderWidth: 1.5,
+                borderColor:
+                  selectedService === "audit"
+                    ? serviceConfig.themeColor
+                    : "transparent",
+              }}
+              contentStyle={{
+                paddingHorizontal: 18,
+                paddingVertical: 18,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 11,
+                    borderWidth: 2,
+                    borderColor:
+                      selectedService === "audit" ? serviceConfig.themeColor : "#94a3b8",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginRight: 12,
+                  }}
+                >
+                  {selectedService === "audit" && (
+                    <View
+                      style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 5,
+                        backgroundColor: serviceConfig.themeColor,
+                      }}
+                    />
+                  )}
+                </View>
+                <View>
+                  <Text
+                    style={{
+                      color: "#0f172a",
+                      fontFamily: "Brandon-Bold",
+                      fontSize: 16,
+                    }}
+                  >
+                    Routine {serviceConfig.vocab.visit}
+                  </Text>
+                  <Text
+                    style={{
+                      color: "#64748b",
+                      fontFamily: "Brandon-Medium",
+                      fontSize: 12,
+                    }}
+                  >
+                    Geofence Check-In & OTP Sign-off
+                  </Text>
+                </View>
+              </View>
+
+              <View style={{ alignItems: "flex-end" }}>
+                <Text
+                  style={{
+                    color: "#0f172a",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 16,
+                  }}
+                >
+                  45 mins
+                </Text>
+                <Text
+                  style={{
+                    color: "#94a3b8",
+                    fontFamily: "Brandon-Medium",
+                    fontSize: 12,
+                    textDecorationLine: "line-through",
+                  }}
+                >
+                  90 mins
+                </Text>
+              </View>
+            </LiquidGlassCard>
+
             {/* Floating Top-Left Pill Badge */}
             <View
+              pointerEvents="none"
               style={{
                 position: "absolute",
                 top: -10,
                 left: 18,
+                zIndex: 10,
                 backgroundColor: "#0f172a",
                 paddingHorizontal: 10,
                 paddingVertical: 3,
                 borderRadius: 999,
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.35)",
               }}
             >
               <Text
@@ -259,93 +395,27 @@ export default function EmployeeSiteContactProfileScreen() {
                 +40 PTS
               </Text>
             </View>
-
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <View
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 11,
-                  borderWidth: 2,
-                  borderColor:
-                    selectedService === "audit" ? serviceConfig.themeColor : "#94a3b8",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginRight: 12,
-                }}
-              >
-                {selectedService === "audit" && (
-                  <View
-                    style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: 5,
-                      backgroundColor: serviceConfig.themeColor,
-                    }}
-                  />
-                )}
-              </View>
-              <View>
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 16,
-                  }}
-                >
-                  Routine {serviceConfig.vocab.visit}
-                </Text>
-                <Text
-                  style={{
-                    color: "#64748b",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 12,
-                  }}
-                >
-                  Geofence Check-In & OTP Sign-off
-                </Text>
-              </View>
-            </View>
-
-            <View style={{ alignItems: "flex-end" }}>
-              <Text
-                style={{
-                  color: "#0f172a",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 16,
-                }}
-              >
-                45 mins
-              </Text>
-              <Text
-                style={{
-                  color: "#94a3b8",
-                  fontFamily: "Brandon-Medium",
-                  fontSize: 12,
-                  textDecorationLine: "line-through",
-                }}
-              >
-                90 mins
-              </Text>
-            </View>
-          </TouchableOpacity>
+          </View>
 
           {/* Option 2 */}
-          <TouchableOpacity
-            activeOpacity={0.9}
+          <LiquidGlassCard
+            variant="light"
+            borderRadius={22}
             onPress={() => setSelectedService("full")}
             style={{
-              backgroundColor:
-                selectedService === "full" ? "#ffffff" : "#f1f5f9",
-              borderRadius: 22,
+              marginBottom: 20,
+              borderWidth: 1.5,
+              borderColor:
+                selectedService === "full"
+                  ? serviceConfig.themeColor
+                  : "transparent",
+            }}
+            contentStyle={{
               paddingHorizontal: 18,
               paddingVertical: 18,
-              borderWidth: selectedService === "full" ? 1.8 : 1,
-              borderColor: selectedService === "full" ? serviceConfig.themeColor : "#cbd5e1",
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",
-              marginBottom: 20,
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -404,26 +474,16 @@ export default function EmployeeSiteContactProfileScreen() {
             >
               2.5 hrs
             </Text>
-          </TouchableOpacity>
+          </LiquidGlassCard>
 
           {/* Primary CTA Button */}
-          <TouchableOpacity
-            activeOpacity={0.9}
+          <LiquidGlassButton
+            variant="tinted"
+            tintColor="rgba(15, 23, 42, 0.86)"
+            dropletColor="#4ade80"
             onPress={() => router.push(`/(employee)/visit/${id || "1"}` as any)}
-            style={{
-              backgroundColor: "#0f172a",
-              borderRadius: 999,
-              paddingVertical: 18,
-              alignItems: "center",
-              justifyContent: "center",
-              flexDirection: "row",
-              shadowColor: "#0f172a",
-              shadowOffset: { width: 0, height: 10 },
-              shadowOpacity: 0.25,
-              shadowRadius: 20,
-              elevation: 8,
-              marginBottom: 14,
-            }}
+            style={{ marginBottom: 14 }}
+            contentStyle={{ paddingVertical: 18 }}
           >
             <Calendar size={18} color="#4ade80" style={{ marginRight: 10 }} />
             <Text
@@ -437,23 +497,15 @@ export default function EmployeeSiteContactProfileScreen() {
                 ? `Start Routine ${serviceConfig.vocab.visit} • Check-In`
                 : `Start Full ${serviceConfig.vocab.entitySingular} Overhaul`}
             </Text>
-          </TouchableOpacity>
+          </LiquidGlassButton>
 
           {/* Quick Contact Row */}
           <View style={{ flexDirection: "row", gap: 12, marginBottom: 28 }}>
-            <TouchableOpacity
+            <LiquidGlassButton
+              variant="light"
               onPress={() => Linking.openURL(`tel:${matchedEntity.contactPhone || '+919876543210'}`)}
-              style={{
-                flex: 1,
-                backgroundColor: "#ffffff",
-                borderRadius: 999,
-                paddingVertical: 13,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                borderWidth: 1,
-                borderColor: "#cbd5e1",
-              }}
+              style={{ flex: 1 }}
+              contentStyle={{ paddingVertical: 13, paddingHorizontal: 12 }}
             >
               <Phone size={16} color="#0f172a" style={{ marginRight: 8 }} />
               <Text
@@ -465,25 +517,17 @@ export default function EmployeeSiteContactProfileScreen() {
               >
                 Call {serviceConfig.vocab.customerRole}
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </LiquidGlassButton>
+            <LiquidGlassButton
+              variant="light"
               onPress={() =>
                 Alert.alert(
                   `${serviceConfig.vocab.entitySingular} Chat`,
                   `Connecting to ${matchedEntity.contactName} (${serviceConfig.vocab.customerRole})...`
                 )
               }
-              style={{
-                flex: 1,
-                backgroundColor: "#ffffff",
-                borderRadius: 999,
-                paddingVertical: 13,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                borderWidth: 1,
-                borderColor: "#cbd5e1",
-              }}
+              style={{ flex: 1 }}
+              contentStyle={{ paddingVertical: 13, paddingHorizontal: 12 }}
             >
               <MessageSquare
                 size={16}
@@ -499,7 +543,7 @@ export default function EmployeeSiteContactProfileScreen() {
               >
                 Direct Chat
               </Text>
-            </TouchableOpacity>
+            </LiquidGlassButton>
           </View>
 
           {/* RECENT VISIT REPORTS TIMELINE */}
@@ -533,17 +577,10 @@ export default function EmployeeSiteContactProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          <View
-            style={{
-              backgroundColor: "#ffffff",
-              borderRadius: 28,
-              padding: 20,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.04,
-              shadowRadius: 12,
-              elevation: 3,
-            }}
+          <LiquidGlassCard
+            variant="light"
+            borderRadius={28}
+            contentStyle={{ padding: 20 }}
           >
             <View style={{ flexDirection: "row", marginBottom: 20 }}>
               <View style={{ alignItems: "center", marginRight: 16 }}>
@@ -557,7 +594,7 @@ export default function EmployeeSiteContactProfileScreen() {
                   }}
                 />
                 <View
-                  style={{ width: 2, flex: 1, backgroundColor: "#e2e8f0" }}
+                  style={{ width: 2, flex: 1, backgroundColor: "rgba(15, 23, 42, 0.12)" }}
                 />
               </View>
               <View style={{ flex: 1, paddingBottom: 16 }}>
@@ -598,18 +635,11 @@ export default function EmployeeSiteContactProfileScreen() {
                   Structural inspection is clear. Maintain the approved safety controls
                   top-dressing.
                 </Text>
-                <TouchableOpacity
+                <LiquidGlassPill
+                  variant="light"
                   onPress={() => router.push("/(employee)/report/1")}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginTop: 12,
-                    alignSelf: "flex-start",
-                    backgroundColor: "#f0fdf4",
-                    paddingHorizontal: 14,
-                    paddingVertical: 7,
-                    borderRadius: 999,
-                  }}
+                  style={{ marginTop: 12, alignSelf: "flex-start" }}
+                  contentStyle={{ paddingHorizontal: 14, paddingVertical: 7 }}
                 >
                   <FileText size={14} color="#15803d" />
                   <Text
@@ -622,7 +652,7 @@ export default function EmployeeSiteContactProfileScreen() {
                   >
                     Open Report
                   </Text>
-                </TouchableOpacity>
+                </LiquidGlassPill>
               </View>
             </View>
 
@@ -676,9 +706,104 @@ export default function EmployeeSiteContactProfileScreen() {
                 </Text>
               </View>
             </View>
-          </View>
+          </LiquidGlassCard>
+
+          {/* SITE MEDIA & DOCUMENTS: UPLOAD PHOTOS / VIDEOS & DOWNLOAD FILES */}
+          <Text
+            style={{
+              color: "#0f172a",
+              fontFamily: "Brandon-Bold",
+              fontSize: 20,
+              marginTop: 26,
+              marginBottom: 12,
+            }}
+          >
+            Site Photos, Videos & Files ({siteMedia.length})
+          </Text>
+          <LiquidGlassCard variant="light" borderRadius={24} contentStyle={{ padding: 18 }}>
+            <View style={{ flexDirection: "row", gap: 10, marginBottom: siteMedia.length > 0 ? 14 : 0 }}>
+              <LiquidGlassButton
+                onPress={() => handleSiteUpload("image")}
+                disabled={uploadingKind !== null}
+                variant="tinted"
+                tintColor="rgba(16, 185, 129, 0.85)"
+                style={{ flex: 1 }}
+                contentStyle={{ paddingVertical: 11 }}
+              >
+                {uploadingKind === "image" ? <ActivityIndicator size="small" color="#ffffff" /> : <Camera size={15} color="#ffffff" />}
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12, marginLeft: 6 }}>Upload Image</Text>
+              </LiquidGlassButton>
+              <LiquidGlassButton
+                onPress={() => handleSiteUpload("video")}
+                disabled={uploadingKind !== null}
+                variant="tinted"
+                tintColor="rgba(2, 132, 199, 0.85)"
+                style={{ flex: 1 }}
+                contentStyle={{ paddingVertical: 11 }}
+              >
+                {uploadingKind === "video" ? <ActivityIndicator size="small" color="#ffffff" /> : <Video size={15} color="#ffffff" />}
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12, marginLeft: 6 }}>Upload Video</Text>
+              </LiquidGlassButton>
+            </View>
+
+            {siteMedia.length > 0 && (
+              <View style={{ gap: 10 }}>
+                {siteMedia.map((item) => (
+                  <View
+                    key={item.id}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: "rgba(255,255,255,0.72)",
+                      borderRadius: 14,
+                      padding: 10,
+                      borderWidth: 1,
+                      borderColor: "rgba(15, 23, 42, 0.08)",
+                    }}
+                  >
+                    {item.category === "image" ? (
+                      <Image source={{ uri: item.preview_url }} style={{ width: 42, height: 42, borderRadius: 10, marginRight: 10, backgroundColor: "#e2e8f0" }} />
+                    ) : (
+                      <LiquidGlassIconBadge
+                        size={42}
+                        borderRadius={10}
+                        variant="light"
+                        tintColor={item.category === "video" ? "#0284c7" : "#0f766e"}
+                        style={{ marginRight: 10 }}
+                      >
+                        {item.category === "video" ? <Video size={18} color="#0284c7" /> : <FileText size={18} color="#0f766e" />}
+                      </LiquidGlassIconBadge>
+                    )}
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 13 }} numberOfLines={1}>
+                        {item.title}
+                      </Text>
+                      <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 11 }}>
+                        {item.category.toUpperCase()} • {item.size_human}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => void handleSiteDownload(item)}
+                      style={{
+                        backgroundColor: "#0f766e",
+                        paddingHorizontal: 10,
+                        paddingVertical: 7,
+                        borderRadius: 9,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      <Download size={13} color="#ffffff" />
+                      <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 11 }}>Download</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+          </LiquidGlassCard>
         </View>
       </ScrollView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

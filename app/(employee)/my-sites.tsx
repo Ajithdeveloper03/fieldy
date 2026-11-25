@@ -15,6 +15,13 @@ import { router } from "expo-router";
 import { apiClient } from "../../api/client";
 import { useService, ServiceSelectorPill } from "../../context/ServiceContext";
 import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+} from "../../components/LiquidGlass";
+import {
   ChevronLeft,
   Search,
   MapPin,
@@ -77,16 +84,20 @@ export default function EmployeeMySiteContactsScreen() {
   });
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+    <LiquidGlassBackdrop variant="light">
       <StatusBar barStyle="dark-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
         
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 18, paddingTop: 14, paddingBottom: 18 }}>
-          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 10, backgroundColor: "#ffffff", borderRadius: 999, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 }}>
+          <LiquidGlassIconButton
+            variant="light"
+            size={44}
+            onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")}
+          >
             <ChevronLeft size={26} color="#0f172a" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
           <View style={{ alignItems: "center" }}>
             <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 24 }}>My {serviceConfig.vocab.entities}</Text>
             <Text style={{ color: serviceConfig.themeColor, fontFamily: "Brandon-Bold", fontSize: 12, letterSpacing: 0.8 }}>{serviceConfig.badge}</Text>
@@ -96,10 +107,14 @@ export default function EmployeeMySiteContactsScreen() {
 
         {/* SEARCH BAR */}
         <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#ffffff", borderRadius: 18, paddingHorizontal: 18, paddingVertical: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4 }}>
+          <LiquidGlassCard
+            variant="light"
+            borderRadius={18}
+            contentStyle={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18, paddingVertical: 16 }}
+          >
             <Search size={22} color="#94a3b8" />
             <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 16, marginLeft: 12, flex: 1 }}>Search {serviceConfig.vocab.entities.toLowerCase()} or locations...</Text>
-          </View>
+          </LiquidGlassCard>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 10, paddingBottom: 120, gap: 22 }}>
@@ -112,29 +127,41 @@ export default function EmployeeMySiteContactsScreen() {
             const siteImage = site.image || SITE_FALLBACK_IMAGES[idx % SITE_FALLBACK_IMAGES.length];
 
             return (
-              <TouchableOpacity 
+              <LiquidGlassCard
                 key={`${site.id}-${idx}`}
-                activeOpacity={0.9}
+                variant="light"
+                borderRadius={30}
                 onPress={() => router.push(`/(employee)/site/${siteId}` as any)}
-                style={{ backgroundColor: "#ffffff", borderRadius: 30, overflow: "hidden", shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 6 }}
               >
                 {/* Top Banner Image */}
                 <View style={{ height: 196 }}>
                   <Image source={typeof siteImage === "number" ? siteImage : { uri: siteImage }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
-                  <View style={{ position: "absolute", top: 14, right: 14, backgroundColor: "rgba(0,0,0,0.5)", borderRadius: 999, padding: 8 }}>
+                  <LiquidGlassIconBadge
+                    size={36}
+                    borderRadius={18}
+                    variant="dark"
+                    tintColor="#0f172a"
+                    style={{ position: "absolute", top: 14, right: 14 }}
+                  >
                     <MoreVertical size={20} color="#ffffff" />
-                  </View>
+                  </LiquidGlassIconBadge>
                   
                   {/* Status Badge Over Image */}
-                  <View style={{ position: "absolute", bottom: 14, right: 14, backgroundColor: serviceConfig.themeColor, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999, flexDirection: "row", alignItems: "center" }}>
+                  <LiquidGlassCard
+                    variant="tinted"
+                    tintColor={`${serviceConfig.themeColor}CC`}
+                    borderRadius={999}
+                    style={{ position: "absolute", bottom: 14, right: 14 }}
+                    contentStyle={{ paddingHorizontal: 14, paddingVertical: 7, flexDirection: "row", alignItems: "center" }}
+                  >
                     <Activity size={16} color="#ffffff" style={{ marginRight: 6 }} />
                     <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13 }}>{site.type || site.permit_status || "Active SLA"}</Text>
-                  </View>
+                  </LiquidGlassCard>
                 </View>
 
                 <View style={{ padding: 22 }}>
                   {/* Profile Floating Rounded Avatar */}
-                  <View style={{ marginTop: -56, marginBottom: 14, width: 88, height: 88, borderRadius: 30, borderWidth: 3.5, borderColor: "#ffffff", overflow: "hidden", backgroundColor: "#e2e8f0" }}>
+                  <View style={{ marginTop: -56, marginBottom: 14, width: 88, height: 88, borderRadius: 30, borderWidth: 3.5, borderColor: "rgba(255, 255, 255, 0.94)", overflow: "hidden", backgroundColor: "#e2e8f0" }}>
                     <Image source={typeof siteImage === "number" ? siteImage : { uri: siteImage }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
                   </View>
 
@@ -148,41 +175,50 @@ export default function EmployeeMySiteContactsScreen() {
                     </Text>
                   </View>
 
-                  <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: serviceConfig.lightBg, paddingHorizontal: 14, paddingVertical: 9, borderRadius: 14, alignSelf: "flex-start", marginBottom: 20 }}>
+                  <LiquidGlassCard
+                    variant="light"
+                    borderRadius={14}
+                    style={{ alignSelf: "flex-start", marginBottom: 20 }}
+                    contentStyle={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 14, paddingVertical: 9 }}
+                  >
                     <Text style={{ color: serviceConfig.themeColor, fontFamily: "Brandon-Bold", fontSize: 15 }}>{siteAreaText}</Text>
-                  </View>
+                  </LiquidGlassCard>
 
                   {/* Bottom Action Icons */}
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 1, borderTopColor: "#f1f5f9", paddingTop: 18 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 1, borderTopColor: "rgba(15, 23, 42, 0.08)", paddingTop: 18 }}>
                     <View style={{ flexDirection: "row", gap: 12 }}>
-                      <TouchableOpacity
+                      <LiquidGlassIconButton
+                        variant="light"
+                        size={48}
                         onPress={() => site.contactPhone || site.phone ? Linking.openURL(`tel:${site.contactPhone || site.phone}`) : Alert.alert("Contact unavailable", "No phone number is available.")}
-                        style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#f1f5f9", alignItems: "center", justifyContent: "center" }}
                       >
                         <Phone size={20} color="#0f172a" />
-                      </TouchableOpacity>
-                      <TouchableOpacity
+                      </LiquidGlassIconButton>
+                      <LiquidGlassIconButton
+                        variant="light"
+                        size={48}
                         onPress={() => site.contactPhone || site.phone ? Linking.openURL(`tel:${site.contactPhone || site.phone}`) : Alert.alert("Contact unavailable", "No phone number is available.")}
-                        style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#f1f5f9", alignItems: "center", justifyContent: "center" }}
                       >
                         <MessageSquare size={20} color="#0f172a" />
-                      </TouchableOpacity>
+                      </LiquidGlassIconButton>
                     </View>
-                    <TouchableOpacity
+                    <LiquidGlassButton
+                      variant="tinted"
+                      tintColor="rgba(15, 23, 42, 0.86)"
                       onPress={() => router.push(`/(employee)/site/${siteId}` as any)}
-                      style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18, paddingVertical: 12, backgroundColor: "#0f172a", borderRadius: 14 }}
+                      contentStyle={{ paddingHorizontal: 18, paddingVertical: 12 }}
                     >
                       <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 15, marginRight: 8 }}>View {serviceConfig.vocab.entitySingular}</Text>
                       <ArrowRight size={18} color="#ffffff" />
-                    </TouchableOpacity>
+                    </LiquidGlassButton>
                   </View>
                 </View>
-              </TouchableOpacity>
+              </LiquidGlassCard>
             );
           })}
 
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

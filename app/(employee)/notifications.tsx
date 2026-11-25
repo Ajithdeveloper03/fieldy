@@ -17,6 +17,13 @@ import {
   CheckCircle2,
   CalendarDays
 } from "lucide-react-native";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+  LiquidGlassPill,
+} from "../../components/LiquidGlass";
 
 export default function EmployeeNotificationsScreen() {
   const notifications = [
@@ -28,7 +35,7 @@ export default function EmployeeNotificationsScreen() {
       message: "Sensor data indicates critically low moisture in South Block of Farm A.",
       time: "10m",
       action: "Review",
-      icon: <AlertTriangle size={18} color="#ffffff" />,
+      icon: <AlertTriangle size={20} color="#ef4444" />,
       bgColor: "#ef4444",
       isUnread: true,
     },
@@ -60,7 +67,7 @@ export default function EmployeeNotificationsScreen() {
       message: "Upcoming visit with Muthuvel at 4:00 PM.",
       time: "5h",
       action: "Route",
-      icon: <CalendarDays size={18} color="#ffffff" />,
+      icon: <CalendarDays size={20} color="#10b981" />,
       bgColor: "#10b981",
       isUnread: false,
     },
@@ -77,18 +84,22 @@ export default function EmployeeNotificationsScreen() {
   ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
+    <LiquidGlassBackdrop variant="light">
       <StatusBar barStyle="dark-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
         
         {/* HEADER - Instagram Style Top Bar */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 18, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#e5e5e5" }}>
-          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 6 }}>
-            <ChevronLeft size={30} color="#000000" />
-          </TouchableOpacity>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 18, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(255, 255, 255, 0.72)", backgroundColor: "rgba(255, 255, 255, 0.34)" }}>
+          <LiquidGlassIconButton
+            variant="light"
+            size={42}
+            onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")}
+          >
+            <ChevronLeft size={24} color="#000000" />
+          </LiquidGlassIconButton>
           <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 24, letterSpacing: 0.4 }}>Notifications</Text>
-          <View style={{ width: 38 }} />
+          <View style={{ width: 42 }} />
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
@@ -112,30 +123,44 @@ export default function EmployeeNotificationsScreen() {
 
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 
   function renderNotificationItem(notif: any) {
     return (
-      <TouchableOpacity 
-        key={notif.id} 
-        activeOpacity={0.9} 
-        style={{ 
-          flexDirection: "row", 
-          alignItems: "center", 
-          paddingVertical: 16, 
-          paddingHorizontal: 18,
-          backgroundColor: notif.isUnread ? "#f0f9ff" : "#ffffff",
+      <LiquidGlassCard
+        key={notif.id}
+        variant="light"
+        borderRadius={22}
+        dropletColor={notif.isUnread ? "#0ea5e9" : undefined}
+        onPress={() => {}}
+        style={{
+          marginHorizontal: 16,
+          marginBottom: 10,
+        }}
+        contentStyle={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingVertical: 16,
+          paddingHorizontal: 16,
         }}
       >
         {/* Avatar / Icon */}
-        <View style={{ width: 58, height: 58, borderRadius: 29, marginRight: 14, overflow: "hidden", backgroundColor: notif.bgColor || "#e2e8f0", alignItems: "center", justifyContent: "center" }}>
-          {notif.avatar ? (
+        {notif.avatar ? (
+          <View style={{ width: 58, height: 58, borderRadius: 29, marginRight: 14, overflow: "hidden", backgroundColor: "#e2e8f0", borderWidth: 1.5, borderColor: "rgba(255, 255, 255, 0.94)", alignItems: "center", justifyContent: "center" }}>
             <Image source={{ uri: notif.avatar }} style={{ width: "100%", height: "100%" }} />
-          ) : (
-            notif.icon
-          )}
-        </View>
+          </View>
+        ) : (
+          <LiquidGlassIconBadge
+            size={58}
+            borderRadius={29}
+            variant="light"
+            tintColor={notif.bgColor || "#0ea5e9"}
+            style={{ marginRight: 14 }}
+          >
+            {notif.icon}
+          </LiquidGlassIconBadge>
+        )}
 
         {/* Text Content */}
         <View style={{ flex: 1, paddingRight: 12 }}>
@@ -148,11 +173,16 @@ export default function EmployeeNotificationsScreen() {
 
         {/* Action Button */}
         {notif.action && (
-          <TouchableOpacity style={{ backgroundColor: notif.action === "Review" ? "#ef4444" : "#0ea5e9", paddingHorizontal: 18, paddingVertical: 9, borderRadius: 12 }}>
+          <LiquidGlassPill
+            active
+            variant="light"
+            tintColor={notif.action === "Review" ? "rgba(239, 68, 68, 0.86)" : "rgba(14, 165, 233, 0.86)"}
+            contentStyle={{ paddingHorizontal: 18, paddingVertical: 9 }}
+          >
             <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 15 }}>{notif.action}</Text>
-          </TouchableOpacity>
+          </LiquidGlassPill>
         )}
-      </TouchableOpacity>
+      </LiquidGlassCard>
     );
   }
 }

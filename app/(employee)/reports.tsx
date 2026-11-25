@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   StyleSheet,
   StatusBar,
   Alert,
+  Platform,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -20,44 +22,137 @@ import {
   MoreHorizontal,
   Plus,
   Filter,
+  Camera,
+  Video,
+  Image as ImageIcon,
 } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useService } from "../../context/ServiceContext";
 import { apiClient } from "../../api/client";
+import { showToast } from "../../components/ui/ToastMessage";
+import {
+  ServerMediaFile,
+  downloadRemoteFile,
+  fetchMediaFiles,
+  pickImageAsset,
+  pickVideoAsset,
+  uploadMediaAsset,
+} from "../../services/media";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+  LiquidGlassPill,
+} from "../../components/LiquidGlass";
 
 export default function EmployeeReportsScreen() {
   const { serviceConfig } = useService();
   const [selectedYear, setSelectedYear] = useState("2026");
   const [submittedReports, setSubmittedReports] = useState<any[]>([]);
+  const [mediaFiles, setMediaFiles] = useState<ServerMediaFile[]>([]);
+  const [uploadingKind, setUploadingKind] = useState<"image" | "video" | null>(null);
+
+  const loadData = useCallback(async () => {
+    try {
+      const stored = await AsyncStorage.getItem("@fieldy_reports");
+      const localReports = stored ? JSON.parse(stored) : [];
+      const [visitsRes, serverMedia] = await Promise.all([
+        apiClient.get("/employee/visits").catch(() => null),
+        fetchMediaFiles().catch(() => [] as ServerMediaFile[]),
+      ]);
+      setMediaFiles(serverMedia);
+
+      const serverReports = (visitsRes?.visits || []).map((v: any) => ({
+        id: String(v.id),
+        title: `${v.farmerName || serviceConfig.vocab.entitySingular} • ${serviceConfig.shortName} Report`,
+        date: v.date || "Today",
+        size: v.media_count ? `${v.media_count} file(s)` : "Synced",
+        type: "REPORT",
+        status: v.status === "completed" ? "Approved" : "Pending",
+        downloadUrl: v.dossier_url || null,
+        filename: `fieldy-visit-report-${v.id}.html`,
+      }));
+      const formattedLocal = localReports.map((r: any) => ({
+        id: r.serverVisitId || r.id,
+        title: `${r.siteName || r.service || serviceConfig.shortName} • ${r.notes?.slice(0, 28) || "Field Report"}`,
+        date: new Date(r.createdAt || Date.now()).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }),
+        size: r.uploadedMedia?.length ? `${r.uploadedMedia.length} file(s)` : r.beforePhoto || r.afterPhoto ? "Photo Log" : "Text Log",
+        type: "FIELD",
+        status: "Approved",
+        downloadUrl: r.dossierUrl || r.uploadedMedia?.[0]?.download_url || null,
+        filename: `fieldy-report-${r.id}.html`,
+      }));
+      setSubmittedReports([...formattedLocal, ...serverReports]);
+    } catch {
+      // Fallback smoothly
+    }
+  }, [serviceConfig.shortName, serviceConfig.vocab.entitySingular]);
 
   useEffect(() => {
-    (async () => {
+    void loadData();
+  }, [loadData, serviceConfig.key]);
+
+  const handleQuickUpload = (kind: "image" | "video") => {
+    const runUpload = async (source: "camera" | "library") => {
+      setUploadingKind(kind);
       try {
-        const stored = await AsyncStorage.getItem("@fieldy_reports");
-        const localReports = stored ? JSON.parse(stored) : [];
-        const res = await apiClient.get("/employee/visits").catch(() => null);
-        const serverReports = (res?.visits || []).map((v: any) => ({
-          id: String(v.id),
-          title: `${v.farmerName || serviceConfig.vocab.entitySingular} • ${serviceConfig.shortName} Report`,
-          date: v.date || "Today",
-          size: "Synced",
-          type: "REPORT",
-          status: v.status === "completed" ? "Approved" : "Pending",
-        }));
-        const formattedLocal = localReports.map((r: any) => ({
-          id: r.id,
-          title: `${r.siteName || r.service || serviceConfig.shortName} • ${r.notes?.slice(0, 28) || "Field Report"}`,
-          date: new Date(r.createdAt || Date.now()).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }),
-          size: r.beforePhoto || r.afterPhoto ? "Photo Log" : "Text Log",
-          type: "FIELD",
-          status: "Approved",
-        }));
-        setSubmittedReports([...formattedLocal, ...serverReports]);
-      } catch {
-        // Fallback smoothly
+        const asset = kind === "image" ? await pickImageAsset(source) : await pickVideoAsset(source);
+        if (!asset) return;
+        const uploaded = await uploadMediaAsset({
+          asset,
+          title: `${serviceConfig.shortName} ${kind === "image" ? "Site Photo" : "Site Video"}`,
+        });
+        setMediaFiles((prev) => [uploaded, ...prev]);
+        showToast({
+          title: kind === "image" ? "Image Uploaded" : "Video Uploaded",
+          message: `${uploaded.original_name} (${uploaded.size_human}) synced to portal.`,
+          type: "success",
+        });
+      } catch (err: any) {
+        showToast({
+          title: "Upload Failed",
+          message: err?.message || "Could not upload file. Check connection & permissions.",
+          type: "error",
+        });
+      } finally {
+        setUploadingKind(null);
       }
-    })();
-  }, [serviceConfig.key, serviceConfig.shortName, serviceConfig.vocab.entitySingular]);
+    };
+
+    if (Platform.OS === "web") {
+      void runUpload("library");
+      return;
+    }
+
+    Alert.alert(
+      kind === "image" ? "Upload Image" : "Upload Video",
+      kind === "image" ? "Capture a site photo or pick from gallery" : "Record a video or choose from gallery",
+      [
+        { text: kind === "image" ? "Take Photo" : "Record Video", onPress: () => void runUpload("camera") },
+        { text: "Choose from Gallery", onPress: () => void runUpload("library") },
+        { text: "Cancel", style: "cancel" },
+      ]
+    );
+  };
+
+  const handleDownload = async (url?: string | null, title?: string, filename?: string) => {
+    if (!url) {
+      showToast({
+        title: "No Downloadable File",
+        message: "Submit or upload a synced file first to download it.",
+        type: "info",
+      });
+      return;
+    }
+    const ok = await downloadRemoteFile(url, filename);
+    showToast({
+      title: ok ? "Download Started" : "Download Notice",
+      message: ok ? `Downloading ${title || filename || "file"}...` : "Could not open download link.",
+      type: ok ? "success" : "error",
+    });
+  };
 
   const monthlyArchives = [
     {
@@ -87,41 +182,27 @@ export default function EmployeeReportsScreen() {
     submittedReports.length > 0
       ? submittedReports
       : [
-          {
-            id: "1",
-            title: `${serviceConfig.sampleEntities[0]?.name || serviceConfig.vocab.entitySingular} Inspection`,
-            date: "Today",
-            size: "1.8 MB",
-            type: "PDF",
-            status: "Approved",
-          },
-          {
-            id: "2",
-            title: `${serviceConfig.shortName} Compliance Summary`,
-            date: "Yesterday",
-            size: "1.1 MB",
-            type: "PDF",
-            status: "Pending",
-          },
-        ];
+        {
+          id: "1",
+          title: `${serviceConfig.sampleEntities[0]?.name || serviceConfig.vocab.entitySingular} Inspection`,
+          date: "Today",
+          size: "1.8 MB",
+          type: "PDF",
+          status: "Approved",
+        },
+        {
+          id: "2",
+          title: `${serviceConfig.shortName} Compliance Summary`,
+          date: "Yesterday",
+          size: "1.1 MB",
+          type: "PDF",
+          status: "Pending",
+        },
+      ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#062214" }}>
+    <LiquidGlassBackdrop variant="dark">
       <StatusBar barStyle="light-content" />
-
-      {/* Subtle Ambient Top Glow */}
-      <View
-        style={{
-          position: "absolute",
-          top: -80,
-          left: "50%",
-          marginLeft: -150,
-          width: 300,
-          height: 220,
-          borderRadius: 150,
-          backgroundColor: "rgba(16, 185, 129, 0.14)",
-        }}
-      />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* TOP HEADER (Reference Image 1: "2026 v" on left, Calendar & New Report on right) */}
@@ -159,23 +240,19 @@ export default function EmployeeReportsScreen() {
           </TouchableOpacity>
 
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <TouchableOpacity
+            <LiquidGlassButton
               onPress={() => router.push("/(employee)/report/select-method")}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                backgroundColor: "rgba(74, 222, 128, 0.18)",
-                borderWidth: 1,
-                borderColor: "rgba(74, 222, 128, 0.4)",
+              variant="tinted"
+              tintColor="rgba(16, 185, 129, 0.34)"
+              contentStyle={{
                 paddingHorizontal: 14,
                 paddingVertical: 8,
-                borderRadius: 999,
               }}
             >
-              <Plus size={16} color="#4ade80" />
+              <Plus size={16} color="#ffffff" />
               <Text
                 style={{
-                  color: "#4ade80",
+                  color: "#ffffff",
                   fontFamily: "Brandon-Bold",
                   fontSize: 13,
                   marginLeft: 4,
@@ -183,22 +260,14 @@ export default function EmployeeReportsScreen() {
               >
                 New Report
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </LiquidGlassButton>
+            <LiquidGlassIconButton
               onPress={() => router.push("/(employee)/calendar")}
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: 21,
-                backgroundColor: "rgba(255,255,255,0.1)",
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.15)",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              size={42}
+              variant="dark"
             >
               <CalendarDays size={20} color="#ffffff" />
-            </TouchableOpacity>
+            </LiquidGlassIconButton>
           </View>
         </View>
 
@@ -328,6 +397,127 @@ export default function EmployeeReportsScreen() {
             ))}
           </View>
 
+          {/* QUICK IMAGE & VIDEO UPLOAD BAR */}
+          <View style={{ flexDirection: "row", gap: 10, marginBottom: 22 }}>
+            <LiquidGlassButton
+              onPress={() => handleQuickUpload("image")}
+              disabled={uploadingKind !== null}
+              variant="tinted"
+              tintColor="rgba(16, 185, 129, 0.34)"
+              style={{ flex: 1 }}
+              contentStyle={{ paddingVertical: 12, paddingHorizontal: 12 }}
+            >
+              {uploadingKind === "image" ? (
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                <Camera size={16} color="#ffffff" />
+              )}
+              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13, marginLeft: 6 }}>
+                {uploadingKind === "image" ? "Uploading..." : "Upload Image"}
+              </Text>
+            </LiquidGlassButton>
+
+            <LiquidGlassButton
+              onPress={() => handleQuickUpload("video")}
+              disabled={uploadingKind !== null}
+              variant="tinted"
+              tintColor="rgba(14, 165, 233, 0.36)"
+              style={{ flex: 1 }}
+              contentStyle={{ paddingVertical: 12, paddingHorizontal: 12 }}
+            >
+              {uploadingKind === "video" ? (
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                <Video size={16} color="#ffffff" />
+              )}
+              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13, marginLeft: 6 }}>
+                {uploadingKind === "video" ? "Uploading..." : "Upload Video"}
+              </Text>
+            </LiquidGlassButton>
+          </View>
+
+          {/* SYNCED MEDIA & FILES (IMAGES, VIDEOS, DOCUMENTS) */}
+          {mediaFiles.length > 0 && (
+            <View style={{ marginBottom: 26 }}>
+              <Text
+                style={{
+                  color: "#38bdf8",
+                  fontFamily: "Brandon-Bold",
+                  fontSize: 11,
+                  letterSpacing: 1.1,
+                }}
+              >
+                MEDIA VAULT ({mediaFiles.length})
+              </Text>
+              <Text
+                style={{
+                  color: "#ffffff",
+                  fontFamily: "Brandon-Bold",
+                  fontSize: 19,
+                  marginBottom: 12,
+                }}
+              >
+                Uploaded Photos, Videos & Files
+              </Text>
+              <View style={{ gap: 12 }}>
+                {mediaFiles.slice(0, 12).map((file) => {
+                  const tint =
+                    file.category === "image"
+                      ? "#4ade80"
+                      : file.category === "video"
+                      ? "#38bdf8"
+                      : "#fbbf24";
+                  return (
+                    <LiquidGlassCard
+                      key={`media-${file.id}`}
+                      variant="dark"
+                      borderRadius={20}
+                      dropletColor={tint}
+                      onPress={() => void handleDownload(file.download_url, file.title, file.original_name)}
+                      contentStyle={{ flexDirection: "row", alignItems: "center", padding: 14 }}
+                    >
+                      {file.category === "image" ? (
+                        <Image
+                          source={{ uri: file.preview_url }}
+                          style={{ width: 46, height: 46, borderRadius: 12, marginRight: 12, backgroundColor: "#1e293b" }}
+                        />
+                      ) : (
+                        <LiquidGlassIconBadge size={46} borderRadius={14} variant="dark" tintColor={tint} style={{ marginRight: 12 }}>
+                          {file.category === "video" ? <Video size={20} color={tint} /> : <FileText size={20} color={tint} />}
+                        </LiquidGlassIconBadge>
+                      )}
+
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14 }} numberOfLines={1}>
+                          {file.title}
+                        </Text>
+                        <Text style={{ color: "rgba(255,255,255,0.65)", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 2 }}>
+                          {file.category.toUpperCase()} • {file.size_human} • {file.date_label}
+                        </Text>
+                      </View>
+
+                      <TouchableOpacity
+                        onPress={() => void handleDownload(file.download_url, file.title, file.original_name)}
+                        style={{
+                          paddingHorizontal: 12,
+                          paddingVertical: 8,
+                          borderRadius: 12,
+                          backgroundColor: "rgba(255,255,255,0.14)",
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 5,
+                        }}
+                      >
+                        <Download size={15} color="#ffffff" />
+                        <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 11 }}>Download</Text>
+                      </TouchableOpacity>
+                    </LiquidGlassCard>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+
           {/* RECENT FIELD DOCUMENTS DOSSIER LIST */}
           <View
             style={{
@@ -358,18 +548,10 @@ export default function EmployeeReportsScreen() {
                 Recent Field Documents
               </Text>
             </View>
-            <TouchableOpacity
+            <LiquidGlassPill
+              variant="dark"
               onPress={() => router.push("/(employee)/visit-history")}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                backgroundColor: "rgba(255,255,255,0.1)",
-                paddingHorizontal: 13,
-                paddingVertical: 8,
-                borderRadius: 999,
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.14)",
-              }}
+              contentStyle={{ paddingHorizontal: 14, paddingVertical: 8 }}
             >
               <Filter
                 size={13}
@@ -385,126 +567,111 @@ export default function EmployeeReportsScreen() {
               >
                 All Logs
               </Text>
-            </TouchableOpacity>
+            </LiquidGlassPill>
           </View>
 
           <View style={{ gap: 14 }}>
-            {documents.map((doc) => (
-              <TouchableOpacity
-                key={doc.id}
-                activeOpacity={0.9}
-                onPress={() => router.push(`/(employee)/report/${doc.id}` as any)}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  backgroundColor: "rgba(255, 255, 255, 0.09)",
-                  padding: 15,
-                  borderRadius: 22,
-                  borderWidth: 1,
-                  borderColor: "rgba(255, 255, 255, 0.12)",
-                }}
-              >
-                {/* ICON */}
-                <View
-                  style={{
-                    width: 46,
-                    height: 46,
-                    borderRadius: 15,
-                    backgroundColor:
-                      doc.type === "PDF"
-                        ? "rgba(239, 68, 68, 0.18)"
-                        : doc.type === "DOCX"
-                        ? "rgba(14, 165, 233, 0.18)"
-                        : "rgba(34, 197, 94, 0.18)",
+            {documents.map((doc) => {
+              const iconColor =
+                doc.type === "PDF"
+                  ? "#f87171"
+                  : doc.type === "DOCX"
+                    ? "#38bdf8"
+                    : "#4ade80";
+              return (
+                <LiquidGlassCard
+                  key={doc.id}
+                  variant="dark"
+                  borderRadius={22}
+                  dropletColor={iconColor}
+                  onPress={() => router.push(`/(employee)/report/${doc.id}` as any)}
+                  contentStyle={{
+                    flexDirection: "row",
                     alignItems: "center",
-                    justifyContent: "center",
-                    marginRight: 14,
+                    padding: 15,
                   }}
                 >
-                  <FileText
-                    size={22}
-                    color={
-                      doc.type === "PDF"
-                        ? "#f87171"
-                        : doc.type === "DOCX"
-                        ? "#38bdf8"
-                        : "#4ade80"
-                    }
-                  />
-                </View>
+                  {/* ICON */}
+                  <LiquidGlassIconBadge
+                    size={46}
+                    borderRadius={15}
+                    variant="dark"
+                    tintColor={iconColor}
+                    style={{ marginRight: 14 }}
+                  >
+                    <FileText size={22} color={iconColor} />
+                  </LiquidGlassIconBadge>
 
-                {/* DETAILS */}
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      color: "#ffffff",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 15,
-                      lineHeight: 20,
-                      marginBottom: 3,
-                    }}
-                    numberOfLines={1}
-                  >
-                    {doc.title}
-                  </Text>
-                  <Text
-                    style={{
-                      color: "rgba(255,255,255,0.65)",
-                      fontFamily: "Brandon-Medium",
-                      fontSize: 12,
-                    }}
-                  >
-                    {doc.date} • {doc.size}
-                  </Text>
-                </View>
-
-                {/* ACTION/STATUS */}
-                <View style={{ alignItems: "flex-end", marginLeft: 10 }}>
-                  <View
-                    style={{
-                      paddingHorizontal: 10,
-                      paddingVertical: 4,
-                      borderRadius: 999,
-                      backgroundColor:
-                        doc.status === "Approved"
-                          ? "rgba(74, 222, 128, 0.2)"
-                          : doc.status === "Pending"
-                          ? "rgba(251, 191, 36, 0.2)"
-                          : "rgba(239, 68, 68, 0.2)",
-                      marginBottom: 8,
-                    }}
-                  >
+                  {/* DETAILS */}
+                  <View style={{ flex: 1 }}>
                     <Text
                       style={{
-                        color:
-                          doc.status === "Approved"
-                            ? "#4ade80"
-                            : doc.status === "Pending"
-                            ? "#fbbf24"
-                            : "#f87171",
+                        color: "#ffffff",
                         fontFamily: "Brandon-Bold",
-                        fontSize: 10,
+                        fontSize: 15,
+                        lineHeight: 20,
+                        marginBottom: 3,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {doc.title}
+                    </Text>
+                    <Text
+                      style={{
+                        color: "rgba(255,255,255,0.65)",
+                        fontFamily: "Brandon-Medium",
+                        fontSize: 12,
                       }}
                     >
-                      {doc.status}
+                      {doc.date} • {doc.size}
                     </Text>
                   </View>
-                  <TouchableOpacity
-                    onPress={() =>
-                      Alert.alert(
-                        "Download",
-                        `Downloading ${doc.title} (${doc.size})...`
-                      )
-                    }
-                  >
-                    <Download size={18} color="rgba(255,255,255,0.75)" />
-                  </TouchableOpacity>
-                </View>
-              </TouchableOpacity>
-            ))}
+
+                  {/* ACTION/STATUS */}
+                  <View style={{ alignItems: "flex-end", marginLeft: 10 }}>
+                    <View
+                      style={{
+                        paddingHorizontal: 10,
+                        paddingVertical: 4,
+                        borderRadius: 999,
+                        backgroundColor:
+                          doc.status === "Approved"
+                            ? "rgba(74, 222, 128, 0.2)"
+                            : doc.status === "Pending"
+                              ? "rgba(251, 191, 36, 0.2)"
+                              : "rgba(239, 68, 68, 0.2)",
+                        marginBottom: 8,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color:
+                            doc.status === "Approved"
+                              ? "#4ade80"
+                              : doc.status === "Pending"
+                                ? "#fbbf24"
+                                : "#f87171",
+                          fontFamily: "Brandon-Bold",
+                          fontSize: 10,
+                        }}
+                      >
+                        {doc.status}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() =>
+                        void handleDownload(doc.downloadUrl, doc.title, doc.filename)
+                      }
+                    >
+                      <Download size={18} color="rgba(255,255,255,0.85)" />
+                    </TouchableOpacity>
+                  </View>
+                </LiquidGlassCard>
+              );
+            })}
           </View>
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

@@ -24,6 +24,13 @@ import {
 } from "lucide-react-native";
 import { useLanguage } from "../../context/LanguageContext";
 import { useService } from "../../context/ServiceContext";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+} from "../../components/LiquidGlass";
 
 export default function MenuScreen() {
   const { t } = useLanguage();
@@ -57,18 +64,22 @@ export default function MenuScreen() {
   ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#f8faf9" }}>
+    <LiquidGlassBackdrop variant="light">
       <StatusBar barStyle="dark-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
         
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 22, paddingTop: 16, paddingBottom: 24 }}>
-          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")} style={{ padding: 10, backgroundColor: "#ffffff", borderRadius: 999, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}>
+          <LiquidGlassIconButton
+            onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")}
+            size={46}
+            variant="light"
+          >
             <ChevronLeft size={26} color="#0f172a" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
           <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 25 }}>Menu</Text>
-          <View style={{ width: 44 }} />
+          <View style={{ width: 46 }} />
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 22, paddingVertical: 8, paddingBottom: 110 }}>
@@ -79,7 +90,7 @@ export default function MenuScreen() {
                 {group.title.toUpperCase()}
               </Text>
               
-              <View style={{ backgroundColor: "#ffffff", borderRadius: 28, shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.06, shadowRadius: 14, elevation: 5 }}>
+              <LiquidGlassCard variant="light" borderRadius={28}>
                 {group.items.map((item, itemIndex) => {
                   const Icon = item.icon;
                   return (
@@ -89,29 +100,39 @@ export default function MenuScreen() {
                       style={{ 
                         flexDirection: "row", alignItems: "center", padding: 20,
                         borderBottomWidth: itemIndex === group.items.length - 1 ? 0 : 1,
-                        borderBottomColor: "#f1f5f9"
+                        borderBottomColor: "rgba(148, 163, 184, 0.2)"
                       }}
                     >
-                      <View style={{ width: 52, height: 52, borderRadius: 18, backgroundColor: `${item.color}18`, alignItems: "center", justifyContent: "center", marginRight: 16 }}>
+                      <LiquidGlassIconBadge
+                        size={52}
+                        borderRadius={18}
+                        variant="light"
+                        tintColor={item.color}
+                        style={{ marginRight: 16 }}
+                      >
                         <Icon size={26} color={item.color} />
-                      </View>
+                      </LiquidGlassIconBadge>
                       <Text style={{ flex: 1, color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 19 }}>{item.label}</Text>
-                      <ChevronRight size={22} color="#94a3b8" />
+                      <ChevronRight size={22} color="#64748b" />
                     </TouchableOpacity>
                   );
                 })}
-              </View>
+              </LiquidGlassCard>
             </View>
           ))}
 
           {/* LOGOUT BUTTON */}
-          <TouchableOpacity 
+          <LiquidGlassButton
             onPress={() => router.replace("/intro")}
-            style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "#fee2e2", paddingVertical: 18, borderRadius: 999, marginTop: 16 }}
+            variant="tinted"
+            tintColor="rgba(239, 68, 68, 0.80)"
+            dropletColor="#FB7185"
+            style={{ marginTop: 16 }}
+            contentStyle={{ paddingVertical: 18 }}
           >
-            <LogOut size={22} color="#ef4444" style={{ marginRight: 8 }} />
-            <Text style={{ color: "#ef4444", fontFamily: "Brandon-Bold", fontSize: 18 }}>Log Out</Text>
-          </TouchableOpacity>
+            <LogOut size={22} color="#ffffff" style={{ marginRight: 8 }} />
+            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>Log Out</Text>
+          </LiquidGlassButton>
 
           <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, textAlign: "center", marginTop: 24 }}>
             Fieldy v2.0.1
@@ -119,6 +140,6 @@ export default function MenuScreen() {
 
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

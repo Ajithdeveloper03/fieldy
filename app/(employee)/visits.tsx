@@ -3,25 +3,28 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   Image,
   StatusBar,
-  StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import {
   ChevronLeft,
   CalendarDays,
   MapPin,
   Navigation,
+  Clock,
+  ChevronRight,
 } from "lucide-react-native";
-import { useLanguage } from "../../context/LanguageContext";
 import { useService, ServiceSelectorPill } from "../../context/ServiceContext";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconButton,
+} from "../../components/LiquidGlass";
 
 export default function EmployeeVisitsScreen() {
-  const { t, language } = useLanguage();
   const { serviceConfig } = useService();
 
   const fallbackImages = [
@@ -31,323 +34,282 @@ export default function EmployeeVisitsScreen() {
     require("../../assets/images/image6.jpg"),
   ];
 
-  const visits = (serviceConfig.sampleVisits && serviceConfig.sampleVisits.length > 0)
-    ? serviceConfig.sampleVisits.map((v, i) => ({
-        id: v.id,
-        type: v.type.toUpperCase(),
-        site_contact: v.site,
-        time: v.time,
-        status: v.status,
-        image: fallbackImages[i % fallbackImages.length],
-      }))
-    : [
-        {
-          id: 1,
-          type: `${serviceConfig.label.toUpperCase()} PROTOCOL`,
-          site_contact: "Sector Station Alpha",
-          time: "09:00 AM",
-          status: "Completed",
-          image: fallbackImages[0],
-        },
-        {
-          id: 2,
-          type: `${serviceConfig.label.toUpperCase()} DISPATCH`,
-          site_contact: "Central Hub Beta",
-          time: "11:30 AM",
-          status: "In Progress",
-          image: fallbackImages[1],
-        },
-      ];
+  const visits =
+    serviceConfig.sampleVisits && serviceConfig.sampleVisits.length > 0
+      ? serviceConfig.sampleVisits.map((v, i) => ({
+          id: v.id,
+          type: v.type,
+          site_contact: v.site || v.entityName,
+          time: v.time,
+          status: v.status,
+          image: v.image || fallbackImages[i % fallbackImages.length],
+        }))
+      : [
+          {
+            id: 1,
+            type: `${serviceConfig.shortName} Protocol`,
+            site_contact: "Sector Station Alpha",
+            time: "09:00 AM",
+            status: "Completed",
+            image: fallbackImages[0],
+          },
+          {
+            id: 2,
+            type: `${serviceConfig.shortName} Dispatch`,
+            site_contact: "Central Hub Beta",
+            time: "11:30 AM",
+            status: "In Progress",
+            image: fallbackImages[1],
+          },
+        ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#062214" }}>
+    <LiquidGlassBackdrop variant="dark">
       <StatusBar barStyle="light-content" />
-      <LinearGradient
-        colors={["#062214", "#0a331c", "#04140b"]}
-        style={{ flex: 1 }}
-      >
-        <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
+        {/* CLEAN ALIGNED HEADER */}
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
             paddingHorizontal: 16,
-            paddingTop: 16,
+            paddingTop: 10,
+            paddingBottom: 14,
+            gap: 10,
           }}
         >
-          <TouchableOpacity
+          <LiquidGlassIconButton
             onPress={() =>
               router.canGoBack()
                 ? router.back()
                 : router.replace("/(employee)/dashboard")
             }
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: "rgba(255,255,255,0.1)",
-              alignItems: "center",
-              justifyContent: "center",
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.15)",
-            }}
+            size={42}
+            variant="dark"
           >
-            <ChevronLeft size={24} color="#ffffff" />
-          </TouchableOpacity>
-          <View style={{ alignItems: "center", flex: 1, minWidth: 0, paddingHorizontal: 8 }}>
+            <ChevronLeft size={22} color="#FFFFFF" />
+          </LiquidGlassIconButton>
+
+          <View style={{ alignItems: "center", flex: 1, minWidth: 0 }}>
             <Text
               numberOfLines={1}
-              adjustsFontSizeToFit
               style={{
-                color: "#ffffff",
+                color: "#FFFFFF",
                 fontFamily: "Brandon-Bold",
-                fontSize: 23,
-                maxWidth: "100%",
+                fontSize: 20,
               }}
             >
               Daily {serviceConfig.vocab.visits}
             </Text>
-            <View style={{ marginTop: 2 }}>
+            <View style={{ marginTop: 4 }}>
               <ServiceSelectorPill compact dark />
             </View>
           </View>
-          <TouchableOpacity
+
+          <LiquidGlassIconButton
             onPress={() => router.push("/(employee)/calendar")}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: "rgba(255,255,255,0.1)",
-              alignItems: "center",
-              justifyContent: "center",
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.15)",
-            }}
+            size={42}
+            variant="dark"
           >
-            <CalendarDays size={20} color="#ffffff" />
-          </TouchableOpacity>
+            <CalendarDays size={19} color="#FFFFFF" />
+          </LiquidGlassIconButton>
         </View>
 
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingVertical: 24,
-            paddingHorizontal: 16,
-            alignItems: "center",
-            paddingBottom: 240,
+            paddingHorizontal: 18,
+            paddingTop: 6,
+            paddingBottom: 150,
           }}
         >
-          <View style={{ width: "100%", alignItems: "center" }}>
-            <View
-              style={{
-                position: "absolute",
-                top: 40,
-                bottom: 40,
-                width: 2,
-                backgroundColor: "rgba(255,255,255,0.15)",
-                left: "50%",
-                marginLeft: -1,
-                zIndex: 0,
-              }}
-            />
-            {visits.map((visit) => (
-              <TouchableOpacity
-                key={visit.id}
-                activeOpacity={0.9}
-                onPress={() =>
-                  router.push(`/(employee)/visit/${visit.id}` as any)
-                }
-                style={{
-                  width: "100%",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginVertical: 32,
-                  zIndex: 10,
-                }}
-              >
-                <View
-                  style={{
-                    flex: 1,
-                    alignItems: "flex-end",
-                    paddingRight: 46,
-                    minWidth: 0,
-                  }}
-                >
-                  <Text
-                    numberOfLines={2}
-                    style={{
-                      color: "rgba(255,255,255,0.65)",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 12,
-                      letterSpacing: 1,
-                      marginBottom: 4,
-                      maxWidth: "100%",
-                      textAlign: "right",
-                    }}
-                  >
-                    {visit.type}
-                  </Text>
-                  <Text
-                    style={{
-                      color:
-                        visit.status === "Completed"
-                          ? "#4ade80"
-                          : visit.status === "In Progress"
-                          ? "#fbbf24"
-                          : "#ffffff",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 18,
-                    }}
-                  >
-                    {visit.status}
-                  </Text>
-                </View>
+          {/* CLEAN LEFT-RAIL TIMELINE — ZERO OVERLAP ON ANY PHONE WIDTH */}
+          <View style={{ gap: 12, marginBottom: 20 }}>
+            {visits.map((visit, idx) => {
+              const isCompleted = visit.status === "Completed";
+              const isInProgress = visit.status === "In Progress";
+              const statusColor = isCompleted
+                ? "#34D399"
+                : isInProgress
+                ? "#FBBF24"
+                : "#94A3B8";
 
+              return (
                 <View
-                  style={{
-                    width: 86,
-                    height: 86,
-                    borderRadius: 43,
-                    backgroundColor: "#062214",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    position: "absolute",
-                    left: "50%",
-                    marginLeft: -43,
-                    zIndex: 10,
-                    borderWidth: visit.status === "Completed" ? 2.5 : 1.5,
-                    borderColor:
-                      visit.status === "Completed"
-                        ? "#4ade80"
-                        : "rgba(255,255,255,0.3)",
-                  }}
+                  key={visit.id}
+                  style={{ flexDirection: "row", alignItems: "stretch" }}
                 >
-                  <Image
-                    source={visit.image}
-                    style={{ width: 76, height: 76, borderRadius: 38 }}
-                  />
-                </View>
-
-                <View
-                  style={{
-                    flex: 1,
-                    alignItems: "flex-start",
-                    paddingLeft: 54,
-                    minWidth: 0,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#ffffff",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 21,
-                    }}
-                  >
-                    {visit.time}
-                  </Text>
+                  {/* Timeline rail */}
                   <View
                     style={{
-                      flexDirection: "row",
+                      width: 22,
                       alignItems: "center",
-                      marginTop: 5,
+                      marginRight: 10,
                     }}
                   >
-                    <MapPin size={14} color="rgba(255,255,255,0.65)" />
-                    <Text
-                    style={{
-                        color: "rgba(255,255,255,0.8)",
-                        fontFamily: "Brandon-Medium",
-                      fontSize: 15,
-                        marginLeft: 5,
-                      flex: 1,
-                      flexShrink: 1,
+                    <View
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 6,
+                        backgroundColor: statusColor,
+                        marginTop: 22,
                       }}
-                    numberOfLines={2}
-                    ellipsizeMode="tail"
-                    >
-                      {visit.site_contact}
-                    </Text>
+                    />
+                    {idx < visits.length - 1 && (
+                      <View
+                        style={{
+                          width: 2,
+                          flex: 1,
+                          backgroundColor: "rgba(255,255,255,0.14)",
+                          marginTop: 6,
+                        }}
+                      />
+                    )}
                   </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
 
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={() => router.push("/(employee)/map")}
-          style={{
-            position: "absolute",
-            bottom: 100,
-            left: 20,
-            right: 20,
-            backgroundColor: "rgba(15, 23, 42, 0.92)",
-            borderRadius: 30,
-            padding: 22,
-            borderWidth: 1,
-            borderColor: "rgba(74, 222, 128, 0.3)",
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 8,
-              marginBottom: 8,
-            }}
+                  {/* Visit Card */}
+                  <LiquidGlassCard
+                    variant="dark"
+                    borderRadius={18}
+                    onPress={() =>
+                      router.push(`/(employee)/visit/${visit.id}` as any)
+                    }
+                    style={{ flex: 1 }}
+                    contentStyle={{
+                      padding: 13,
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Image
+                      source={visit.image}
+                      style={{
+                        width: 54,
+                        height: 54,
+                        borderRadius: 14,
+                        marginRight: 12,
+                        flexShrink: 0,
+                      }}
+                      resizeMode="cover"
+                    />
+                    <View style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 6,
+                          marginBottom: 4,
+                        }}
+                      >
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            flexShrink: 1,
+                          }}
+                        >
+                          <Clock size={12} color="#34D399" />
+                          <Text
+                            numberOfLines={1}
+                            style={{
+                              color: "#E2E8F0",
+                              fontFamily: "Brandon-Bold",
+                              fontSize: 12,
+                              marginLeft: 4,
+                            }}
+                          >
+                            {visit.time}
+                          </Text>
+                        </View>
+                        <View
+                          style={{
+                            backgroundColor: isCompleted
+                              ? "rgba(52, 211, 153, 0.2)"
+                              : isInProgress
+                              ? "rgba(251, 191, 36, 0.2)"
+                              : "rgba(148, 163, 184, 0.2)",
+                            paddingHorizontal: 8,
+                            paddingVertical: 2,
+                            borderRadius: 999,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: statusColor,
+                              fontFamily: "Brandon-Bold",
+                              fontSize: 10,
+                            }}
+                          >
+                            {visit.status}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <Text
+                        numberOfLines={1}
+                        style={{
+                          color: "#FFFFFF",
+                          fontFamily: "Brandon-Bold",
+                          fontSize: 15,
+                        }}
+                      >
+                        {visit.site_contact}
+                      </Text>
+
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          marginTop: 3,
+                        }}
+                      >
+                        <MapPin size={12} color="#94A3B8" />
+                        <Text
+                          numberOfLines={1}
+                          style={{
+                            color: "#94A3B8",
+                            fontFamily: "Brandon-Medium",
+                            fontSize: 12,
+                            marginLeft: 4,
+                            flex: 1,
+                          }}
+                        >
+                          {visit.type}
+                        </Text>
+                      </View>
+                    </View>
+                    <ChevronRight size={17} color="#64748B" />
+                  </LiquidGlassCard>
+                </View>
+              );
+            })}
+          </View>
+
+          {/* MAIN LIQUID GLASS CTA BUTTON FOR LIVE MAP */}
+          <LiquidGlassButton
+            onPress={() => router.push("/(employee)/map")}
+            variant="tinted"
+            tintColor="rgba(13, 148, 136, 0.88)"
+            dropletColor="#2DD4BF"
+            style={{ width: "100%" }}
+            contentStyle={{ paddingVertical: 14, paddingHorizontal: 20 }}
           >
-            <View style={{ flexDirection: "row", alignItems: "center", flex: 1, minWidth: 150 }}>
-              <Navigation size={20} color="#4ade80" />
-              <Text
-                style={{
-                  color: "#ffffff",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 17,
-                  marginLeft: 8,
-                  flexShrink: 1,
-                }}
-              >
-                Open Live GPS Map
-              </Text>
-            </View>
-            <View
+            <Navigation size={17} color="#FFFFFF" style={{ marginRight: 8 }} />
+            <Text
               style={{
-                backgroundColor: "rgba(74,222,128,0.2)",
-                paddingHorizontal: 12,
-                paddingVertical: 4,
-                borderRadius: 999,
+                color: "#FFFFFF",
+                fontFamily: "Brandon-Bold",
+                fontSize: 15,
               }}
             >
-              <Text
-                style={{
-                  color: "#4ade80",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 12,
-                  letterSpacing: 1,
-                }}
-              >
-                GPS SYNCED
-              </Text>
-            </View>
-          </View>
-          <Text
-            style={{
-              color: "rgba(255,255,255,0.7)",
-              fontFamily: "Brandon-Medium",
-              fontSize: 14,
-              lineHeight: 20,
-            }}
-          >
-            Your {serviceConfig.label} itinerary has been optimized for the fastest
-            transit and SLA response times today.
-          </Text>
-        </TouchableOpacity>
-        </SafeAreaView>
-      </LinearGradient>
-    </View>
+              Open Live GPS Map
+            </Text>
+          </LiquidGlassButton>
+        </ScrollView>
+      </SafeAreaView>
+    </LiquidGlassBackdrop>
   );
 }

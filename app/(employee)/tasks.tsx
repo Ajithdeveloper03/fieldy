@@ -22,6 +22,14 @@ import {
 import { useLanguage } from "../../context/LanguageContext";
 import { useService, ServiceSelectorPill } from "../../context/ServiceContext";
 import { apiClient } from "../../api/client";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassButton,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+  LiquidGlassPill,
+} from "../../components/LiquidGlass";
 
 export default function EmployeeTasksScreen() {
   const { t, language } = useLanguage();
@@ -59,7 +67,7 @@ export default function EmployeeTasksScreen() {
   ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+    <LiquidGlassBackdrop variant="light">
       <StatusBar barStyle="dark-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
@@ -75,26 +83,18 @@ export default function EmployeeTasksScreen() {
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <TouchableOpacity
+            <LiquidGlassIconButton
+              variant="light"
+              size={42}
+              style={{ marginRight: 12 }}
               onPress={() =>
                 router.canGoBack()
                   ? router.back()
                   : router.replace("/(employee)/dashboard")
               }
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: 21,
-                backgroundColor: "#ffffff",
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 12,
-                borderWidth: 1,
-                borderColor: "#e2e8f0",
-              }}
             >
               <ChevronLeft size={22} color="#0f172a" />
-            </TouchableOpacity>
+            </LiquidGlassIconButton>
             <Text
               style={{
                 color: "#0f172a",
@@ -108,21 +108,13 @@ export default function EmployeeTasksScreen() {
 
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <ServiceSelectorPill compact />
-            <TouchableOpacity
+            <LiquidGlassIconButton
+              variant="light"
+              size={42}
               onPress={() => router.push("/(employee)/calendar")}
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: 21,
-                backgroundColor: "#ffffff",
-                alignItems: "center",
-                justifyContent: "center",
-                borderWidth: 1,
-                borderColor: "#e2e8f0",
-              }}
             >
               <Calendar size={19} color="#0f172a" />
-            </TouchableOpacity>
+            </LiquidGlassIconButton>
           </View>
         </View>
 
@@ -136,16 +128,15 @@ export default function EmployeeTasksScreen() {
             {dateStrip.map((d, idx) => {
               const isSelected = selectedDateIdx === idx;
               return (
-                <TouchableOpacity
+                <LiquidGlassPill
                   key={idx}
+                  variant="light"
+                  active={isSelected}
+                  tintColor="rgba(6, 34, 20, 0.86)"
                   onPress={() => setSelectedDateIdx(idx)}
-                  style={{
-                    backgroundColor: isSelected ? "#062214" : "#ffffff",
+                  contentStyle={{
                     paddingHorizontal: 20,
                     paddingVertical: 12,
-                    borderRadius: 999,
-                    borderWidth: 1,
-                    borderColor: isSelected ? "#062214" : "#e2e8f0",
                   }}
                 >
                   <Text
@@ -157,7 +148,7 @@ export default function EmployeeTasksScreen() {
                   >
                     {d.label}
                   </Text>
-                </TouchableOpacity>
+                </LiquidGlassPill>
               );
             })}
           </ScrollView>
@@ -171,70 +162,67 @@ export default function EmployeeTasksScreen() {
           }}
         >
           {/* COMPLETION BENTO BANNER */}
-          <View
-            style={{
-              backgroundColor: "#062214",
-              borderRadius: 32,
+          <LiquidGlassCard
+            variant="tinted"
+            tintColor="rgba(6, 34, 20, 0.84)"
+            dropletColor="#10b981"
+            borderRadius={32}
+            style={{ marginBottom: 22 }}
+            contentStyle={{
               padding: 22,
               flexDirection: "row",
               alignItems: "center",
-              marginBottom: 22,
-              shadowColor: "#062214",
-              shadowOffset: { width: 0, height: 10 },
-              shadowOpacity: 0.2,
-              shadowRadius: 20,
-              elevation: 8,
             }}
           >
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: "#15803d",
-                borderRadius: 24,
-                padding: 18,
-                marginRight: 18,
-              }}
-            >
-              <Text
-                style={{
-                  color: "rgba(255,255,255,0.8)",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 10,
-                  letterSpacing: 1,
-                  marginBottom: 4,
-                }}
+            <View style={{ flex: 1, marginRight: 18 }}>
+              <LiquidGlassCard
+                variant="tinted"
+                tintColor="rgba(21, 128, 61, 0.72)"
+                dropletColor="#4ade80"
+                borderRadius={24}
+                contentStyle={{ padding: 18 }}
               >
-                SLA COMPLETION
-              </Text>
-              <Text
-                style={{
-                  color: "#ffffff",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 54,
-                  lineHeight: 58,
-                }}
-              >
-                {completionRate}%
-              </Text>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginTop: 8,
-                }}
-              >
-                <TrendingUp size={16} color="#a7f3d0" />
                 <Text
                   style={{
-                    color: "#a7f3d0",
+                    color: "rgba(255,255,255,0.8)",
                     fontFamily: "Brandon-Bold",
-                    fontSize: 14,
-                    marginLeft: 6,
+                    fontSize: 10,
+                    letterSpacing: 1,
+                    marginBottom: 4,
                   }}
                 >
-                  {serviceConfig.shortName} Active SLA
+                  SLA COMPLETION
                 </Text>
-              </View>
+                <Text
+                  style={{
+                    color: "#ffffff",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 54,
+                    lineHeight: 58,
+                  }}
+                >
+                  {completionRate}%
+                </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginTop: 8,
+                  }}
+                >
+                  <TrendingUp size={16} color="#a7f3d0" />
+                  <Text
+                    style={{
+                      color: "#a7f3d0",
+                      fontFamily: "Brandon-Bold",
+                      fontSize: 14,
+                      marginLeft: 6,
+                    }}
+                  >
+                    {serviceConfig.shortName} Active SLA
+                  </Text>
+                </View>
+              </LiquidGlassCard>
             </View>
 
             <View style={{ width: "32%", gap: 14 }}>
@@ -279,62 +267,83 @@ export default function EmployeeTasksScreen() {
                 </Text>
               </View>
             </View>
-          </View>
+          </LiquidGlassCard>
 
           {/* TABS */}
-          <View
-            style={{
+          <LiquidGlassCard
+            variant="light"
+            borderRadius={999}
+            style={{ marginBottom: 24 }}
+            contentStyle={{
               flexDirection: "row",
-              backgroundColor: "#e2e8f0",
-              borderRadius: 999,
+              alignItems: "center",
               padding: 5,
-              marginBottom: 24,
             }}
           >
-            {["Pending", "Completed"].map((tab) => (
-              <TouchableOpacity
-                key={tab}
-                onPress={() => setActiveTab(tab)}
-                style={{
-                  flex: 1,
-                  backgroundColor: activeTab === tab ? "#062214" : "transparent",
-                  paddingVertical: 13,
-                  borderRadius: 999,
-                  alignItems: "center",
-                }}
-              >
-                <Text
+            {["Pending", "Completed"].map((tab) => {
+              const isActive = activeTab === tab;
+              if (isActive) {
+                return (
+                  <LiquidGlassPill
+                    key={tab}
+                    active
+                    variant="light"
+                    tintColor="rgba(6, 34, 20, 0.86)"
+                    onPress={() => setActiveTab(tab)}
+                    style={{ flex: 1 }}
+                    contentStyle={{ paddingVertical: 13, paddingHorizontal: 10 }}
+                  >
+                    <Text
+                      style={{
+                        color: "#ffffff",
+                        fontFamily: "Brandon-Bold",
+                        fontSize: 16,
+                      }}
+                    >
+                      {tab} Orders
+                    </Text>
+                  </LiquidGlassPill>
+                );
+              }
+              return (
+                <TouchableOpacity
+                  key={tab}
+                  onPress={() => setActiveTab(tab)}
                   style={{
-                    color: activeTab === tab ? "#ffffff" : "#475569",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 16,
+                    flex: 1,
+                    paddingVertical: 13,
+                    paddingHorizontal: 10,
+                    borderRadius: 999,
+                    borderWidth: 1.4,
+                    borderColor: "transparent",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  {tab} Orders
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+                  <Text
+                    style={{
+                      color: "#475569",
+                      fontFamily: "Brandon-Bold",
+                      fontSize: 16,
+                    }}
+                  >
+                    {tab} Orders
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </LiquidGlassCard>
 
           {/* WORK ORDER CARDS */}
           <View style={{ gap: 20 }}>
             {activeTab === "Pending" ? (
               <>
                 {pendingTasks.map((task: any) => (
-                  <View
+                  <LiquidGlassCard
                     key={task.id}
-                    style={{
-                      backgroundColor: "#ffffff",
-                      borderRadius: 34,
-                      padding: 24,
-                      borderWidth: 1,
-                      borderColor: "#e2e8f0",
-                      shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 8 },
-                      shadowOpacity: 0.06,
-                      shadowRadius: 16,
-                      elevation: 5,
-                    }}
+                    variant="light"
+                    borderRadius={34}
+                    contentStyle={{ padding: 24 }}
                   >
                     {/* Top Author / Facility Row */}
                     <View
@@ -381,7 +390,12 @@ export default function EmployeeTasksScreen() {
 
                       <View
                         style={{
-                          backgroundColor: task.priority === "Urgent" ? "#fee2e2" : "#fef3c7",
+                          backgroundColor:
+                            task.priority === "Urgent"
+                              ? "rgba(254, 226, 226, 0.78)"
+                              : "rgba(254, 243, 199, 0.78)",
+                          borderWidth: 1,
+                          borderColor: "rgba(255, 255, 255, 0.85)",
                           paddingHorizontal: 12,
                           paddingVertical: 6,
                           borderRadius: 999,
@@ -413,31 +427,25 @@ export default function EmployeeTasksScreen() {
                     </Text>
 
                     {/* AI Diagnostic Spec Box */}
-                    <View
-                      style={{
-                        backgroundColor: "#f8fafc",
-                        borderRadius: 20,
+                    <LiquidGlassCard
+                      variant="light"
+                      borderRadius={20}
+                      style={{ marginBottom: 20 }}
+                      contentStyle={{
                         padding: 16,
                         flexDirection: "row",
                         alignItems: "center",
-                        marginBottom: 20,
-                        borderWidth: 1,
-                        borderColor: "#f1f5f9",
                       }}
                     >
-                      <View
-                        style={{
-                          width: 48,
-                          height: 48,
-                          borderRadius: 16,
-                          backgroundColor: `${serviceConfig.themeColor}20`,
-                          alignItems: "center",
-                          justifyContent: "center",
-                          marginRight: 14,
-                        }}
+                      <LiquidGlassIconBadge
+                        size={48}
+                        borderRadius={16}
+                        variant="light"
+                        tintColor={serviceConfig.themeColor}
+                        style={{ marginRight: 14 }}
                       >
                         <FileText size={24} color={serviceConfig.themeColor} />
-                      </View>
+                      </LiquidGlassIconBadge>
                       <View style={{ flex: 1 }}>
                         <Text
                           style={{
@@ -460,19 +468,15 @@ export default function EmployeeTasksScreen() {
                           +{task.points} SLA Points • Check-In Required
                         </Text>
                       </View>
-                    </View>
+                    </LiquidGlassCard>
 
                     {/* CTA Button */}
-                    <TouchableOpacity
+                    <LiquidGlassButton
+                      variant="tinted"
+                      tintColor="rgba(6, 34, 20, 0.86)"
+                      dropletColor="#4ade80"
                       onPress={() => router.push(`/(employee)/task/${task.id}` as any)}
-                      style={{
-                        backgroundColor: "#062214",
-                        borderRadius: 999,
-                        paddingVertical: 18,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
+                      contentStyle={{ paddingVertical: 18 }}
                     >
                       <ListTodo
                         size={19}
@@ -488,21 +492,17 @@ export default function EmployeeTasksScreen() {
                       >
                         Execute {serviceConfig.vocab.taskSingular}
                       </Text>
-                    </TouchableOpacity>
-                  </View>
+                    </LiquidGlassButton>
+                  </LiquidGlassCard>
                 ))}
               </>
             ) : (
               (completedTasks.length > 0 ? completedTasks : [serviceConfig.sampleTasks[0]]).filter(Boolean).map((doneTask: any, idx: number) => (
-                <View
+                <LiquidGlassCard
                   key={doneTask.id || idx}
-                  style={{
-                    backgroundColor: "#ffffff",
-                    borderRadius: 30,
-                    padding: 24,
-                    borderWidth: 1,
-                    borderColor: "#e2e8f0",
-                  }}
+                  variant="light"
+                  borderRadius={30}
+                  contentStyle={{ padding: 24 }}
                 >
                   <View
                     style={{
@@ -536,14 +536,10 @@ export default function EmployeeTasksScreen() {
                   >
                     {doneTask.workOrderCode || "WO-001"} • Verified & Submitted
                   </Text>
-                  <TouchableOpacity
+                  <LiquidGlassButton
+                    variant="light"
                     onPress={() => router.push("/(employee)/reports" as any)}
-                    style={{
-                      backgroundColor: "#f1f5f9",
-                      borderRadius: 999,
-                      paddingVertical: 16,
-                      alignItems: "center",
-                    }}
+                    contentStyle={{ paddingVertical: 16 }}
                   >
                     <Text
                       style={{
@@ -554,13 +550,13 @@ export default function EmployeeTasksScreen() {
                     >
                       View {serviceConfig.vocab.report}
                     </Text>
-                  </TouchableOpacity>
-                </View>
+                  </LiquidGlassButton>
+                </LiquidGlassCard>
               ))
             )}
           </View>
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

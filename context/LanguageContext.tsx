@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TouchableOpacity, Text, View } from "react-native";
 import { Globe } from "lucide-react-native";
+import { SafeBlurView } from "../components/LiquidGlass";
 import { setGlobalFontLanguage } from "../utils/fontSetup";
 
 export type AppLanguage = "en" | "ta";
@@ -15,7 +16,7 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     manifesto1: "Smart Facilities.",
     manifesto2: "Rapid Response.",
     manifesto3: "Total Compliance.",
-    
+
     // Auth & Roles
     login: "Login",
     register: "Join",
@@ -221,7 +222,7 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     manifesto1: "விவசாயிக்கு உதவி.",
     manifesto2: "நல்ல மண்.",
     manifesto3: "நல்ல எதிர்காலம்.",
-    
+
     // Auth & Roles
     login: "உள்ளே செல்",
     register: "சேர்",
@@ -429,8 +430,8 @@ interface LanguageContextProps {
 
 const LanguageContext = createContext<LanguageContextProps>({
   language: "en",
-  setLanguage: () => {},
-  toggleLanguage: () => {},
+  setLanguage: () => { },
+  toggleLanguage: () => { },
   t: (key: string, fallback?: string) => fallback || key,
 });
 
@@ -505,34 +506,62 @@ export const LanguageTogglePill: React.FC<{
       activeOpacity={0.8}
       onPress={toggleLanguage}
       style={{
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        paddingHorizontal: 9,
         height: 30,
         borderRadius: 999,
-        borderWidth: 1.2,
-        borderColor: dark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.12)",
-        backgroundColor: dark
-          ? "rgba(15, 23, 42, 0.85)"
-          : "rgba(255, 255, 255, 0.95)",
+        overflow: "hidden",
+        borderWidth: 1.4,
+        borderColor: dark ? "rgba(255,255,255,0.44)" : "rgba(255,255,255,0.90)",
+        shadowColor: "#1F1917",
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: dark ? 0.3 : 0.14,
+        shadowRadius: 12,
+        elevation: 5,
       }}
       className={className}
     >
-      <View style={{ marginRight: 5 }}>
-        <Globe size={13} color={dark ? "#34d399" : "#059669"} />
-      </View>
-      <Text
+      <SafeBlurView
+        intensity={76}
+        tint={dark ? "dark" : "light"}
         style={{
-          fontFamily: "Brandon-Bold",
-          fontSize: 11,
-          letterSpacing: 0.8,
-          color: dark ? "#ffffff" : "#0f172a",
-          textTransform: "uppercase",
+          flex: 1,
+          borderRadius: 999,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          paddingHorizontal: 11,
+          backgroundColor: dark
+            ? "rgba(8, 22, 18, 0.74)"
+            : "rgba(255, 255, 255, 0.92)",
         }}
       >
-        {language === "en" ? "EN" : "TA"}
-      </Text>
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 10,
+            right: 10,
+            height: 1.5,
+            backgroundColor: dark
+              ? "rgba(255,255,255,0.65)"
+              : "rgba(255,255,255,0.96)",
+          }}
+        />
+        <View style={{ marginRight: 5 }}>
+          <Globe size={13} color={dark ? "#ffffff" : "#C8553D"} />
+        </View>
+        <Text
+          style={{
+            fontFamily: "Brandon-Bold",
+            fontSize: 11,
+            letterSpacing: 0.8,
+            color: dark ? "#ffffff" : "#1F1917",
+            textTransform: "uppercase",
+          }}
+        >
+          {language === "en" ? "EN" : "TA"}
+        </Text>
+      </SafeBlurView>
     </TouchableOpacity>
   );
 };

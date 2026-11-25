@@ -25,12 +25,18 @@ import {
   Zap,
   ShieldCheck,
 } from "lucide-react-native";
+import {
+  LiquidGlassBackdrop,
+  LiquidGlassCard,
+  LiquidGlassIconBadge,
+  LiquidGlassIconButton,
+} from "../../components/LiquidGlass";
 
 export default function EmployeePerformanceScreen() {
   const [autoRouting, setAutoRouting] = useState(true);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+    <LiquidGlassBackdrop variant="light">
       <StatusBar barStyle="dark-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
@@ -45,30 +51,17 @@ export default function EmployeePerformanceScreen() {
             paddingBottom: 14,
           }}
         >
-          <TouchableOpacity
+          <LiquidGlassIconButton
             onPress={() =>
               router.canGoBack()
                 ? router.back()
                 : router.replace("/(employee)/dashboard")
             }
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: "#ffffff",
-              alignItems: "center",
-              justifyContent: "center",
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
-              shadowRadius: 8,
-              elevation: 2,
-              borderWidth: 1,
-              borderColor: "#f1f5f9",
-            }}
+            variant="light"
+            size={44}
           >
             <ChevronLeft size={22} color="#0f172a" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
 
           <Text
             style={{
@@ -80,26 +73,13 @@ export default function EmployeePerformanceScreen() {
             Performance & KPIs
           </Text>
 
-          <TouchableOpacity
+          <LiquidGlassIconButton
             onPress={() => router.push("/(employee)/menu")}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: "#ffffff",
-              alignItems: "center",
-              justifyContent: "center",
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
-              shadowRadius: 8,
-              elevation: 2,
-              borderWidth: 1,
-              borderColor: "#f1f5f9",
-            }}
+            variant="light"
+            size={44}
           >
             <Settings size={20} color="#0f172a" />
-          </TouchableOpacity>
+          </LiquidGlassIconButton>
         </View>
 
         <ScrollView
@@ -111,20 +91,11 @@ export default function EmployeePerformanceScreen() {
           }}
         >
           {/* TOP HERO DIAL CARD (Reference Image 5 Center Screen: "Air Condition" + 3 Sub-Columns + Semi-Circle Gauge) */}
-          <View
-            style={{
-              backgroundColor: "#ffffff",
-              borderRadius: 36,
-              padding: 24,
-              marginBottom: 20,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: 0.05,
-              shadowRadius: 20,
-              elevation: 4,
-              borderWidth: 1,
-              borderColor: "#f1f5f9",
-            }}
+          <LiquidGlassCard
+            variant="light"
+            borderRadius={36}
+            style={{ marginBottom: 20 }}
+            contentStyle={{ padding: 24 }}
           >
             {/* Card Title + Toggle Switch */}
             <View
@@ -241,7 +212,7 @@ export default function EmployeePerformanceScreen() {
                     height: 240,
                     borderRadius: 120,
                     borderWidth: 16,
-                    borderColor: "#f1f5f9",
+                    borderColor: "rgba(148, 163, 184, 0.25)",
                     borderTopColor: "#10b981",
                     borderLeftColor: "#34d399",
                     borderRightColor: "#059669",
@@ -314,23 +285,14 @@ export default function EmployeePerformanceScreen() {
                 </Text>
               </View>
             </View>
-          </View>
+          </LiquidGlassCard>
 
           {/* ANALYTICS & POINTS BREAKDOWN CARD (Reference Image 5 Right Screen: "361.9 kWh" + Area Chart + Cost Rows) */}
-          <View
-            style={{
-              backgroundColor: "#ffffff",
-              borderRadius: 32,
-              padding: 22,
-              marginBottom: 20,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: 0.04,
-              shadowRadius: 16,
-              elevation: 3,
-              borderWidth: 1,
-              borderColor: "#f1f5f9",
-            }}
+          <LiquidGlassCard
+            variant="light"
+            borderRadius={32}
+            style={{ marginBottom: 20 }}
+            contentStyle={{ padding: 22 }}
           >
             <View
               style={{
@@ -361,18 +323,13 @@ export default function EmployeePerformanceScreen() {
                 </Text>
               </View>
               {/* Dot-Matrix Badge Icon */}
-              <View
-                style={{
-                  backgroundColor: "#ecfdf5",
-                  paddingHorizontal: 14,
-                  paddingVertical: 10,
-                  borderRadius: 16,
-                  borderWidth: 1,
-                  borderColor: "#bbf7d0",
-                  alignItems: "center",
-                }}
+              <LiquidGlassIconBadge
+                size={58}
+                borderRadius={16}
+                variant="light"
+                tintColor="#10b981"
               >
-                <Zap size={22} color="#10b981" />
+                <Zap size={20} color="#10b981" />
                 <Text
                   style={{
                     color: "#15803d",
@@ -383,7 +340,7 @@ export default function EmployeePerformanceScreen() {
                 >
                   TIER 1
                 </Text>
-              </View>
+              </LiquidGlassIconBadge>
             </View>
 
             {/* Simulated Area Trend Bars */}
@@ -407,7 +364,9 @@ export default function EmployeePerformanceScreen() {
                 </Text>
                 <View
                   style={{
-                    backgroundColor: "#dcfce7",
+                    backgroundColor: "rgba(220, 252, 231, 0.85)",
+                    borderWidth: 1,
+                    borderColor: "rgba(21, 128, 61, 0.18)",
                     paddingHorizontal: 8,
                     paddingVertical: 3,
                     borderRadius: 8,
@@ -433,7 +392,9 @@ export default function EmployeePerformanceScreen() {
                   height: 90,
                   paddingTop: 10,
                   paddingHorizontal: 8,
-                  backgroundColor: "#f8fafc",
+                  backgroundColor: "rgba(255, 255, 255, 0.45)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255, 255, 255, 0.85)",
                   borderRadius: 20,
                   paddingBottom: 10,
                 }}
@@ -477,7 +438,7 @@ export default function EmployeePerformanceScreen() {
             <View
               style={{
                 borderTopWidth: 1,
-                borderTopColor: "#f1f5f9",
+                borderTopColor: "rgba(148, 163, 184, 0.22)",
                 paddingTop: 16,
                 gap: 10,
               }}
@@ -577,7 +538,7 @@ export default function EmployeePerformanceScreen() {
                 </Text>
               </View>
             </View>
-          </View>
+          </LiquidGlassCard>
 
           {/* 2x2 SMART CATEGORY BENTO TILES (Reference Image 5: "Audio System | Smart Light") */}
           <View
@@ -617,21 +578,12 @@ export default function EmployeePerformanceScreen() {
               marginBottom: 20,
             }}
           >
-            <TouchableOpacity
+            <LiquidGlassCard
+              variant="light"
+              borderRadius={28}
               onPress={() => router.push("/(employee)/task/10482" as any)}
-              style={{
-                flex: 1,
-                backgroundColor: "#ffffff",
-                borderRadius: 28,
-                padding: 18,
-                borderWidth: 1,
-                borderColor: "#f1f5f9",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.03,
-                shadowRadius: 10,
-                elevation: 2,
-              }}
+              style={{ flex: 1 }}
+              contentStyle={{ padding: 18 }}
             >
               <Text
                 style={{
@@ -652,36 +604,23 @@ export default function EmployeePerformanceScreen() {
               >
                 Metro Tower • +40 pts
               </Text>
-              <View
-                style={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: 32,
-                  backgroundColor: "#ecfdf5",
-                  alignSelf: "center",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+              <LiquidGlassIconBadge
+                size={64}
+                borderRadius={32}
+                variant="light"
+                tintColor="#10b981"
+                style={{ alignSelf: "center" }}
               >
                 <CheckCircle2 size={28} color="#10b981" />
-              </View>
-            </TouchableOpacity>
+              </LiquidGlassIconBadge>
+            </LiquidGlassCard>
 
-            <TouchableOpacity
+            <LiquidGlassCard
+              variant="light"
+              borderRadius={28}
               onPress={() => router.push("/(employee)/task/10483" as any)}
-              style={{
-                flex: 1,
-                backgroundColor: "#ffffff",
-                borderRadius: 28,
-                padding: 18,
-                borderWidth: 1,
-                borderColor: "#f1f5f9",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.03,
-                shadowRadius: 10,
-                elevation: 2,
-              }}
+              style={{ flex: 1 }}
+              contentStyle={{ padding: 18 }}
             >
               <Text
                 style={{
@@ -702,42 +641,36 @@ export default function EmployeePerformanceScreen() {
               >
                 Apex Hub • +35 pts
               </Text>
-              <View
-                style={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: 32,
-                  backgroundColor: "#eff6ff",
-                  alignSelf: "center",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+              <LiquidGlassIconBadge
+                size={64}
+                borderRadius={32}
+                variant="light"
+                tintColor="#0284c7"
+                style={{ alignSelf: "center" }}
               >
                 <ShieldCheck size={28} color="#0284c7" />
-              </View>
-            </TouchableOpacity>
+              </LiquidGlassIconBadge>
+            </LiquidGlassCard>
           </View>
         </ScrollView>
 
         {/* FLOATING BOTTOM DOCK (Reference Image 5 Pill Dock) */}
-        <View
+        <LiquidGlassCard
+          variant="dark"
+          borderRadius={32}
+          dropletColor="#10b981"
           style={{
             position: "absolute",
             bottom: 24,
             left: 24,
             right: 24,
-            backgroundColor: "#062214",
-            borderRadius: 32,
+          }}
+          contentStyle={{
             paddingVertical: 14,
             paddingHorizontal: 24,
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 12 },
-            shadowOpacity: 0.25,
-            shadowRadius: 20,
-            elevation: 12,
           }}
         >
           <TouchableOpacity
@@ -777,8 +710,8 @@ export default function EmployeePerformanceScreen() {
           >
             <User size={22} color="rgba(255,255,255,0.6)" />
           </TouchableOpacity>
-        </View>
+        </LiquidGlassCard>
       </SafeAreaView>
-    </View>
+    </LiquidGlassBackdrop>
   );
 }

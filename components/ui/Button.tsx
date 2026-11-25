@@ -1,5 +1,6 @@
 import React from 'react';
-import { ActivityIndicator, Text, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
+import { LiquidGlassButton } from '../LiquidGlass';
 
 interface ButtonProps {
   title: string;
@@ -18,46 +19,38 @@ export const Button = ({
   disabled = false,
   loading = false,
   variant = 'primary',
-  className = '',
   textClassName = '',
   icon,
 }: ButtonProps) => {
-  const baseStyle = 'flex-row justify-center items-center rounded-full py-4 px-6';
-  
-  let variantStyle = '';
-  let textStyle = 'text-base font-brandon-bold text-center';
-
-  switch (variant) {
-    case 'primary':
-      variantStyle = 'bg-[#15803d] active:bg-[#7a7ce0]';
-      textStyle += ' text-white';
-      break;
-    case 'secondary':
-      variantStyle = 'bg-[#e8e8fc] active:bg-[#d1d1f8]';
-      textStyle += ' text-[#15803d]';
-      break;
-    case 'outline':
-      variantStyle = 'border-2 border-[#15803d] bg-transparent active:bg-[#e8e8fc]';
-      textStyle += ' text-[#15803d]';
-      break;
-  }
-
-  const disabledStyle = disabled || loading ? 'opacity-50' : '';
+  const glassVariant = variant === 'primary' ? 'tinted' : 'light';
+  const tintColor =
+    variant === 'primary'
+      ? 'rgba(13, 148, 136, 0.78)'
+      : undefined;
+  const textColor = variant === 'primary' ? '#FFFFFF' : '#0F766E';
 
   return (
-    <TouchableOpacity
+    <LiquidGlassButton
       onPress={onPress}
       disabled={disabled || loading}
-      className={`${baseStyle} ${variantStyle} ${disabledStyle} ${className}`}
+      variant={glassVariant}
+      tintColor={tintColor}
+      dropletColor={variant === 'primary' ? '#14B8A6' : '#0D9488'}
+      contentStyle={{ paddingVertical: 15, paddingHorizontal: 24 }}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? 'white' : '#15803d'} />
+        <ActivityIndicator color={textColor} />
       ) : (
-        <>
-          {icon && icon}
-          <Text className={`${textStyle} ${textClassName}`}>{title}</Text>
-        </>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          {icon}
+          <Text
+            className={`text-base font-brandon-bold text-center ${textClassName}`}
+            style={{ color: textColor }}
+          >
+            {title}
+          </Text>
+        </View>
       )}
-    </TouchableOpacity>
+    </LiquidGlassButton>
   );
 };

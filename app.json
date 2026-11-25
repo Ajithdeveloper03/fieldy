@@ -26,7 +26,9 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_BACKGROUND_LOCATION",
         "android.permission.FOREGROUND_SERVICE",
-        "android.permission.FOREGROUND_SERVICE_LOCATION"
+        "android.permission.FOREGROUND_SERVICE_LOCATION",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.POST_NOTIFICATIONS"
       ]
     },
     "web": {
@@ -65,10 +67,15 @@
       "reactCompiler": true
     },
     "extra": {
-      "router": {},
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
       "eas": {
-        "projectId": "708d08a4-fe05-4575-9e38-68d24e7c8f0c"
+        "projectId": "7e282804-c4cd-41ce-8692-698322b02dbe"
       }
-    }
+    },
+    "owner": "ajithdeveloper03"
   }
 }
