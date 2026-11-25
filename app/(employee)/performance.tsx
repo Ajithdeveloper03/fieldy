@@ -1,13 +1,5 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  StatusBar,
-  Switch,
-} from "react-native";
+import React, { useCallback, useState } from "react";
+import { View, Text, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -33,12 +25,27 @@ import {
 } from "../../components/LiquidGlass";
 
 export default function EmployeePerformanceScreen() {
-  const [autoRouting, setAutoRouting] = useState(true);
+  const [data, setData] = useState<PerformanceData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    setLoading(true);
+    api.get("/employee/performance")
+      .then((result) => { if (active) { setData(result); setError(false); } })
+      .catch(() => { if (active) setError(true); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []));
+
+  const metrics = data?.metrics;
+  const number = (value?: number) => Number(value || 0).toLocaleString();
+  const percent = (value?: number) => `${Number(value || 0).toFixed(0)}%`;
 
   return (
     <LiquidGlassBackdrop variant="light">
       <StatusBar barStyle="dark-content" />
-
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER (Reference Image 5 Minimalist Header) */}
         <View
@@ -122,78 +129,11 @@ export default function EmployeePerformanceScreen() {
                 thumbColor="#ffffff"
               />
             </View>
-
-            {/* 3 Minimal Sub-Columns (Reference Image 5: "Fan Speed | Timer | Auto Mode") */}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 24,
-              }}
-            >
-              <View>
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 13,
-                  }}
-                >
-                  Target Quota
-                </Text>
-                <Text
-                  style={{
-                    color: "#94a3b8",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 11,
-                    marginTop: 2,
-                  }}
-                >
-                  45 Audits / Mo
-                </Text>
-              </View>
-              <View>
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 13,
-                  }}
-                >
-                  Avg Turnaround
-                </Text>
-                <Text
-                  style={{
-                    color: "#94a3b8",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 11,
-                    marginTop: 2,
-                  }}
-                >
-                  Hours &lt; 2.4h
-                </Text>
-              </View>
-              <View>
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 13,
-                  }}
-                >
-                  Auto-Dispatch
-                </Text>
-                <Text
-                  style={{
-                    color: "#10b981",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 11,
-                    marginTop: 2,
-                  }}
-                >
-                  {autoRouting ? "Active [On]" : "Manual [Off]"}
-                </Text>
-              </View>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
+              <Card label="Task completion" value={percent(metrics?.task_completion_rate)} detail={`${number(metrics?.tasks_completed)} of ${number(metrics?.tasks_total)} tasks completed`} />
+              <Card label="Attendance" value={percent(metrics?.attendance_rate)} detail={`${number(metrics?.attendance_days)} of ${number(metrics?.workdays_elapsed)} weekdays recorded`} />
+              <Card label="Time recorded" value={`${number(metrics?.hours_worked)} hrs`} detail={`${number(metrics?.punctual_days)} on-time attendance days`} />
+              <Card label="Site visits" value={number(metrics?.visits_completed)} detail={`${number(metrics?.visits_total)} visits recorded this month`} />
             </View>
 
             {/* Glowing Semi-Circular Arc Gauge ("22°C" -> "86%") */}

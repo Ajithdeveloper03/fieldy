@@ -63,7 +63,7 @@ export default function SubmitReportScreen() {
   const [afterPhoto, setAfterPhoto] = useState<LocalMediaAsset | null>(null);
   const [siteVideo, setSiteVideo] = useState<LocalMediaAsset | null>(null);
   const [recommendations, setRecommendations] = useState("");
-  const [otpCode, setOtpCode] = useState("4821");
+  const [otpCode, setOtpCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const chooseImageSource = (setter: (asset: LocalMediaAsset) => void, label: string) => {
@@ -242,9 +242,6 @@ export default function SubmitReportScreen() {
       await AsyncStorage.setItem("@last_submitted_report", JSON.stringify(savedReport));
       await stopSession().catch(() => null);
       await AsyncStorage.multiRemove(["@active_task", "@active_checkin"]).catch(() => null);
-    } catch {
-      // Offline fallback already saved
-    } finally {
       setLoading(false);
       showToast({
         title: "Report Saved",
@@ -255,6 +252,13 @@ export default function SubmitReportScreen() {
         type: "success",
       });
       router.push("/(employee)/visit/success");
+    } catch (error: any) {
+      setLoading(false);
+      showToast({
+        title: "Report not saved",
+        message: error?.message || "Connect to the server and try again.",
+        type: "error",
+      });
     }
   };
 

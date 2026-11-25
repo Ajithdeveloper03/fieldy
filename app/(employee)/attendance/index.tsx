@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import {
   LogIn,
   LogOut,
 } from "lucide-react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { api } from "../../../services/api";
 import { useLanguage } from "../../../context/LanguageContext";
 import {
   LiquidGlassBackdrop,
@@ -27,17 +27,26 @@ import {
 
 export default function AttendanceScreen() {
   const { t, language } = useLanguage();
-  const [clockInTime, setClockInTime] = useState<string | null>("09:15 AM");
-  const [isClockedIn, setIsClockedIn] = useState<boolean>(true);
+  const [clockInTime, setClockInTime] = useState<string | null>(null);
+  const [isClockedIn, setIsClockedIn] = useState<boolean>(false);
 
-  useEffect(() => {
-    (async () => {
-      const time = await AsyncStorage.getItem("clockInTime");
-      const status = await AsyncStorage.getItem("isClockedIn");
-      if (time) setClockInTime(time);
-      if (status) setIsClockedIn(status === "true");
-    })();
-  }, []);
+  const [attendance, setAttendance] = useState<any[]>([]);
+  const [attendanceLoaded, setAttendanceLoaded] = useState(false);
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    api.get("/employee/performance").then((data) => {
+      if (!active) return;
+      const rows = Array.isArray(data?.attendance) ? data.attendance : [];
+      setAttendance(rows);
+      const currentDate = new Date();
+      const today = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(currentDate.getDate()).padStart(2, "0")}`;
+      const record = rows.find((row: any) => row.date === today);
+      setClockInTime(record?.check_in || null);
+      setIsClockedIn(Boolean(record?.check_in && !record?.check_out));
+      setAttendanceLoaded(true);
+    }).catch(() => { if (active) setAttendanceLoaded(false); });
+    return () => { active = false; };
+  }, []));
 
   return (
     <LiquidGlassBackdrop variant="dark">
@@ -107,9 +116,9 @@ export default function AttendanceScreen() {
                 lineHeight: 54,
               }}
             >
-              {isClockedIn ? "ON DUTY" : "OFF DUTY"}
+              {attendanceLoaded ? (isClockedIn ? "ON DUTY" : "OFF DUTY") : "ATTENDANCE UNAVAILABLE"}
             </Text>
-            {isClockedIn && (
+            {attendanceLoaded && isClockedIn && (
               <View
                 style={{
                   flexDirection: "row",
@@ -195,7 +204,7 @@ export default function AttendanceScreen() {
                     fontSize: 16,
                   }}
                 >
-                  Clock In Now
+                  Start work Now
                 </Text>
               </LiquidGlassButton>
             ) : (
@@ -215,7 +224,7 @@ export default function AttendanceScreen() {
                     fontSize: 16,
                   }}
                 >
-                  Clock Out Securely
+                  End work Securely
                 </Text>
               </LiquidGlassButton>
             )}
@@ -230,7 +239,7 @@ export default function AttendanceScreen() {
               marginBottom: 16,
             }}
           >
-            This Week&apos;s Log
+            This Month&apos;s Attendance
           </Text>
 
           <View style={{ gap: 12 }}>
@@ -284,7 +293,7 @@ export default function AttendanceScreen() {
                       fontSize: 14,
                     }}
                   >
-                    {log.day}
+                    {log.date ? new Date(`${log.date}T12:00:00`).toLocaleDateString(undefined, { weekday: "short" }) : "—"}
                   </Text>
                   <Text
                     style={{
@@ -293,7 +302,7 @@ export default function AttendanceScreen() {
                       fontSize: 11,
                     }}
                   >
-                    {log.date}
+                    {log.date || "Date unavailable"}
                   </Text>
                 </View>
 
@@ -313,7 +322,7 @@ export default function AttendanceScreen() {
                         marginBottom: 2,
                       }}
                     >
-                      Clock In
+                      Start work
                     </Text>
                     <Text
                       style={{
@@ -322,7 +331,7 @@ export default function AttendanceScreen() {
                         fontSize: 14,
                       }}
                     >
-                      {log.in}
+                      {log.check_in || "—"}
                     </Text>
                   </View>
                   <View style={{ alignItems: "flex-end" }}>
@@ -334,7 +343,7 @@ export default function AttendanceScreen() {
                         marginBottom: 2,
                       }}
                     >
-                      Clock Out
+                      End work
                     </Text>
                     <Text
                       style={{
@@ -343,7 +352,7 @@ export default function AttendanceScreen() {
                         fontSize: 14,
                       }}
                     >
-                      {log.out}
+                      {log.check_out || "—"}
                     </Text>
                   </View>
                 </View>

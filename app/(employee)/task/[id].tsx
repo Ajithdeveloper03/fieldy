@@ -53,39 +53,33 @@ export default function TaskDetailScreen() {
     void loadTaskMedia(id);
   }, [id, loadTaskMedia]);
 
-  // Match real backend task or service fallback
-  const matchedTask =
-    liveTask ||
-    serviceConfig.sampleTasks.find((t) => String(t.id) === String(id)) ||
-    serviceConfig.sampleTasks[0];
+  const [safetyChecklist, setSafetyChecklist] = useState<any[]>([]);
+  useEffect(() => {
+    const list = liveTask?.safety_requirements || liveTask?.checklist || [];
+    setSafetyChecklist(Array.isArray(list) ? list.map((item: any, index: number) => ({
+      id: item.id ?? index,
+      text: typeof item === "string" ? item : item.label || item.text || item.title || "",
+      checked: Boolean(item.completed ?? item.checked),
+    })).filter((item: any) => item.text) : []);
+  }, [liveTask]);
 
-  const [safetyChecklist, setSafetyChecklist] = useState([
-    { id: 1, text: `Wear certified PPE & credentials for ${serviceConfig.label}`, checked: true },
-    { id: 2, text: `Verify access clearance at ${serviceConfig.vocab.entitySingular}`, checked: true },
-    { id: 3, text: `Review site hazards and ${serviceConfig.shortName.toLowerCase()} SOP before starting visit`, checked: false },
-  ]);
-
-  const task = {
-    id: String(matchedTask?.id || id || "1"),
-    workOrderCode: matchedTask?.workOrderCode || `WO-${String(id || "10482")}`,
+  const task = liveTask ? {
+    id: String(liveTask.id),
+    workOrderCode: liveTask.workOrderCode,
     industry: serviceConfig.label,
-    title: matchedTask?.title || `${serviceConfig.label} Field Verification`,
-    facility: matchedTask?.facility || matchedTask?.targetEntity || serviceConfig.sampleEntities[0]?.name || "Assigned Site",
-    address: matchedTask?.address || serviceConfig.sampleEntities[0]?.address || "Chennai, Tamil Nadu",
-    latitude: matchedTask?.latitude || null,
-    longitude: matchedTask?.longitude || null,
-    farmerId: matchedTask?.farmerId || null,
-    status: matchedTask?.status || "Pending",
-    priority: matchedTask?.priority ? `${String(matchedTask.priority).toUpperCase()} PRIORITY` : "HIGH PRIORITY",
-    due: matchedTask?.due || "Today",
-    points: matchedTask?.points || 40,
-    aiSuggestions:
-      matchedTask?.aiDiagnostic ||
-      `Verify baseline ${serviceConfig.shortName.toLowerCase()} inspection points and capture before/after photos in the field report after arrival & checkout.`,
-    description:
-      matchedTask?.description ||
-      `Execute assigned ${serviceConfig.vocab.taskSingular.toLowerCase()} at ${serviceConfig.vocab.entitySingular.toLowerCase()}.`,
-  };
+    title: liveTask.title,
+    facility: liveTask.facility || liveTask.targetEntity,
+    address: liveTask.address,
+    latitude: liveTask.latitude ?? null,
+    longitude: liveTask.longitude ?? null,
+    farmerId: liveTask.farmerId ?? null,
+    status: liveTask.status,
+    priority: liveTask.priority ? `${String(liveTask.priority).toUpperCase()} PRIORITY` : null,
+    due: liveTask.due,
+    points: liveTask.points ?? 0,
+    aiSuggestions: liveTask.aiDiagnostic,
+    description: liveTask.description,
+  } : null;
 
   const toggleSafetyItem = (itemId: number) => {
     setSafetyChecklist((prev) =>
@@ -144,6 +138,7 @@ export default function TaskDetailScreen() {
   };
 
   const handleStartVisit = async () => {
+    if (!task) return;
     await AsyncStorage.setItem("@active_task", JSON.stringify(task));
     await api.post(`/employee/tasks/${task.id}/status`, { status: "in_progress" }).catch(() => null);
     router.push({
@@ -159,6 +154,13 @@ export default function TaskDetailScreen() {
       },
     } as any);
   };
+
+  if (!task) {
+    return <View style={{ flex: 1, backgroundColor: "#f8fafc", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 19, textAlign: "center" }}>{taskLoaded ? "This task is not assigned to your account." : "Loading assigned task…"}</Text>
+      {taskLoaded ? <TouchableOpacity onPress={() => router.replace("/(employee)/tasks")} style={{ marginTop: 18, padding: 12, backgroundColor: "#062214", borderRadius: 12 }}><Text style={{ color: "#fff", fontFamily: "Brandon-Bold" }}>Back to tasks</Text></TouchableOpacity> : null}
+    </View>;
+  }
 
   return (
     <LiquidGlassBackdrop variant="light">

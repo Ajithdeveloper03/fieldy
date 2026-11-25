@@ -64,9 +64,14 @@ export default function EmployeeDashboardScreen() {
   const { t, language } = useLanguage();
   const { serviceConfig, setService } = useService();
   const [isClockedIn, setIsClockedIn] = useState(false);
-  const [userName, setUserName] = useState("Field Executive");
-  const [employeeCode, setEmployeeCode] = useState("FO-902");
+  const [userName, setUserName] = useState("");
+  const [employeeCode, setEmployeeCode] = useState("");
   const [apiSites, setApiSites] = useState<any[]>([]);
+  const [dashboardStats, setDashboardStats] = useState<any>({});
+  const [dashboardTasks, setDashboardTasks] = useState<any[]>([]);
+  const [dashboardVisits, setDashboardVisits] = useState<any[]>([]);
+  const [completionRate, setCompletionRate] = useState(0);
+  const [pointsEarned, setPointsEarned] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -82,6 +87,8 @@ export default function EmployeeDashboardScreen() {
         const dash = await api.get("/employee/dashboard");
         const emp = dash?.data?.employee;
         const att = dash?.data?.attendance;
+        setDashboardStats(dash?.data?.stats || {});
+        setDashboardVisits(Array.isArray(dash?.data?.recent_visits) ? dash.data.recent_visits : []);
         if (emp?.name) setUserName(emp.name);
         if (emp?.employee_code) setEmployeeCode(emp.employee_code);
         if (emp?.industry && ALL_SERVICE_KEYS.includes(emp.industry)) {
@@ -92,7 +99,16 @@ export default function EmployeeDashboardScreen() {
           await AsyncStorage.setItem("isClockedIn", att.checked_in && !att.checked_out ? "true" : "false");
         }
       } catch {
-        // Offline mode uses stored session state
+        // Keep the session identity when the API is unavailable.
+      }
+
+      try {
+        const performance = await api.get("/employee/performance");
+        setCompletionRate(Number(performance?.metrics?.task_completion_rate ?? 0));
+        setPointsEarned(Number(performance?.metrics?.points_earned ?? 0));
+      } catch {
+        setCompletionRate(0);
+        setPointsEarned(0);
       }
     })();
   }, []);
@@ -107,38 +123,28 @@ export default function EmployeeDashboardScreen() {
         }
       })
       .catch(() => {
-        // Fallback smoothly to serviceConfig.sampleEntities
+        setApiSites([]);
       });
+    api.get("/employee/tasks").then((res) => setDashboardTasks(Array.isArray(res?.tasks) ? res.tasks : [])).catch(() => setDashboardTasks([]));
   }, [serviceConfig.key]);
 
   const projectSiteProfiles = React.useMemo(() => {
     const normalizedApi = apiSites.map((s: any, idx: number) => ({
       id: String(s.site_contact_id || s.id),
       code: s.site_code || s.code || `SITE-${String(idx + 1).padStart(3, "0")}`,
-      name: s.name || "Project Site",
+      name: s.name || "Name unavailable",
       type: s.type || serviceConfig.vocab.entitySingular,
       size: s.size || "2500",
       sizeUnit: s.sizeUnit || serviceConfig.vocab.sizeUnit,
-      area: s.area || s.city || "Assigned Zone",
-      city: s.city || "Chennai",
-      contactName: s.contactName || s.phone || "Site Coordinator",
+      area: s.area || s.city || "",
+      city: s.city || "",
+      contactName: s.contactName || s.phone || "",
       status: s.status || "verified",
       image: s.image || SITE_CARD_IMAGES[idx % SITE_CARD_IMAGES.length],
     }));
 
-    const seen = new Set(
-      normalizedApi.map((item: any) => `${item.code}`.toLowerCase())
-    );
-    const catalogExtras = serviceConfig.sampleEntities.filter(
-      (e) =>
-        !seen.has(`${e.code}`.toLowerCase()) &&
-        !normalizedApi.some(
-          (a: any) => a.name.toLowerCase() === e.name.toLowerCase()
-        )
-    );
-
-    return [...normalizedApi, ...catalogExtras];
-  }, [apiSites, serviceConfig.sampleEntities, serviceConfig.vocab]);
+    return normalizedApi;
+  }, [apiSites, serviceConfig.vocab]);
   const renderActionIcon = (iconName: string, color: string) => {
     switch (iconName) {
       case "ClipboardCheck": return <ClipboardCheck size={24} color={color} />;
@@ -175,7 +181,7 @@ export default function EmployeeDashboardScreen() {
                 "rgba(4, 18, 10, 0.96)",
               ]}
               locations={[0, 0.45, 1]}
-              style={[StyleSheet.absoluteFillObject, { zIndex: 1 }]}
+              style={[StyleSheet.absoluteFill, { zIndex: 1 }]}
               pointerEvents="none"
             />
 
@@ -203,12 +209,9 @@ export default function EmployeeDashboardScreen() {
                       flexShrink: 0,
                     }}
                   >
-                    <Image
-                      source={{
-                        uri: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=project&q=80",
-                      }}
-                      style={{ width: "100%", height: "100%" }}
-                    />
+                    <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.14)", alignItems: "center", justifyContent: "center" }}>
+                      <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 22 }}>{userName.trim().charAt(0).toUpperCase() || "?"}</Text>
+                    </View>
                   </TouchableOpacity>
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text
@@ -231,7 +234,7 @@ export default function EmployeeDashboardScreen() {
                           flexShrink: 1,
                         }}
                       >
-                        {userName}
+                          {userName || "Employee"}
                       </Text>
                       <ShieldCheck
                         size={18}
@@ -257,7 +260,7 @@ export default function EmployeeDashboardScreen() {
                             letterSpacing: 0.8,
                           }}
                         >
-                          {employeeCode}
+                          {employeeCode || "Employee"}
                         </Text>
                       </View>
                     </View>
@@ -336,7 +339,7 @@ export default function EmployeeDashboardScreen() {
                       fontSize: 13,
                     }}
                   >
-                    {serviceConfig.kpis.points}
+                    {pointsEarned} pts
                   </Text>
                 </LiquidGlassButton>
               </View>
@@ -378,7 +381,7 @@ export default function EmployeeDashboardScreen() {
                         lineHeight: 54,
                       }}
                     >
-                      {serviceConfig.kpis.efficiencyRate}
+                      {completionRate}%
                     </Text>
                     <Text
                       style={{
@@ -454,7 +457,7 @@ export default function EmployeeDashboardScreen() {
                       fontSize: 24,
                     }}
                   >
-                    {serviceConfig.kpis.primaryNumber}
+                    {projectSiteProfiles.length}
                   </Text>
                   <Text
                     style={{
@@ -463,7 +466,7 @@ export default function EmployeeDashboardScreen() {
                       fontSize: 13,
                     }}
                   >
-                    {serviceConfig.kpis.primaryLabel}
+                    {serviceConfig.vocab.entities}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -482,7 +485,7 @@ export default function EmployeeDashboardScreen() {
                       fontSize: 24,
                     }}
                   >
-                    {serviceConfig.kpis.secondaryNumber}
+                    {Number(dashboardStats.visits_today || 0)}
                   </Text>
                   <Text
                     style={{
@@ -491,7 +494,7 @@ export default function EmployeeDashboardScreen() {
                       fontSize: 13,
                     }}
                   >
-                    {serviceConfig.kpis.secondaryLabel}
+                    "Visits today"
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -505,7 +508,7 @@ export default function EmployeeDashboardScreen() {
                       fontSize: 24,
                     }}
                   >
-                    {serviceConfig.sampleVisits.length}
+                    {Number(dashboardStats.visits_total || 0)}
                   </Text>
                   <Text
                     style={{
@@ -557,10 +560,10 @@ export default function EmployeeDashboardScreen() {
                   marginBottom: 14,
                 }}
               >
-                {serviceConfig.sampleTasks.length} Orders
+                {dashboardTasks.filter((task: any) => task.status !== "Completed").length} Orders
               </Text>
 
-              {/* Avatar Stack + Badge */}
+              {/* Real assignment count */}
               <View
                 style={{
                   flexDirection: "row",
@@ -568,24 +571,7 @@ export default function EmployeeDashboardScreen() {
                   marginBottom: 12,
                 }}
               >
-                {[
-                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=project&q=80",
-                  "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&auto=format&fit=project&q=80",
-                  "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&auto=format&fit=project&q=80",
-                ].map((uri, i) => (
-                  <Image
-                    key={i}
-                    source={{ uri }}
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 16,
-                      borderWidth: 2,
-                      borderColor: "#ffffff",
-                      marginLeft: i === 0 ? 0 : -10,
-                    }}
-                  />
-                ))}
+                <ClipboardCheck size={24} color={serviceConfig.themeColor} />
                 <View
                   style={{
                     backgroundColor: "rgba(255, 255, 255, 0.72)",
@@ -619,7 +605,7 @@ export default function EmployeeDashboardScreen() {
                   lineHeight: 18,
                 }}
               >
-                {serviceConfig.sampleTasks[0]?.title || "SLA compliance on schedule"}
+                  {dashboardTasks[0]?.title || "No assigned tasks"}
               </Text>
             </LiquidGlassCard>
 
@@ -658,7 +644,7 @@ export default function EmployeeDashboardScreen() {
                     lineHeight: 32,
                   }}
                 >
-                  {serviceConfig.kpis.primaryNumber} {serviceConfig.vocab.entities}
+                  {projectSiteProfiles.length} {serviceConfig.vocab.entities}
                 </Text>
                 <View
                   style={{
@@ -675,7 +661,7 @@ export default function EmployeeDashboardScreen() {
                       fontSize: 13,
                     }}
                   >
-                    📋 {serviceConfig.kpis.secondaryNumber}
+                    📋 {Number(dashboardStats.visits_today || 0)} visits today
                   </Text>
                   <Text
                     style={{
@@ -684,7 +670,7 @@ export default function EmployeeDashboardScreen() {
                       fontSize: 13,
                     }}
                   >
-                    ✓ {serviceConfig.kpis.efficiencyRate} SLA
+                    ✓ {completionRate}% task completion
                   </Text>
                 </View>
               </View>
@@ -730,7 +716,7 @@ export default function EmployeeDashboardScreen() {
                   Active {serviceConfig.vocab.tasks}
                 </Text>
                 <Text style={{ color: "rgba(255,255,255,0.85)", fontFamily: "Brandon-Medium", fontSize: 14, marginTop: 6 }}>
-                  {serviceConfig.sampleTasks.length} assigned orders
+                  {dashboardTasks.filter((task: any) => task.status !== "Completed").length} assigned orders
                 </Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -1013,7 +999,7 @@ export default function EmployeeDashboardScreen() {
               {
                 tag: "PERFORMANCE",
                 title: "My Score & SLA",
-                sub: `${serviceConfig.kpis.efficiencyRate} • ${serviceConfig.kpis.points}`,
+                sub: `${completionRate}% completion • ${pointsEarned} points`,
                 bg: "#0369a1",
                 img: require("../../assets/images/image17.jpg"),
                 route: "/(employee)/performance",
@@ -1139,7 +1125,7 @@ export default function EmployeeDashboardScreen() {
                     }}
                     numberOfLines={2}
                   >
-                    {visit.site}
+                    {visit.farmerName || "Site name not recorded"}
                   </Text>
                   <Text
                     numberOfLines={1}
@@ -1149,7 +1135,7 @@ export default function EmployeeDashboardScreen() {
                       fontSize: 14,
                     }}
                   >
-                    {visit.time} • {visit.type}
+                    {[visit.time, visit.status].filter(Boolean).join(" • ")}
                   </Text>
                 </View>
 

@@ -304,7 +304,7 @@ export default function EmployeeReportsScreen() {
                 <Image
                   source={item.image}
                   style={[
-                    StyleSheet.absoluteFillObject,
+                    StyleSheet.absoluteFill,
                     { width: "100%", height: "100%" },
                   ]}
                   resizeMode="cover"
@@ -316,7 +316,7 @@ export default function EmployeeReportsScreen() {
                     "rgba(6, 34, 20, 0.9)",
                   ]}
                   locations={[0, 0.5, 1]}
-                  style={StyleSheet.absoluteFillObject}
+                  style={StyleSheet.absoluteFill}
                 />
 
                 {/* Top Floating Pill Badge ("23 reports") + "..." Circle Button */}

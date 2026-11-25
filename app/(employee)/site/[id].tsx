@@ -117,10 +117,16 @@ export default function EmployeeSiteContactProfileScreen() {
     });
   };
 
-  const matchedEntity =
-    serviceConfig.sampleEntities.find((e) => e.id === String(id) || e.code === String(id)) ||
-    serviceConfig.sampleEntities[0];
+  useEffect(() => {
+    let active = true;
+    api.get("/employee/sites").then((result) => {
+      const item = (result?.sites || []).find((entry: any) => String(entry.site_contact_id || entry.id) === String(id));
+      if (active) setSite(item || null);
+    }).catch(() => { if (active) setSite(null); }).finally(() => { if (active) setLoaded(true); });
+    return () => { active = false; };
+  }, [id]);
 
+  const location = site?.site_address || site?.address;
   return (
     <LiquidGlassBackdrop variant="light">
       <StatusBar barStyle="light-content" />
@@ -545,36 +551,11 @@ export default function EmployeeSiteContactProfileScreen() {
               </Text>
             </LiquidGlassButton>
           </View>
-
-          {/* RECENT VISIT REPORTS TIMELINE */}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 14,
-            }}
-          >
-            <Text
-              style={{
-                color: "#0f172a",
-                fontFamily: "Brandon-Bold",
-                fontSize: 20,
-              }}
-            >
-              Visit History
-            </Text>
-            <TouchableOpacity onPress={() => router.push("/(employee)/reports")}>
-              <Text
-                style={{
-                  color: "#15803d",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 13,
-                }}
-              >
-                View All
-              </Text>
-            </TouchableOpacity>
+          <View style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 20, marginTop: 16, gap: 18 }}>
+            {location ? <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}><MapPin size={19} color="#059669" /><Text style={{ flex: 1, color: "#334155", fontFamily: "Brandon-Medium", fontSize: 15 }}>{location}</Text></View> : null}
+            {site.phone ? <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}><Phone size={19} color="#059669" /><Text style={{ color: "#334155", fontFamily: "Brandon-Medium", fontSize: 15 }}>{site.phone}</Text></View> : null}
+            {site.size ? <Text style={{ color: "#334155", fontFamily: "Brandon-Medium", fontSize: 15 }}>Site size: {site.size}</Text> : null}
+            {!location && !site.phone && !site.size ? <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 14 }}>No additional site details have been recorded.</Text> : null}
           </View>
 
           <LiquidGlassCard

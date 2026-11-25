@@ -66,17 +66,17 @@ export default function AdminDashboardScreen() {
   const handleApprove = async (id: number) => {
     Alert.alert(
       "Confirm Approval",
-      "Approve this project site and activate its site contact?",
+      "Accept this project site and activate its site contact?",
       [
         { text: "Cancel", style: "cancel" },
         {
-          text: "Approve",
+          text: "Accept",
           style: "default",
           onPress: async () => {
             try {
               const response = await apiClient.post(`/admin/sites/${id}/approve`);
               setPendingSiteContacts((prev) => prev.filter((site) => site.id !== id));
-              Alert.alert("Approved", response.site_code ? `Project site approved. Site code: ${response.site_code}` : "Project site approved.");
+              Alert.alert("Accepted", response.site_code ? `Project site approved. Site code: ${response.site_code}` : "Project site approved.");
             } catch (e) {
               Alert.alert("Approval failed", e instanceof Error ? e.message : "Please try again.");
             }
@@ -156,8 +156,8 @@ export default function AdminDashboardScreen() {
         </View>
 
         <View>
-          <Text className="text-emerald-100 text-sm font-semibold tracking-widest uppercase mb-1">Overview</Text>
-          <Text className="text-white text-3xl font-black tracking-tight">Admin Intelligence</Text>
+          <Text className="text-emerald-100 text-sm font-semibold tracking-widest uppercase mb-1">Summary</Text>
+          <Text className="text-white text-3xl font-black tracking-tight">Admin dashboard</Text>
         </View>
       </LinearGradient>
 
@@ -166,7 +166,7 @@ export default function AdminDashboardScreen() {
         {/* Pending Approvals Feed */}
         <Animated.View style={{ opacity: fadeAnim }} className="mb-10">
           <View className="flex-row justify-between items-center mb-4 px-2">
-            <Text className="text-slate-800 text-xl font-black">Action Required</Text>
+            <Text className="text-slate-800 text-xl font-black">Needs your attention</Text>
             <TouchableOpacity>
               <Text className="text-emerald-600 font-bold text-sm">View All</Text>
             </TouchableOpacity>

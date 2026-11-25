@@ -10,7 +10,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import MapView, { Circle, Polyline } from 'react-native-maps';
+import MapView, { Circle, Polyline } from './components/MapView';
 import { FieldEmployeeMarker } from './components/FieldEmployeeMarker';
 import { useTracking } from './context/TrackingContext';
 import { useService } from './context/ServiceContext';
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   map: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   markerContainer: {
     alignItems: 'center',

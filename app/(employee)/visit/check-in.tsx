@@ -53,13 +53,12 @@ export default function CheckInScreen() {
           setCoordsText("GPS Permission Needed");
         }
       } catch {
-        setCoordsText("13.0827° N, 80.2707° E");
+        setCoordsText("Current GPS location unavailable");
       }
     })();
   }, []);
 
-  const matchedEntity = serviceConfig.sampleEntities[0];
-  const resolvedSiteName = siteName || matchedEntity?.name || serviceConfig.vocab.entitySingular;
+  const resolvedSiteName = siteName || "Site not specified";
 
   const handleCapture = async () => {
     try {
@@ -255,7 +254,7 @@ export default function CheckInScreen() {
                 marginBottom: 32,
               }}
             >
-              You have securely arrived at {matchedEntity?.name || serviceConfig.vocab.entitySingular}. Please
+              You have securely arrived at {resolvedSiteName}. Please
               verify your physical presence with a selfie.
             </Text>
 

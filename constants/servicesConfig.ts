@@ -1362,4 +1362,3 @@ export const SERVICES_CONFIG: Record<ServiceKey, ServiceDefinition> = (
   acc[key] = enrichService(RAW_SERVICES_CONFIG[key]);
   return acc;
 }, {} as Record<ServiceKey, ServiceDefinition>);
-

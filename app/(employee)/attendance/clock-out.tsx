@@ -201,7 +201,7 @@ export default function ClockOutScreen() {
                     fontSize: 12,
                   }}
                 >
-                  Clock In
+                  Start work
                 </Text>
                 <Text
                   style={{
@@ -321,7 +321,7 @@ export default function ClockOutScreen() {
                       marginTop: 4,
                     }}
                   >
-                    Delta Zone A • Verified
+                    Delta Zone A • Checked
                   </Text>
                 )}
               </View>

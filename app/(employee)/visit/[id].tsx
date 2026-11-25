@@ -29,9 +29,18 @@ import {
   LiquidGlassIconButton,
 } from "../../../components/LiquidGlass";
 
-export default function EmployeeVisitPurposeScreen() {
-  const { id } = useLocalSearchParams();
-  const { serviceConfig } = useService();
+export default function EmployeeVisitDetailScreen() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const [visit, setVisit] = useState<any | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => {
+    let active = true;
+    api.get("/employee/visits").then((result) => {
+      const entry = (result?.visits || []).find((row: any) => String(row.id) === String(id));
+      if (active) setVisit(entry || null);
+    }).catch(() => { if (active) setVisit(null); }).finally(() => { if (active) setLoaded(true); });
+    return () => { active = false; };
+  }, [id]);
 
   const matchedVisit = serviceConfig.sampleVisits.find(v => String(v.id) === String(id)) || serviceConfig.sampleVisits[0];
   const matchedEntity = serviceConfig.sampleEntities[0];
