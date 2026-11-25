@@ -3,9 +3,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, StyleSheet, StatusBar } from "react-native";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ChevronLeft, Check, FileText, Home } from "lucide-react-native";
+import { ChevronLeft, Check, FileText, Home, Download } from "lucide-react-native";
 import { showToast } from "../../../components/ui/ToastMessage";
 import { useService } from "../../../context/ServiceContext";
+import { downloadVisitDossierToDevice } from "../../../services/media";
 import {
   LiquidGlassBackdrop,
   LiquidGlassButton,
@@ -15,10 +16,14 @@ import {
 
 export default function SuccessScreen() {
   const { serviceConfig } = useService();
+  const [downloading, setDownloading] = useState(false);
   const [summary, setSummary] = useState({
-    siteName: serviceConfig.sampleEntities[0]?.name || serviceConfig.vocab.entitySingular,
+    visitId: "",
+    siteName: serviceConfig.vocab.entitySingular,
     serviceName: serviceConfig.label,
     notes: "",
+    pointsAwarded: 0,
+    mediaCount: 0,
     timestamp: new Date().toLocaleString([], {
       month: "short",
       day: "numeric",
@@ -35,9 +40,12 @@ export default function SuccessScreen() {
         if (raw) {
           const parsed = JSON.parse(raw);
           setSummary((prev) => ({
+            visitId: parsed.visitId ? String(parsed.visitId) : "",
             siteName: parsed.siteName || prev.siteName,
             serviceName: parsed.service || serviceConfig.label,
             notes: parsed.notes || "",
+            pointsAwarded: Number(parsed.pointsAwarded || 0),
+            mediaCount: Number(parsed.mediaCount || 0),
             timestamp: new Date(parsed.createdAt || Date.now()).toLocaleString([], {
               month: "short",
               day: "numeric",
@@ -48,20 +56,36 @@ export default function SuccessScreen() {
           }));
         }
       } catch {
-        // Keep current defaults
+        // Keep defaults
       }
     })();
 
     const timer = setTimeout(() => {
       showToast({
         title: `${serviceConfig.shortName} Sync Complete`,
-        message: "Field report & follow-up synced to Admin Dashboard.",
+        message: "Visit checkout & report synced live to Web Admin.",
         type: "success",
-        duration: 4000,
+        duration: 3500,
       });
-    }, 350);
+    }, 300);
     return () => clearTimeout(timer);
   }, [serviceConfig.label, serviceConfig.shortName]);
+
+  const handleDownloadDossier = async () => {
+    if (!summary.visitId || downloading) return;
+    setDownloading(true);
+    try {
+      await downloadVisitDossierToDevice(summary.visitId);
+    } catch {
+      showToast({
+        title: "Download Notice",
+        message: "Could not download visit dossier right now.",
+        type: "error",
+      });
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const themeAccent = serviceConfig.themeColor || "#15803d";
 
@@ -94,11 +118,9 @@ export default function SuccessScreen() {
             <Check size={46} color="#ffffff" strokeWidth={3} />
           </LiquidGlassCard>
 
-          <Text style={styles.title}>
-            Report Submitted{"\n"}Successfully!
-          </Text>
+          <Text style={styles.title}>Report Synced{"\n"}Successfully!</Text>
           <Text style={styles.subtitle}>
-            Your field visit checkout and {serviceConfig.shortName.toLowerCase()} report have been recorded.
+            Your visit checkout, media attachments, and performance metrics are now live in Web Admin.
           </Text>
 
           <LiquidGlassCard
@@ -110,6 +132,7 @@ export default function SuccessScreen() {
             <View style={styles.badgePill}>
               <Text style={[styles.badgeText, { color: themeAccent }]}>
                 {summary.serviceName}
+                {summary.pointsAwarded > 0 ? ` • +${summary.pointsAwarded} PTS` : ""}
               </Text>
             </View>
             <Text style={styles.siteName}>{summary.siteName}</Text>
@@ -118,12 +141,30 @@ export default function SuccessScreen() {
                 “{summary.notes}”
               </Text>
             ) : null}
-            <Text style={styles.timestamp}>{summary.timestamp}</Text>
+            <Text style={styles.timestamp}>
+              {summary.timestamp}
+              {summary.mediaCount > 0 ? ` • ${summary.mediaCount} file(s) attached` : ""}
+            </Text>
           </LiquidGlassCard>
 
           <View style={styles.actions}>
+            {summary.visitId ? (
+              <LiquidGlassButton
+                onPress={handleDownloadDossier}
+                disabled={downloading}
+                variant="light"
+                style={{ width: "100%" }}
+                contentStyle={{ paddingVertical: 14 }}
+              >
+                <Download size={18} color="#0f172a" style={{ marginRight: 8 }} />
+                <Text style={styles.secondaryBtnText}>
+                  {downloading ? "Preparing Dossier..." : "Download Visit Dossier"}
+                </Text>
+              </LiquidGlassButton>
+            ) : null}
+
             <LiquidGlassButton
-              onPress={() => router.push("/(employee)/reports")}
+              onPress={() => router.replace("/(employee)/reports")}
               variant="tinted"
               tintColor={`${themeAccent}D9`}
               dropletColor={themeAccent}
@@ -151,23 +192,18 @@ export default function SuccessScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "transparent",
-  },
+  container: { flex: 1 },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(15, 23, 42, 0.06)",
   },
   headerTitle: {
     color: "#0f172a",
     fontFamily: "Brandon-Bold",
-    fontSize: 17,
+    fontSize: 18,
   },
   content: {
     flex: 1,
@@ -178,7 +214,7 @@ const styles = StyleSheet.create({
   checkCircle: {
     width: 92,
     height: 92,
-    marginBottom: 24,
+    marginBottom: 22,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.28,
     shadowRadius: 18,
@@ -189,7 +225,7 @@ const styles = StyleSheet.create({
     fontFamily: "Brandon-Bold",
     fontSize: 26,
     textAlign: "center",
-    lineHeight: 34,
+    lineHeight: 33,
     marginBottom: 8,
   },
   subtitle: {
@@ -198,23 +234,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
     lineHeight: 20,
-    marginBottom: 24,
+    marginBottom: 22,
   },
   summaryCardOuter: {
     width: "100%",
-    marginBottom: 28,
+    marginBottom: 24,
   },
   summaryCardInner: {
     padding: 20,
     alignItems: "center",
   },
   badgePill: {
-    backgroundColor: "rgba(255, 255, 255, 0.72)",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.96)",
     marginBottom: 10,
   },
   badgeText: {
@@ -226,7 +260,7 @@ const styles = StyleSheet.create({
   siteName: {
     color: "#0f172a",
     fontFamily: "Brandon-Bold",
-    fontSize: 18,
+    fontSize: 19,
     textAlign: "center",
     marginBottom: 6,
   },
@@ -238,13 +272,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   timestamp: {
-    color: "#94a3b8",
+    color: "#64748b",
     fontFamily: "Brandon-Medium",
     fontSize: 12,
   },
   actions: {
     width: "100%",
-    gap: 12,
+    gap: 10,
   },
   primaryBtnText: {
     color: "#ffffff",

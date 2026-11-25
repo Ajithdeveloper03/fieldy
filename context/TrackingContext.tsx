@@ -1,84 +1,136 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { startBackgroundTracking, stopBackgroundTracking } from '../utils/trackingManager';
-import { api } from '../services/api';
-import * as Location from 'expo-location';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Location from "expo-location";
+import { api } from "../services/api";
+import {
+  startBackgroundTracking,
+  stopBackgroundTracking,
+  syncLocations,
+} from "../utils/trackingManager";
+
+const CURRENT_SESSION_KEY = "@current_tracking_session";
 
 interface TrackingContextType {
   sessionId: string | null;
   isTracking: boolean;
-  startSession: (id: string) => Promise<void>;
+  startSession: (customSessionId?: string) => Promise<string>;
   stopSession: () => Promise<void>;
 }
 
-const TrackingContext = createContext<TrackingContextType | undefined>(undefined);
+const TrackingContext = createContext<TrackingContextType>({
+  sessionId: null,
+  isTracking: false,
+  startSession: async () => "",
+  stopSession: async () => {},
+});
 
 export const TrackingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isTracking, setIsTracking] = useState(false);
+  const sessionRef = useRef<string | null>(null);
 
-  // Restore session on mount
   useEffect(() => {
-    const checkExistingSession = async () => {
+    (async () => {
       try {
-        const storedSession = await AsyncStorage.getItem('@current_tracking_session');
-        if (storedSession) {
-          setSessionId(storedSession);
+        const stored = await AsyncStorage.getItem(CURRENT_SESSION_KEY);
+        if (stored) {
+          sessionRef.current = stored;
+          setSessionId(stored);
           setIsTracking(true);
+          void syncLocations();
         }
-      } catch (e) {
-        console.error('Failed to load tracking session', e);
+      } catch {
+        // Ignore storage read issues
       }
-    };
-    checkExistingSession();
+    })();
   }, []);
 
-  const startSession = useCallback(async (id: string) => {
-    setSessionId(id);
+  useEffect(() => {
+    if (!isTracking) return;
+    const interval = setInterval(() => {
+      void syncLocations();
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [isTracking]);
+
+  const startSession = useCallback(async (customSessionId?: string): Promise<string> => {
+    if (sessionRef.current) {
+      return sessionRef.current;
+    }
+
+    const nextId =
+      customSessionId || `trk_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    sessionRef.current = nextId;
+    setSessionId(nextId);
     setIsTracking(true);
-    
-    // Call backend to start session
+
     try {
-      let loc = await Location.getLastKnownPositionAsync();
-      if (!loc) loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      if (loc) {
-        await api.post('/employee/tracking/session/start', {
-          session_id: id,
-          latitude: loc.coords.latitude,
-          longitude: loc.coords.longitude
-        });
+      await AsyncStorage.setItem(CURRENT_SESSION_KEY, nextId);
+    } catch {
+      // Continue tracking in memory
+    }
+
+    let startLat: number | undefined;
+    let startLng: number | undefined;
+    try {
+      const perm = await Location.getForegroundPermissionsAsync();
+      if (perm.granted) {
+        const fix = await Location.getLastKnownPositionAsync();
+        if (fix) {
+          startLat = fix.coords.latitude;
+          startLng = fix.coords.longitude;
+        }
       }
-    } catch (e) {
-      console.log('Failed to start session on backend', e);
+    } catch {
+      // Optional initial coords
     }
-    
-    const { status: foregroundStatus } = await Location.requestForegroundPermissionsAsync();
-    if (foregroundStatus === 'granted') {
-      const { status: backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
-      if (backgroundStatus === 'granted') await startBackgroundTracking(id);
+
+    try {
+      await api.post("/employee/tracking/session/start", {
+        session_id: nextId,
+        latitude: startLat,
+        longitude: startLng,
+      });
+    } catch {
+      // Offline sync will auto-create session on backend when online
     }
+
+    void startBackgroundTracking(nextId);
+    return nextId;
   }, []);
 
   const stopSession = useCallback(async () => {
-    if (sessionId) {
-        try {
-            let loc = await Location.getLastKnownPositionAsync();
-            if (!loc) loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-            if (loc) {
-                await api.post('/employee/tracking/session/stop', {
-                    session_id: sessionId,
-                    latitude: loc.coords.latitude,
-                    longitude: loc.coords.longitude
-                });
-            }
-        } catch (e) {
-            console.log('Failed to stop session on backend', e);
-        }
-    }
+    const activeId = sessionRef.current || (await AsyncStorage.getItem(CURRENT_SESSION_KEY));
+    sessionRef.current = null;
     setSessionId(null);
     setIsTracking(false);
+
     await stopBackgroundTracking();
-  }, [sessionId]);
+    await syncLocations();
+
+    if (activeId) {
+      let endLat: number | undefined;
+      let endLng: number | undefined;
+      try {
+        const fix = await Location.getLastKnownPositionAsync();
+        if (fix) {
+          endLat = fix.coords.latitude;
+          endLng = fix.coords.longitude;
+        }
+      } catch {
+        // Optional final coords
+      }
+      try {
+        await api.post("/employee/tracking/session/stop", {
+          session_id: activeId,
+          latitude: endLat,
+          longitude: endLng,
+        });
+      } catch {
+        // Session will close cleanly
+      }
+    }
+  }, []);
 
   return (
     <TrackingContext.Provider value={{ sessionId, isTracking, startSession, stopSession }}>
@@ -87,10 +139,4 @@ export const TrackingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 };
 
-export const useTracking = () => {
-  const context = useContext(TrackingContext);
-  if (context === undefined) {
-    throw new Error('useTracking must be used within a TrackingProvider');
-  }
-  return context;
-};
+export const useTracking = () => useContext(TrackingContext);

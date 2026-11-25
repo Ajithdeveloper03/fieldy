@@ -1,27 +1,27 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StatusBar,
   Alert,
   Linking,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
+import * as Location from "expo-location";
 import {
   ChevronLeft,
   AlertOctagon,
   PhoneCall,
   ShieldAlert,
-  MapPin,
   Ambulance,
   Radio,
   Flame,
-  CheckCircle2,
-  Users,
 } from "lucide-react-native";
+import { api } from "../../services/api";
+import { showToast } from "../../components/ui/ToastMessage";
 import {
   LiquidGlassBackdrop,
   LiquidGlassCard,
@@ -32,33 +32,83 @@ import {
 
 export default function SOSScreen() {
   const [sosTriggered, setSosTriggered] = useState(false);
+  const [dispatching, setDispatching] = useState(false);
+  const [contacts, setContacts] = useState<Array<{ role: string; phone: string; available: string }>>([
+    {
+      role: "National Emergency Response (Police / Ambulance / Fire)",
+      phone: "112",
+      available: "24/7 Emergency Services",
+    },
+  ]);
 
-  const emergencyContacts = [
-    { role: "Central HQ Security & Dispatch", phone: "+91 800-456-7890", available: "24/7 Monitored" },
-    { role: "Regional Supervisor (RM Delta)", phone: "+91 8428060946", available: "On Duty" },
-    { role: "Local Emergency Services (Police/Medical)", phone: "112", available: "Immediate Govt" },
-  ];
+  useFocusEffect(
+    useCallback(() => {
+      api
+        .get("/employee/sos-contacts")
+        .then((res) => {
+          if (Array.isArray(res?.contacts) && res.contacts.length > 0) {
+            setContacts(res.contacts);
+          }
+          if (res?.has_active_sos) {
+            setSosTriggered(true);
+          }
+        })
+        .catch(() => {});
+    }, [])
+  );
 
-  const handleTriggerSOS = () => {
+  const dispatchEmergency = async (incidentType: string) => {
+    setDispatching(true);
+    let lat: number | undefined;
+    let lng: number | undefined;
+    try {
+      const perm = await Location.requestForegroundPermissionsAsync();
+      if (perm.status === "granted") {
+        const fix = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+        lat = fix.coords.latitude;
+        lng = fix.coords.longitude;
+      }
+    } catch {
+      // Proceed even if indoor GPS is unavailable
+    }
+
+    try {
+      await api.post("/employee/sos", {
+        latitude: lat,
+        longitude: lng,
+        incident_type: incidentType,
+      });
+      setSosTriggered(true);
+      Alert.alert(
+        "SOS DISPATCHED TO ADMIN",
+        lat != null && lng != null
+          ? `Your live coordinates (${lat.toFixed(5)}° N, ${lng.toFixed(5)}° E) have been sent to Web Admin Alerts & Live Monitor.`
+          : "Your emergency SOS alert has been sent to Web Admin Alerts."
+      );
+    } catch (err: any) {
+      showToast({
+        title: "Dispatch Failed",
+        message: err?.message || "Use the hotline buttons below to call directly.",
+        type: "error",
+      });
+    } finally {
+      setDispatching(false);
+    }
+  };
+
+  const confirmSOS = (incidentType = "sos_manual") => {
     Alert.alert(
       "CONFIRM CRITICAL EMERGENCY SOS",
-      "This will immediately transmit your high-precision live GPS coordinates, battery level, and audible alert to HQ and your field supervisor.",
+      "This immediately transmits a critical SOS alert with your live GPS coordinates to your Company Admin dashboard.",
       [
         { text: "Cancel", style: "cancel" },
         {
-          text: "SEND ALARM",
+          text: "SEND SOS",
           style: "destructive",
-          onPress: () => {
-            setSosTriggered(true);
-            Alert.alert("SOS DISPATCHED", "Your location (11.0168° N, 76.9558° E) has been sent to HQ Live Monitor with highest critical priority.");
-          },
+          onPress: () => void dispatchEmergency(incidentType),
         },
       ]
     );
-  };
-
-  const handleCall = (number: string) => {
-    Linking.openURL(`tel:${number}`);
   };
 
   return (
@@ -67,7 +117,7 @@ export default function SOSScreen() {
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 14, paddingBottom: 16 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16 }}>
           <LiquidGlassIconButton
             onPress={() => (router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard"))}
             variant="dark"
@@ -75,109 +125,94 @@ export default function SOSScreen() {
           >
             <ChevronLeft size={26} color="#ffffff" />
           </LiquidGlassIconButton>
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 24 }}>Worker Safety & SOS</Text>
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 22 }}>
+            Worker Safety & SOS
+          </Text>
           <View style={{ width: 44 }} />
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 10, paddingBottom: 110 }}>
-          {/* BIG SOS PANIC BUTTON */}
-          <View style={{ alignItems: "center", marginVertical: 24 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 110 }}>
+          {/* PANIC BUTTON */}
+          <View style={{ alignItems: "center", marginVertical: 22 }}>
             <LiquidGlassCard
               variant="tinted"
-              tintColor={sosTriggered ? "rgba(220, 38, 38, 0.78)" : "rgba(239, 68, 68, 0.34)"}
+              tintColor={sosTriggered ? "rgba(220, 38, 38, 0.82)" : "rgba(239, 68, 68, 0.36)"}
               dropletColor="#ef4444"
-              borderRadius={102}
-              onPress={handleTriggerSOS}
+              borderRadius={100}
+              onPress={() => !dispatching && confirmSOS("sos_manual")}
               style={{
-                width: 204,
-                height: 204,
+                width: 200,
+                height: 200,
                 shadowColor: "#ef4444",
                 shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 0.75,
-                shadowRadius: 30,
-                elevation: 15,
+                shadowOpacity: 0.7,
+                shadowRadius: 28,
+                elevation: 14,
               }}
-              contentStyle={{
-                flex: 1,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              contentStyle={{ flex: 1, alignItems: "center", justifyContent: "center" }}
             >
-              <AlertOctagon size={76} color="#ffffff" style={{ marginBottom: 8 }} />
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 25, letterSpacing: 1 }}>
-                {sosTriggered ? "ALARM ACTIVE" : "PRESS SOS"}
-              </Text>
-              <Text style={{ color: "rgba(255,255,255,0.85)", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 4 }}>
-                Instant Dispatch
-              </Text>
+              {dispatching ? (
+                <ActivityIndicator size="large" color="#ffffff" />
+              ) : (
+                <>
+                  <AlertOctagon size={72} color="#ffffff" style={{ marginBottom: 8 }} />
+                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 24, letterSpacing: 1 }}>
+                    {sosTriggered ? "ALARM ACTIVE" : "PRESS SOS"}
+                  </Text>
+                  <Text style={{ color: "rgba(255,255,255,0.85)", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 4 }}>
+                    Live GPS Dispatch
+                  </Text>
+                </>
+              )}
             </LiquidGlassCard>
 
             <LiquidGlassPill
               variant="dark"
-              style={{ marginTop: 22 }}
-              contentStyle={{ paddingHorizontal: 18, paddingVertical: 10 }}
+              style={{ marginTop: 20 }}
+              contentStyle={{ paddingHorizontal: 18, paddingVertical: 9 }}
             >
-              <Radio size={16} color={sosTriggered ? "#ef4444" : "#10b981"} style={{ marginRight: 8 }} />
-              <Text style={{ color: "#e2e8f0", fontFamily: "Brandon-Bold", fontSize: 14 }}>
-                {sosTriggered ? "High-Priority GPS Streaming" : "GPS Satellite Lock • Ready"}
+              <Radio size={15} color={sosTriggered ? "#ef4444" : "#10b981"} style={{ marginRight: 8 }} />
+              <Text style={{ color: "#e2e8f0", fontFamily: "Brandon-Bold", fontSize: 13 }}>
+                {sosTriggered ? "Active Alert Visible in Web Admin" : "Connected to Company Safety Monitor"}
               </Text>
             </LiquidGlassPill>
           </View>
 
-          {/* QUICK INCIDENT REPORT */}
-          <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 14, letterSpacing: 1, marginBottom: 14, marginLeft: 4 }}>
-            HAZARD & INCIDENT TYPE
+          {/* INCIDENT TYPE DISPATCH */}
+          <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 13, letterSpacing: 1, marginBottom: 12, marginLeft: 4 }}>
+            QUICK INCIDENT ESCALATION
           </Text>
-          <View style={{ flexDirection: "row", gap: 12, marginBottom: 26 }}>
-            <LiquidGlassCard
-              variant="dark"
-              borderRadius={20}
-              dropletColor="#38bdf8"
-              onPress={() => Alert.alert("Medical Alert", "Connecting with nearest emergency paramedic...")}
-              style={{ flex: 1 }}
-              contentStyle={{ padding: 16, alignItems: "center", gap: 8 }}
-            >
-              <LiquidGlassIconBadge size={48} borderRadius={16} variant="dark" tintColor="#38bdf8">
-                <Ambulance size={26} color="#38bdf8" />
-              </LiquidGlassIconBadge>
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14, textAlign: "center" }}>Medical Injury</Text>
-            </LiquidGlassCard>
-
-            <LiquidGlassCard
-              variant="dark"
-              borderRadius={20}
-              dropletColor="#f97316"
-              onPress={() => Alert.alert("Field Hazard", "Hazard report flagged on route map.")}
-              style={{ flex: 1 }}
-              contentStyle={{ padding: 16, alignItems: "center", gap: 8 }}
-            >
-              <LiquidGlassIconBadge size={48} borderRadius={16} variant="dark" tintColor="#f97316">
-                <Flame size={26} color="#f97316" />
-              </LiquidGlassIconBadge>
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14, textAlign: "center" }}>Fire / Hazard</Text>
-            </LiquidGlassCard>
-
-            <LiquidGlassCard
-              variant="dark"
-              borderRadius={20}
-              dropletColor="#a855f7"
-              onPress={() => Alert.alert("Vehicle Breakdown", "Roadside assistance ticket raised.")}
-              style={{ flex: 1 }}
-              contentStyle={{ padding: 16, alignItems: "center", gap: 8 }}
-            >
-              <LiquidGlassIconBadge size={48} borderRadius={16} variant="dark" tintColor="#a855f7">
-                <ShieldAlert size={26} color="#a855f7" />
-              </LiquidGlassIconBadge>
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14, textAlign: "center" }}>Breakdown</Text>
-            </LiquidGlassCard>
+          <View style={{ flexDirection: "row", gap: 10, marginBottom: 24 }}>
+            {[
+              { label: "Medical", type: "medical_injury", Icon: Ambulance, color: "#38bdf8" },
+              { label: "Fire / Hazard", type: "fire_hazard", Icon: Flame, color: "#f97316" },
+              { label: "Breakdown", type: "vehicle_breakdown", Icon: ShieldAlert, color: "#a855f7" },
+            ].map((inc) => (
+              <LiquidGlassCard
+                key={inc.type}
+                variant="dark"
+                borderRadius={20}
+                dropletColor={inc.color}
+                onPress={() => confirmSOS(inc.type)}
+                style={{ flex: 1 }}
+                contentStyle={{ padding: 15, alignItems: "center", gap: 8 }}
+              >
+                <LiquidGlassIconBadge size={44} borderRadius={14} variant="dark" tintColor={inc.color}>
+                  <inc.Icon size={22} color={inc.color} />
+                </LiquidGlassIconBadge>
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13, textAlign: "center" }}>
+                  {inc.label}
+                </Text>
+              </LiquidGlassCard>
+            ))}
           </View>
 
-          {/* EMERGENCY CONTACTS LIST */}
-          <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 14, letterSpacing: 1, marginBottom: 14, marginLeft: 4 }}>
+          {/* REAL ESCALATION HOTLINES */}
+          <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 13, letterSpacing: 1, marginBottom: 12, marginLeft: 4 }}>
             DIRECT ESCALATION HOTLINES
           </Text>
           <View style={{ gap: 12 }}>
-            {emergencyContacts.map((contact, idx) => (
+            {contacts.map((contact, idx) => (
               <LiquidGlassCard
                 key={idx}
                 variant="dark"
@@ -185,17 +220,21 @@ export default function SOSScreen() {
                 contentStyle={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 18 }}
               >
                 <View style={{ flex: 1, paddingRight: 10 }}>
-                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>{contact.role}</Text>
-                  <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 14, marginTop: 4 }}>{contact.available} • {contact.phone}</Text>
+                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>
+                    {contact.role}
+                  </Text>
+                  <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 4 }}>
+                    {contact.available} • {contact.phone}
+                  </Text>
                 </View>
                 <LiquidGlassIconButton
-                  onPress={() => handleCall(contact.phone)}
+                  onPress={() => Linking.openURL(`tel:${contact.phone}`)}
                   variant="tinted"
                   tintColor="rgba(16, 185, 129, 0.78)"
                   dropletColor="#34d399"
-                  size={52}
+                  size={48}
                 >
-                  <PhoneCall size={24} color="#ffffff" />
+                  <PhoneCall size={22} color="#ffffff" />
                 </LiquidGlassIconButton>
               </LiquidGlassCard>
             ))}

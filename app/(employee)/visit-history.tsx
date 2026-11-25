@@ -1,24 +1,25 @@
-import React from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   View,
   Text,
   ScrollView,
-  Image,
-  StyleSheet,
   StatusBar,
+  RefreshControl,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
+import { router, useFocusEffect } from "expo-router";
 import {
   ChevronLeft,
-  Calendar,
-  Filter,
-  FileText,
-  MapPin,
+  CheckCircle2,
   Clock,
-  ArrowRight
+  MapPin,
+  FileText,
+  Download,
 } from "lucide-react-native";
+import { useService } from "../../context/ServiceContext";
+import { api } from "../../services/api";
+import { downloadVisitDossierToDevice } from "../../services/media";
 import {
   LiquidGlassBackdrop,
   LiquidGlassCard,
@@ -26,137 +27,206 @@ import {
   LiquidGlassPill,
 } from "../../components/LiquidGlass";
 
-export default function EmployeeVisitHistoryScreen() {
-  const history = [
-    {
-      id: "8842",
-      date: "Today, 11:30 AM",
-      site_contact: "Apex Cyber Tower",
-      project: "AHU & Chiller System Audit",
-      status: "Report Submitted",
-      location: "Tidel Park Road, Block B",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=project&q=80",
-    },
-    {
-      id: "8841",
-      date: "Yesterday, 09:15 AM",
-      site_contact: "Metro Logistics Hub",
-      project: "Dock Leveler & MEP Check",
-      status: "Report Submitted",
-      location: "Outer Ring Road, Zone 3",
-      image: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&auto=format&fit=project&q=80",
-    },
-    {
-      id: "8840",
-      date: "24 Jan 2026, 04:00 PM",
-      site_contact: "Grand Horizon Corporate Suites",
-      project: "Fire Alarm & Sprinkler Audit",
-      status: "Flagged Issue",
-      location: "Central Business District",
-      image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=project&q=80",
-    },
-    {
-      id: "8839",
-      date: "22 Jan 2026, 10:30 AM",
-      site_contact: "Omni Industrial Park",
-      project: "Solar Inverter Performance",
-      status: "Report Submitted",
-      location: "SIPCOT Phase II",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=project&q=80",
-    },
-  ];
+export default function VisitHistoryScreen() {
+  const { serviceConfig } = useService();
+  const [visits, setVisits] = useState<any[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState<string>("all");
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadHistory = useCallback(async (isPull = false) => {
+    if (isPull) setRefreshing(true);
+    try {
+      const res = await api.get("/employee/visits");
+      setVisits(Array.isArray(res?.visits) ? res.visits : []);
+    } catch {
+      setVisits([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadHistory(false);
+    }, [loadHistory])
+  );
+
+  const monthOptions = useMemo(() => {
+    const seen = new Map<string, string>();
+    visits.forEach((v) => {
+      if (v.monthKey && v.monthLabel && !seen.has(v.monthKey)) {
+        seen.set(v.monthKey, v.monthLabel);
+      }
+    });
+    return [
+      { key: "all", label: "All Months" },
+      ...Array.from(seen.entries()).map(([key, label]) => ({ key, label })),
+    ];
+  }, [visits]);
+
+  const filtered = useMemo(() => {
+    if (selectedMonth === "all") return visits;
+    return visits.filter((v) => v.monthKey === selectedMonth);
+  }, [visits, selectedMonth]);
+
+  const themeColor = serviceConfig.themeColor || "#059669";
 
   return (
     <LiquidGlassBackdrop variant="light">
-      <StatusBar barStyle="light-content" />
-
-      {/* Header Gradient */}
-      <View style={{ position: "absolute", top: 0, left: 0, right: 0, height: 250 }}>
-        <LinearGradient
-          colors={["#0f172a", "#1e293b", "rgba(243, 241, 236, 0)"]}
-          style={StyleSheet.absoluteFill}
-        />
-      </View>
+      <StatusBar barStyle="dark-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
-        
         {/* HEADER */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingHorizontal: 20,
+            paddingTop: 12,
+            paddingBottom: 14,
+          }}
+        >
           <LiquidGlassIconButton
-            variant="dark"
+            variant="light"
             size={44}
-            onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")}
+            onPress={() => (router.canGoBack() ? router.back() : router.replace("/(employee)/visits"))}
           >
-            <ChevronLeft size={26} color="#ffffff" />
+            <ChevronLeft size={24} color="#0f172a" />
           </LiquidGlassIconButton>
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 25 }}>Visit History</Text>
-          <LiquidGlassIconButton variant="dark" size={44}>
-            <Filter size={22} color="#ffffff" />
-          </LiquidGlassIconButton>
+
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 22 }}>
+              Visit History
+            </Text>
+            <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>
+              Showing {filtered.length} recorded {filtered.length === 1 ? "visit" : "visits"}
+            </Text>
+          </View>
+
+          <View style={{ width: 44 }} />
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 10, paddingBottom: 110 }}>
-          
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>Showing 44 past visits</Text>
-            <LiquidGlassPill
-              variant="dark"
-              contentStyle={{ paddingHorizontal: 14, paddingVertical: 8 }}
+        {/* MONTH FILTER PILLS */}
+        {monthOptions.length > 1 && (
+          <View style={{ marginBottom: 12 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
             >
-              <Calendar size={16} color="#ffffff" style={{ marginRight: 6 }} />
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14 }}>This Month</Text>
-            </LiquidGlassPill>
+              {monthOptions.map((m) => {
+                const active = selectedMonth === m.key;
+                return (
+                  <LiquidGlassPill
+                    key={m.key}
+                    variant="light"
+                    active={active}
+                    tintColor={`${themeColor}E6`}
+                    onPress={() => setSelectedMonth(m.key)}
+                    contentStyle={{ paddingHorizontal: 14, paddingVertical: 8 }}
+                  >
+                    <Text style={{ color: active ? "#ffffff" : "#334155", fontFamily: "Brandon-Bold", fontSize: 12 }}>
+                      {m.label}
+                    </Text>
+                  </LiquidGlassPill>
+                );
+              })}
+            </ScrollView>
           </View>
+        )}
 
-          {/* Visit Cards */}
-          <View style={{ gap: 20 }}>
-            {history.map((visit) => (
-              <LiquidGlassCard
-                key={visit.id}
-                variant="light"
-                borderRadius={28}
-                onPress={() => router.push(`/(employee)/report/${visit.id}` as any)}
-                contentStyle={{ padding: 22 }}
-              >
-                
-                {/* Status Bar */}
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 18, borderBottomWidth: 1, borderBottomColor: "rgba(15, 23, 42, 0.08)", paddingBottom: 14 }}>
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Clock size={16} color="#64748b" style={{ marginRight: 6 }} />
-                    <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 14 }}>{visit.date}</Text>
-                  </View>
-                  <View style={{ backgroundColor: visit.status === "Flagged Issue" ? "rgba(254, 226, 226, 0.85)" : "rgba(220, 252, 231, 0.85)", paddingHorizontal: 12, paddingVertical: 5, borderRadius: 10 }}>
-                    <Text style={{ color: visit.status === "Flagged Issue" ? "#ef4444" : "#16a34a", fontFamily: "Brandon-Bold", fontSize: 12 }}>{visit.status.toUpperCase()}</Text>
-                  </View>
-                </View>
-
-                {/* SiteContact Info */}
-                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 18 }}>
-                  <View style={{ width: 76, height: 76, borderRadius: 26, overflow: "hidden", backgroundColor: "#e2e8f0", marginRight: 16 }}>
-                    <Image source={{ uri: visit.image }} style={{ width: "100%", height: "100%" }} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 22, lineHeight: 26, marginBottom: 4 }}>{visit.site_contact}</Text>
-                    <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      <MapPin size={14} color="#64748b" />
-                      <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 15, marginLeft: 5 }}>{visit.location}</Text>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => loadHistory(true)}
+              tintColor={themeColor}
+            />
+          }
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120, gap: 12 }}
+        >
+          {loading ? (
+            <ActivityIndicator color={themeColor} style={{ marginTop: 36 }} />
+          ) : filtered.length > 0 ? (
+            filtered.map((v) => {
+              const isDone = v.status === "completed";
+              return (
+                <LiquidGlassCard
+                  key={v.id}
+                  variant="light"
+                  borderRadius={22}
+                  onPress={() =>
+                    router.push((isDone ? `/(employee)/report/${v.id}` : `/(employee)/visit/${v.id}`) as any)
+                  }
+                  contentStyle={{ padding: 18 }}
+                >
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", flex: 1, marginRight: 8 }}>
+                      {isDone ? (
+                        <CheckCircle2 size={19} color="#10b981" style={{ marginRight: 8 }} />
+                      ) : (
+                        <Clock size={19} color="#f59e0b" style={{ marginRight: 8 }} />
+                      )}
+                      <Text numberOfLines={1} style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 17, flex: 1 }}>
+                        {v.farmerName}
+                      </Text>
                     </View>
+                    <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 12 }}>
+                      {v.visitCode}
+                    </Text>
                   </View>
-                </View>
 
-                {/* Actions */}
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.62)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.92)", paddingHorizontal: 18, paddingVertical: 14, borderRadius: 18 }}>
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <FileText size={18} color="#0284c7" />
-                    <Text style={{ color: "#0284c7", fontFamily: "Brandon-Bold", fontSize: 16, marginLeft: 8 }}>View Report #{visit.id}</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
+                    <MapPin size={13} color="#64748b" />
+                    <Text numberOfLines={1} style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 5, flex: 1 }}>
+                      {v.date} • {v.checkInTime}
+                      {v.checkOutTime ? ` – ${v.checkOutTime}` : " (Active)"}
+                      {v.durationMinutes ? ` • ${v.durationMinutes} min` : ""}
+                    </Text>
                   </View>
-                  <ArrowRight size={18} color="#0284c7" />
-                </View>
 
-              </LiquidGlassCard>
-            ))}
-          </View>
+                  {v.remarks ? (
+                    <Text numberOfLines={2} style={{ color: "#334155", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 8 }}>
+                      {v.remarks}
+                    </Text>
+                  ) : null}
 
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
+                    <Text style={{ color: themeColor, fontFamily: "Brandon-Bold", fontSize: 12 }}>
+                      <FileText size={12} color={themeColor} /> {isDone ? "Open Report" : "Continue Visit"}
+                    </Text>
+                    {isDone && (
+                      <LiquidGlassIconButton
+                        variant="light"
+                        size={34}
+                        onPress={() => downloadVisitDossierToDevice(String(v.id))}
+                      >
+                        <Download size={15} color="#0f172a" />
+                      </LiquidGlassIconButton>
+                    )}
+                  </View>
+                </LiquidGlassCard>
+              );
+            })
+          ) : (
+            <LiquidGlassCard
+              variant="light"
+              borderRadius={24}
+              contentStyle={{ padding: 28, alignItems: "center" }}
+            >
+              <Clock size={34} color="#94a3b8" style={{ marginBottom: 10 }} />
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 17 }}>
+                No Past Visits Yet
+              </Text>
+              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, textAlign: "center", marginTop: 4 }}>
+                Completed field visits and downloadable dossiers will appear here automatically.
+              </Text>
+            </LiquidGlassCard>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LiquidGlassBackdrop>

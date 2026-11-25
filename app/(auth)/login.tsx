@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -22,7 +22,7 @@ import {
   ChevronLeft,
   ArrowRight,
 } from "lucide-react-native";
-import { api, resolveApiBaseUrl, setAuthSession } from "../../services/api";
+import { api, getAuthUser, resolveApiBaseUrl, setAuthSession } from "../../services/api";
 import { useService, ServiceSelectorPill, ALL_SERVICE_KEYS } from "../../context/ServiceContext";
 import { SERVICES_CONFIG } from "../../constants/servicesConfig";
 import {
@@ -49,6 +49,19 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const rememberedPhone = await AsyncStorage.getItem("userPhone");
+        if (rememberedPhone) {
+          setMobile(rememberedPhone);
+        }
+      } catch {
+        // Ignore storage read errors
+      }
+    })();
+  }, []);
+
   const handleLogin = async () => {
     const trimmed = mobile.trim();
     if (!trimmed) {
@@ -64,20 +77,35 @@ export default function LoginScreen() {
     setLoading(true);
 
     try {
+      const previousUser = await getAuthUser();
       const res = await api.post("/auth/login", {
         identifier: trimmed,
         phone: trimmed,
         password,
       });
       if (res?.status === "success" && res?.token) {
+        if (previousUser?.id && String(previousUser.id) !== String(res.user?.id)) {
+          await AsyncStorage.multiRemove([
+            "@active_task",
+            "@active_checkin",
+            "@last_submitted_report",
+            "@submitted_reports_v2",
+            "@current_tracking_session",
+            "isClockedIn",
+          ]);
+        }
         await setAuthSession(res.token, res.user);
-        await AsyncStorage.setItem("userName", res.user?.name || "Field Executive");
+        await AsyncStorage.setItem("userName", res.user?.name || "");
         await AsyncStorage.setItem("userRole", res.user?.role || "employee");
         await AsyncStorage.setItem("userPhone", res.user?.phone || trimmed);
         if (res.user?.industry && ALL_SERVICE_KEYS.includes(res.user.industry)) {
           await setService(res.user.industry);
         }
-        router.replace("/(employee)/dashboard");
+        if (res.user?.role === "farmer") {
+          router.replace("/(site-contact)/dashboard" as any);
+        } else {
+          router.replace("/(employee)/dashboard");
+        }
       } else {
         setError(res?.message || "Invalid credentials. Please try again.");
       }
@@ -92,10 +120,10 @@ export default function LoginScreen() {
         lower.includes("connectexception");
       if (isNetworkFailure) {
         setError(
-          `Cannot reach backend (${resolveApiBaseUrl()}). Start Laravel with: php artisan serve --host=0.0.0.0 --port=8000`
+          `Cannot reach server (${resolveApiBaseUrl()}). Verify internet or backend URL.`
         );
       } else {
-        setError(msg || "Unable to sign in. Check server connection and credentials.");
+        setError(msg || "Unable to sign in. Check your credentials and try again.");
       }
     } finally {
       setLoading(false);
@@ -124,7 +152,7 @@ export default function LoginScreen() {
             }}
           >
             <LiquidGlassIconButton
-              onPress={() => router.back()}
+              onPress={() => (router.canGoBack() ? router.back() : router.replace("/intro"))}
               size={42}
               variant="dark"
             >
@@ -187,11 +215,11 @@ export default function LoginScreen() {
                   textAlign: "center",
                 }}
               >
-                Enter your phone or email and password
+                Sign in with the credentials issued by your company admin
               </Text>
             </View>
 
-            {/* Frosted Apple Liquid Glass Form Card */}
+            {/* Frosted Liquid Glass Form Card */}
             <LiquidGlassCard
               variant="dark"
               borderRadius={30}
@@ -223,7 +251,7 @@ export default function LoginScreen() {
                 </View>
               ) : null}
 
-              {/* Phone Input */}
+              {/* Phone / Email Input */}
               <View style={{ marginBottom: 16 }}>
                 <Text
                   style={{
@@ -236,7 +264,7 @@ export default function LoginScreen() {
                     textTransform: "uppercase",
                   }}
                 >
-                  Phone or Username / Email
+                  Phone or Email
                 </Text>
                 <View
                   style={{
@@ -268,7 +296,7 @@ export default function LoginScreen() {
                         fontSize: 16,
                         color: "#ffffff",
                       }}
-                      placeholder="Phone number or email"
+                      placeholder="Enter mobile number or email"
                       placeholderTextColor="rgba(255,255,255,0.38)"
                       keyboardType="default"
                       autoCapitalize="none"
@@ -324,7 +352,7 @@ export default function LoginScreen() {
                         fontSize: 16,
                         color: "#ffffff",
                       }}
-                      placeholder="Password"
+                      placeholder="Enter your password"
                       placeholderTextColor="rgba(255,255,255,0.38)"
                       secureTextEntry={!showPassword}
                       value={password}
@@ -344,7 +372,7 @@ export default function LoginScreen() {
                 </View>
               </View>
 
-              {/* Apple Liquid Glass Login CTA */}
+              {/* Login CTA */}
               <LiquidGlassButton
                 onPress={handleLogin}
                 disabled={loading}

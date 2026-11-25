@@ -1,22 +1,24 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StatusBar,
-  Image,
-  StyleSheet
+  RefreshControl,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import {
   ChevronLeft,
   AlertTriangle,
-  FileText,
+  ClipboardList,
   CheckCircle2,
-  CalendarDays
+  MapPin,
+  Fingerprint,
+  BellOff,
 } from "lucide-react-native";
+import { api } from "../../services/api";
 import {
   LiquidGlassBackdrop,
   LiquidGlassCard,
@@ -26,163 +28,159 @@ import {
 } from "../../components/LiquidGlass";
 
 export default function EmployeeNotificationsScreen() {
-  const notifications = [
-    {
-      id: "1",
-      type: "alert",
-      user: "System Alert",
-      avatar: null,
-      message: "Sensor data indicates critically low moisture in South Block of Farm A.",
-      time: "10m",
-      action: "Review",
-      icon: <AlertTriangle size={20} color="#ef4444" />,
-      bgColor: "#ef4444",
-      isUnread: true,
-    },
-    {
-      id: "2",
-      type: "user",
-      user: "Rajesh Kumar",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=project&q=80",
-      message: "uploaded the latest NPK test results for his farm.",
-      time: "1h",
-      action: "View",
-      isUnread: true,
-    },
-    {
-      id: "3",
-      type: "admin",
-      user: "Admin Team",
-      avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=project&q=80",
-      message: "approved your field inspection report for Farm C.",
-      time: "3h",
-      action: null,
-      isUnread: false,
-    },
-    {
-      id: "4",
-      type: "reminder",
-      user: "Schedule",
-      avatar: null,
-      message: "Upcoming visit with Muthuvel at 4:00 PM.",
-      time: "5h",
-      action: "Route",
-      icon: <CalendarDays size={20} color="#10b981" />,
-      bgColor: "#10b981",
-      isUnread: false,
-    },
-    {
-      id: "5",
-      type: "user",
-      user: "Senthil",
-      avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&auto=format&fit=project&q=80",
-      message: "requested assistance with pest control.",
-      time: "1d",
-      action: "Reply",
-      isUnread: false,
-    },
-  ];
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadNotifications = useCallback(async (isPull = false) => {
+    if (isPull) setRefreshing(true);
+    try {
+      const res = await api.get("/employee/notifications");
+      setNotifications(Array.isArray(res?.notifications) ? res.notifications : []);
+    } catch {
+      setNotifications([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadNotifications(false);
+    }, [loadNotifications])
+  );
+
+  const resolveVisual = (category: string) => {
+    switch (category) {
+      case "alert":
+      case "urgent":
+        return { Icon: AlertTriangle, color: "#ef4444" };
+      case "completed":
+        return { Icon: CheckCircle2, color: "#10b981" };
+      case "visit":
+        return { Icon: MapPin, color: "#0284c7" };
+      case "attendance":
+        return { Icon: Fingerprint, color: "#8b5cf6" };
+      default:
+        return { Icon: ClipboardList, color: "#ea580c" };
+    }
+  };
 
   return (
     <LiquidGlassBackdrop variant="light">
       <StatusBar barStyle="dark-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
-        
-        {/* HEADER - Instagram Style Top Bar */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 18, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(255, 255, 255, 0.72)", backgroundColor: "rgba(255, 255, 255, 0.34)" }}>
+        {/* HEADER */}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingHorizontal: 20,
+            paddingTop: 12,
+            paddingBottom: 14,
+          }}
+        >
           <LiquidGlassIconButton
             variant="light"
-            size={42}
-            onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")}
+            size={44}
+            onPress={() => (router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard"))}
           >
-            <ChevronLeft size={24} color="#000000" />
+            <ChevronLeft size={24} color="#0f172a" />
           </LiquidGlassIconButton>
-          <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 24, letterSpacing: 0.4 }}>Notifications</Text>
-          <View style={{ width: 42 }} />
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 22 }}>
+            Notifications & Feed
+          </Text>
+          <View style={{ width: 44 }} />
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-          
-          <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 21, marginHorizontal: 18, marginTop: 18, marginBottom: 14 }}>New</Text>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => loadNotifications(true)}
+              tintColor="#059669"
+            />
+          }
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 110, gap: 12 }}
+        >
+          {loading ? (
+            <ActivityIndicator color="#059669" style={{ marginTop: 48 }} />
+          ) : notifications.length > 0 ? (
+            notifications.map((notif) => {
+              const { Icon, color } = resolveVisual(notif.category);
+              return (
+                <LiquidGlassCard
+                  key={notif.id}
+                  variant="light"
+                  borderRadius={22}
+                  dropletColor={notif.isUnread ? color : undefined}
+                  onPress={() => notif.route && router.push(notif.route as any)}
+                  contentStyle={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingVertical: 15,
+                    paddingHorizontal: 16,
+                  }}
+                >
+                  <LiquidGlassIconBadge
+                    size={48}
+                    borderRadius={16}
+                    variant="light"
+                    tintColor={color}
+                    style={{ marginRight: 14 }}
+                  >
+                    <Icon size={22} color={color} />
+                  </LiquidGlassIconBadge>
 
-          {/* NOTIFICATION LIST */}
-          <View>
-            {notifications.map((notif, index) => {
-              if (index === 2) {
-                return (
-                  <View key="divider">
-                    <Text style={{ color: "#000000", fontFamily: "Brandon-Bold", fontSize: 21, marginHorizontal: 18, marginTop: 26, marginBottom: 14 }}>Earlier</Text>
-                    {renderNotificationItem(notif)}
+                  <View style={{ flex: 1, marginRight: 10 }}>
+                    <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 15 }}>
+                      {notif.title}
+                    </Text>
+                    <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 13, lineHeight: 19, marginTop: 2 }}>
+                      {notif.message}
+                    </Text>
+                    <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 11, marginTop: 4 }}>
+                      {notif.time}
+                    </Text>
                   </View>
-                );
-              }
-              return renderNotificationItem(notif);
-            })}
-          </View>
 
+                  {notif.actionLabel ? (
+                    <LiquidGlassPill
+                      active
+                      variant="light"
+                      tintColor={`${color}E6`}
+                      contentStyle={{ paddingHorizontal: 12, paddingVertical: 7 }}
+                    >
+                      <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12 }}>
+                        {notif.actionLabel}
+                      </Text>
+                    </LiquidGlassPill>
+                  ) : null}
+                </LiquidGlassCard>
+              );
+            })
+          ) : (
+            <LiquidGlassCard
+              variant="light"
+              borderRadius={24}
+              style={{ marginTop: 20 }}
+              contentStyle={{ padding: 30, alignItems: "center" }}
+            >
+              <BellOff size={36} color="#94a3b8" style={{ marginBottom: 10 }} />
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 17 }}>
+                No Activity Notifications Yet
+              </Text>
+              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, textAlign: "center", marginTop: 4 }}>
+                Assigned work orders, visit updates, attendance confirmations, and alerts appear here live.
+              </Text>
+            </LiquidGlassCard>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LiquidGlassBackdrop>
   );
-
-  function renderNotificationItem(notif: any) {
-    return (
-      <LiquidGlassCard
-        key={notif.id}
-        variant="light"
-        borderRadius={22}
-        dropletColor={notif.isUnread ? "#0ea5e9" : undefined}
-        onPress={() => {}}
-        style={{
-          marginHorizontal: 16,
-          marginBottom: 10,
-        }}
-        contentStyle={{
-          flexDirection: "row",
-          alignItems: "center",
-          paddingVertical: 16,
-          paddingHorizontal: 16,
-        }}
-      >
-        {/* Avatar / Icon */}
-        {notif.avatar ? (
-          <View style={{ width: 58, height: 58, borderRadius: 29, marginRight: 14, overflow: "hidden", backgroundColor: "#e2e8f0", borderWidth: 1.5, borderColor: "rgba(255, 255, 255, 0.94)", alignItems: "center", justifyContent: "center" }}>
-            <Image source={{ uri: notif.avatar }} style={{ width: "100%", height: "100%" }} />
-          </View>
-        ) : (
-          <LiquidGlassIconBadge
-            size={58}
-            borderRadius={29}
-            variant="light"
-            tintColor={notif.bgColor || "#0ea5e9"}
-            style={{ marginRight: 14 }}
-          >
-            {notif.icon}
-          </LiquidGlassIconBadge>
-        )}
-
-        {/* Text Content */}
-        <View style={{ flex: 1, paddingRight: 12 }}>
-          <Text style={{ fontFamily: "Brandon-Medium", fontSize: 17, color: "#1e293b", lineHeight: 23 }}>
-            <Text style={{ fontFamily: "Brandon-Bold", color: "#000000" }}>{notif.user} </Text>
-            {notif.message}
-            <Text style={{ color: "#94a3b8", fontSize: 14 }}>  {notif.time}</Text>
-          </Text>
-        </View>
-
-        {/* Action Button */}
-        {notif.action && (
-          <LiquidGlassPill
-            active
-            variant="light"
-            tintColor={notif.action === "Review" ? "rgba(239, 68, 68, 0.86)" : "rgba(14, 165, 233, 0.86)"}
-            contentStyle={{ paddingHorizontal: 18, paddingVertical: 9 }}
-          >
-            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 15 }}>{notif.action}</Text>
-          </LiquidGlassPill>
-        )}
-      </LiquidGlassCard>
-    );
-  }
 }

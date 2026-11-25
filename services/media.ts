@@ -223,3 +223,24 @@ export async function downloadRemoteFile(url: string, filename?: string): Promis
     return false;
   }
 }
+
+export async function downloadVisitDossierToDevice(
+  visitId: string | number,
+  signedDossierUrl?: string | null
+): Promise<boolean> {
+  if (signedDossierUrl && /^https?:\/\//i.test(signedDossierUrl)) {
+    return downloadRemoteFile(signedDossierUrl, `visit-${visitId}-dossier.txt`);
+  }
+  try {
+    const res = await apiClient.get("/employee/visits");
+    const match = (Array.isArray(res?.visits) ? res.visits : []).find(
+      (v: any) => String(v.id) === String(visitId)
+    );
+    if (match?.dossier_url) {
+      return downloadRemoteFile(match.dossier_url, `visit-${visitId}-dossier.txt`);
+    }
+  } catch {
+    // Fallback false
+  }
+  return false;
+}

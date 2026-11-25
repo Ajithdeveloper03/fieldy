@@ -1,1213 +1,780 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   Image,
-  ImageBackground,
-  StyleSheet,
   StatusBar,
+  RefreshControl,
+  ActivityIndicator,
+  StyleSheet,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
 import {
   Bell,
-  ClipboardCheck,
-  Users,
-  ShieldCheck,
-  ArrowRight,
-  AlertOctagon,
-  Sparkles,
-  MoreVertical,
+  Menu,
   MapPin,
+  Navigation,
+  ClipboardCheck,
   Fingerprint,
-  Calendar,
   FileText,
+  TrendingUp,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  Building2,
+  AlertOctagon,
+  Award,
+  Layers,
 } from "lucide-react-native";
-import { useLanguage, LanguageTogglePill } from "../../context/LanguageContext";
-import { useService, ServiceSelectorPill, ALL_SERVICE_KEYS } from "../../context/ServiceContext";
 import { api, getAuthUser } from "../../services/api";
+import {
+  useService,
+  ServiceSelectorPill,
+  ALL_SERVICE_KEYS,
+} from "../../context/ServiceContext";
 import {
   LiquidGlassBackdrop,
   LiquidGlassButton,
   LiquidGlassCard,
   LiquidGlassIconBadge,
   LiquidGlassIconButton,
+  LiquidGlassPill,
 } from "../../components/LiquidGlass";
 
 const SITE_CARD_IMAGES = [
-  require("../../assets/images/image2.jpg"),
   require("../../assets/images/image5.jpg"),
+  require("../../assets/images/image2.jpg"),
   require("../../assets/images/image3.jpg"),
+  require("../../assets/images/image6.jpg"),
   require("../../assets/images/image11.jpg"),
   require("../../assets/images/image12.jpg"),
-  require("../../assets/images/image15.jpg"),
 ];
 
-const HERO_LOCAL_IMAGES: Record<string, any> = {
-  real_estate: require("../../assets/images/image1.jpg"),
-  facility_fmcg: require("../../assets/images/image2.jpg"),
-  construction: require("../../assets/images/image3.jpg"),
-  security: require("../../assets/images/image4.jpg"),
-  cleaning: require("../../assets/images/image5.jpg"),
-  maintenance: require("../../assets/images/image6.jpg"),
-  solar: require("../../assets/images/image7.jpg"),
-  pest_control: require("../../assets/images/image8.jpg"),
-  logistics: require("../../assets/images/image10.jpg"),
-};
-
 export default function EmployeeDashboardScreen() {
-  const insets = useSafeAreaInsets();
-  const { t, language } = useLanguage();
   const { serviceConfig, setService } = useService();
-  const [isClockedIn, setIsClockedIn] = useState(false);
-  const [userName, setUserName] = useState("");
-  const [employeeCode, setEmployeeCode] = useState("");
-  const [apiSites, setApiSites] = useState<any[]>([]);
-  const [dashboardStats, setDashboardStats] = useState<any>({});
-  const [dashboardTasks, setDashboardTasks] = useState<any[]>([]);
-  const [dashboardVisits, setDashboardVisits] = useState<any[]>([]);
-  const [completionRate, setCompletionRate] = useState(0);
-  const [pointsEarned, setPointsEarned] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const status = await AsyncStorage.getItem("isClockedIn");
-      const name = await AsyncStorage.getItem("userName");
-      const authUser = await getAuthUser();
-      if (status === "true") setIsClockedIn(true);
-      if (authUser?.name) setUserName(authUser.name);
-      else if (name) setUserName(name);
-      if (authUser?.employee_code) setEmployeeCode(authUser.employee_code);
+  const [employee, setEmployee] = useState<{
+    name: string;
+    employeeCode: string;
+    designation: string;
+    companyName: string;
+    isTenant: boolean;
+  }>({
+    name: "",
+    employeeCode: "",
+    designation: "",
+    companyName: "",
+    isTenant: false,
+  });
 
-      try {
-        const dash = await api.get("/employee/dashboard");
-        const emp = dash?.data?.employee;
-        const att = dash?.data?.attendance;
-        setDashboardStats(dash?.data?.stats || {});
-        setDashboardVisits(Array.isArray(dash?.data?.recent_visits) ? dash.data.recent_visits : []);
-        if (emp?.name) setUserName(emp.name);
-        if (emp?.employee_code) setEmployeeCode(emp.employee_code);
-        if (emp?.industry && ALL_SERVICE_KEYS.includes(emp.industry)) {
-          await setService(emp.industry);
-        }
-        if (att && typeof att.checked_in === "boolean") {
-          setIsClockedIn(att.checked_in && !att.checked_out);
-          await AsyncStorage.setItem("isClockedIn", att.checked_in && !att.checked_out ? "true" : "false");
-        }
-      } catch {
-        // Keep the session identity when the API is unavailable.
-      }
+  const [attendance, setAttendance] = useState<{
+    checkedIn: boolean;
+    checkedOut: boolean;
+    checkInAt: string | null;
+    checkOutAt: string | null;
+    totalHours: number;
+    isWithinGeofence: boolean;
+  }>({
+    checkedIn: false,
+    checkedOut: false,
+    checkInAt: null,
+    checkOutAt: null,
+    totalHours: 0,
+    isWithinGeofence: true,
+  });
 
-      try {
-        const performance = await api.get("/employee/performance");
-        setCompletionRate(Number(performance?.metrics?.task_completion_rate ?? 0));
-        setPointsEarned(Number(performance?.metrics?.points_earned ?? 0));
-      } catch {
-        setCompletionRate(0);
-        setPointsEarned(0);
-      }
-    })();
-  }, []);
+  const [stats, setStats] = useState<{
+    sitesCount: number;
+    tasksCount: number;
+    completedTasksCount: number;
+    visitsCount: number;
+    visitsToday: number;
+    pointsEarned: number;
+    score: number;
+    taskCompletionRate: number;
+    hoursWorked: number;
+    distanceTodayKm: number;
+    unreadNotifications: number;
+  }>({
+    sitesCount: 0,
+    tasksCount: 0,
+    completedTasksCount: 0,
+    visitsCount: 0,
+    visitsToday: 0,
+    pointsEarned: 0,
+    score: 0,
+    taskCompletionRate: 0,
+    hoursWorked: 0,
+    distanceTodayKm: 0,
+    unreadNotifications: 0,
+  });
 
-  useEffect(() => {
-    api
-      .get("/employee/sites")
-      .then((res) => {
-        const list = res?.data?.sites;
-        if (Array.isArray(list)) {
-          setApiSites(list);
-        }
-      })
-      .catch(() => {
-        setApiSites([]);
-      });
-    api.get("/employee/tasks").then((res) => setDashboardTasks(Array.isArray(res?.tasks) ? res.tasks : [])).catch(() => setDashboardTasks([]));
-  }, [serviceConfig.key]);
+  const [activeTasks, setActiveTasks] = useState<any[]>([]);
+  const [sites, setSites] = useState<any[]>([]);
+  const [recentVisits, setRecentVisits] = useState<any[]>([]);
 
-  const projectSiteProfiles = React.useMemo(() => {
-    const normalizedApi = apiSites.map((s: any, idx: number) => ({
-      id: String(s.site_contact_id || s.id),
-      code: s.site_code || s.code || `SITE-${String(idx + 1).padStart(3, "0")}`,
-      name: s.name || "Name unavailable",
-      type: s.type || serviceConfig.vocab.entitySingular,
-      size: s.size || "2500",
-      sizeUnit: s.sizeUnit || serviceConfig.vocab.sizeUnit,
-      area: s.area || s.city || "",
-      city: s.city || "",
-      contactName: s.contactName || s.phone || "",
-      status: s.status || "verified",
-      image: s.image || SITE_CARD_IMAGES[idx % SITE_CARD_IMAGES.length],
-    }));
-
-    return normalizedApi;
-  }, [apiSites, serviceConfig.vocab]);
-  const renderActionIcon = (iconName: string, color: string) => {
-    switch (iconName) {
-      case "ClipboardCheck": return <ClipboardCheck size={24} color={color} />;
-      case "Users": return <Users size={24} color={color} />;
-      case "AlertOctagon": return <AlertOctagon size={24} color={color} />;
-      case "Fingerprint": return <Fingerprint size={24} color={color} />;
-      case "Calendar": return <Calendar size={24} color={color} />;
-      case "Bell": return <Bell size={24} color={color} />;
-      case "FileText": return <FileText size={24} color={color} />;
-      default: return <ClipboardCheck size={24} color={color} />;
+  const loadDashboard = useCallback(async (isPull = false) => {
+    if (isPull) {
+      setRefreshing(true);
     }
-  };
+    try {
+      const cachedUser = await getAuthUser();
+      if (cachedUser) {
+        setEmployee((prev) => ({
+          name: cachedUser.name || prev.name,
+          employeeCode: cachedUser.employee_code || prev.employeeCode,
+          designation: cachedUser.designation || prev.designation,
+          companyName: cachedUser.company_name || prev.companyName,
+          isTenant: Boolean(cachedUser.company_id),
+        }));
+      }
+
+      const [dashRes, sitesRes] = await Promise.all([
+        api.get("/employee/dashboard"),
+        api.get("/employee/sites"),
+      ]);
+
+      const data = dashRes?.data || {};
+      const emp = data?.employee || {};
+      const att = data?.attendance || {};
+      const st = data?.stats || {};
+
+      if (emp?.industry && ALL_SERVICE_KEYS.includes(emp.industry)) {
+        await setService(emp.industry);
+      }
+
+      setEmployee({
+        name: emp.name || cachedUser?.name || "Field Staff",
+        employeeCode: emp.employee_code || cachedUser?.employee_code || "",
+        designation: emp.designation || serviceConfig.vocab.staffRole,
+        companyName: emp.company_name || cachedUser?.company_name || "",
+        isTenant: Boolean(emp.company_id ?? cachedUser?.company_id),
+      });
+
+      const isOnDuty = Boolean(att.checked_in && !att.checked_out);
+      setAttendance({
+        checkedIn: Boolean(att.checked_in),
+        checkedOut: Boolean(att.checked_out),
+        checkInAt: att.check_in_at || null,
+        checkOutAt: att.check_out_at || null,
+        totalHours: Number(att.total_hours || 0),
+        isWithinGeofence: att.is_within_geofence !== false,
+      });
+      await AsyncStorage.setItem("isClockedIn", isOnDuty ? "true" : "false");
+
+      setStats({
+        sitesCount: Number(st.sites_count ?? 0),
+        tasksCount: Number(st.tasks_count ?? 0),
+        completedTasksCount: Number(st.completed_tasks_count ?? 0),
+        visitsCount: Number(st.visits_count ?? 0),
+        visitsToday: Number(st.visits_today ?? 0),
+        pointsEarned: Number(st.points_earned ?? 0),
+        score: Number(st.score ?? 0),
+        taskCompletionRate: Number(st.task_completion_rate ?? 0),
+        hoursWorked: Number(st.hours_worked ?? 0),
+        distanceTodayKm: Number(st.distance_today_km ?? 0),
+        unreadNotifications: Number(st.unread_notifications ?? 0),
+      });
+
+      setActiveTasks(Array.isArray(data?.active_tasks) ? data.active_tasks : []);
+      setRecentVisits(Array.isArray(data?.recent_visits) ? data.recent_visits : []);
+      setSites(Array.isArray(sitesRes?.sites) ? sitesRes.sites : []);
+    } catch {
+      // Retain current state smoothly if offline
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [serviceConfig.vocab.staffRole, setService]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadDashboard(false);
+    }, [loadDashboard])
+  );
+
+  const isOnDuty = attendance.checkedIn && !attendance.checkedOut;
+  const primaryTask = activeTasks[0] || null;
+  const themeColor = serviceConfig.themeColor || "#059669";
+
   return (
     <LiquidGlassBackdrop variant="light">
-      <StatusBar barStyle="light-content" />
-      <SafeAreaView style={{ flex: 1 }} edges={["left", "right"]}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 140 }}>
-          {/* HERO BACKGROUND IMAGE WRAPPING HEADER + TRANSPARENT OFF-DUTY SECTION (AUTO HEIGHT, NO OVERLAP BELOW) */}
-          <ImageBackground
-            source={HERO_LOCAL_IMAGES[serviceConfig.key] || require("../../assets/images/image2.jpg")}
-            resizeMode="cover"
-            style={{
-              width: "100%",
-              overflow: "hidden",
-              borderBottomLeftRadius: 44,
-              borderBottomRightRadius: 44,
-              backgroundColor: "#062214",
-            }}
-          >
-            <LinearGradient
-              colors={[
-                "rgba(4, 24, 14, 0.50)",
-                "rgba(6, 34, 20, 0.68)",
-                "rgba(4, 18, 10, 0.96)",
-              ]}
-              locations={[0, 0.45, 1]}
-              style={[StyleSheet.absoluteFill, { zIndex: 1 }]}
-              pointerEvents="none"
-            />
+      <StatusBar barStyle="dark-content" />
 
-            {/* HEADER */}
-            <View
-              style={{
-                zIndex: 2,
-                paddingHorizontal: 20,
-                paddingTop: insets.top + 10,
-                paddingBottom: 10,
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", flex: 1, minWidth: 0 }}>
-                  <TouchableOpacity
-                    onPress={() => router.push("/(employee)/profile")}
-                    style={{
-                      width: 58,
-                      height: 58,
-                      borderRadius: 29,
-                      borderWidth: 2.5,
-                      borderColor: "#4ade80",
-                      overflow: "hidden",
-                      marginRight: 12,
-                      flexShrink: 0,
-                    }}
-                  >
-                    <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.14)", alignItems: "center", justifyContent: "center" }}>
-                      <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 22 }}>{userName.trim().charAt(0).toUpperCase() || "?"}</Text>
-                    </View>
-                  </TouchableOpacity>
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text
-                      style={{
-                        color: "rgba(255,255,255,0.88)",
-                        fontFamily: "Brandon-Medium",
-                        fontSize: 14,
-                      }}
-                    >
-                      Today
-                    </Text>
-                    <View style={{ flexDirection: "row", alignItems: "center", minWidth: 0 }}>
-                      <Text
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                        style={{
-                          color: "#ffffff",
-                          fontFamily: "Brandon-Bold",
-                          fontSize: 24,
-                          flexShrink: 1,
-                        }}
-                      >
-                          {userName || "Employee"}
-                      </Text>
-                      <ShieldCheck
-                        size={18}
-                        color="#4ade80"
-                        style={{ marginLeft: 6 }}
-                      />
-                      <View
-                        style={{
-                          backgroundColor: "rgba(74, 222, 128, 0.24)",
-                          paddingHorizontal: 8,
-                          paddingVertical: 3,
-                          borderRadius: 10,
-                          marginLeft: 6,
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Text
-                          numberOfLines={1}
-                          style={{
-                            color: "#4ade80",
-                            fontFamily: "Brandon-Bold",
-                            fontSize: 12,
-                            letterSpacing: 0.8,
-                          }}
-                        >
-                          {employeeCode || "Employee"}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-                <LiquidGlassIconButton
-                  onPress={() => router.push("/(employee)/notifications")}
-                  size={46}
-                  variant="dark"
-                  style={{ flexShrink: 0 }}
-                >
-                  <Bell size={22} color="#ffffff" />
-                  <View
-                    style={{
-                      position: "absolute",
-                      top: 10,
-                      right: 10,
-                      width: 9,
-                      height: 9,
-                      borderRadius: 5,
-                      backgroundColor: "#ef4444",
-                    }}
-                  />
-                </LiquidGlassIconButton>
-              </View>
-              <View style={{ flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 8, marginTop: 12 }}>
-                <ServiceSelectorPill dark compact />
-                <LanguageTogglePill dark />
-              </View>
-            </View>
-
-            {/* TRANSPARENT OFF-DUTY & TELEMETRY OVER BOTTOM OVERLAY */}
-            <View style={{ zIndex: 2, paddingHorizontal: 22, paddingTop: 18, paddingBottom: 28 }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 12,
-                }}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <View
-                    style={{
-                      width: 11,
-                      height: 11,
-                      borderRadius: 6,
-                      backgroundColor: isClockedIn ? "#4ade80" : "#f87171",
-                      marginRight: 8,
-                    }}
-                  />
-                  <Text
-                    style={{
-                      color: "#ffffff",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 16,
-                      letterSpacing: 0.6,
-                    }}
-                  >
-                    {isClockedIn ? "On Duty" : "Off Duty"}
-                  </Text>
-                </View>
-                <LiquidGlassButton
-                  onPress={() => router.push("/(employee)/performance")}
-                  variant="tinted"
-                  tintColor="rgba(37, 99, 235, 0.42)"
-                  contentStyle={{
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#ffffff",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 13,
-                    }}
-                  >
-                    {pointsEarned} pts
-                  </Text>
-                </LiquidGlassButton>
-              </View>
-
-              <View style={{ alignItems: "center", marginVertical: 4 }}>
-                <View
-                  style={{
-                    width: 244,
-                    height: 126,
-                    overflow: "hidden",
-                    alignItems: "center",
-                  }}
-                >
-                  <View
-                    style={{
-                      width: 244,
-                      height: 244,
-                      borderRadius: 122,
-                      borderWidth: 11,
-                      borderColor: "rgba(255, 255, 255, 0.18)",
-                      borderTopColor: serviceConfig.accentColor,
-                      borderLeftColor: serviceConfig.accentColor,
-                      borderRightColor: serviceConfig.themeColor,
-                      transform: [{ rotate: "-15deg" }],
-                    }}
-                  />
-                  <View
-                    style={{
-                      position: "absolute",
-                      bottom: 4,
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "#ffffff",
-                        fontFamily: "Brandon-Bold",
-                        fontSize: 48,
-                        lineHeight: 54,
-                      }}
-                    >
-                      {completionRate}%
-                    </Text>
-                    <Text
-                      style={{
-                        color: "rgba(255, 255, 255, 0.88)",
-                        fontFamily: "Brandon-Medium",
-                        fontSize: 14,
-                        marginTop: 2,
-                      }}
-                    >
-                      Efficiency
-                    </Text>
-                  </View>
-                </View>
-
-                <LiquidGlassButton
-                  onPress={() =>
-                    router.push(
-                      isClockedIn
-                        ? "/(employee)/attendance/clock-out"
-                        : "/(employee)/attendance/clock-in"
-                    )
-                  }
-                  variant="tinted"
-                  tintColor={
-                    isClockedIn
-                      ? "rgba(225, 29, 72, 0.72)"
-                      : "rgba(13, 148, 136, 0.74)"
-                  }
-                  style={{
-                    marginTop: 12,
-                    marginBottom: 18,
-                  }}
-                  contentStyle={{
-                    paddingHorizontal: 30,
-                    paddingVertical: 14,
-                  }}
-                >
-                  <Sparkles size={18} color="#ffffff" style={{ marginRight: 8 }} />
-                  <Text
-                    style={{
-                      color: "#ffffff",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 17,
-                    }}
-                  >
-                    {isClockedIn ? "Clock Out" : "Clock In"}
-                  </Text>
-                  <ArrowRight size={18} color="#ffffff" style={{ marginLeft: 8 }} />
-                </LiquidGlassButton>
-              </View>
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  paddingTop: 14,
-                  borderTopWidth: 1,
-                  borderTopColor: "rgba(255, 255, 255, 0.18)",
-                }}
-              >
-                <TouchableOpacity
-                  onPress={() => router.push("/(employee)/my-sites")}
-                  style={{
-                    flex: 1,
-                    alignItems: "center",
-                    borderRightWidth: 1,
-                    borderRightColor: "rgba(255,255,255,0.18)",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#ffffff",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 24,
-                    }}
-                  >
-                    {projectSiteProfiles.length}
-                  </Text>
-                  <Text
-                    style={{
-                      color: "rgba(255,255,255,0.85)",
-                      fontFamily: "Brandon-Medium",
-                      fontSize: 13,
-                    }}
-                  >
-                    {serviceConfig.vocab.entities}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => router.push("/(employee)/visit-history")}
-                  style={{
-                    flex: 1,
-                    alignItems: "center",
-                    borderRightWidth: 1,
-                    borderRightColor: "rgba(255,255,255,0.18)",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#4ade80",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 24,
-                    }}
-                  >
-                    {Number(dashboardStats.visits_today || 0)}
-                  </Text>
-                  <Text
-                    style={{
-                      color: "rgba(255,255,255,0.85)",
-                      fontFamily: "Brandon-Medium",
-                      fontSize: 13,
-                    }}
-                  >
-                    "Visits today"
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => router.push("/(employee)/visits")}
-                  style={{ flex: 1, alignItems: "center" }}
-                >
-                  <Text
-                    style={{
-                      color: "#fbbf24",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 24,
-                    }}
-                  >
-                    {Number(dashboardStats.visits_total || 0)}
-                  </Text>
-                  <Text
-                    style={{
-                      color: "rgba(255,255,255,0.85)",
-                      fontFamily: "Brandon-Medium",
-                      fontSize: 13,
-                    }}
-                  >
-                    {serviceConfig.vocab.visits}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </ImageBackground>
-
-          <View style={{ paddingHorizontal: 22, paddingTop: 22 }}>
-          {/* DUAL BENTO SUMMARY CARDS (Plain Colorless Apple Liquid Glass) */}
-          <View
-            style={{
-              flexDirection: "row",
-              gap: 14,
-              marginBottom: 26,
-            }}
-          >
-            {/* Left Bento Card: Active Work Orders with Avatar Stack */}
-            <LiquidGlassCard
+      <SafeAreaView style={{ flex: 1 }}>
+        {/* TOP NAVIGATION BAR */}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingHorizontal: 20,
+            paddingTop: 10,
+            paddingBottom: 12,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", flex: 1, marginRight: 10 }}>
+            <LiquidGlassIconButton
               variant="light"
-              borderRadius={30}
-              onPress={() => router.push("/(employee)/tasks")}
-              style={{ flex: 1 }}
-              contentStyle={{ padding: 20 }}
+              size={44}
+              onPress={() => router.push("/(employee)/menu")}
             >
+              <Menu size={22} color="#0f172a" />
+            </LiquidGlassIconButton>
+
+            <View style={{ marginLeft: 12, flex: 1 }}>
               <Text
+                numberOfLines={1}
                 style={{
                   color: "#64748b",
                   fontFamily: "Brandon-Bold",
-                  fontSize: 13,
-                }}
-              >
-                Active {serviceConfig.vocab.tasks}
-              </Text>
-              <Text
-                style={{
-                  color: "#0f172a",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 28,
-                  lineHeight: 34,
-                  marginTop: 4,
-                  marginBottom: 14,
-                }}
-              >
-                {dashboardTasks.filter((task: any) => task.status !== "Completed").length} Orders
-              </Text>
-
-              {/* Real assignment count */}
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginBottom: 12,
-                }}
-              >
-                <ClipboardCheck size={24} color={serviceConfig.themeColor} />
-                <View
-                  style={{
-                    backgroundColor: "rgba(255, 255, 255, 0.72)",
-                    borderWidth: 1,
-                    borderColor: "rgba(255, 255, 255, 0.96)",
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
-                    borderRadius: 999,
-                    marginLeft: 6,
-                  }}
-                >
-                  <Text
-                    numberOfLines={1}
-                    style={{
-                      color: serviceConfig.themeColor,
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 12,
-                    }}
-                  >
-                    +{projectSiteProfiles.length}
-                  </Text>
-                </View>
-              </View>
-
-              <Text
-                numberOfLines={2}
-                style={{
-                  color: "#475569",
-                  fontFamily: "Brandon-Medium",
-                  fontSize: 13,
-                  lineHeight: 18,
-                }}
-              >
-                  {dashboardTasks[0]?.title || "No assigned tasks"}
-              </Text>
-            </LiquidGlassCard>
-
-            {/* Right Bento Card: Assigned Facilities & Reports */}
-            <LiquidGlassCard
-              variant="light"
-              borderRadius={30}
-              onPress={() => router.push("/(employee)/my-sites")}
-              style={{ flex: 1 }}
-              contentStyle={{ padding: 20, justifyContent: "space-between", flex: 1 }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                }}
-              >
-                <LiquidGlassIconBadge
-                  size={56}
-                  borderRadius={28}
-                  variant="light"
-                  tintColor="#0284c7"
-                >
-                  <Users size={28} color="#0284c7" />
-                </LiquidGlassIconBadge>
-                <MoreVertical size={20} color="#94a3b8" />
-              </View>
-
-              <View style={{ marginTop: 16 }}>
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 27,
-                    lineHeight: 32,
-                  }}
-                >
-                  {projectSiteProfiles.length} {serviceConfig.vocab.entities}
-                </Text>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 8,
-                    marginTop: 8,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#475569",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 13,
-                    }}
-                  >
-                    📋 {Number(dashboardStats.visits_today || 0)} visits today
-                  </Text>
-                  <Text
-                    style={{
-                      color: serviceConfig.themeColor,
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 13,
-                    }}
-                  >
-                    ✓ {completionRate}% task completion
-                  </Text>
-                </View>
-              </View>
-            </LiquidGlassCard>
-          </View>
-
-          {/* COLORFUL BENTO CARDS */}
-          <View style={{ flexDirection: "row", gap: 14, marginBottom: 28, height: 256 }}>
-            <TouchableOpacity
-              activeOpacity={0.9}
-              onPress={() => router.push("/(employee)/tasks")}
-              style={{
-                flex: 1,
-                backgroundColor: "#065f46",
-                borderRadius: 28,
-                padding: 20,
-                overflow: "hidden",
-                justifyContent: "space-between",
-                elevation: 5,
-              }}
-            >
-              <Image
-                source={require("../../assets/images/image11.jpg")}
-                style={{
-                  position: "absolute",
-                  right: -22,
-                  bottom: -22,
-                  width: 148,
-                  height: 148,
-                  borderRadius: 74,
-                  opacity: 0.36,
-                }}
-                resizeMode="cover"
-              />
-              <View>
-                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-                  <Sparkles size={16} color="#fde047" style={{ marginRight: 6 }} />
-                  <Text style={{ color: "#fde047", fontFamily: "Brandon-Bold", fontSize: 13, letterSpacing: 0.8 }}>
-                    {serviceConfig.shortName.toUpperCase()}
-                  </Text>
-                </View>
-                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 24, lineHeight: 29 }}>
-                  Active {serviceConfig.vocab.tasks}
-                </Text>
-                <Text style={{ color: "rgba(255,255,255,0.85)", fontFamily: "Brandon-Medium", fontSize: 14, marginTop: 6 }}>
-                  {dashboardTasks.filter((task: any) => task.status !== "Completed").length} assigned orders
-                </Text>
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 15, marginRight: 5 }}>
-                  Start
-                </Text>
-                <ArrowRight size={16} color="#ffffff" />
-              </View>
-            </TouchableOpacity>
-            <View style={{ flex: 1, gap: 14 }}>
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={() => router.push("/(employee)/map")}
-                style={{
-                  flex: 1,
-                  backgroundColor: "#ea580c",
-                  borderRadius: 26,
-                  padding: 18,
-                  overflow: "hidden",
-                  justifyContent: "center",
-                  elevation: 5,
-                }}
-              >
-                <Image
-                  source={require("../../assets/images/image13.jpg")}
-                  style={{
-                    position: "absolute",
-                    right: -14,
-                    bottom: -14,
-                    width: 96,
-                    height: 96,
-                    borderRadius: 48,
-                    opacity: 0.38,
-                  }}
-                  resizeMode="cover"
-                />
-                <Text style={{ color: "#fef08a", fontFamily: "Brandon-Bold", fontSize: 12, letterSpacing: 0.8 }}>
-                  GPS TRACKING
-                </Text>
-                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 21, lineHeight: 25, marginTop: 2 }}>
-                  Live GPS Map
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={() => router.push("/(employee)/reports")}
-                style={{
-                  flex: 1,
-                  backgroundColor: "#3730a3",
-                  borderRadius: 26,
-                  padding: 18,
-                  overflow: "hidden",
-                  justifyContent: "center",
-                  elevation: 5,
-                }}
-              >
-                <Image
-                  source={require("../../assets/images/image12.jpg")}
-                  style={{
-                    position: "absolute",
-                    right: -14,
-                    bottom: -14,
-                    width: 96,
-                    height: 96,
-                    borderRadius: 48,
-                    opacity: 0.38,
-                  }}
-                  resizeMode="cover"
-                />
-                <Text style={{ color: "#a5b4fc", fontFamily: "Brandon-Bold", fontSize: 12, letterSpacing: 0.8 }}>
-                  FIELD PROOF
-                </Text>
-                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 21, lineHeight: 25, marginTop: 2 }}>
-                  {serviceConfig.vocab.report}s
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* QUICK SERVICE ACTIONS (Plain Colorless Apple Liquid Glass Tiles) */}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              marginBottom: 30,
-            }}
-          >
-            {serviceConfig.quickActions.map((action, idx) => (
-              <LiquidGlassCard
-                key={idx}
-                variant="light"
-                borderRadius={26}
-                onPress={() => router.push(action.route as any)}
-                style={{ flex: 1, marginHorizontal: 4 }}
-                contentStyle={{
-                  paddingVertical: 16,
-                  paddingHorizontal: 8,
-                  alignItems: "center",
-                }}
-              >
-                <LiquidGlassIconBadge
-                  size={54}
-                  borderRadius={27}
-                  variant="light"
-                  tintColor={action.color}
-                  style={{ marginBottom: 10 }}
-                >
-                  {renderActionIcon(action.icon, action.color)}
-                </LiquidGlassIconBadge>
-                <Text
-                  numberOfLines={2}
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 13,
-                    textAlign: "center",
-                    lineHeight: 16,
-                  }}
-                >
-                  {action.title}
-                </Text>
-              </LiquidGlassCard>
-            ))}
-          </View>
-
-          {/* MY PROJECT SITES (ROUNDED IMAGE + SIMPLE OVERVIEW, VERTICAL PADDING) */}
-          <View style={{ marginBottom: 24 }}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: 6,
-              }}
-            >
-              <Text
-                style={{
-                  color: "#0f172a",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 26,
-                  lineHeight: 32,
-                }}
-              >
-                My {serviceConfig.vocab.entities}
-              </Text>
-              <TouchableOpacity onPress={() => router.push("/(employee)/my-sites")}>
-                <Text
-                  style={{
-                    color: serviceConfig.themeColor,
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 14,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  View All
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{
-                gap: 18,
-                paddingHorizontal: 22,
-                paddingVertical: 18,
-              }}
-              style={{ marginHorizontal: -22 }}
-            >
-              {projectSiteProfiles.map((entity: any, idx: number) => {
-                const imgSource =
-                  typeof entity.image === "string"
-                    ? { uri: entity.image }
-                    : entity.image || SITE_CARD_IMAGES[idx % SITE_CARD_IMAGES.length];
-
-                return (
-                  <LiquidGlassCard
-                    key={`${entity.id}-${idx}`}
-                    variant="light"
-                    borderRadius={34}
-                    onPress={() =>
-                      router.push(`/(employee)/site/${entity.id}` as any)
-                    }
-                    style={{ width: 196 }}
-                    contentStyle={{
-                      paddingVertical: 20,
-                      paddingHorizontal: 14,
-                      alignItems: "center",
-                    }}
-                  >
-                    <View
-                      style={{
-                        width: 144,
-                        height: 144,
-                        borderRadius: 44,
-                        borderWidth: 3.5,
-                        borderColor: serviceConfig.themeColor,
-                        overflow: "hidden",
-                        marginBottom: 14,
-                        backgroundColor: "#f1f5f9",
-                      }}
-                    >
-                      <Image
-                        source={imgSource}
-                        style={{ width: "100%", height: "100%" }}
-                        resizeMode="cover"
-                      />
-                    </View>
-                    <Text
-                      numberOfLines={2}
-                      style={{
-                        color: "#0f172a",
-                        fontFamily: "Brandon-Bold",
-                        fontSize: 19,
-                        lineHeight: 23,
-                        textAlign: "center",
-                      }}
-                    >
-                      {entity.name}
-                    </Text>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginTop: 6,
-                      }}
-                    >
-                      <MapPin size={14} color={serviceConfig.themeColor} style={{ marginRight: 4 }} />
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          color: "#64748b",
-                          fontFamily: "Brandon-Bold",
-                          fontSize: 14,
-                          textAlign: "center",
-                          flexShrink: 1,
-                        }}
-                      >
-                        {entity.area || entity.city}
-                      </Text>
-                    </View>
-                  </LiquidGlassCard>
-                );
-              })}
-            </ScrollView>
-          </View>
-
-          {/* COLORFUL HORIZONTAL SLIDER (Maximalist cards placed below My Project Sites) */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 16, paddingHorizontal: 22, paddingVertical: 14 }}
-            style={{ marginHorizontal: -22, marginBottom: 24 }}
-          >
-            {[
-              {
-                tag: "START OF DAY",
-                title: "Attendance & Selfie",
-                sub: "Verify GPS clock-in now",
-                bg: "#0f766e",
-                img: require("../../assets/images/image14.jpg"),
-                route: "/(employee)/attendance-hub",
-              },
-              {
-                tag: serviceConfig.shortName.toUpperCase(),
-                title: `My ${serviceConfig.vocab.entities}`,
-                sub: `Open all ${projectSiteProfiles.length} site profiles`,
-                bg: "#ea580c",
-                img: require("../../assets/images/image15.jpg"),
-                route: "/(employee)/my-sites",
-              },
-              {
-                tag: "CHECKED OUT",
-                title: "Visit Logs & Proof",
-                sub: `All ${serviceConfig.vocab.visits.toLowerCase()} & notes`,
-                bg: "#7c3aed",
-                img: require("../../assets/images/image16.jpg"),
-                route: "/(employee)/visit-history",
-              },
-              {
-                tag: "PERFORMANCE",
-                title: "My Score & SLA",
-                sub: `${completionRate}% completion • ${pointsEarned} points`,
-                bg: "#0369a1",
-                img: require("../../assets/images/image17.jpg"),
-                route: "/(employee)/performance",
-              },
-            ].map((slide, idx) => (
-              <TouchableOpacity
-                key={idx}
-                activeOpacity={0.9}
-                onPress={() => router.push(slide.route as any)}
-                style={{
-                  width: 328,
-                  height: 196,
-                  backgroundColor: slide.bg,
-                  borderRadius: 30,
-                  padding: 22,
-                  overflow: "hidden",
-                  justifyContent: "space-between",
-                  shadowColor: "#0f172a",
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.14,
-                  shadowRadius: 16,
-                  elevation: 6,
-                }}
-              >
-                <Image
-                  source={slide.img}
-                  style={{
-                    position: "absolute",
-                    right: -18,
-                    bottom: -18,
-                    width: 146,
-                    height: 146,
-                    borderRadius: 73,
-                    opacity: 0.38,
-                  }}
-                  resizeMode="cover"
-                />
-                <View style={{ maxWidth: "78%" }}>
-                  <Text style={{ color: "#fde047", fontFamily: "Brandon-Bold", fontSize: 13, letterSpacing: 0.9 }}>
-                    {slide.tag}
-                  </Text>
-                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 25, lineHeight: 30, marginTop: 4 }}>
-                    {slide.title}
-                  </Text>
-                  <Text style={{ color: "rgba(255,255,255,0.9)", fontFamily: "Brandon-Medium", fontSize: 15, marginTop: 5 }}>
-                    {slide.sub}
-                  </Text>
-                </View>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16, marginRight: 6 }}>
-                    Open
-                  </Text>
-                  <ArrowRight size={18} color="#ffffff" />
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-
-          {/* TODAY'S SERVICE VISITS */}
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 16,
-            }}
-          >
-            <Text
-              style={{
-                color: "#0f172a",
-                fontFamily: "Brandon-Bold",
-                fontSize: 25,
-              }}
-            >
-              Today&apos;s {serviceConfig.vocab.visits}
-            </Text>
-            <TouchableOpacity onPress={() => router.push("/(employee)/map")}>
-              <Text
-                style={{
-                  color: serviceConfig.themeColor,
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 14,
+                  fontSize: 12,
+                  letterSpacing: 0.5,
                   textTransform: "uppercase",
                 }}
               >
-                Open Live Map
+                {employee.companyName || serviceConfig.shortName}
+              </Text>
+              <Text
+                numberOfLines={1}
+                style={{
+                  color: "#0f172a",
+                  fontFamily: "Brandon-Bold",
+                  fontSize: 20,
+                }}
+              >
+                {employee.name || "Loading..."}
+              </Text>
+            </View>
+          </View>
+
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <ServiceSelectorPill compact locked={employee.isTenant} />
+            <View>
+              <LiquidGlassIconButton
+                variant="light"
+                size={44}
+                onPress={() => router.push("/(employee)/notifications")}
+              >
+                <Bell size={20} color="#0f172a" />
+              </LiquidGlassIconButton>
+              {stats.unreadNotifications > 0 && (
+                <View
+                  pointerEvents="none"
+                  style={{
+                    position: "absolute",
+                    top: 6,
+                    right: 6,
+                    minWidth: 16,
+                    height: 16,
+                    borderRadius: 8,
+                    paddingHorizontal: 4,
+                    backgroundColor: "#ef4444",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderWidth: 1.5,
+                    borderColor: "#ffffff",
+                  }}
+                >
+                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 9 }}>
+                    {stats.unreadNotifications > 9 ? "9+" : stats.unreadNotifications}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </View>
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => loadDashboard(true)}
+              tintColor={themeColor}
+            />
+          }
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 132 }}
+        >
+          {/* HERO LIVE OPERATIONS & ATTENDANCE BANNER */}
+          <LiquidGlassCard
+            variant="dark"
+            borderRadius={30}
+            dropletColor={themeColor}
+            style={{ marginBottom: 18 }}
+            contentStyle={{ padding: 22 }}
+          >
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <View style={{ flex: 1, paddingRight: 12 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: isOnDuty ? "rgba(16,185,129,0.22)" : "rgba(148,163,184,0.22)",
+                      borderWidth: 1,
+                      borderColor: isOnDuty ? "rgba(52,211,153,0.5)" : "rgba(255,255,255,0.2)",
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      borderRadius: 999,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 7,
+                        height: 7,
+                        borderRadius: 4,
+                        backgroundColor: isOnDuty ? "#34d399" : "#94a3b8",
+                        marginRight: 6,
+                      }}
+                    />
+                    <Text style={{ color: isOnDuty ? "#6ee7b7" : "#cbd5e1", fontFamily: "Brandon-Bold", fontSize: 11 }}>
+                      {isOnDuty ? `ON DUTY • ${attendance.checkInAt || "LIVE"}` : attendance.checkedOut ? "SHIFT COMPLETED" : "OFF DUTY"}
+                    </Text>
+                  </View>
+                  {employee.employeeCode ? (
+                    <Text style={{ color: "rgba(255,255,255,0.7)", fontFamily: "Brandon-Bold", fontSize: 12 }}>
+                      ID: {employee.employeeCode}
+                    </Text>
+                  ) : null}
+                </View>
+
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 24, lineHeight: 29 }}>
+                  {serviceConfig.name}
+                </Text>
+                <Text style={{ color: "rgba(255,255,255,0.72)", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 4 }}>
+                  {attendance.checkedOut
+                    ? `Logged ${attendance.totalHours.toFixed(1)} hrs today • Synced with Admin`
+                    : isOnDuty
+                    ? `${stats.distanceTodayKm.toFixed(1)} km tracked today • GPS ready`
+                    : "Clock in with GPS to start your daily shift"}
+                </Text>
+              </View>
+
+              <LiquidGlassCard
+                variant="tinted"
+                tintColor="rgba(255,255,255,0.12)"
+                borderRadius={20}
+                onPress={() => router.push("/(employee)/performance")}
+                contentStyle={{ paddingHorizontal: 14, paddingVertical: 10, alignItems: "center" }}
+              >
+                <Text style={{ color: "#4ade80", fontFamily: "Brandon-Bold", fontSize: 22 }}>
+                  {stats.score}%
+                </Text>
+                <Text style={{ color: "rgba(255,255,255,0.75)", fontFamily: "Brandon-Bold", fontSize: 10 }}>
+                  SCORE
+                </Text>
+              </LiquidGlassCard>
+            </View>
+
+            {/* Quick Shift & Live GPS Buttons */}
+            <View style={{ flexDirection: "row", gap: 10, marginTop: 18 }}>
+              <LiquidGlassButton
+                variant="tinted"
+                tintColor={isOnDuty ? "rgba(239, 68, 68, 0.78)" : "rgba(16, 185, 129, 0.82)"}
+                dropletColor={isOnDuty ? "#f87171" : "#34d399"}
+                onPress={() =>
+                  router.push(
+                    isOnDuty
+                      ? "/(employee)/attendance/clock-out"
+                      : attendance.checkedOut
+                      ? "/(employee)/attendance-hub"
+                      : "/(employee)/attendance/clock-in"
+                  )
+                }
+                style={{ flex: 1 }}
+                contentStyle={{ paddingVertical: 13 }}
+              >
+                <Fingerprint size={17} color="#ffffff" style={{ marginRight: 7 }} />
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14 }}>
+                  {isOnDuty ? "Clock Out" : attendance.checkedOut ? "Shift Summary" : "Clock In"}
+                </Text>
+              </LiquidGlassButton>
+
+              <LiquidGlassButton
+                variant="dark"
+                dropletColor="#38bdf8"
+                onPress={() => router.push("/(employee)/map")}
+                style={{ flex: 1 }}
+                contentStyle={{ paddingVertical: 13 }}
+              >
+                <Navigation size={17} color="#38bdf8" style={{ marginRight: 7 }} />
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14 }}>
+                  Live GPS Map
+                </Text>
+              </LiquidGlassButton>
+            </View>
+          </LiquidGlassCard>
+
+          {/* REAL-TIME KPI BENTO GRID */}
+          <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginBottom: 10 }}>
+            {[
+              {
+                label: `Active ${serviceConfig.vocab.tasks}`,
+                value: String(stats.tasksCount),
+                sub: `${stats.completedTasksCount} completed`,
+                icon: ClipboardCheck,
+                color: "#ea580c",
+                route: "/(employee)/tasks",
+              },
+              {
+                label: `My ${serviceConfig.vocab.entities}`,
+                value: String(stats.sitesCount),
+                sub: "Assigned by Admin",
+                icon: Building2,
+                color: "#0284c7",
+                route: "/(employee)/my-sites",
+              },
+              {
+                label: serviceConfig.vocab.visits,
+                value: String(stats.visitsToday),
+                sub: `${stats.visitsCount} total logged`,
+                icon: MapPin,
+                color: "#059669",
+                route: "/(employee)/visits",
+              },
+              {
+                label: "SLA Points",
+                value: `${stats.pointsEarned}`,
+                sub: `${stats.hoursWorked.toFixed(1)}h this month`,
+                icon: Award,
+                color: "#7c3aed",
+                route: "/(employee)/performance",
+              },
+            ].map((item, idx) => {
+              const IconComp = item.icon;
+              return (
+                <LiquidGlassCard
+                  key={idx}
+                  variant="light"
+                  borderRadius={24}
+                  onPress={() => router.push(item.route as any)}
+                  style={{ width: "48.2%", marginBottom: 12 }}
+                  contentStyle={{ padding: 16 }}
+                >
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                    <LiquidGlassIconBadge size={40} borderRadius={14} variant="light" tintColor={item.color}>
+                      <IconComp size={20} color={item.color} />
+                    </LiquidGlassIconBadge>
+                    <ArrowRight size={16} color="#94a3b8" />
+                  </View>
+                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 26, marginTop: 10 }}>
+                    {item.value}
+                  </Text>
+                  <Text numberOfLines={1} style={{ color: "#334155", fontFamily: "Brandon-Bold", fontSize: 13 }}>
+                    {item.label}
+                  </Text>
+                  <Text numberOfLines={1} style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 11, marginTop: 2 }}>
+                    {item.sub}
+                  </Text>
+                </LiquidGlassCard>
+              );
+            })}
+          </View>
+
+          {/* QUICK ACTION TOOLS */}
+          <View style={{ flexDirection: "row", gap: 10, marginBottom: 22 }}>
+            {[
+              { label: "Calendar", icon: Clock, color: "#0284c7", route: "/(employee)/calendar" },
+              { label: "Reports", icon: FileText, color: "#8b5cf6", route: "/(employee)/reports" },
+              { label: "History", icon: TrendingUp, color: "#059669", route: "/(employee)/visit-history" },
+              { label: "SOS", icon: AlertOctagon, color: "#ef4444", route: "/(employee)/sos" },
+            ].map((tool, idx) => {
+              const IconComp = tool.icon;
+              return (
+                <LiquidGlassCard
+                  key={idx}
+                  variant="light"
+                  borderRadius={20}
+                  onPress={() => router.push(tool.route as any)}
+                  style={{ flex: 1 }}
+                  contentStyle={{ paddingVertical: 14, alignItems: "center", gap: 6 }}
+                >
+                  <IconComp size={20} color={tool.color} />
+                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 12 }}>
+                    {tool.label}
+                  </Text>
+                </LiquidGlassCard>
+              );
+            })}
+          </View>
+
+          {/* PRIORITY WORK ORDER SECTION */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>
+              Priority {serviceConfig.vocab.taskSingular}
+            </Text>
+            <TouchableOpacity onPress={() => router.push("/(employee)/tasks")}>
+              <Text style={{ color: themeColor, fontFamily: "Brandon-Bold", fontSize: 14 }}>
+                View All ({stats.tasksCount})
               </Text>
             </TouchableOpacity>
           </View>
 
-          <View style={{ gap: 16, marginBottom: 28 }}>
-            {serviceConfig.sampleVisits.slice(0, 2).map((visit, vIdx) => (
-              <LiquidGlassCard
-                key={visit.id}
-                variant="light"
-                borderRadius={26}
-                onPress={() => router.push(`/(employee)/visit/${visit.id}` as any)}
-                contentStyle={{
-                  padding: 18,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Image
-                  source={visit.image || SITE_CARD_IMAGES[vIdx % SITE_CARD_IMAGES.length]}
+          {loading && !primaryTask ? (
+            <ActivityIndicator color={themeColor} style={{ marginVertical: 18 }} />
+          ) : primaryTask ? (
+            <LiquidGlassCard
+              variant="light"
+              borderRadius={26}
+              style={{ marginBottom: 24 }}
+              contentStyle={{ padding: 20 }}
+            >
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 12 }}>
+                  {primaryTask.workOrderCode} • +{primaryTask.points} PTS
+                </Text>
+                <View
                   style={{
-                    width: 68,
-                    height: 68,
-                    borderRadius: 20,
-                    marginRight: 14,
+                    backgroundColor:
+                      primaryTask.priority === "Urgent" ? "rgba(239,68,68,0.14)" : "rgba(245,158,11,0.16)",
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: 999,
                   }}
-                  resizeMode="cover"
-                />
-                <View style={{ flex: 1, paddingRight: 10 }}>
+                >
                   <Text
                     style={{
-                      color: "#0f172a",
+                      color: primaryTask.priority === "Urgent" ? "#dc2626" : "#b45309",
                       fontFamily: "Brandon-Bold",
-                      fontSize: 19,
-                      lineHeight: 23,
-                      marginBottom: 4,
-                    }}
-                    numberOfLines={2}
-                  >
-                    {visit.farmerName || "Site name not recorded"}
-                  </Text>
-                  <Text
-                    numberOfLines={1}
-                    style={{
-                      color: "#64748b",
-                      fontFamily: "Brandon-Medium",
-                      fontSize: 14,
+                      fontSize: 11,
                     }}
                   >
-                    {[visit.time, visit.status].filter(Boolean).join(" • ")}
+                    {primaryTask.priority} • {primaryTask.due}
                   </Text>
                 </View>
+              </View>
 
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <View
-                    style={{
-                      backgroundColor:
-                        visit.status === "Completed"
-                          ? "rgba(13, 148, 136, 0.14)"
-                          : visit.status === "In Progress"
-                          ? "rgba(217, 119, 6, 0.14)"
-                          : "rgba(100, 116, 139, 0.12)",
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: 999,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color:
-                          visit.status === "Completed"
-                            ? "#0f766e"
-                            : visit.status === "In Progress"
-                            ? "#b45309"
-                            : "#475569",
-                        fontFamily: "Brandon-Bold",
-                        fontSize: 12,
-                      }}
-                    >
-                      {visit.status}
-                    </Text>
-                  </View>
-                  <ArrowRight size={18} color="#64748b" />
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 19, marginBottom: 6 }}>
+                {primaryTask.title}
+              </Text>
+              {primaryTask.targetEntity ? (
+                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
+                  <MapPin size={15} color={themeColor} />
+                  <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 14, marginLeft: 6, flex: 1 }}>
+                    {primaryTask.targetEntity}
+                    {primaryTask.address ? ` • ${primaryTask.address}` : ""}
+                  </Text>
                 </View>
-              </LiquidGlassCard>
-            ))}
+              ) : null}
+
+              <LiquidGlassButton
+                variant="tinted"
+                tintColor="rgba(6, 34, 20, 0.88)"
+                dropletColor="#4ade80"
+                onPress={() => router.push(`/(employee)/task/${primaryTask.id}` as any)}
+                contentStyle={{ paddingVertical: 14 }}
+              >
+                <Navigation size={17} color="#4ade80" style={{ marginRight: 8 }} />
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 15 }}>
+                  Open & Start {serviceConfig.vocab.taskSingular}
+                </Text>
+              </LiquidGlassButton>
+            </LiquidGlassCard>
+          ) : (
+            <LiquidGlassCard
+              variant="light"
+              borderRadius={24}
+              style={{ marginBottom: 24 }}
+              contentStyle={{ padding: 22, alignItems: "center" }}
+            >
+              <CheckCircle2 size={32} color="#10b981" style={{ marginBottom: 8 }} />
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>
+                No Pending {serviceConfig.vocab.tasks}
+              </Text>
+              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, textAlign: "center", marginTop: 4 }}>
+                New work orders assigned by your Web Admin will appear here immediately.
+              </Text>
+            </LiquidGlassCard>
+          )}
+
+          {/* ASSIGNED SITES CAROUSEL */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>
+              Assigned {serviceConfig.vocab.entities}
+            </Text>
+            <TouchableOpacity onPress={() => router.push("/(employee)/my-sites")}>
+              <Text style={{ color: themeColor, fontFamily: "Brandon-Bold", fontSize: 14 }}>
+                See All ({sites.length})
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          {/* COMPACT SOS SAFETY BAR (Liquid Glass) */}
-          <LiquidGlassCard
-            variant="light"
-            dropletColor="#EF4444"
-            borderRadius={24}
-            onPress={() => router.push("/(employee)/sos")}
-            contentStyle={{
-              padding: 18,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 14, flex: 1 }}>
-              <LiquidGlassIconBadge
-                size={52}
-                borderRadius={26}
-                variant="light"
-                tintColor="#DC2626"
-              >
-                <AlertOctagon size={26} color="#dc2626" />
-              </LiquidGlassIconBadge>
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: "#991b1b", fontFamily: "Brandon-Bold", fontSize: 19 }}>
-                  Field Emergency SOS
-                </Text>
-                <Text style={{ color: "#b91c1c", fontFamily: "Brandon-Medium", fontSize: 14, marginTop: 2 }}>
-                  Alert admin with live GPS coordinates
-                </Text>
-              </View>
+          {sites.length > 0 ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 14, paddingBottom: 8, marginBottom: 20 }}
+            >
+              {sites.slice(0, 6).map((site, index) => (
+                <TouchableOpacity
+                  key={site.id}
+                  activeOpacity={0.9}
+                  onPress={() => router.push(`/(employee)/site/${site.id}` as any)}
+                  style={{
+                    width: 236,
+                    height: 168,
+                    borderRadius: 24,
+                    overflow: "hidden",
+                    backgroundColor: "#0f172a",
+                  }}
+                >
+                  <Image
+                    source={SITE_CARD_IMAGES[index % SITE_CARD_IMAGES.length]}
+                    style={StyleSheet.absoluteFillObject}
+                    resizeMode="cover"
+                  />
+                  <LinearGradient
+                    colors={["rgba(15,23,42,0.15)", "rgba(15,23,42,0.88)"]}
+                    style={StyleSheet.absoluteFillObject}
+                  />
+                  <View style={{ flex: 1, justifyContent: "space-between", padding: 16 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                      <View
+                        style={{
+                          backgroundColor: "rgba(255,255,255,0.2)",
+                          paddingHorizontal: 9,
+                          paddingVertical: 3,
+                          borderRadius: 8,
+                        }}
+                      >
+                        <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 10 }}>
+                          {site.site_code || "SITE"}
+                        </Text>
+                      </View>
+                      {site.latitude !== null && site.longitude !== null && (
+                        <View
+                          style={{
+                            backgroundColor: "rgba(16,185,129,0.28)",
+                            paddingHorizontal: 8,
+                            paddingVertical: 3,
+                            borderRadius: 8,
+                          }}
+                        >
+                          <Text style={{ color: "#6ee7b7", fontFamily: "Brandon-Bold", fontSize: 10 }}>
+                            GPS PINNED
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+
+                    <View>
+                      <Text numberOfLines={1} style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>
+                        {site.name}
+                      </Text>
+                      <Text numberOfLines={1} style={{ color: "rgba(255,255,255,0.78)", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 2 }}>
+                        {site.address || site.city || site.area || "Assigned location"}
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          ) : (
+            <LiquidGlassCard
+              variant="light"
+              borderRadius={24}
+              style={{ marginBottom: 24 }}
+              contentStyle={{ padding: 22, alignItems: "center" }}
+            >
+              <Layers size={30} color="#64748b" style={{ marginBottom: 8 }} />
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>
+                No {serviceConfig.vocab.entities} Assigned Yet
+              </Text>
+              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, textAlign: "center", marginTop: 4 }}>
+                Sites onboarded and assigned to you in Web Admin appear here automatically.
+              </Text>
+            </LiquidGlassCard>
+          )}
+
+          {/* RECENT FIELD VISITS */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 20 }}>
+              Recent {serviceConfig.vocab.visits}
+            </Text>
+            <TouchableOpacity onPress={() => router.push("/(employee)/visits")}>
+              <Text style={{ color: themeColor, fontFamily: "Brandon-Bold", fontSize: 14 }}>
+                History
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {recentVisits.length > 0 ? (
+            <View style={{ gap: 12 }}>
+              {recentVisits.map((visit) => {
+                const isDone = visit.status === "completed";
+                return (
+                  <LiquidGlassCard
+                    key={visit.id}
+                    variant="light"
+                    borderRadius={22}
+                    onPress={() =>
+                      router.push(
+                        (isDone ? `/(employee)/report/${visit.id}` : `/(employee)/visit/${visit.id}`) as any
+                      )
+                    }
+                    contentStyle={{ padding: 16, flexDirection: "row", alignItems: "center" }}
+                  >
+                    <LiquidGlassIconBadge
+                      size={44}
+                      borderRadius={15}
+                      variant="light"
+                      tintColor={isDone ? "#10b981" : "#f59e0b"}
+                      style={{ marginRight: 14 }}
+                    >
+                      {isDone ? (
+                        <CheckCircle2 size={22} color="#10b981" />
+                      ) : (
+                        <Clock size={22} color="#f59e0b" />
+                      )}
+                    </LiquidGlassIconBadge>
+
+                    <View style={{ flex: 1, marginRight: 10 }}>
+                      <Text numberOfLines={1} style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>
+                        {visit.farmerName}
+                      </Text>
+                      <Text numberOfLines={1} style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 2 }}>
+                        {visit.date || "Today"} • {visit.time || ""}
+                        {visit.checkOutTime ? ` – ${visit.checkOutTime}` : " (In Progress)"}
+                      </Text>
+                    </View>
+
+                    <LiquidGlassPill
+                      variant="light"
+                      active={isDone}
+                      tintColor={isDone ? "rgba(16,185,129,0.85)" : "rgba(245,158,11,0.85)"}
+                      contentStyle={{ paddingHorizontal: 10, paddingVertical: 5 }}
+                    >
+                      <Text style={{ color: isDone ? "#ffffff" : "#92400e", fontFamily: "Brandon-Bold", fontSize: 11 }}>
+                        {isDone ? "Done" : "Active"}
+                      </Text>
+                    </LiquidGlassPill>
+                  </LiquidGlassCard>
+                );
+              })}
             </View>
-            <ArrowRight size={20} color="#dc2626" />
-          </LiquidGlassCard>
-        </View>
+          ) : (
+            <LiquidGlassCard
+              variant="light"
+              borderRadius={22}
+              contentStyle={{ padding: 22, alignItems: "center" }}
+            >
+              <MapPin size={28} color="#94a3b8" style={{ marginBottom: 8 }} />
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 15 }}>
+                No Field Visits Logged Yet
+              </Text>
+              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, textAlign: "center", marginTop: 4 }}>
+                Start a visit from an assigned site or work order to track GPS and submit reports.
+              </Text>
+            </LiquidGlassCard>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LiquidGlassBackdrop>

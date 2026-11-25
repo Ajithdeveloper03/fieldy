@@ -142,7 +142,8 @@ export const useService = () => useContext(ServiceContext);
 export const ServiceSelectorPill: React.FC<{
   dark?: boolean;
   compact?: boolean;
-}> = ({ dark = false, compact = false }) => {
+  locked?: boolean;
+}> = ({ dark = false, compact = false, locked = false }) => {
   const { serviceConfig, openSwitcher } = useService();
   const safeConfig = serviceConfig || getSafeServiceConfig();
   const themeColor = safeConfig.themeColor || "#059669";
@@ -152,8 +153,9 @@ export const ServiceSelectorPill: React.FC<{
 
   return (
     <TouchableOpacity
-      activeOpacity={0.85}
-      onPress={openSwitcher}
+      activeOpacity={locked ? 1 : 0.85}
+      disabled={locked}
+      onPress={locked ? undefined : openSwitcher}
       style={{
         borderRadius: 999,
         overflow: "hidden",
@@ -209,17 +211,19 @@ export const ServiceSelectorPill: React.FC<{
             fontFamily: "Brandon-Bold",
             fontSize: compact ? 11 : 12,
             letterSpacing: 0.4,
-            maxWidth: compact ? 96 : 150,
+            maxWidth: compact ? 108 : 156,
           }}
         >
           {label}
         </Text>
-        <View style={{ marginLeft: 3 }}>
-          <ChevronDown
-            size={13}
-            color={dark ? "rgba(255,255,255,0.8)" : "#574D48"}
-          />
-        </View>
+        {!locked && (
+          <View style={{ marginLeft: 3 }}>
+            <ChevronDown
+              size={13}
+              color={dark ? "rgba(255,255,255,0.8)" : "#574D48"}
+            />
+          </View>
+        )}
       </SafeBlurView>
     </TouchableOpacity>
   );

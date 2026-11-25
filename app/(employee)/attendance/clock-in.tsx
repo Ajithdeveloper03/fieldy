@@ -1,27 +1,28 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
+  ScrollView,
+  TouchableOpacity,
+  Image,
   StatusBar,
   ActivityIndicator,
-  Image,
-  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import * as Location from "expo-location";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   ChevronLeft,
-  MapPin,
   Camera,
   CheckCircle2,
-  Fingerprint,
+  MapPin,
+  LogIn,
+  RefreshCw,
 } from "lucide-react-native";
-import { useLanguage } from "../../../context/LanguageContext";
-import { useService } from "../../../context/ServiceContext";
-import * as Location from "expo-location";
-import * as ImagePicker from "expo-image-picker";
 import { api } from "../../../services/api";
+import { pickImageAsset, uploadMediaAsset } from "../../../services/media";
+import { haversineDistanceKm, sendLiveLocationPing } from "../../../utils/locationHelpers";
 import { showToast } from "../../../components/ui/ToastMessage";
 import {
   LiquidGlassBackdrop,
@@ -32,90 +33,125 @@ import {
 } from "../../../components/LiquidGlass";
 
 export default function ClockInScreen() {
-  const { t, language } = useLanguage();
-  const { serviceConfig } = useService();
-  const [isLocating, setIsLocating] = useState(true);
-  const [locationVerified, setLocationVerified] = useState(false);
-  const [locationLabel, setLocationLabel] = useState("Verifying live GPS...");
-  const [coords, setCoords] = useState<{ latitude: number; longitude: number }>({
-    latitude: 13.0827,
-    longitude: 80.2707,
-  });
-  const [cameraVerified, setCameraVerified] = useState(false);
-  const [selfieUri, setSelfieUri] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number; accuracy: number | null } | null>(null);
+  const [targetSite, setTargetSite] = useState<any | null>(null);
+  const [selfieAsset, setSelfieAsset] = useState<any | null>(null);
+  const [locating, setLocating] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-  // Real GPS location check
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status === "granted") {
-          const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-          if (mounted) {
-            setCoords({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
-            setLocationLabel(`${loc.coords.latitude.toFixed(4)}° N, ${loc.coords.longitude.toFixed(4)}° E • GPS Verified`);
-            setIsLocating(false);
-            setLocationVerified(true);
-            return;
-          }
-        }
-      } catch {
-        // Fallback smoothly if emulator lacks mock GPS lock
-      }
-      if (mounted) {
-        setLocationLabel(`${serviceConfig.shortName} Zone • GPS Ready`);
-        setIsLocating(false);
-        setLocationVerified(true);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [serviceConfig.shortName]);
-
-  const handleCameraVerify = async () => {
+  const fetchGpsAndAnchor = async () => {
+    setLocating(true);
     try {
-      const perm = await ImagePicker.requestCameraPermissionsAsync();
-      if (perm.granted) {
-        const shot = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.5 });
-        if (!shot.canceled && shot.assets?.[0]?.uri) {
-          setSelfieUri(shot.assets[0].uri);
-        }
+      const attRes = await api.get("/employee/attendance").catch(() => null);
+      if (attRes?.target_site) {
+        setTargetSite(attRes.target_site);
       }
+
+      const perm = await Location.requestForegroundPermissionsAsync();
+      if (perm.status !== "granted") {
+        showToast({
+          title: "Location Permission Required",
+          message: "Enable GPS access to clock in for your shift.",
+          type: "error",
+        });
+        setLocating(false);
+        return;
+      }
+
+      const fix = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      setCoords({
+        latitude: fix.coords.latitude,
+        longitude: fix.coords.longitude,
+        accuracy: fix.coords.accuracy ?? null,
+      });
+      void sendLiveLocationPing(fix.coords);
     } catch {
-      // Allow selfie confirmation even on simulators without hardware camera
+      showToast({
+        title: "GPS Lock Pending",
+        message: "Tap refresh to acquire live coordinates.",
+        type: "info",
+      });
+    } finally {
+      setLocating(false);
     }
-    setCameraVerified(true);
   };
 
-  const handleClockIn = async () => {
-    if (!locationVerified || !cameraVerified) return;
+  useEffect(() => {
+    void fetchGpsAndAnchor();
+  }, []);
 
-    setIsProcessing(true);
+  const captureSelfie = async () => {
     try {
-      await api
-        .post("/employee/attendance", {
-          action: "check_in",
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-          selfie_image_path: selfieUri,
-        })
-        .catch(() => null);
-      await AsyncStorage.setItem("isClockedIn", "true");
-      await AsyncStorage.setItem(
-        "clockInTime",
-        new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      );
+      const picked = await pickImageAsset("camera");
+      if (picked) setSelfieAsset(picked);
+    } catch {
+      showToast({ title: "Camera Notice", message: "Please allow camera access.", type: "info" });
+    }
+  };
+
+  const distanceToZoneMeters =
+    coords && targetSite?.latitude != null && targetSite?.longitude != null
+      ? Math.round(
+          haversineDistanceKm(coords, {
+            latitude: Number(targetSite.latitude),
+            longitude: Number(targetSite.longitude),
+          }) * 1000
+        )
+      : null;
+
+  const handleClockIn = async () => {
+    if (!coords) {
       showToast({
-        title: "Clocked In",
-        message: `Attendance synced for ${serviceConfig.label}.`,
+        title: "Waiting for GPS",
+        message: "Acquire live GPS coordinates before clocking in.",
+        type: "error",
+      });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      let selfieUrl: string | undefined;
+      if (selfieAsset) {
+        try {
+          const uploaded = await uploadMediaAsset({
+            asset: selfieAsset,
+            title: "Morning Shift Clock-In Selfie",
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+          });
+          selfieUrl = uploaded.preview_url;
+        } catch {
+          // Proceed with GPS clock-in even if selfie upload is skipped
+        }
+      }
+
+      const res = await api.post("/employee/attendance", {
+        action: "check_in",
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        selfie_image_path: selfieUrl,
+        site_latitude: targetSite?.latitude ?? undefined,
+        site_longitude: targetSite?.longitude ?? undefined,
+      });
+
+      await AsyncStorage.setItem("isClockedIn", "true");
+      showToast({
+        title: "Clocked In On Duty",
+        message: res?.check_in_at
+          ? `Shift started at ${res.check_in_at} • Synced with Admin`
+          : "Attendance recorded successfully.",
         type: "success",
       });
-      router.replace("/(employee)/dashboard");
+      router.replace("/(employee)/attendance-hub");
+    } catch (err: any) {
+      showToast({
+        title: "Clock-In Failed",
+        message: err?.message || "Unable to record attendance. Check your connection.",
+        type: "error",
+      });
     } finally {
-      setIsProcessing(false);
+      setSubmitting(false);
     }
   };
 
@@ -123,277 +159,139 @@ export default function ClockInScreen() {
     <LiquidGlassBackdrop variant="dark">
       <StatusBar barStyle="light-content" />
 
-      <SafeAreaView style={{ flex: 1, justifyContent: "space-between" }}>
-        {/* HEADER */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            paddingHorizontal: 24,
-            paddingTop: 16,
-          }}
-        >
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16 }}>
           <LiquidGlassIconButton
             variant="dark"
             size={44}
-            onPress={() =>
-              router.canGoBack()
-                ? router.back()
-                : router.replace("/(employee)/dashboard")
-            }
+            onPress={() => (router.canGoBack() ? router.back() : router.replace("/(employee)/attendance-hub"))}
           >
             <ChevronLeft size={24} color="#ffffff" />
           </LiquidGlassIconButton>
-          <Text
-            style={{
-              color: "#ffffff",
-              fontFamily: "Brandon-Bold",
-              fontSize: 18,
-            }}
-          >
-            Secure Clock In
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 22 }}>
+            Morning Clock-In
           </Text>
-          <View style={{ width: 44 }} />
+          <LiquidGlassIconButton variant="dark" size={44} onPress={fetchGpsAndAnchor}>
+            <RefreshCw size={18} color="#ffffff" />
+          </LiquidGlassIconButton>
         </View>
 
-        {/* MAIN ACTION CARD */}
-        <ScrollView
-          contentContainerStyle={{
-            paddingHorizontal: 24,
-            paddingBottom: 40,
-            justifyContent: "center",
-            flexGrow: 1,
-          }}
-        >
-          {/* TIME */}
-          <View style={{ alignItems: "center", marginBottom: 32 }}>
-            <Text
-              style={{
-                color: "#ffffff",
-                fontFamily: "Brandon-Bold",
-                fontSize: 56,
-                lineHeight: 60,
-                letterSpacing: -2,
-              }}
-            >
-              {new Date().toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </Text>
-            <Text
-              style={{
-                color: "#4ade80",
-                fontFamily: "Brandon-Bold",
-                fontSize: 16,
-                marginTop: 4,
-              }}
-            >
-              {new Date().toLocaleDateString(undefined, {
-                weekday: "long",
-                month: "short",
-                day: "numeric",
-              })}
-            </Text>
-          </View>
-
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120 }}>
+          {/* LIVE GPS VERIFICATION */}
           <LiquidGlassCard
             variant="dark"
-            borderRadius={32}
-            contentStyle={{ padding: 24 }}
+            borderRadius={28}
+            dropletColor="#10b981"
+            style={{ marginBottom: 18 }}
+            contentStyle={{ padding: 22 }}
           >
-            <Text
-              style={{
-                color: "rgba(255,255,255,0.6)",
-                fontFamily: "Brandon-Medium",
-                fontSize: 14,
-                letterSpacing: 1,
-                marginBottom: 20,
-              }}
-            >
-              VERIFICATION STEPS
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              {locating && !coords ? (
+                <ActivityIndicator color="#34d399" style={{ marginRight: 12 }} />
+              ) : (
+                <CheckCircle2 size={24} color={coords ? "#34d399" : "#fbbf24"} style={{ marginRight: 12 }} />
+              )}
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 17 }}>
+                  {coords ? "Live GPS Position Verified" : "Acquiring GPS Position..."}
+                </Text>
+                <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 2 }}>
+                  {coords
+                    ? `${coords.latitude.toFixed(6)}° N, ${coords.longitude.toFixed(6)}° E`
+                    : "Please allow location access"}
+                </Text>
+              </View>
+            </View>
+
+            {targetSite?.name ? (
+              <View
+                style={{
+                  marginTop: 14,
+                  padding: 12,
+                  borderRadius: 14,
+                  backgroundColor: "rgba(255,255,255,0.06)",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <MapPin size={16} color="#38bdf8" />
+                <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Medium", fontSize: 13, marginLeft: 8, flex: 1 }}>
+                  {targetSite.name}
+                  {distanceToZoneMeters != null
+                    ? ` • ${
+                        distanceToZoneMeters < 1000
+                          ? `${distanceToZoneMeters}m`
+                          : `${(distanceToZoneMeters / 1000).toFixed(1)} km`
+                      } away`
+                    : ""}
+                </Text>
+              </View>
+            ) : null}
+          </LiquidGlassCard>
+
+          {/* OPTIONAL SELFIE VERIFICATION */}
+          <LiquidGlassCard
+            variant="dark"
+            borderRadius={26}
+            style={{ marginBottom: 24 }}
+            contentStyle={{ padding: 20 }}
+          >
+            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 17, marginBottom: 4 }}>
+              Attendance Selfie (Optional)
+            </Text>
+            <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, marginBottom: 14 }}>
+              Attach a live selfie for supervisor verification in Web Admin.
             </Text>
 
-            {/* STEP 1: LOCATION */}
-            <LiquidGlassCard
-              variant="dark"
-              borderRadius={20}
-              style={{ marginBottom: 20 }}
-              contentStyle={{
-                flexDirection: "row",
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={captureSelfie}
+              style={{
+                height: 200,
+                borderRadius: 20,
+                borderWidth: 1.5,
+                borderStyle: selfieAsset ? "solid" : "dashed",
+                borderColor: selfieAsset ? "#34d399" : "rgba(255,255,255,0.24)",
+                backgroundColor: "rgba(255,255,255,0.05)",
                 alignItems: "center",
-                padding: 16,
+                justifyContent: "center",
+                overflow: "hidden",
               }}
             >
-              <LiquidGlassIconBadge
-                variant="dark"
-                size={48}
-                borderRadius={24}
-                tintColor={locationVerified ? "#4ade80" : "#94a3b8"}
-                style={{ marginRight: 16 }}
-              >
-                <MapPin
-                  size={24}
-                  color={locationVerified ? "#4ade80" : "#ffffff"}
-                />
-              </LiquidGlassIconBadge>
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    color: "#ffffff",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 16,
-                  }}
-                >
-                  GPS Location
-                </Text>
-                {isLocating ? (
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      marginTop: 4,
-                    }}
-                  >
-                    <ActivityIndicator
-                      size="small"
-                      color="#94a3b8"
-                      style={{ marginRight: 6 }}
-                    />
-                    <Text
-                      style={{
-                        color: "#94a3b8",
-                        fontFamily: "Brandon-Medium",
-                        fontSize: 13,
-                      }}
-                    >
-                      Acquiring signal...
-                    </Text>
-                  </View>
-                ) : (
-                  <Text
-                    style={{
-                      color: "#4ade80",
-                      fontFamily: "Brandon-Medium",
-                      fontSize: 13,
-                      marginTop: 4,
-                    }}
-                  >
-                    {locationLabel}
+              {selfieAsset ? (
+                <Image source={{ uri: selfieAsset.uri }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+              ) : (
+                <View style={{ alignItems: "center" }}>
+                  <LiquidGlassIconBadge size={54} borderRadius={18} variant="dark" tintColor="#34d399">
+                    <Camera size={26} color="#34d399" />
+                  </LiquidGlassIconBadge>
+                  <Text style={{ color: "#e2e8f0", fontFamily: "Brandon-Bold", fontSize: 15, marginTop: 10 }}>
+                    Tap to Capture Selfie
                   </Text>
-                )}
-              </View>
-              {locationVerified && <CheckCircle2 size={24} color="#4ade80" />}
-            </LiquidGlassCard>
-
-            {/* STEP 2: CAMERA/SELFIE */}
-            <LiquidGlassCard
-              variant="dark"
-              borderRadius={20}
-              onPress={handleCameraVerify}
-              style={{ marginBottom: 32 }}
-              contentStyle={{
-                flexDirection: "row",
-                alignItems: "center",
-                padding: 16,
-              }}
-            >
-              {cameraVerified ? (
-                <View
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 24,
-                    backgroundColor: "rgba(74,222,128,0.2)",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginRight: 16,
-                    overflow: "hidden",
-                    borderWidth: 1.5,
-                    borderColor: "rgba(74,222,128,0.65)",
-                  }}
-                >
-                  <Image
-                    source={require("../../../assets/images/image1.jpg")}
-                    style={{ width: "100%", height: "100%" }}
-                  />
                 </View>
-              ) : (
-                <LiquidGlassIconBadge
-                  variant="dark"
-                  size={48}
-                  borderRadius={24}
-                  tintColor="#3b82f6"
-                  style={{ marginRight: 16 }}
-                >
-                  <Camera size={24} color="#60a5fa" />
-                </LiquidGlassIconBadge>
               )}
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    color: "#ffffff",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 16,
-                  }}
-                >
-                  Selfie Verification
-                </Text>
-                <Text
-                  style={{
-                    color: cameraVerified ? "#4ade80" : "#60a5fa",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 13,
-                    marginTop: 4,
-                  }}
-                >
-                  {cameraVerified ? "Identity matched" : "Tap to capture selfie"}
-                </Text>
-              </View>
-              {cameraVerified && <CheckCircle2 size={24} color="#4ade80" />}
-            </LiquidGlassCard>
-
-            {/* CLOCK IN BUTTON */}
-            <LiquidGlassButton
-              disabled={!locationVerified || !cameraVerified || isProcessing}
-              variant={!locationVerified || !cameraVerified ? "dark" : "tinted"}
-              tintColor="rgba(16, 185, 129, 0.78)"
-              dropletColor="#4ade80"
-              style={{ width: "100%" }}
-              contentStyle={{ paddingVertical: 18 }}
-              onPress={handleClockIn}
-            >
-              {isProcessing ? (
-                <ActivityIndicator color="#ffffff" />
-              ) : (
-                <>
-                  <Fingerprint
-                    size={20}
-                    color={
-                      !locationVerified || !cameraVerified
-                        ? "rgba(255,255,255,0.3)"
-                        : "#ffffff"
-                    }
-                    style={{ marginRight: 8 }}
-                  />
-                  <Text
-                    style={{
-                      color:
-                        !locationVerified || !cameraVerified
-                          ? "rgba(255,255,255,0.3)"
-                          : "#ffffff",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 16,
-                      letterSpacing: 1,
-                    }}
-                  >
-                    CONFIRM CLOCK IN
-                  </Text>
-                </>
-              )}
-            </LiquidGlassButton>
+            </TouchableOpacity>
           </LiquidGlassCard>
+
+          <LiquidGlassButton
+            disabled={submitting || !coords}
+            onPress={handleClockIn}
+            variant="tinted"
+            tintColor="rgba(16, 185, 129, 0.86)"
+            dropletColor="#34d399"
+            contentStyle={{ paddingVertical: 17 }}
+          >
+            {submitting ? (
+              <ActivityIndicator color="#ffffff" size="small" />
+            ) : (
+              <>
+                <LogIn size={19} color="#ffffff" style={{ marginRight: 8 }} />
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>
+                  Confirm GPS Clock-In
+                </Text>
+              </>
+            )}
+          </LiquidGlassButton>
         </ScrollView>
       </SafeAreaView>
     </LiquidGlassBackdrop>
