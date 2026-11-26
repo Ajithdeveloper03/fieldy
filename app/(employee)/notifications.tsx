@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import {
   ChevronLeft,
   AlertTriangle,
@@ -17,6 +17,8 @@ import {
   CheckCircle2,
 } from "lucide-react-native";
 import { api } from "../../services/api";
+import { useLanguage } from "../../context/LanguageContext";
+import { useLiveRefresh } from "../../hooks/useLiveRefresh";
 import {
   LiquidGlassBackdrop,
   LiquidGlassCard,
@@ -25,33 +27,31 @@ import {
 } from "../../components/LiquidGlass";
 
 export default function EmployeeNotificationsScreen() {
+  const { t } = useLanguage();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-      (async () => {
-        try {
-          const res = await api.get("/employee/notifications");
-          if (!active) return;
-          const list = Array.isArray(res?.data)
+  const loadNotifications = useCallback(async () => {
+    try {
+      const res = await api.get("/employee/notifications");
+      const list = Array.isArray(res?.notifications)
+        ? res.notifications
+        : Array.isArray(res?.data?.notifications)
+          ? res.data.notifications
+          : Array.isArray(res?.data)
             ? res.data
             : Array.isArray(res)
-            ? res
-            : [];
-          setNotifications(list);
-        } catch {
-          if (active) setNotifications([]);
-        } finally {
-          if (active) setLoading(false);
-        }
-      })();
-      return () => {
-        active = false;
-      };
-    }, [])
-  );
+              ? res
+              : [];
+      setNotifications(list);
+    } catch {
+      setNotifications([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useLiveRefresh(loadNotifications, 10000);
 
   return (
     <LiquidGlassBackdrop variant="light">
@@ -90,7 +90,7 @@ export default function EmployeeNotificationsScreen() {
               letterSpacing: 0.4,
             }}
           >
-            Notifications
+            {t("notifications", "Notifications")}
           </Text>
           <View style={{ width: 42 }} />
         </View>
@@ -109,7 +109,7 @@ export default function EmployeeNotificationsScreen() {
               marginBottom: 14,
             }}
           >
-            Recent Updates
+            {t("recentUpdates", "Recent Updates")}
           </Text>
 
           {loading ? (
@@ -139,7 +139,7 @@ export default function EmployeeNotificationsScreen() {
                   fontSize: 17,
                 }}
               >
-                You&apos;re All Caught Up
+                {t("allCaughtUp", "You're All Caught Up")}
               </Text>
               <Text
                 style={{

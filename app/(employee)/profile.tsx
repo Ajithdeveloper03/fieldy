@@ -281,7 +281,7 @@ export default function EmployeeProfileScreen() {
                     textAlign: "center",
                   }}
                 >
-                  SLA Rate
+                  Work Score
                 </Text>
               </View>
             </View>
@@ -552,7 +552,7 @@ export default function EmployeeProfileScreen() {
                     fontSize: 13,
                   }}
                 >
-                  {serviceConfig.shortName} • {efficiencyScore}% SLA
+                  {serviceConfig.shortName} • {efficiencyScore}% Score
                 </Text>
               </View>
 
@@ -643,7 +643,7 @@ export default function EmployeeProfileScreen() {
               },
               {
                 icon: Award,
-                label: "SLA Resolution",
+                label: "Work Quality",
                 value: `${efficiencyScore}%`,
                 color: "#f472b6",
                 route: "/(employee)/performance",

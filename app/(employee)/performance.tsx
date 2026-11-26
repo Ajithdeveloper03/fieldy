@@ -5,11 +5,12 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
-  Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { api } from "../../services/api";
+import { useLanguage } from "../../context/LanguageContext";
+import { useLiveRefresh } from "../../hooks/useLiveRefresh";
 import {
   ChevronLeft,
   Settings,
@@ -30,52 +31,55 @@ import {
 } from "../../components/LiquidGlass";
 
 export default function EmployeePerformanceScreen() {
-  const [autoRouting, setAutoRouting] = useState(true);
+  const { t } = useLanguage();
   const [perfData, setPerfData] = useState<any>(null);
 
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-      (async () => {
-        try {
-          const res = await api.get("/employee/performance");
-          if (active) setPerfData(res?.data ?? res);
-        } catch {
-          if (active) setPerfData(null);
-        }
-      })();
-      return () => {
-        active = false;
-      };
-    }, [])
-  );
+  const loadPerformance = useCallback(async () => {
+    try {
+      const res = await api.get("/employee/performance");
+      setPerfData(res?.data ?? res);
+    } catch {
+      setPerfData(null);
+    }
+  }, []);
+
+  useLiveRefresh(loadPerformance, 15000);
 
   const metrics = perfData?.metrics ?? {};
-  const efficiency = Number(metrics.efficiency_score ?? metrics.efficiency ?? 85);
+  const efficiency = Number(metrics.efficiency_score ?? metrics.efficiency ?? 0);
   const pointsEarned = Number(metrics.points_earned ?? metrics.points ?? 0);
   const tasksCompleted = Number(metrics.tasks_completed ?? 0);
-  const tasksTotal = Number(metrics.tasks_total ?? (tasksCompleted > 0 ? tasksCompleted : 0));
+  const tasksTotal = Number(metrics.tasks_total ?? 0);
+  const visitsCompleted = Number(metrics.visits_completed ?? 0);
+  const attendanceDays = Number(metrics.attendance_days ?? 0);
   const hoursWorked = Number(metrics.hours_worked ?? metrics.hours ?? 0);
-  const periodLabel = perfData?.period_label ?? new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
-  const weeklyBars: any[] = Array.isArray(perfData?.weekly_bars)
+  const distanceKm = Number(metrics.distance_month_km ?? 0);
+  const periodLabel =
+    perfData?.period_label ??
+    new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
+
+  const rawBars: any[] = Array.isArray(perfData?.weekly_bars)
     ? perfData.weekly_bars
     : [
-        { day: "Mon", h: 32, active: false },
-        { day: "Tue", h: 48, active: false },
-        { day: "Wed", h: 40, active: false },
-        { day: "Thu", h: 64, active: true },
-        { day: "Fri", h: 56, active: false },
-        { day: "Sat", h: 60, active: false },
-        { day: "Sun", h: 36, active: false },
+        { day: "Mon", total_actions: 0, is_today: false },
+        { day: "Tue", total_actions: 0, is_today: false },
+        { day: "Wed", total_actions: 0, is_today: false },
+        { day: "Thu", total_actions: 0, is_today: false },
+        { day: "Fri", total_actions: 0, is_today: false },
+        { day: "Sat", total_actions: 0, is_today: false },
+        { day: "Sun", total_actions: 0, is_today: false },
       ];
-  const recentTasks: any[] = Array.isArray(perfData?.recent_tasks) ? perfData.recent_tasks : [];
+  const maxActions = Math.max(1, ...rawBars.map((b) => Number(b.total_actions ?? b.h ?? 0)));
+  const recentTasks: any[] = Array.isArray(perfData?.recent_tasks)
+    ? perfData.recent_tasks
+    : [];
 
   return (
     <LiquidGlassBackdrop variant="light">
       <StatusBar barStyle="dark-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
-        {/* HEADER (Reference Image 5 Minimalist Header) */}
+        {/* HEADER */}
         <View
           style={{
             flexDirection: "row",
@@ -105,7 +109,7 @@ export default function EmployeePerformanceScreen() {
               fontSize: 24,
             }}
           >
-            Performance & KPIs
+            {t("myPerformance", "Performance & Stats")}
           </Text>
 
           <LiquidGlassIconButton
@@ -125,14 +129,13 @@ export default function EmployeePerformanceScreen() {
             paddingTop: 6,
           }}
         >
-          {/* TOP HERO DIAL CARD (Reference Image 5 Center Screen: "Air Condition" + 3 Sub-Columns + Semi-Circle Gauge) */}
+          {/* TOP HERO DIAL CARD */}
           <LiquidGlassCard
             variant="light"
             borderRadius={36}
             style={{ marginBottom: 20 }}
             contentStyle={{ padding: 24 }}
           >
-            {/* Card Title + Toggle Switch */}
             <View
               style={{
                 flexDirection: "row",
@@ -148,17 +151,29 @@ export default function EmployeePerformanceScreen() {
                   fontSize: 20,
                 }}
               >
-                SLA Efficiency Quota
+                {t("workQuality", "Work Quality Score")}
               </Text>
-              <Switch
-                value={autoRouting}
-                onValueChange={setAutoRouting}
-                trackColor={{ false: "#e2e8f0", true: "#10b981" }}
-                thumbColor="#ffffff"
-              />
+              <View
+                style={{
+                  backgroundColor: "rgba(16, 185, 129, 0.14)",
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 999,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#059669",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 12,
+                  }}
+                >
+                  Live Sync
+                </Text>
+              </View>
             </View>
 
-            {/* 3 Minimal Sub-Columns (Reference Image 5: "Fan Speed | Timer | Auto Mode") */}
+            {/* 3 Minimal Sub-Columns */}
             <View
               style={{
                 flexDirection: "row",
@@ -174,7 +189,7 @@ export default function EmployeePerformanceScreen() {
                     fontSize: 13,
                   }}
                 >
-                  Target Quota
+                  {t("targetQuota", "Completed Work")}
                 </Text>
                 <Text
                   style={{
@@ -195,7 +210,7 @@ export default function EmployeePerformanceScreen() {
                     fontSize: 13,
                   }}
                 >
-                  Logged Time
+                  {t("loggedTime", "Logged Hours")}
                 </Text>
                 <Text
                   style={{
@@ -205,7 +220,7 @@ export default function EmployeePerformanceScreen() {
                     marginTop: 2,
                   }}
                 >
-                  {hoursWorked}h Logged
+                  {hoursWorked.toFixed(1)}h Logged
                 </Text>
               </View>
               <View>
@@ -216,7 +231,7 @@ export default function EmployeePerformanceScreen() {
                     fontSize: 13,
                   }}
                 >
-                  Auto-Dispatch
+                  Site Visits
                 </Text>
                 <Text
                   style={{
@@ -226,12 +241,12 @@ export default function EmployeePerformanceScreen() {
                     marginTop: 2,
                   }}
                 >
-                  {autoRouting ? "Active [On]" : "Manual [Off]"}
+                  {visitsCompleted} Done
                 </Text>
               </View>
             </View>
 
-            {/* Glowing Semi-Circular Arc Gauge ("22°C" -> "86%") */}
+            {/* Glowing Semi-Circular Arc Gauge */}
             <View style={{ alignItems: "center", paddingTop: 6 }}>
               <View
                 style={{
@@ -288,7 +303,7 @@ export default function EmployeePerformanceScreen() {
                       fontSize: 14,
                     }}
                   >
-                    Earned {pointsEarned} pts to date
+                    Earned {pointsEarned} pts this month
                   </Text>
                 </View>
               </View>
@@ -316,13 +331,13 @@ export default function EmployeePerformanceScreen() {
                     fontSize: 11,
                   }}
                 >
-                  Optimal SLA
+                  Real-Time Score
                 </Text>
               </View>
             </View>
           </LiquidGlassCard>
 
-          {/* ANALYTICS & POINTS BREAKDOWN CARD (Reference Image 5 Right Screen: "361.9 kWh" + Area Chart + Cost Rows) */}
+          {/* ANALYTICS & WEEKLY BREAKDOWN CARD */}
           <LiquidGlassCard
             variant="light"
             borderRadius={32}
@@ -345,7 +360,7 @@ export default function EmployeePerformanceScreen() {
                     fontSize: 32,
                   }}
                 >
-                  {pointsEarned.toFixed(1)} Pts
+                  {pointsEarned} Pts
                 </Text>
                 <Text
                   style={{
@@ -354,10 +369,9 @@ export default function EmployeePerformanceScreen() {
                     fontSize: 12,
                   }}
                 >
-                  Total Incentive Score • {periodLabel}
+                  Monthly Performance • {periodLabel}
                 </Text>
               </View>
-              {/* Dot-Matrix Badge Icon */}
               <LiquidGlassIconBadge
                 size={58}
                 borderRadius={16}
@@ -373,12 +387,12 @@ export default function EmployeePerformanceScreen() {
                     marginTop: 2,
                   }}
                 >
-                  TIER 1
+                  {attendanceDays}d
                 </Text>
               </LiquidGlassIconBadge>
             </View>
 
-            {/* Simulated Area Trend Bars */}
+            {/* Real Weekly Activity Bars */}
             <View style={{ marginBottom: 18 }}>
               <View
                 style={{
@@ -395,28 +409,8 @@ export default function EmployeePerformanceScreen() {
                     fontSize: 15,
                   }}
                 >
-                  Weekly Output Optimization
+                  {t("weeklyOutput", "Weekly Output")}
                 </Text>
-                <View
-                  style={{
-                    backgroundColor: "rgba(220, 252, 231, 0.85)",
-                    borderWidth: 1,
-                    borderColor: "rgba(21, 128, 61, 0.18)",
-                    paddingHorizontal: 8,
-                    paddingVertical: 3,
-                    borderRadius: 8,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#15803d",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 11,
-                    }}
-                  >
-                    +14.2%
-                  </Text>
-                </View>
               </View>
 
               <View
@@ -424,7 +418,7 @@ export default function EmployeePerformanceScreen() {
                   flexDirection: "row",
                   alignItems: "flex-end",
                   justifyContent: "space-between",
-                  height: 90,
+                  height: 96,
                   paddingTop: 10,
                   paddingHorizontal: 8,
                   backgroundColor: "rgba(255, 255, 255, 0.45)",
@@ -434,34 +428,37 @@ export default function EmployeePerformanceScreen() {
                   paddingBottom: 10,
                 }}
               >
-                {weeklyBars.map((bar, i) => (
-                  <View key={i} style={{ alignItems: "center", flex: 1 }}>
-                    <View
-                      style={{
-                        width: 18,
-                        height: Math.max(12, Math.min(72, Number(bar.h ?? 30))),
-                        borderRadius: 9,
-                        backgroundColor: bar.active ? "#10b981" : "#cbd5e1",
-                        marginBottom: 6,
-                      }}
-                    />
-                    <Text
-                      style={{
-                        color: bar.active ? "#0f172a" : "#94a3b8",
-                        fontFamily: bar.active
-                          ? "Brandon-Bold"
-                          : "Brandon-Medium",
-                        fontSize: 10,
-                      }}
-                    >
-                      {bar.day}
-                    </Text>
-                  </View>
-                ))}
+                {rawBars.map((bar, i) => {
+                  const val = Number(bar.total_actions ?? 0);
+                  const barHeight = val > 0 ? Math.max(16, Math.round((val / maxActions) * 62)) : 8;
+                  const isToday = Boolean(bar.is_today);
+                  return (
+                    <View key={i} style={{ alignItems: "center", flex: 1 }}>
+                      <View
+                        style={{
+                          width: 18,
+                          height: barHeight,
+                          borderRadius: 9,
+                          backgroundColor: isToday ? "#10b981" : val > 0 ? "#38bdf8" : "#cbd5e1",
+                          marginBottom: 6,
+                        }}
+                      />
+                      <Text
+                        style={{
+                          color: isToday ? "#0f172a" : "#94a3b8",
+                          fontFamily: isToday ? "Brandon-Bold" : "Brandon-Medium",
+                          fontSize: 10,
+                        }}
+                      >
+                        {bar.day}
+                      </Text>
+                    </View>
+                  );
+                })}
               </View>
             </View>
 
-            {/* Incentive Payout Breakdown (Reference Image 5 "Energy Cost" Rows) */}
+            {/* Real Monthly Activity Summary */}
             <View
               style={{
                 borderTopWidth: 1,
@@ -484,90 +481,39 @@ export default function EmployeePerformanceScreen() {
                     fontSize: 15,
                   }}
                 >
-                  Incentive & Bonus Ledger
+                  Verified Monthly Breakdown
                 </Text>
                 <ArrowUpRight size={16} color="#64748b" />
               </View>
 
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#64748b",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 13,
-                  }}
-                >
-                  Weekly Verified Bonus
+              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>
+                  Attendance Days Logged
                 </Text>
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 14,
-                  }}
-                >
-                  ₹2,400
+                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14 }}>
+                  {attendanceDays} Days ({hoursWorked.toFixed(1)} hrs)
                 </Text>
               </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#64748b",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 13,
-                  }}
-                >
-                  Full-month estimated payout
+              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>
+                  Completed Site Visits
                 </Text>
-                <Text
-                  style={{
-                    color: "#10b981",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 14,
-                  }}
-                >
-                  ₹9,600
+                <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 14 }}>
+                  {visitsCompleted} Visits
                 </Text>
               </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#64748b",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 13,
-                  }}
-                >
-                  Last month&apos;s bonus
+              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>
+                  Distance Tracked This Month
                 </Text>
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 14,
-                  }}
-                >
-                  ₹8,250
+                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14 }}>
+                  {distanceKm.toFixed(1)} km
                 </Text>
               </View>
             </View>
           </LiquidGlassCard>
 
-          {/* 2x2 SMART CATEGORY BENTO TILES (Reference Image 5: "Audio System | Smart Light") */}
+          {/* RECENT TASKS BENTO TILES */}
           <View
             style={{
               flexDirection: "row",
@@ -583,7 +529,7 @@ export default function EmployeePerformanceScreen() {
                 fontSize: 18,
               }}
             >
-              Service Specializations
+              {t("recentTasks", "Recent Tasks")}
             </Text>
             <TouchableOpacity onPress={() => router.push("/(employee)/tasks")}>
               <Text
@@ -593,7 +539,7 @@ export default function EmployeePerformanceScreen() {
                   fontSize: 13,
                 }}
               >
-                View All
+                {t("viewAll", "View All")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -606,12 +552,12 @@ export default function EmployeePerformanceScreen() {
             }}
           >
             {recentTasks.length > 0 ? (
-              recentTasks.slice(0, 2).map((t, idx) => (
+              recentTasks.slice(0, 2).map((task, idx) => (
                 <LiquidGlassCard
-                  key={t.id ?? idx}
+                  key={task.id ?? idx}
                   variant="light"
                   borderRadius={28}
-                  onPress={() => router.push(`/(employee)/task/${t.id}` as any)}
+                  onPress={() => router.push(`/(employee)/task/${task.id}` as any)}
                   style={{ flex: 1 }}
                   contentStyle={{ padding: 18 }}
                 >
@@ -623,7 +569,7 @@ export default function EmployeePerformanceScreen() {
                     }}
                     numberOfLines={1}
                   >
-                    {t.title ?? "Assigned Task"}
+                    {task.title ?? "Assigned Task"}
                   </Text>
                   <Text
                     style={{
@@ -634,7 +580,7 @@ export default function EmployeePerformanceScreen() {
                     }}
                     numberOfLines={1}
                   >
-                    {t.site_name ?? t.priority ?? "Active Site"} • +{t.points ?? 25} pts
+                    {task.site ?? task.priority ?? "Active Site"} • +{task.points ?? 0} pts
                   </Text>
                   <LiquidGlassIconBadge
                     size={64}
@@ -674,7 +620,7 @@ export default function EmployeePerformanceScreen() {
                     fontSize: 16,
                   }}
                 >
-                  All Tasks Completed
+                  {t("noPendingTasks", "All Tasks Completed")}
                 </Text>
                 <Text
                   style={{
@@ -684,14 +630,14 @@ export default function EmployeePerformanceScreen() {
                     marginTop: 4,
                   }}
                 >
-                  Zero pending audits queued for your route.
+                  Zero pending tasks queued for your route.
                 </Text>
               </LiquidGlassCard>
             )}
           </View>
         </ScrollView>
 
-        {/* FLOATING BOTTOM DOCK (Reference Image 5 Pill Dock) */}
+        {/* FLOATING BOTTOM DOCK */}
         <LiquidGlassCard
           variant="dark"
           borderRadius={32}

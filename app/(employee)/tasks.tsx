@@ -230,7 +230,7 @@ export default function EmployeeTasksScreen() {
                     marginBottom: 4,
                   }}
                 >
-                  SLA COMPLETION
+                  WORK COMPLETION
                 </Text>
                 <Text
                   style={{
@@ -258,7 +258,7 @@ export default function EmployeeTasksScreen() {
                       marginLeft: 6,
                     }}
                   >
-                    {serviceConfig.shortName} Active SLA
+                    {serviceConfig.shortName} Active Work
                   </Text>
                 </View>
               </LiquidGlassCard>
@@ -532,7 +532,7 @@ export default function EmployeeTasksScreen() {
                             marginTop: 4,
                           }}
                         >
-                          +{task.points} SLA Points • Check-In Required
+                          +{task.points} Points • Check-In Required
                         </Text>
                       </View>
                     </LiquidGlassCard>

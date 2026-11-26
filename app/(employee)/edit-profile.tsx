@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -9,81 +9,143 @@ import {
   Image,
   StatusBar,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ChevronLeft, Lock, Camera, Save, User, Mail, Phone, Building } from "lucide-react-native";
-import { useService } from "../../context/ServiceContext";
+import { ChevronLeft, Camera, Save, User, Mail, Phone } from "lucide-react-native";
 import { api, getAuthUser } from "../../services/api";
+import { useLanguage } from "../../context/LanguageContext";
+import { useLiveRefresh } from "../../hooks/useLiveRefresh";
 import {
   LiquidGlassBackdrop,
   LiquidGlassButton,
   LiquidGlassCard,
-  LiquidGlassIconBadge,
   LiquidGlassIconButton,
 } from "../../components/LiquidGlass";
 
 export default function EditProfileScreen() {
-  const { serviceConfig } = useService();
+  const { t } = useLanguage();
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    fullName: "Field Officer",
-    empId: "EMP-001",
-    mobile: "+91 98400 00000",
-    email: "officer@fieldy.app",
-    department: serviceConfig.name,
+    username: "",
+    mobile: "",
+    email: "",
   });
 
-  useEffect(() => {
-    (async () => {
-      const authUser = await getAuthUser();
-      const storedName = await AsyncStorage.getItem("userName");
-      setForm((prev) => ({
-        ...prev,
-        fullName: authUser?.name || storedName || prev.fullName,
-        empId: authUser?.employee_code || prev.empId,
-        mobile: authUser?.phone || prev.mobile,
-        email: authUser?.email || prev.email,
-        department: serviceConfig.name,
-      }));
-      try {
-        const dash = await api.get("/employee/dashboard");
-        const emp = dash?.data?.employee;
-        if (emp) {
-          setForm((prev) => ({
-            ...prev,
-            fullName: emp.name || prev.fullName,
-            empId: emp.employee_code || prev.empId,
-            mobile: emp.phone || prev.mobile,
-            email: emp.email || prev.email,
-            department: emp.company?.name || serviceConfig.name,
-          }));
-        }
-      } catch {
-        // Fallback smoothly
+  const loadProfile = useCallback(async () => {
+    const authUser = await getAuthUser();
+    const storedName = await AsyncStorage.getItem("userName");
+    setForm((prev) => ({
+      username: prev.username || authUser?.name || storedName || "",
+      mobile: prev.mobile || authUser?.phone || "",
+      email: prev.email || authUser?.email || "",
+    }));
+    try {
+      const dash = await api.get("/employee/dashboard");
+      const emp = dash?.data?.employee ?? dash?.employee;
+      if (emp) {
+        setForm({
+          username: emp.name || "",
+          mobile: emp.phone || "",
+          email: emp.email || "",
+        });
       }
-    })();
-  }, [serviceConfig.name]);
+    } catch {
+      // Offline fallback uses stored values
+    }
+  }, []);
+
+  useLiveRefresh(loadProfile, 20000);
+
+  const handleSave = async () => {
+    const trimmedUsername = form.username.trim();
+    if (!trimmedUsername) {
+      Alert.alert("Required", "Please enter a valid username.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await api.put("/employee/profile", {
+        username: trimmedUsername,
+        name: trimmedUsername,
+        phone: form.mobile.trim(),
+        email: form.email.trim() || null,
+      });
+      const updated = res?.data?.user ?? res?.user;
+      const existing = await getAuthUser();
+      const mergedUser = {
+        ...(existing || {}),
+        ...(updated || {}),
+        name: updated?.name || trimmedUsername,
+        phone: updated?.phone || form.mobile.trim(),
+        email: updated?.email ?? form.email.trim(),
+      };
+      await AsyncStorage.setItem("@auth_user", JSON.stringify(mergedUser));
+      await AsyncStorage.setItem("@fieldy_user", JSON.stringify(mergedUser));
+      await AsyncStorage.setItem("userName", mergedUser.name);
+
+      Alert.alert(
+        "Profile Updated",
+        "Your username & contact details have been synced with Web Admin.",
+        [
+          {
+            text: "OK",
+            onPress: () =>
+              router.canGoBack()
+                ? router.back()
+                : router.replace("/(employee)/profile"),
+          },
+        ]
+      );
+    } catch (err: any) {
+      Alert.alert("Update Failed", err?.message || "Could not sync profile changes right now.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <LiquidGlassBackdrop variant="light">
       <StatusBar barStyle="dark-content" />
-      
+
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={{ flex: 1 }}
         >
           {/* HEADER */}
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 22, paddingTop: 16, paddingBottom: 24 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingHorizontal: 22,
+              paddingTop: 16,
+              paddingBottom: 24,
+            }}
+          >
             <LiquidGlassIconButton
-              onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/profile")}
+              onPress={() =>
+                router.canGoBack()
+                  ? router.back()
+                  : router.replace("/(employee)/profile")
+              }
               variant="light"
               size={44}
             >
               <ChevronLeft size={26} color="#0f172a" />
             </LiquidGlassIconButton>
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 24 }}>Officer Credentials</Text>
+            <Text
+              style={{
+                color: "#0f172a",
+                fontFamily: "Brandon-Bold",
+                fontSize: 24,
+              }}
+            >
+              {t("myCredentials", "My Credentials")}
+            </Text>
             <View style={{ width: 44 }} />
           </View>
 
@@ -92,10 +154,26 @@ export default function EditProfileScreen() {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 150 }}
           >
-            {/* AVATAR EDIT */}
+            {/* AVATAR */}
             <View style={{ alignItems: "center", marginBottom: 28 }}>
-              <View style={{ width: 120, height: 120, borderRadius: 60, borderWidth: 4, borderColor: "rgba(255, 255, 255, 0.94)", shadowColor: "#1A1D24", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.14, shadowRadius: 16, elevation: 6 }}>
-                <Image source={require("../../assets/images/image3.jpg")} style={{ width: "100%", height: "100%", borderRadius: 56 }} />
+              <View
+                style={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: 60,
+                  borderWidth: 4,
+                  borderColor: "rgba(255, 255, 255, 0.94)",
+                  shadowColor: "#1A1D24",
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.14,
+                  shadowRadius: 16,
+                  elevation: 6,
+                }}
+              >
+                <Image
+                  source={require("../../assets/images/image3.jpg")}
+                  style={{ width: "100%", height: "100%", borderRadius: 56 }}
+                />
                 <LiquidGlassIconButton
                   variant="tinted"
                   tintColor="rgba(21, 128, 61, 0.84)"
@@ -108,77 +186,82 @@ export default function EditProfileScreen() {
               </View>
             </View>
 
-            {/* IT LOCK MESSAGE */}
-            <LiquidGlassCard
-              variant="light"
-              borderRadius={20}
-              style={{ marginBottom: 28 }}
-              contentStyle={{ padding: 18, flexDirection: "row", alignItems: "flex-start" }}
-            >
-              <LiquidGlassIconBadge
-                size={38}
-                borderRadius={12}
-                variant="light"
-                tintColor="#0284c7"
-                style={{ marginRight: 12 }}
-              >
-                <Lock size={18} color="#0284c7" />
-              </LiquidGlassIconBadge>
-              <Text style={{ flex: 1, color: "#0369a1", fontFamily: "Brandon-Medium", fontSize: 15, lineHeight: 22 }}>
-                Service role & Employee ID are synced from {serviceConfig.name}. Contact your Admin to change core HR records.
-              </Text>
-            </LiquidGlassCard>
-
             {/* FORM */}
             <View style={{ gap: 20 }}>
-              
               <View>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 13, marginLeft: 4, marginBottom: 8 }}>FULL NAME</Text>
+                <Text
+                  style={{
+                    color: "#64748b",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 13,
+                    marginLeft: 4,
+                    marginBottom: 8,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {t("username", "Username")}
+                </Text>
                 <LiquidGlassCard
                   variant="light"
                   borderRadius={18}
-                  intensity={64}
                   style={{ height: 60 }}
-                  contentStyle={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18 }}
+                  contentStyle={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingHorizontal: 18,
+                  }}
                 >
-                  <User size={22} color="#64748b" />
+                  <User size={22} color="#15803d" />
                   <TextInput
-                    style={{ flex: 1, marginLeft: 12, fontFamily: "Brandon-Bold", fontSize: 18, color: "#334155" }}
-                    value={form.fullName}
-                    editable={false}
+                    style={{
+                      flex: 1,
+                      marginLeft: 12,
+                      fontFamily: "Brandon-Bold",
+                      fontSize: 18,
+                      color: "#0f172a",
+                    }}
+                    placeholder="Enter username"
+                    placeholderTextColor="#94a3b8"
+                    value={form.username}
+                    onChangeText={(val) => setForm({ ...form, username: val })}
                   />
                 </LiquidGlassCard>
               </View>
 
               <View>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 13, marginLeft: 4, marginBottom: 8 }}>SERVICE / DEPARTMENT & ID</Text>
-                <LiquidGlassCard
-                  variant="light"
-                  borderRadius={18}
-                  intensity={64}
-                  style={{ height: 60 }}
-                  contentStyle={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18 }}
+                <Text
+                  style={{
+                    color: "#64748b",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 13,
+                    marginLeft: 4,
+                    marginBottom: 8,
+                    textTransform: "uppercase",
+                  }}
                 >
-                  <Building size={22} color="#64748b" />
-                  <TextInput
-                    style={{ flex: 1, marginLeft: 12, fontFamily: "Brandon-Bold", fontSize: 17, color: "#334155" }}
-                    value={`${form.department} (${form.empId})`}
-                    editable={false}
-                  />
-                </LiquidGlassCard>
-              </View>
-
-              <View>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 13, marginLeft: 4, marginBottom: 8 }}>MOBILE NUMBER</Text>
+                  {t("mobileNumber", "Mobile Number")}
+                </Text>
                 <LiquidGlassCard
                   variant="light"
                   borderRadius={18}
                   style={{ height: 60 }}
-                  contentStyle={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18 }}
+                  contentStyle={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingHorizontal: 18,
+                  }}
                 >
                   <Phone size={22} color="#15803d" />
                   <TextInput
-                    style={{ flex: 1, marginLeft: 12, fontFamily: "Brandon-Bold", fontSize: 18, color: "#0f172a" }}
+                    style={{
+                      flex: 1,
+                      marginLeft: 12,
+                      fontFamily: "Brandon-Bold",
+                      fontSize: 18,
+                      color: "#0f172a",
+                    }}
+                    placeholder="Enter mobile number"
+                    placeholderTextColor="#94a3b8"
                     value={form.mobile}
                     onChangeText={(val) => setForm({ ...form, mobile: val })}
                     keyboardType="phone-pad"
@@ -187,16 +270,39 @@ export default function EditProfileScreen() {
               </View>
 
               <View>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 13, marginLeft: 4, marginBottom: 8 }}>EMAIL ADDRESS</Text>
+                <Text
+                  style={{
+                    color: "#64748b",
+                    fontFamily: "Brandon-Bold",
+                    fontSize: 13,
+                    marginLeft: 4,
+                    marginBottom: 8,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {t("emailAddress", "Email Address")}
+                </Text>
                 <LiquidGlassCard
                   variant="light"
                   borderRadius={18}
                   style={{ height: 60 }}
-                  contentStyle={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18 }}
+                  contentStyle={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingHorizontal: 18,
+                  }}
                 >
                   <Mail size={22} color="#15803d" />
                   <TextInput
-                    style={{ flex: 1, marginLeft: 12, fontFamily: "Brandon-Bold", fontSize: 18, color: "#0f172a" }}
+                    style={{
+                      flex: 1,
+                      marginLeft: 12,
+                      fontFamily: "Brandon-Bold",
+                      fontSize: 18,
+                      color: "#0f172a",
+                    }}
+                    placeholder="Enter email address"
+                    placeholderTextColor="#94a3b8"
                     value={form.email}
                     onChangeText={(val) => setForm({ ...form, email: val })}
                     keyboardType="email-address"
@@ -208,32 +314,31 @@ export default function EditProfileScreen() {
 
             {/* SAVE BUTTON */}
             <LiquidGlassButton
-              onPress={async () => {
-                const existing = await getAuthUser();
-                await AsyncStorage.setItem(
-                  "@fieldy_user",
-                  JSON.stringify({
-                    ...(existing || {}),
-                    name: form.fullName,
-                    employee_code: form.empId,
-                    phone: form.mobile,
-                    email: form.email,
-                  })
-                );
-                Alert.alert("Profile Updated", "Your contact details have been saved.", [
-                  { text: "OK", onPress: () => router.canGoBack() ? router.back() : router.replace("/(employee)/profile") }
-                ]);
-              }}
+              onPress={handleSave}
+              disabled={saving}
               variant="tinted"
               tintColor="rgba(21, 128, 61, 0.84)"
               dropletColor="#4ade80"
               style={{ marginTop: 36 }}
               contentStyle={{ paddingVertical: 18 }}
             >
-              <Save size={22} color="#ffffff" style={{ marginRight: 8 }} />
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>Save Changes</Text>
+              {saving ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : (
+                <>
+                  <Save size={22} color="#ffffff" style={{ marginRight: 8 }} />
+                  <Text
+                    style={{
+                      color: "#ffffff",
+                      fontFamily: "Brandon-Bold",
+                      fontSize: 18,
+                    }}
+                  >
+                    {t("saveChanges", "Save Changes")}
+                  </Text>
+                </>
+              )}
             </LiquidGlassButton>
-
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>

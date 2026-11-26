@@ -529,7 +529,7 @@ export default function EmployeeSiteContactProfileScreen() {
                     fontSize: 12,
                   }}
                 >
-                  Complete SLA Quality & Sensor Audit
+                  Complete Quality & Inspection Audit
                 </Text>
               </View>
             </View>

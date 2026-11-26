@@ -197,7 +197,7 @@ export default function EmployeeMySiteContactsScreen() {
                     contentStyle={{ paddingHorizontal: 14, paddingVertical: 7, flexDirection: "row", alignItems: "center" }}
                   >
                     <Activity size={16} color="#ffffff" style={{ marginRight: 6 }} />
-                    <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13 }}>{site.type || site.permit_status || "Active SLA"}</Text>
+                    <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13 }}>{site.type || site.permit_status || "Active Site"}</Text>
                   </LiquidGlassCard>
                 </View>
 

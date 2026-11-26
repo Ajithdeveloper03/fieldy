@@ -65,25 +65,7 @@ export default function SubmitReportScreen() {
   const [afterPhoto, setAfterPhoto] = useState<LocalMediaAsset | null>(null);
   const [siteVideo, setSiteVideo] = useState<LocalMediaAsset | null>(null);
   const [recommendations, setRecommendations] = useState("");
-  const [otpCode, setOtpCode] = useState("");
-  const [requiresOtp, setRequiresOtp] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  React.useEffect(() => {
-    (async () => {
-      try {
-        const storedCheckin = await AsyncStorage.getItem("@active_checkin");
-        if (storedCheckin) {
-          const parsed = JSON.parse(storedCheckin);
-          if (parsed?.requiresOtp) {
-            setRequiresOtp(true);
-          }
-        }
-      } catch {
-        // Ignore storage read error
-      }
-    })();
-  }, []);
 
   const chooseImageSource = (setter: (asset: LocalMediaAsset) => void, label: string) => {
     const runPick = async (source: "camera" | "library") => {
@@ -153,14 +135,6 @@ export default function SubmitReportScreen() {
       showToast({
         title: "Invalid Amount",
         message: "Please enter a valid amount.",
-        type: "error",
-      });
-      return;
-    }
-    if (requiresOtp && otpCode.trim().length < 4) {
-      showToast({
-        title: "Customer OTP Required",
-        message: "Please enter the customer verification OTP for this task.",
         type: "error",
       });
       return;
@@ -238,7 +212,6 @@ export default function SubmitReportScreen() {
       visit_id: resolvedVisitId ? Number(resolvedVisitId) : undefined,
       task_id: resolvedTaskId || undefined,
       farmer_id: resolvedFarmerId ? Number(resolvedFarmerId) : undefined,
-      customer_otp: otpCode.trim() || undefined,
       distance_km: resolvedDistanceKm || undefined,
       method: method || "report",
       notes: notes.trim(),
@@ -252,7 +225,6 @@ export default function SubmitReportScreen() {
       after_photo: uploadedMedia.find((m) => m.title?.includes("After"))?.preview_url || afterPhoto?.uri || null,
       media_ids: mediaIds,
       uploadedMedia,
-      otp_verified: otpCode.trim().length >= 4,
       check_in_latitude: resolvedLat,
       check_in_longitude: resolvedLng,
       check_out_latitude: resolvedLat,
@@ -290,7 +262,7 @@ export default function SubmitReportScreen() {
       setLoading(false);
       showToast({
         title: "Submission Failed",
-        message: err?.message || "Unable to submit field report. Please verify OTP and connection.",
+        message: err?.message || "Unable to submit field report. Please check your connection.",
         type: "error",
       });
     }
@@ -412,48 +384,6 @@ export default function SubmitReportScreen() {
                 value={notes}
                 onChangeText={setNotes}
               />
-            </LiquidGlassCard>
-
-            {/* OTP Verification */}
-            <LiquidGlassCard
-              variant="light"
-              borderRadius={18}
-              style={{ marginBottom: 20 }}
-              contentStyle={{ padding: 16 }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
-                <Check size={18} color="#059669" style={{ marginRight: 8 }} />
-                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 15 }}>
-                  OTP Check
-                </Text>
-              </View>
-              <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12, marginBottom: 10 }}>
-                {requiresOtp
-                  ? "Enter customer verification OTP (required)"
-                  : "Optional customer sign-off OTP"}
-              </Text>
-              <View
-                style={{
-                  borderWidth: 1,
-                  borderColor: "rgba(255, 255, 255, 0.92)",
-                  borderRadius: 12,
-                  paddingHorizontal: 14,
-                  paddingVertical: 10,
-                  backgroundColor: "rgba(255, 255, 255, 0.66)",
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <TextInput
-                  style={{ flex: 1, color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18, textAlign: "center" }}
-                  placeholder="Enter OTP"
-                  placeholderTextColor="#94a3b8"
-                  keyboardType="numeric"
-                  maxLength={6}
-                  value={otpCode}
-                  onChangeText={setOtpCode}
-                />
-              </View>
             </LiquidGlassCard>
 
             {/* Payment */}
