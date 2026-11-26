@@ -197,14 +197,14 @@ export default function EmployeeDashboardScreen() {
               overflow: "hidden",
               borderBottomLeftRadius: 44,
               borderBottomRightRadius: 44,
-              backgroundColor: "#000000",
+              backgroundColor: "#062214",
             }}
           >
             <LinearGradient
               colors={[
-                "rgba(0, 0, 0, 0.56)",
-                "rgba(0, 0, 0, 0.72)",
-                "rgba(0, 0, 0, 0.90)",
+                "rgba(0, 0, 0, 0.58)",
+                "rgba(0, 0, 0, 0.68)",
+                "rgba(0, 0, 0, 0.88)",
               ]}
               locations={[0, 0.45, 1]}
               style={[StyleSheet.absoluteFillObject, { zIndex: 1 }]}
