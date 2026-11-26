@@ -74,6 +74,7 @@ export default function EmployeeDashboardScreen() {
   const [apiSites, setApiSites] = useState<any[]>([]);
   const [serverTasks, setServerTasks] = useState<any[]>([]);
   const [serverVisits, setServerVisits] = useState<any[]>([]);
+  const [showStickyHeader, setShowStickyHeader] = useState(false);
 
   const loadDashboard = useCallback(async () => {
     const status = await AsyncStorage.getItem("isClockedIn");
@@ -178,7 +179,68 @@ export default function EmployeeDashboardScreen() {
     <LiquidGlassBackdrop variant="light">
       <StatusBar barStyle="light-content" />
       <SafeAreaView style={{ flex: 1 }} edges={["left", "right"]}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 140 }}>
+        {showStickyHeader && (
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 50,
+              backgroundColor: "#ffffff",
+              paddingTop: insets.top + 6,
+              paddingBottom: 10,
+              paddingHorizontal: 18,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderBottomWidth: 1,
+              borderBottomColor: "#e2e8f0",
+              elevation: 6,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
+              <Text
+                numberOfLines={1}
+                style={{
+                  color: "#0f172a",
+                  fontFamily: "Brandon-Bold",
+                  fontSize: 16,
+                  flexShrink: 1,
+                }}
+              >
+                {userName}
+              </Text>
+              <ServiceSelectorPill compact />
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <LanguageTogglePill />
+              <TouchableOpacity
+                onPress={() => router.push("/(employee)/notifications")}
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 17,
+                  backgroundColor: "#f1f5f9",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Bell size={18} color="#0f172a" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          scrollEventThrottle={16}
+          onScroll={(e) => {
+            const y = e.nativeEvent.contentOffset.y;
+            if (y > 180 && !showStickyHeader) setShowStickyHeader(true);
+            else if (y <= 180 && showStickyHeader) setShowStickyHeader(false);
+          }}
+          contentContainerStyle={{ paddingBottom: 140 }}
+        >
           {/* HERO BACKGROUND IMAGE WRAPPING HEADER + TRANSPARENT OFF-DUTY SECTION (AUTO HEIGHT, NO OVERLAP BELOW) */}
           <ImageBackground
             source={HERO_LOCAL_IMAGES[serviceConfig.key] || require("../../assets/images/image2.jpg")}
@@ -191,11 +253,18 @@ export default function EmployeeDashboardScreen() {
               backgroundColor: "#062214",
             }}
           >
+            <View
+              pointerEvents="none"
+              style={[
+                StyleSheet.absoluteFillObject,
+                { backgroundColor: "rgba(0, 0, 0, 0.62)", zIndex: 1 },
+              ]}
+            />
             <LinearGradient
               colors={[
+                "rgba(0, 0, 0, 0.45)",
                 "rgba(0, 0, 0, 0.58)",
-                "rgba(0, 0, 0, 0.68)",
-                "rgba(0, 0, 0, 0.88)",
+                "rgba(0, 0, 0, 0.86)",
               ]}
               locations={[0, 0.45, 1]}
               style={[StyleSheet.absoluteFillObject, { zIndex: 1 }]}
@@ -737,6 +806,49 @@ export default function EmployeeDashboardScreen() {
                 </View>
               </LiquidGlassCard>
             </View>
+
+            {/* FULL-WIDTH DECORATIVE INFO / CTA BANNER (Reference Image 2) */}
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() => router.push("/(employee)/tasks")}
+              style={{ marginHorizontal: -22, marginBottom: 22 }}
+            >
+              <LinearGradient
+                colors={["#1e1b4b", "#1d4ed8"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{
+                  paddingHorizontal: 22,
+                  paddingVertical: 14,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <View style={{ flex: 1, paddingRight: 12 }}>
+                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>
+                    {serverTasks.length} {t("tasks", "Tasks")} • {projectSiteProfiles.length} {t("sites", "Sites")} Ready
+                  </Text>
+                  <Text style={{ color: "rgba(255,255,255,0.78)", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 2 }}>
+                    Live synced with Web Admin • Tap to open route
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: "rgba(250, 204, 21, 0.22)",
+                    borderWidth: 1.5,
+                    borderColor: "#facc15",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Sparkles size={20} color="#fde047" />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
 
             {/* COLORFUL BENTO CARDS */}
             <View style={{ flexDirection: "row", gap: 14, marginBottom: 28, height: 256 }}>

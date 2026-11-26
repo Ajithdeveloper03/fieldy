@@ -15,7 +15,7 @@ import {
   MapPin,
   Fingerprint,
   Bell,
-  ArrowRight,
+  CornerLeftUp,
 } from "lucide-react-native";
 
 const TUTORIAL_STORAGE_KEY = "@fieldy_first_time_tutorial_done";
@@ -23,35 +23,31 @@ const TUTORIAL_STORAGE_KEY = "@fieldy_first_time_tutorial_done";
 const STEPS = [
   {
     icon: ClipboardCheck,
-    badge: "STEP 1 OF 4",
-    title: "Work Orders & Project Sites",
-    description:
-      "Every task and project site assigned in Web Admin appears live on your Home screen and updates automatically without reloading.",
-    accent: "#10b981",
+    spotlightLabel: "Work Orders & Project Sites",
+    headline: "Everything synced live\nfrom your Web Admin",
+    ctaLabel: "NEXT TIP (1/4)",
+    accent: "#059669",
   },
   {
     icon: Fingerprint,
-    badge: "STEP 2 OF 4",
-    title: "Mark Daily Attendance",
-    description:
-      "Use the Attendance tab in the bottom menu to Clock In and Clock Out with live GPS and selfie verification.",
-    accent: "#0ea5e9",
+    spotlightLabel: "Attendance Menu",
+    headline: "Clock In & Clock Out\nwith GPS & selfie",
+    ctaLabel: "NEXT TIP (2/4)",
+    accent: "#0284c7",
   },
   {
     icon: MapPin,
-    badge: "STEP 3 OF 4",
-    title: "Live GPS Tracking & Visits",
-    description:
-      "Your field route and live movement sync to Web Admin automatically. Open any site to check in and submit photo or video reports.",
-    accent: "#f97316",
+    spotlightLabel: "Live GPS Tracking",
+    headline: "Real-time field route\nvisible to your admin",
+    ctaLabel: "NEXT TIP (3/4)",
+    accent: "#ea580c",
   },
   {
     icon: Bell,
-    badge: "STEP 4 OF 4",
-    title: "Instant Alerts & Tamil Mode",
-    description:
-      "Tap the bell icon for real-time updates from your admin, or switch to தமிழ் anytime from the top language pill.",
-    accent: "#8b5cf6",
+    spotlightLabel: "Alerts & தமிழ் Mode",
+    headline: "Instant notifications &\none-tap Tamil switch",
+    ctaLabel: "GET STARTED",
+    accent: "#7c3aed",
   },
 ];
 
@@ -116,14 +112,15 @@ export function FirstTimeTutorialModal({
       <View style={styles.backdrop}>
         <LinearGradient
           colors={[
-            "rgba(15, 23, 42, 0.82)",
-            "rgba(6, 78, 59, 0.86)",
-            "rgba(15, 23, 42, 0.92)",
+            "rgba(244, 114, 182, 0.78)",
+            "rgba(255, 255, 255, 0.90)",
+            "rgba(167, 139, 250, 0.86)",
           ]}
+          locations={[0, 0.42, 1]}
           style={StyleSheet.absoluteFillObject}
         />
 
-        {/* Close Button */}
+        {/* Top-Right Close Button */}
         <TouchableOpacity
           onPress={() => void handleClose()}
           style={styles.closeBtn}
@@ -132,62 +129,33 @@ export function FirstTimeTutorialModal({
           <X size={20} color="#0f172a" />
         </TouchableOpacity>
 
-        {/* Center Spotlight Card */}
-        <View style={styles.card}>
-          <View style={[styles.iconCircle, { backgroundColor: `${step.accent}20` }]}>
-            <Icon size={34} color={step.accent} />
+        {/* Highlighted Spotlight Element Pill (matches Reference Image 4) */}
+        <View style={styles.spotlightWrap}>
+          <View style={styles.spotlightPill}>
+            <Icon size={20} color={step.accent} style={{ marginRight: 10 }} />
+            <Text style={styles.spotlightText}>{step.spotlightLabel}</Text>
           </View>
 
-          <View style={styles.badgePill}>
-            <Sparkles size={12} color={step.accent} style={{ marginRight: 5 }} />
-            <Text style={[styles.badgeText, { color: step.accent }]}>
-              {step.badge}
-            </Text>
+          {/* Curved Pointer + Headline + Gradient Pill CTA */}
+          <View style={styles.pointerRow}>
+            <CornerLeftUp size={32} color={step.accent} style={{ marginRight: 8, marginTop: -8 }} />
+            <Text style={styles.headline}>{step.headline}</Text>
           </View>
 
-          <Text style={styles.title}>{step.title}</Text>
-          <Text style={styles.description}>{step.description}</Text>
-
-          {/* Progress Dots */}
-          <View style={styles.dotsRow}>
-            {STEPS.map((_, idx) => (
-              <View
-                key={idx}
-                style={[
-                  styles.dot,
-                  idx === stepIndex && {
-                    width: 24,
-                    backgroundColor: step.accent,
-                  },
-                ]}
-              />
-            ))}
-          </View>
-
-          {/* Primary Gradient CTA */}
           <TouchableOpacity
             onPress={handleNext}
             activeOpacity={0.9}
-            style={{ width: "100%", borderRadius: 18, overflow: "hidden" }}
+            style={styles.ctaWrap}
           >
             <LinearGradient
-              colors={["#059669", "#0284c7"]}
+              colors={["#4f46e5", "#db2777"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.ctaBtn}
             >
-              <Text style={styles.ctaText}>
-                {stepIndex === STEPS.length - 1 ? "Get Started" : "Next Tip"}
-              </Text>
-              <ArrowRight size={18} color="#ffffff" style={{ marginLeft: 8 }} />
+              <Sparkles size={16} color="#ffffff" style={{ marginRight: 8 }} />
+              <Text style={styles.ctaText}>{step.ctaLabel}</Text>
             </LinearGradient>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => void handleClose()}
-            style={{ marginTop: 14, paddingVertical: 4 }}
-          >
-            <Text style={styles.skipText}>Skip Tutorial</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -198,86 +166,69 @@ export function FirstTimeTutorialModal({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
+    paddingTop: 150,
   },
   closeBtn: {
     position: "absolute",
-    top: 54,
-    right: 22,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    top: 56,
+    right: 20,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: "rgba(255,255,255,0.92)",
     alignItems: "center",
     justifyContent: "center",
     elevation: 6,
   },
-  card: {
+  spotlightWrap: {
+    width: "100%",
+    alignItems: "center",
+  },
+  spotlightPill: {
     width: "100%",
     backgroundColor: "#ffffff",
-    borderRadius: 30,
-    paddingHorizontal: 26,
-    paddingVertical: 30,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: "#334155",
+    paddingHorizontal: 18,
+    paddingVertical: 15,
+    flexDirection: "row",
     alignItems: "center",
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.28,
-    shadowRadius: 24,
-    elevation: 12,
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
+    elevation: 10,
   },
-  iconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+  spotlightText: {
+    color: "#334155",
+    fontFamily: "Brandon-Bold",
+    fontSize: 16,
+  },
+  pointerRow: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 16,
-  },
-  badgePill: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f1f5f9",
+    marginTop: 20,
+    marginBottom: 20,
     paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 999,
-    marginBottom: 12,
   },
-  badgeText: {
+  headline: {
+    color: "#312e81",
     fontFamily: "Brandon-Bold",
-    fontSize: 11,
-    letterSpacing: 0.8,
-  },
-  title: {
-    color: "#0f172a",
-    fontFamily: "Brandon-Bold",
-    fontSize: 22,
+    fontSize: 18,
+    lineHeight: 24,
     textAlign: "center",
-    marginBottom: 10,
   },
-  description: {
-    color: "#475569",
-    fontFamily: "Brandon-Medium",
-    fontSize: 14,
-    lineHeight: 21,
-    textAlign: "center",
-    marginBottom: 22,
-  },
-  dotsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 22,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#cbd5e1",
+  ctaWrap: {
+    borderRadius: 14,
+    overflow: "hidden",
+    elevation: 8,
   },
   ctaBtn: {
-    paddingVertical: 15,
+    paddingHorizontal: 26,
+    paddingVertical: 13,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -285,11 +236,7 @@ const styles = StyleSheet.create({
   ctaText: {
     color: "#ffffff",
     fontFamily: "Brandon-Bold",
-    fontSize: 16,
-  },
-  skipText: {
-    color: "#64748b",
-    fontFamily: "Brandon-Bold",
-    fontSize: 13,
+    fontSize: 14,
+    letterSpacing: 0.8,
   },
 });
