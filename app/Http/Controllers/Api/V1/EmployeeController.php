@@ -12,6 +12,7 @@ use App\Models\FarmerReview;
 use App\Models\FarmerVisit;
 use App\Models\LocationPoint;
 use App\Models\MediaFile;
+use App\Models\SessionActivity;
 use App\Models\Task;
 use App\Models\TrackingSession;
 use App\Models\User;
@@ -364,6 +365,18 @@ class EmployeeController extends Controller
 
             $this->recordLivePoint($user, $lat, $lng);
 
+            if (SessionActivity::tableReady()) {
+                SessionActivity::record(
+                    'employee_clock_out',
+                    "Employee {$user->name} clocked out ({$log->total_hours} hrs logged).",
+                    $request,
+                    $user,
+                    'info',
+                    0,
+                    ['total_hours' => (float) $log->total_hours]
+                );
+            }
+
             return response()->json([
                 'status' => 'success',
                 'action' => 'check_in',
@@ -385,6 +398,18 @@ class EmployeeController extends Controller
             }
 
             $this->recordLivePoint($user, $lat, $lng);
+
+            if (SessionActivity::tableReady()) {
+                SessionActivity::record(
+                    'employee_clock_out',
+                    "Employee {$user->name} clocked out ({$log->total_hours} hrs logged).",
+                    $request,
+                    $user,
+                    'info',
+                    0,
+                    ['total_hours' => (float) $log->total_hours]
+                );
+            }
 
             return response()->json([
                 'status' => 'success',
@@ -603,6 +628,31 @@ class EmployeeController extends Controller
 
         $this->recordLivePoint($user, $lat, $lng);
 
+        if (SessionActivity::tableReady()) {
+            $siteLabel = $siteUser?->name ?? 'Assigned Site';
+            SessionActivity::record(
+                'employee_visit_checkin',
+                "Employee {$user->name} checked in at {$siteLabel}.",
+                $request,
+                $user,
+                'info',
+                0,
+                ['visit_id' => $visit->id, 'site_name' => $siteLabel]
+            );
+        }
+
+        if (SessionActivity::tableReady()) {
+            SessionActivity::record(
+                'employee_visit_submitted',
+                "Employee {$user->name} submitted a visit report (Visit #{$visit->id}).",
+                $request,
+                $user,
+                'info',
+                0,
+                ['visit_id' => $visit->id]
+            );
+        }
+
         return response()->json([
             'status' => 'success',
             'visit_id' => $visit->id,
@@ -777,6 +827,18 @@ class EmployeeController extends Controller
                     }
                 }
             }
+        }
+
+        if (SessionActivity::tableReady()) {
+            SessionActivity::record(
+                'employee_visit_submitted',
+                "Employee {$user->name} submitted a visit report (Visit #{$visit->id}).",
+                $request,
+                $user,
+                'info',
+                0,
+                ['visit_id' => $visit->id]
+            );
         }
 
         return response()->json([
@@ -1180,6 +1242,18 @@ class EmployeeController extends Controller
         $task = $this->employeeTasksQuery($user, $industry)->whereKey($id)->firstOrFail();
         $task->update(['status' => $validated['status']]);
 
+        if (SessionActivity::tableReady()) {
+            SessionActivity::record(
+                'employee_task_updated',
+                "Employee {$user->name} updated task \"{$task->title}\" to {$validated['status']}.",
+                $request,
+                $user,
+                'info',
+                0,
+                ['task_id' => $task->id, 'status' => $validated['status']]
+            );
+        }
+
         return response()->json(['status' => 'success', 'task' => $task]);
     }
 
@@ -1198,6 +1272,20 @@ class EmployeeController extends Controller
             $updates['status'] = 'in_progress';
         }
         $task->update($updates);
+
+        if (SessionActivity::tableReady()) {
+            $doneCount = collect($normalized)->where('done', true)->count();
+            $totalCount = count($normalized);
+            SessionActivity::record(
+                'employee_task_updated',
+                "Employee {$user->name} updated checklist ({$doneCount}/{$totalCount}) on \"{$task->title}\".",
+                $request,
+                $user,
+                'info',
+                0,
+                ['task_id' => $task->id, 'done' => $doneCount, 'total' => $totalCount]
+            );
+        }
 
         return response()->json([
             'status' => 'success',
@@ -1424,6 +1512,27 @@ class EmployeeController extends Controller
             ]);
         }
 
+        // 5. Newly created / assigned Project Sites from Web Admin
+        $this->assignedSitesQuery($user)
+            ->with('farmerProfile')
+            ->latest('updated_at')
+            ->limit(6)
+            ->get()
+            ->each(function (User $site) use ($items) {
+                $city = $site->farmerProfile?->district ?: $site->farmerProfile?->village ?: 'Assigned Sector';
+                $items->push([
+                    'id' => 'site-'.$site->id,
+                    'category' => 'site',
+                    'title' => 'Project Site Assigned',
+                    'message' => "{$site->name} ({$city}) is assigned to your route.",
+                    'time' => ($site->updated_at ?: $site->created_at)?->diffForHumans() ?? 'Recently',
+                    'timestamp' => ($site->updated_at ?: $site->created_at)?->timestamp ?? 0,
+                    'isUnread' => $site->created_at ? $site->created_at->gt(Carbon::now()->subDays(2)) : false,
+                    'route' => '/(employee)/site/'.$site->id,
+                    'actionLabel' => 'Open',
+                ]);
+            });
+
         $sorted = $items->sortByDesc('timestamp')->values()->map(function ($item) {
             unset($item['timestamp']);
 
@@ -1532,14 +1641,18 @@ class EmployeeController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:120',
+            'username' => 'sometimes|required|string|max:120',
             'phone' => ['sometimes', 'required', 'string', 'max:25', Rule::unique('users', 'phone')->ignore($user->id)],
             'email' => ['sometimes', 'nullable', 'email', 'max:160', Rule::unique('users', 'email')->ignore($user->id)],
             'emergency_phone' => 'nullable|string|max:25',
             'region' => 'nullable|string|max:120',
         ]);
 
+        $oldName = $user->name;
+        $newName = trim((string) ($validated['username'] ?? $validated['name'] ?? $user->name));
+
         $user->update(array_filter([
-            'name' => $validated['name'] ?? $user->name,
+            'name' => $newName !== '' ? $newName : $user->name,
             'phone' => $validated['phone'] ?? $user->phone,
             'email' => array_key_exists('email', $validated) ? $validated['email'] : $user->email,
         ], fn ($v) => $v !== null));
@@ -1555,6 +1668,21 @@ class EmployeeController extends Controller
         }
 
         $user->refresh()->load(['company', 'employeeDetail']);
+
+        if (SessionActivity::tableReady()) {
+            $summary = $oldName !== $user->name
+                ? "Employee changed username from {$oldName} to {$user->name}"
+                : "Employee {$user->name} updated profile credentials";
+            SessionActivity::record(
+                'employee_profile_updated',
+                $summary,
+                $request,
+                $user,
+                'info',
+                0,
+                ['old_name' => $oldName, 'new_name' => $user->name, 'phone' => $user->phone, 'email' => $user->email]
+            );
+        }
 
         return response()->json([
             'status' => 'success',
