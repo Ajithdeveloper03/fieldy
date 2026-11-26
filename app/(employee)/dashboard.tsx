@@ -32,6 +32,7 @@ import { LanguageTogglePill, useLanguage } from "../../context/LanguageContext";
 import { useService, ServiceSelectorPill, ALL_SERVICE_KEYS } from "../../context/ServiceContext";
 import { api, getAuthUser } from "../../services/api";
 import { useLiveRefresh } from "../../hooks/useLiveRefresh";
+import { FirstTimeTutorialModal } from "../../components/FirstTimeTutorialModal";
 import {
   LiquidGlassBackdrop,
   LiquidGlassButton,
@@ -60,16 +61,6 @@ const HERO_LOCAL_IMAGES: Record<string, any> = {
   pest_control: require("../../assets/images/image8.jpg"),
   logistics: require("../../assets/images/image10.jpg"),
 };
-
-const PERSON_CUTOUT_IMAGES = [
-  require("../../assets/images/person1.png"),
-  require("../../assets/images/person2.png"),
-  require("../../assets/images/person3.png"),
-  require("../../assets/images/person4.png"),
-  require("../../assets/images/person5.png"),
-  require("../../assets/images/person6.png"),
-  require("../../assets/images/person7.png"),
-];
 
 export default function EmployeeDashboardScreen() {
   const insets = useSafeAreaInsets();
@@ -954,45 +945,69 @@ export default function EmployeeDashboardScreen() {
                 style={{ marginHorizontal: -22 }}
               >
                 {projectSiteProfiles.map((entity: any, idx: number) => {
-                  const cutoutSource = PERSON_CUTOUT_IMAGES[idx % PERSON_CUTOUT_IMAGES.length];
+                  const cardImg =
+                    typeof entity.image === "string"
+                      ? { uri: entity.image }
+                      : entity.image || SITE_CARD_IMAGES[idx % SITE_CARD_IMAGES.length];
 
                   return (
-                    <LiquidGlassCard
+                    <TouchableOpacity
                       key={`${entity.id}-${idx}`}
-                      variant="light"
-                      borderRadius={34}
+                      activeOpacity={0.9}
                       onPress={() =>
                         router.push(`/(employee)/site/${entity.id}` as any)
                       }
-                      style={{ width: 214, height: 252, overflow: "hidden" }}
-                      contentStyle={{
-                        flex: 1,
-                        paddingVertical: 20,
-                        paddingHorizontal: 18,
-                        justifyContent: "flex-start",
-                        alignItems: "flex-start",
-                      }}
+                      style={{ width: 144 }}
                     >
-                      <Image
-                        source={cutoutSource}
+                      <View
                         style={{
-                          position: "absolute",
-                          right: 2,
-                          bottom: 0,
-                          width: 118,
-                          height: 136,
-                          opacity: 0.95,
+                          width: 144,
+                          height: 144,
+                          borderRadius: 22,
+                          overflow: "hidden",
+                          backgroundColor: "#e2e8f0",
+                          marginBottom: 8,
+                          elevation: 3,
                         }}
-                        resizeMode="contain"
-                      />
+                      >
+                        <Image
+                          source={cardImg}
+                          style={{ width: "100%", height: "100%" }}
+                          resizeMode="cover"
+                        />
+                        <LinearGradient
+                          colors={["transparent", "rgba(0,0,0,0.78)"]}
+                          style={{
+                            position: "absolute",
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            height: 62,
+                            justifyContent: "flex-end",
+                            paddingHorizontal: 10,
+                            paddingBottom: 8,
+                          }}
+                        >
+                          <Text
+                            numberOfLines={1}
+                            style={{
+                              color: "#ffffff",
+                              fontFamily: "Brandon-Bold",
+                              fontSize: 13,
+                              letterSpacing: 0.4,
+                            }}
+                          >
+                            {entity.code || "SITE"}
+                          </Text>
+                        </LinearGradient>
+                      </View>
                       <Text
-                        numberOfLines={2}
+                        numberOfLines={1}
                         style={{
                           color: "#0f172a",
                           fontFamily: "Brandon-Bold",
-                          fontSize: 20,
-                          lineHeight: 24,
-                          maxWidth: "88%",
+                          fontSize: 15,
+                          lineHeight: 20,
                         }}
                       >
                         {entity.name}
@@ -1001,24 +1016,23 @@ export default function EmployeeDashboardScreen() {
                         style={{
                           flexDirection: "row",
                           alignItems: "center",
-                          marginTop: 8,
-                          maxWidth: "85%",
+                          marginTop: 2,
                         }}
                       >
-                        <MapPin size={14} color={serviceConfig.themeColor} style={{ marginRight: 4 }} />
+                        <MapPin size={12} color={serviceConfig.themeColor} style={{ marginRight: 3 }} />
                         <Text
                           numberOfLines={1}
                           style={{
                             color: "#64748b",
-                            fontFamily: "Brandon-Bold",
-                            fontSize: 14,
+                            fontFamily: "Brandon-Medium",
+                            fontSize: 12,
                             flexShrink: 1,
                           }}
                         >
                           {entity.area || entity.city}
                         </Text>
                       </View>
-                    </LiquidGlassCard>
+                    </TouchableOpacity>
                   );
                 })}
               </ScrollView>
@@ -1282,6 +1296,7 @@ export default function EmployeeDashboardScreen() {
             </LiquidGlassCard>
           </View>
         </ScrollView>
+        <FirstTimeTutorialModal />
       </SafeAreaView>
     </LiquidGlassBackdrop>
   );
