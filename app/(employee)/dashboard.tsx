@@ -766,10 +766,10 @@ export default function EmployeeDashboardScreen() {
                   source={require("../../assets/images/person1.png")}
                   style={{
                     position: "absolute",
-                    right: -10,
-                    bottom: -14,
-                    width: 86,
-                    height: 98,
+                    right: -40,
+                    bottom: -22,
+                    width: 146,
+                    height: 138,
                     opacity: 0.96,
                   }}
                   resizeMode="contain"
@@ -850,14 +850,14 @@ export default function EmployeeDashboardScreen() {
                       bottom: -12,
                       width: 68,
                       height: 76,
-                      opacity: 0.96,
+                      opacity: 0,
                     }}
                     resizeMode="contain"
                   />
                   <Text style={{ color: "#a5b4fc", fontFamily: "Brandon-Bold", fontSize: 12, letterSpacing: 0.8 }}>
                     FIELD PROOF
                   </Text>
-                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 21, lineHeight: 25, marginTop: 2 }}>
+                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18, lineHeight: 25, marginTop: 2 }}>
                     {serviceConfig.vocab.report}s
                   </Text>
                 </TouchableOpacity>
@@ -1037,7 +1037,7 @@ export default function EmployeeDashboardScreen() {
                   title: "Attendance & Selfie",
                   sub: "Verify GPS clock-in now",
                   bg: "#0f766e",
-                  img: require("../../assets/images/person4.png"),
+                  img: require("../../assets/images/person6.png"),
                   route: "/(employee)/attendance-hub",
                 },
                 {
@@ -1045,7 +1045,7 @@ export default function EmployeeDashboardScreen() {
                   title: `My ${serviceConfig.vocab.entities}`,
                   sub: `Open all ${projectSiteProfiles.length} site profiles`,
                   bg: "#ea580c",
-                  img: require("../../assets/images/person5.png"),
+                  img: require("../../assets/images/person4.png"),
                   route: "/(employee)/my-sites",
                 },
                 {
@@ -1061,7 +1061,7 @@ export default function EmployeeDashboardScreen() {
                   title: "My Score & SLA",
                   sub: `${serviceConfig.kpis.efficiencyRate} â€¢ ${serviceConfig.kpis.points}`,
                   bg: "#0369a1",
-                  img: require("../../assets/images/person7.png"),
+                  img: require("../../assets/images/person5.png"),
                   route: "/(employee)/performance",
                 },
               ].map((slide, idx) => (
@@ -1089,9 +1089,9 @@ export default function EmployeeDashboardScreen() {
                     style={{
                       position: "absolute",
                       right: -14,
-                      bottom: -18,
-                      width: 158,
-                      height: 176,
+                      bottom: -35,
+                      width: 198,
+                      height: 196,
                       opacity: 0.96,
                     }}
                     resizeMode="contain"
