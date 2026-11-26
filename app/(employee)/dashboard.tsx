@@ -61,6 +61,16 @@ const HERO_LOCAL_IMAGES: Record<string, any> = {
   logistics: require("../../assets/images/image10.jpg"),
 };
 
+const PERSON_CUTOUT_IMAGES = [
+  require("../../assets/images/person1.png"),
+  require("../../assets/images/person2.png"),
+  require("../../assets/images/person3.png"),
+  require("../../assets/images/person4.png"),
+  require("../../assets/images/person5.png"),
+  require("../../assets/images/person6.png"),
+  require("../../assets/images/person7.png"),
+];
+
 export default function EmployeeDashboardScreen() {
   const insets = useSafeAreaInsets();
   const { t } = useLanguage();
@@ -756,11 +766,11 @@ export default function EmployeeDashboardScreen() {
                   source={require("../../assets/images/person1.png")}
                   style={{
                     position: "absolute",
-                    right: -12,
-                    bottom: -8,
-                    width: 138,
-                    height: 152,
-                    opacity: 0.92,
+                    right: 2,
+                    bottom: 0,
+                    width: 72,
+                    height: 82,
+                    opacity: 0.94,
                   }}
                   resizeMode="contain"
                 />
@@ -800,14 +810,14 @@ export default function EmployeeDashboardScreen() {
                   }}
                 >
                   <Image
-                    source={require("../../assets/images/person2.png")}
+                    source={require("../../assets/images/image13.jpg")}
                     style={{
                       position: "absolute",
                       right: -8,
                       bottom: -6,
                       width: 96,
                       height: 108,
-                      opacity: 0.92,
+                      opacity: 0,
                     }}
                     resizeMode="contain"
                   />
@@ -836,11 +846,11 @@ export default function EmployeeDashboardScreen() {
                     source={require("../../assets/images/person3.png")}
                     style={{
                       position: "absolute",
-                      right: -8,
-                      bottom: -6,
-                      width: 96,
-                      height: 108,
-                      opacity: 0.92,
+                      right: 2,
+                      bottom: 0,
+                      width: 58,
+                      height: 64,
+                      opacity: 0.94,
                     }}
                     resizeMode="contain"
                   />
@@ -944,10 +954,7 @@ export default function EmployeeDashboardScreen() {
                 style={{ marginHorizontal: -22 }}
               >
                 {projectSiteProfiles.map((entity: any, idx: number) => {
-                  const imgSource =
-                    typeof entity.image === "string"
-                      ? { uri: entity.image }
-                      : entity.image || SITE_CARD_IMAGES[idx % SITE_CARD_IMAGES.length];
+                  const cutoutSource = PERSON_CUTOUT_IMAGES[idx % PERSON_CUTOUT_IMAGES.length];
 
                   return (
                     <LiquidGlassCard
@@ -957,39 +964,35 @@ export default function EmployeeDashboardScreen() {
                       onPress={() =>
                         router.push(`/(employee)/site/${entity.id}` as any)
                       }
-                      style={{ width: 196 }}
+                      style={{ width: 214, height: 252, overflow: "hidden" }}
                       contentStyle={{
+                        flex: 1,
                         paddingVertical: 20,
-                        paddingHorizontal: 14,
-                        alignItems: "center",
+                        paddingHorizontal: 18,
+                        justifyContent: "flex-start",
+                        alignItems: "flex-start",
                       }}
                     >
-                      <View
+                      <Image
+                        source={cutoutSource}
                         style={{
-                          width: 144,
-                          height: 144,
-                          borderRadius: 44,
-                          borderWidth: 3.5,
-                          borderColor: serviceConfig.themeColor,
-                          overflow: "hidden",
-                          marginBottom: 14,
-                          backgroundColor: "#f1f5f9",
+                          position: "absolute",
+                          right: 2,
+                          bottom: 0,
+                          width: 118,
+                          height: 136,
+                          opacity: 0.95,
                         }}
-                      >
-                        <Image
-                          source={imgSource}
-                          style={{ width: "100%", height: "100%" }}
-                          resizeMode="cover"
-                        />
-                      </View>
+                        resizeMode="contain"
+                      />
                       <Text
                         numberOfLines={2}
                         style={{
                           color: "#0f172a",
                           fontFamily: "Brandon-Bold",
-                          fontSize: 19,
-                          lineHeight: 23,
-                          textAlign: "center",
+                          fontSize: 20,
+                          lineHeight: 24,
+                          maxWidth: "88%",
                         }}
                       >
                         {entity.name}
@@ -998,7 +1001,8 @@ export default function EmployeeDashboardScreen() {
                         style={{
                           flexDirection: "row",
                           alignItems: "center",
-                          marginTop: 6,
+                          marginTop: 8,
+                          maxWidth: "85%",
                         }}
                       >
                         <MapPin size={14} color={serviceConfig.themeColor} style={{ marginRight: 4 }} />
@@ -1008,7 +1012,6 @@ export default function EmployeeDashboardScreen() {
                             color: "#64748b",
                             fontFamily: "Brandon-Bold",
                             fontSize: 14,
-                            textAlign: "center",
                             flexShrink: 1,
                           }}
                         >
