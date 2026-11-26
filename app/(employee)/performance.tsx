@@ -14,11 +14,7 @@ import { useLiveRefresh } from "../../hooks/useLiveRefresh";
 import {
   ChevronLeft,
   Settings,
-  Calendar,
   CheckCircle2,
-  BarChart3,
-  User,
-  Clock,
   ArrowUpRight,
   Zap,
   ShieldCheck,
@@ -636,64 +632,6 @@ export default function EmployeePerformanceScreen() {
             )}
           </View>
         </ScrollView>
-
-        {/* FLOATING BOTTOM DOCK */}
-        <LiquidGlassCard
-          variant="dark"
-          borderRadius={32}
-          dropletColor="#10b981"
-          style={{
-            position: "absolute",
-            bottom: 24,
-            left: 24,
-            right: 24,
-          }}
-          contentStyle={{
-            paddingVertical: 14,
-            paddingHorizontal: 24,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <TouchableOpacity
-            onPress={() => router.push("/(employee)/attendance-hub")}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: "#4ade80",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Clock size={22} color="#062214" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => router.push("/(employee)/calendar")}
-            style={{ alignItems: "center", padding: 8 }}
-          >
-            <Calendar size={22} color="rgba(255,255,255,0.6)" />
-          </TouchableOpacity>
-          <TouchableOpacity style={{ alignItems: "center", padding: 8 }}>
-            <BarChart3 size={22} color="#4ade80" />
-            <View
-              style={{
-                width: 4,
-                height: 4,
-                borderRadius: 2,
-                backgroundColor: "#4ade80",
-                marginTop: 4,
-              }}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => router.push("/(employee)/profile")}
-            style={{ alignItems: "center", padding: 8 }}
-          >
-            <User size={22} color="rgba(255,255,255,0.6)" />
-          </TouchableOpacity>
-        </LiquidGlassCard>
       </SafeAreaView>
     </LiquidGlassBackdrop>
   );
