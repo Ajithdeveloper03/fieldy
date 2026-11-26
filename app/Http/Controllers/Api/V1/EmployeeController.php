@@ -365,6 +365,18 @@ class EmployeeController extends Controller
 
             $this->recordLivePoint($user, $lat, $lng);
 
+            if (SessionActivity::tableReady()) {
+                SessionActivity::record(
+                    'employee_clock_out',
+                    "Employee {$user->name} clocked out ({$log->total_hours} hrs logged).",
+                    $request,
+                    $user,
+                    'info',
+                    0,
+                    ['total_hours' => (float) $log->total_hours]
+                );
+            }
+
             return response()->json([
                 'status' => 'success',
                 'action' => 'check_in',
@@ -386,6 +398,18 @@ class EmployeeController extends Controller
             }
 
             $this->recordLivePoint($user, $lat, $lng);
+
+            if (SessionActivity::tableReady()) {
+                SessionActivity::record(
+                    'employee_clock_out',
+                    "Employee {$user->name} clocked out ({$log->total_hours} hrs logged).",
+                    $request,
+                    $user,
+                    'info',
+                    0,
+                    ['total_hours' => (float) $log->total_hours]
+                );
+            }
 
             return response()->json([
                 'status' => 'success',
@@ -604,6 +628,31 @@ class EmployeeController extends Controller
 
         $this->recordLivePoint($user, $lat, $lng);
 
+        if (SessionActivity::tableReady()) {
+            $siteLabel = $siteUser?->name ?? 'Assigned Site';
+            SessionActivity::record(
+                'employee_visit_checkin',
+                "Employee {$user->name} checked in at {$siteLabel}.",
+                $request,
+                $user,
+                'info',
+                0,
+                ['visit_id' => $visit->id, 'site_name' => $siteLabel]
+            );
+        }
+
+        if (SessionActivity::tableReady()) {
+            SessionActivity::record(
+                'employee_visit_submitted',
+                "Employee {$user->name} submitted a visit report (Visit #{$visit->id}).",
+                $request,
+                $user,
+                'info',
+                0,
+                ['visit_id' => $visit->id]
+            );
+        }
+
         return response()->json([
             'status' => 'success',
             'visit_id' => $visit->id,
@@ -778,6 +827,18 @@ class EmployeeController extends Controller
                     }
                 }
             }
+        }
+
+        if (SessionActivity::tableReady()) {
+            SessionActivity::record(
+                'employee_visit_submitted',
+                "Employee {$user->name} submitted a visit report (Visit #{$visit->id}).",
+                $request,
+                $user,
+                'info',
+                0,
+                ['visit_id' => $visit->id]
+            );
         }
 
         return response()->json([
@@ -1181,6 +1242,18 @@ class EmployeeController extends Controller
         $task = $this->employeeTasksQuery($user, $industry)->whereKey($id)->firstOrFail();
         $task->update(['status' => $validated['status']]);
 
+        if (SessionActivity::tableReady()) {
+            SessionActivity::record(
+                'employee_task_updated',
+                "Employee {$user->name} updated task \"{$task->title}\" to {$validated['status']}.",
+                $request,
+                $user,
+                'info',
+                0,
+                ['task_id' => $task->id, 'status' => $validated['status']]
+            );
+        }
+
         return response()->json(['status' => 'success', 'task' => $task]);
     }
 
@@ -1199,6 +1272,20 @@ class EmployeeController extends Controller
             $updates['status'] = 'in_progress';
         }
         $task->update($updates);
+
+        if (SessionActivity::tableReady()) {
+            $doneCount = collect($normalized)->where('done', true)->count();
+            $totalCount = count($normalized);
+            SessionActivity::record(
+                'employee_task_updated',
+                "Employee {$user->name} updated checklist ({$doneCount}/{$totalCount}) on \"{$task->title}\".",
+                $request,
+                $user,
+                'info',
+                0,
+                ['task_id' => $task->id, 'done' => $doneCount, 'total' => $totalCount]
+            );
+        }
 
         return response()->json([
             'status' => 'success',

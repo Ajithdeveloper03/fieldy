@@ -127,9 +127,10 @@ class AlertsController extends Controller
 
                 foreach ($activities as $act) {
                     $titleMap = [
-                        'employee_profile_updated' => 'Username / Profile Updated',
+                        'employee_profile_updated' => 'Profile Updated',
                         'employee_clock_in' => 'Employee Clocked In',
                         'employee_clock_out' => 'Employee Clocked Out',
+                        'employee_visit_checkin' => 'Site Visit Check-In',
                         'employee_visit_submitted' => 'Visit Report Submitted',
                         'employee_task_updated' => 'Task Updated',
                     ];
