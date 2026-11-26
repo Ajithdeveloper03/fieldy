@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
 use App\Models\EmergencyAlert;
+use App\Models\SessionActivity;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\Industry\IndustryCatalog;
@@ -113,6 +114,35 @@ class AlertsController extends Controller
                         : 'Today',
                     'resolved' => false,
                 ];
+            }
+
+            // 3. Real-time employee activity notifications (username/profile updates, attendance, visits, tasks)
+            if (SessionActivity::tableReady()) {
+                $activities = SessionActivity::whereIn('user_id', $empIds)
+                    ->where('event_type', 'like', 'employee_%')
+                    ->with('user:id,name')
+                    ->latest('id')
+                    ->take(20)
+                    ->get();
+
+                foreach ($activities as $act) {
+                    $titleMap = [
+                        'employee_profile_updated' => 'Username / Profile Updated',
+                        'employee_clock_in' => 'Employee Clocked In',
+                        'employee_clock_out' => 'Employee Clocked Out',
+                        'employee_visit_submitted' => 'Visit Report Submitted',
+                        'employee_task_updated' => 'Task Updated',
+                    ];
+                    $alerts[] = [
+                        'id' => 'act-' . $act->id,
+                        'type' => $act->severity === 'critical' ? 'critical' : 'medium',
+                        'title' => ($titleMap[$act->event_type] ?? 'Employee Activity') . ': ' . ($act->user?->name ?? 'Field Staff'),
+                        'message' => $act->description ?: 'Activity logged from mobile app.',
+                        'location' => 'Mobile App Live Sync',
+                        'timestamp' => $act->created_at ? $act->created_at->diffForHumans() : 'Just now',
+                        'resolved' => false,
+                    ];
+                }
             }
         }
 

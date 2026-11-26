@@ -12,6 +12,7 @@ use App\Models\FarmerReview;
 use App\Models\FarmerVisit;
 use App\Models\LocationPoint;
 use App\Models\MediaFile;
+use App\Models\SessionActivity;
 use App\Models\Task;
 use App\Models\TrackingSession;
 use App\Models\User;
@@ -1424,6 +1425,27 @@ class EmployeeController extends Controller
             ]);
         }
 
+        // 5. Newly created / assigned Project Sites from Web Admin
+        $this->assignedSitesQuery($user)
+            ->with('farmerProfile')
+            ->latest('updated_at')
+            ->limit(6)
+            ->get()
+            ->each(function (User $site) use ($items) {
+                $city = $site->farmerProfile?->district ?: $site->farmerProfile?->village ?: 'Assigned Sector';
+                $items->push([
+                    'id' => 'site-'.$site->id,
+                    'category' => 'site',
+                    'title' => 'Project Site Assigned',
+                    'message' => "{$site->name} ({$city}) is assigned to your route.",
+                    'time' => ($site->updated_at ?: $site->created_at)?->diffForHumans() ?? 'Recently',
+                    'timestamp' => ($site->updated_at ?: $site->created_at)?->timestamp ?? 0,
+                    'isUnread' => $site->created_at ? $site->created_at->gt(Carbon::now()->subDays(2)) : false,
+                    'route' => '/(employee)/site/'.$site->id,
+                    'actionLabel' => 'Open',
+                ]);
+            });
+
         $sorted = $items->sortByDesc('timestamp')->values()->map(function ($item) {
             unset($item['timestamp']);
 
@@ -1532,14 +1554,18 @@ class EmployeeController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:120',
+            'username' => 'sometimes|required|string|max:120',
             'phone' => ['sometimes', 'required', 'string', 'max:25', Rule::unique('users', 'phone')->ignore($user->id)],
             'email' => ['sometimes', 'nullable', 'email', 'max:160', Rule::unique('users', 'email')->ignore($user->id)],
             'emergency_phone' => 'nullable|string|max:25',
             'region' => 'nullable|string|max:120',
         ]);
 
+        $oldName = $user->name;
+        $newName = trim((string) ($validated['username'] ?? $validated['name'] ?? $user->name));
+
         $user->update(array_filter([
-            'name' => $validated['name'] ?? $user->name,
+            'name' => $newName !== '' ? $newName : $user->name,
             'phone' => $validated['phone'] ?? $user->phone,
             'email' => array_key_exists('email', $validated) ? $validated['email'] : $user->email,
         ], fn ($v) => $v !== null));
@@ -1555,6 +1581,21 @@ class EmployeeController extends Controller
         }
 
         $user->refresh()->load(['company', 'employeeDetail']);
+
+        if (SessionActivity::tableReady()) {
+            $summary = $oldName !== $user->name
+                ? "Employee changed username from {$oldName} to {$user->name}"
+                : "Employee {$user->name} updated profile credentials";
+            SessionActivity::record(
+                'employee_profile_updated',
+                $summary,
+                $request,
+                $user,
+                'info',
+                0,
+                ['old_name' => $oldName, 'new_name' => $user->name, 'phone' => $user->phone, 'email' => $user->email]
+            );
+        }
 
         return response()->json([
             'status' => 'success',
