@@ -25,6 +25,7 @@ import {
   LiquidGlassCard,
   LiquidGlassIconButton,
 } from "../../components/LiquidGlass";
+import { PageHeroBanner } from "../../components/PageHeroBanner";
 
 export default function EmployeeCalendarScreen() {
   const [todayDate] = useState(() => new Date());
@@ -206,6 +207,14 @@ export default function EmployeeCalendarScreen() {
             <CalendarDays size={20} color="#ffffff" />
           </LiquidGlassIconButton>
         </View>
+
+        <PageHeroBanner
+          badge="SCHEDULE"
+          title="Work Calendar"
+          subtitle={`${monthName} • Visits & Tasks`}
+          colors={["#0284c7", "#0369a1"]}
+          personIndex={4}
+        />
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 150 }}>
           

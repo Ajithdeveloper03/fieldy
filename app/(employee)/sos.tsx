@@ -27,6 +27,7 @@ import {
   LiquidGlassIconButton,
   LiquidGlassPill,
 } from "../../components/LiquidGlass";
+import { PageHeroBanner } from "../../components/PageHeroBanner";
 
 export default function SOSScreen() {
   const [sosTriggered, setSosTriggered] = useState(false);
@@ -85,6 +86,14 @@ export default function SOSScreen() {
           <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 24 }}>Worker Safety & SOS</Text>
           <View style={{ width: 44 }} />
         </View>
+
+        <PageHeroBanner
+          badge="PRIORITY 1"
+          title="Emergency SOS"
+          subtitle="Instant live GPS alert to Company Admin"
+          colors={["#dc2626", "#991b1b"]}
+          personIndex={4}
+        />
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 10, paddingBottom: 110 }}>
           {/* BIG SOS PANIC BUTTON */}

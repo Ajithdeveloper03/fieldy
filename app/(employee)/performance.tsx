@@ -25,6 +25,7 @@ import {
   LiquidGlassIconBadge,
   LiquidGlassIconButton,
 } from "../../components/LiquidGlass";
+import { PageHeroBanner } from "../../components/PageHeroBanner";
 
 export default function EmployeePerformanceScreen() {
   const { t } = useLanguage();
@@ -116,6 +117,14 @@ export default function EmployeePerformanceScreen() {
             <Settings size={20} color="#0f172a" />
           </LiquidGlassIconButton>
         </View>
+
+        <PageHeroBanner
+          badge="REAL METRICS"
+          title={t("myPerformance", "Performance")}
+          subtitle={`${efficiency}% Work Score • ${pointsEarned} Pts`}
+          colors={["#0369a1", "#1e3a8a"]}
+          personIndex={6}
+        />
 
         <ScrollView
           showsVerticalScrollIndicator={false}

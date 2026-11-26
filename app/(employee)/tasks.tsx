@@ -29,6 +29,7 @@ import {
   LiquidGlassIconButton,
   LiquidGlassPill,
 } from "../../components/LiquidGlass";
+import { PageHeroBanner } from "../../components/PageHeroBanner";
 
 export default function EmployeeTasksScreen() {
   const { serviceConfig } = useService();
@@ -149,6 +150,14 @@ export default function EmployeeTasksScreen() {
             </LiquidGlassIconButton>
           </View>
         </View>
+
+        <PageHeroBanner
+          badge={serviceConfig.shortName}
+          title={serviceConfig.vocab.tasks}
+          subtitle={`${pendingTasks.length} Pending • ${completionRate}% Done`}
+          colors={["#059669", "#0284c7"]}
+          personIndex={0}
+        />
 
         {/* HORIZONTAL DATE PILL STRIP (Reference Screen 4: "12 Jul | 12 Jul | Today (black pill) | 12 Jul") */}
         <View style={{ marginBottom: 18 }}>

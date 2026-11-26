@@ -25,6 +25,7 @@ import {
   LiquidGlassCard,
   LiquidGlassIconButton,
 } from "../../components/LiquidGlass";
+import { PageHeroBanner } from "../../components/PageHeroBanner";
 
 export default function EditProfileScreen() {
   const { t } = useLanguage();
@@ -188,6 +189,14 @@ export default function EditProfileScreen() {
             </Text>
             <View style={{ width: 44 }} />
           </View>
+
+          <PageHeroBanner
+            badge="PROFILE SYNC"
+            title={t("myCredentials", "My Credentials")}
+            subtitle="Changes sync directly with Web Admin"
+            colors={["#059669", "#0f766e"]}
+            personIndex={3}
+          />
 
           <ScrollView
             style={{ flex: 1, paddingHorizontal: 22 }}

@@ -22,6 +22,7 @@ import {
   LiquidGlassIconBadge,
   LiquidGlassIconButton,
 } from "../../components/LiquidGlass";
+import { PageHeroBanner } from "../../components/PageHeroBanner";
 import {
   ChevronLeft,
   Search,
@@ -114,6 +115,14 @@ export default function EmployeeMySiteContactsScreen() {
           </View>
           <ServiceSelectorPill compact locked={isTenant} />
         </View>
+
+        <PageHeroBanner
+          badge={serviceConfig.shortName}
+          title={`My ${serviceConfig.vocab.entities}`}
+          subtitle={`${sites.length} Active Sites • Live Synced`}
+          colors={["#0284c7", "#1e40af"]}
+          personIndex={1}
+        />
 
         {/* SEARCH BAR */}
         <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>

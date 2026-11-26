@@ -45,6 +45,7 @@ import {
   LiquidGlassIconButton,
   LiquidGlassPill,
 } from "../../components/LiquidGlass";
+import { PageHeroBanner } from "../../components/PageHeroBanner";
 
 export default function EmployeeReportsScreen() {
   const { serviceConfig } = useService();
@@ -256,6 +257,14 @@ export default function EmployeeReportsScreen() {
             </LiquidGlassIconButton>
           </View>
         </View>
+
+        <PageHeroBanner
+          badge="MEDIA VAULT"
+          title={`${serviceConfig.vocab.report}s`}
+          subtitle={`${submittedReports.length} Reports • ${mediaFiles.length} Files Synced`}
+          colors={["#7c3aed", "#1e3a8a"]}
+          personIndex={5}
+        />
 
         <ScrollView
           showsVerticalScrollIndicator={false}

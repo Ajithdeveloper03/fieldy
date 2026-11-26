@@ -25,6 +25,7 @@ import {
   LiquidGlassIconBadge,
   LiquidGlassIconButton,
 } from "../../components/LiquidGlass";
+import { PageHeroBanner } from "../../components/PageHeroBanner";
 
 export default function EmployeeNotificationsScreen() {
   const { t } = useLanguage();
@@ -94,6 +95,14 @@ export default function EmployeeNotificationsScreen() {
           </Text>
           <View style={{ width: 42 }} />
         </View>
+
+        <PageHeroBanner
+          badge="REAL-TIME"
+          title={t("notifications", "Notifications")}
+          subtitle={`${notifications.length} Live Admin & Route Alerts`}
+          colors={["#4f46e5", "#312e81"]}
+          personIndex={0}
+        />
 
         <ScrollView
           showsVerticalScrollIndicator={false}

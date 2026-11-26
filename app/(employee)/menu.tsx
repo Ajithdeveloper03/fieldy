@@ -33,6 +33,7 @@ import {
   LiquidGlassIconBadge,
   LiquidGlassIconButton,
 } from "../../components/LiquidGlass";
+import { PageHeroBanner } from "../../components/PageHeroBanner";
 
 export default function MenuScreen() {
   const { serviceConfig } = useService();
@@ -91,6 +92,14 @@ export default function MenuScreen() {
           </Text>
           <View style={{ width: 44 }} />
         </View>
+
+        <PageHeroBanner
+          badge={serviceConfig.shortName}
+          title="Quick Menu"
+          subtitle="Tasks, Attendance, Reports & Safety"
+          colors={["#0f766e", "#0284c7"]}
+          personIndex={1}
+        />
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 110 }}>
           {menuGroups.map((group, groupIndex) => (

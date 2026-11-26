@@ -25,6 +25,7 @@ import {
   LiquidGlassCard,
   LiquidGlassIconButton,
 } from "../../components/LiquidGlass";
+import { PageHeroBanner } from "../../components/PageHeroBanner";
 
 export default function EmployeeVisitsScreen() {
   const { serviceConfig } = useService();
@@ -119,6 +120,14 @@ export default function EmployeeVisitsScreen() {
             <CalendarDays size={19} color="#FFFFFF" />
           </LiquidGlassIconButton>
         </View>
+
+        <PageHeroBanner
+          badge="ROUTE LOGS"
+          title={`Daily ${serviceConfig.vocab.visits}`}
+          subtitle="Real-time check-ins & inspection proof"
+          colors={["#0f766e", "#065f46"]}
+          personIndex={2}
+        />
 
         <ScrollView
           showsVerticalScrollIndicator={false}

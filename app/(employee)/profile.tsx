@@ -35,6 +35,7 @@ import {
   LiquidGlassIconBadge,
   LiquidGlassIconButton,
 } from "../../components/LiquidGlass";
+import { PageHeroBanner } from "../../components/PageHeroBanner";
 
 const SERVICE_CARD_IMAGES: Record<string, any> = {
   real_estate: require("../../assets/images/image1.jpg"),
@@ -184,6 +185,14 @@ export default function EmployeeProfileScreen() {
             </LiquidGlassIconButton>
           </View>
         </View>
+
+        <PageHeroBanner
+          badge={isClockedIn ? "ON DUTY" : "PROFILE"}
+          title={userName}
+          subtitle={`${pointsEarned} Pts • ${efficiencyScore}% Work Score`}
+          colors={["#0f766e", "#1e3a8a"]}
+          personIndex={6}
+        />
 
         <ScrollView
           showsVerticalScrollIndicator={false}

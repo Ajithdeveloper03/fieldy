@@ -26,6 +26,7 @@ import {
   LiquidGlassIconButton,
   LiquidGlassPill,
 } from "../../components/LiquidGlass";
+import { PageHeroBanner } from "../../components/PageHeroBanner";
 
 const HISTORY_IMAGES = [
   require("../../assets/images/image2.jpg"),
@@ -87,6 +88,14 @@ export default function EmployeeVisitHistoryScreen() {
             <Filter size={22} color="#ffffff" />
           </LiquidGlassIconButton>
         </View>
+
+        <PageHeroBanner
+          badge="HISTORY"
+          title="Visit History"
+          subtitle={`${history.length} Completed Reports Synced`}
+          colors={["#7c3aed", "#4c1d95"]}
+          personIndex={5}
+        />
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 10, paddingBottom: 110 }}>
           
