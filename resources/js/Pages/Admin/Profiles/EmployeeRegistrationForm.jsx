@@ -21,6 +21,7 @@ export default function EmployeeRegistrationForm() {
         password: '',
         emergency_phone: '',
         assigned_region: '',
+        photo: null,
     });
 
     const steps = [
@@ -47,7 +48,11 @@ export default function EmployeeRegistrationForm() {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!isLast) { next(); return; }
-        post('/admin/employees');
+        post('/admin/employees', {
+            onError: formErrors => {
+                if (formErrors.photo) setStep(0);
+            },
+        });
     };
 
     return (
@@ -142,6 +147,28 @@ export default function EmployeeRegistrationForm() {
                                             className="hp-input"
                                         />
                                         {errors.phone && <p className="text-hp-danger text-xs font-bold mt-1">{errors.phone}</p>}
+                                    </div>
+                                    <div>
+                                        <label htmlFor="employee-photo" className="block text-xs font-bold text-hp-dark mb-1.5">{t('Employee Photo (optional)')}</label>
+                                        <input
+                                            id="employee-photo"
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            className="hp-input"
+                                            onChange={event => setData('photo', event.target.files[0] ?? null)}
+                                        />
+                                        <p className="mt-1 text-xs text-hp-muted">{data.photo?.name || t('JPG, PNG or WebP, up to 5 MB')}</p>
+                                        {data.photo && (
+                                            <button
+                                                type="button"
+                                                className="mt-1 text-xs font-semibold text-hp-primary"
+                                                onClick={() => {
+                                                    document.getElementById('employee-photo').value = '';
+                                                    setData('photo', null);
+                                                }}
+                                            >{t('Remove photo')}</button>
+                                        )}
+                                        {errors.photo && <p className="text-hp-danger text-xs font-bold mt-1">{errors.photo}</p>}
                                     </div>
                                 </div>
                             </div>

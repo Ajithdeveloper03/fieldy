@@ -147,22 +147,10 @@ export const INDUSTRIES = [
         icon: HardHat,
         tagline: 'Manage daily site tasks, engineer attendance, site visits, and inspection reports.',
         kpis: [
-            { label: 'Assigned Tasks', value: '18 Tasks', trend: 'Today', icon: ClipboardList, desc: 'Daily site tasks & work orders', href: '/admin/tasks' },
-            { label: 'Site Attendance', value: '24 Present', trend: '98% On-Time', icon: HardHat, desc: 'Engineers checked in via GPS', href: '/admin/employees' },
-            { label: 'Site Visits', value: '14 Visits', trend: 'Active', icon: MapPin, desc: 'Completed & ongoing site visits', href: '/admin/visits' },
-            { label: 'Field Reports', value: '12 Reports', trend: 'Verified', icon: FileCheck2, desc: 'Submitted site progress reports', href: '/admin/visits' },
-        ],
-        quickActions: [
-            { title: 'Site Inspection - Tower B Level 4', time: '14 mins ago', assignee: 'Er. Rajesh K.', status: 'Completed', type: 'Site Visit' },
-            { title: 'Morning Attendance & GPS Check-in', time: '30 mins ago', assignee: 'Er. Karthik S.', status: 'Present', type: 'Attendance' },
-            { title: 'Foundation Progress Report Submitted', time: '1 hour ago', assignee: 'Er. Arun M.', status: 'Submitted', type: 'Report' },
-            { title: 'Safety & Quality Task Completed', time: '3 hours ago', assignee: 'Er. Vignesh', status: 'Completed', type: 'Task' },
-        ],
-        telemetry: [
-            { metric: 'Engineer GPS Attendance Verification', status: '100% Geofence Verified', state: 'good' },
-            { metric: 'Daily Task Completion Rate', status: '96.4% On Schedule', state: 'good' },
-            { metric: 'Site Visit Check-In Accuracy', status: '98.5% Within Site', state: 'good' },
-            { metric: 'Field Report Photo Proof Upload', status: '100% Geo-Tagged', state: 'good' },
+            { label: 'Assigned Tasks', trend: 'Today', icon: ClipboardList, desc: 'Daily site tasks & work orders', href: '/admin/tasks' },
+            { label: 'Site Attendance', trend: 'Today', icon: HardHat, desc: 'Engineers checked in via GPS', href: '/admin/attendance' },
+            { label: 'Site Visits', trend: 'Today', icon: MapPin, desc: 'Completed & ongoing site visits', href: '/admin/visits' },
+            { label: 'Field Reports', trend: 'Today', icon: FileCheck2, desc: 'Submitted site progress reports', href: '/admin/visits' },
         ],
         adminLabels: {
             entityTitle: 'Project Sites',
@@ -197,8 +185,6 @@ export const INDUSTRIES = [
             navEntities: 'Project Sites',
             navAgents: 'Site Engineers',
         },
-        workOrdersCount: 45,
-        activeFieldWorkers: 64,
         complianceRate: '99.1%',
     },
     {

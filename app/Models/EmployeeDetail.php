@@ -14,7 +14,10 @@ class EmployeeDetail extends Model
         'employee_code',
         'emergency_phone',
         'assigned_region',
+        'photo_path',
     ];
+
+    protected $hidden = ['photo_path'];
 
     public function user()
     {

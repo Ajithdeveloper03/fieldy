@@ -82,38 +82,6 @@ class FarmerDirectoryController extends Controller
             'is_sample' => false,
         ]);
 
-        // If no real records exist for this service vertical (platform preview only), supply curated industry catalog data
-        if ($farmers->isEmpty() && ! $companyId) {
-            $catalogEntities = IndustryCatalog::entities($industryKey);
-            $farmers = collect($catalogEntities)->map(fn ($e) => [
-                'id' => $e['id'],
-                'name' => $e['name'],
-                'phone' => $e['contact_phone'],
-                'farmer_code' => $e['code'],
-                'land_acres' => $e['size'],
-                'district' => $e['city'],
-                'soil_type' => $e['type'],
-                'customer_category' => $e['contact_role'],
-                'crop_types' => $e['attributes'],
-                'status' => $e['status'],
-                'approval_status' => $e['approval_status'],
-                'registered_by' => 'System Catalog',
-                'joined' => $e['joined'],
-                'farmer_photo' => null,
-                'is_sample' => true,
-            ]);
-
-            if ($search) {
-                $farmers = $farmers->filter(fn ($f) => stripos($f['name'], $search) !== false || stripos($f['farmer_code'], $search) !== false || stripos($f['phone'], $search) !== false)->values();
-            }
-            if ($district) {
-                $farmers = $farmers->filter(fn ($f) => $f['district'] === $district)->values();
-            }
-            if ($kyc) {
-                $farmers = $farmers->filter(fn ($f) => ($f['approval_status'] === 'approved' ? 'verified' : 'pending') === $kyc)->values();
-            }
-        }
-
         $districts = $farmers->pluck('district')->filter()->unique()->values();
 
         return Inertia::render('Admin/Profiles/FarmerList', [
@@ -187,7 +155,7 @@ class FarmerDirectoryController extends Controller
             ]);
         }
 
-        $user = User::where('id', $id)->where('role', 'farmer')
+        $user = $this->manageableSites()->whereKey($id)
             ->with('farmerProfile.createdBy:id,name')
             ->firstOrFail();
 
@@ -257,7 +225,7 @@ class FarmerDirectoryController extends Controller
     {
         $industryKey = IndustryContext::current();
         $companyId = auth()->user()?->company_id;
-        $assignedToRule = Rule::exists('users', 'id')->where('role', 'employee')->where('status', 'active');
+        $assignedToRule = Rule::exists('users', 'id')->where('role', 'employee')->where('status', 'active')->whereNull('deleted_at');
         if ($companyId) {
             $assignedToRule->where('company_id', $companyId);
         }
@@ -347,9 +315,9 @@ class FarmerDirectoryController extends Controller
 
     public function update(Request $request, $id)
     {
-        $user = User::where('id', $id)->where('role', 'farmer')->with('farmerProfile')->firstOrFail();
+        $user = $this->manageableSites()->with('farmerProfile')->findOrFail($id);
         $companyId = auth()->user()?->company_id;
-        $assignedToRule = Rule::exists('users', 'id')->where('role', 'employee')->where('status', 'active');
+        $assignedToRule = Rule::exists('users', 'id')->where('role', 'employee')->where('status', 'active')->whereNull('deleted_at');
         if ($companyId) {
             $assignedToRule->where('company_id', $companyId);
         }
@@ -415,13 +383,13 @@ class FarmerDirectoryController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        $user = User::where('id', $id)->where('role', 'farmer')->with('farmerProfile')->firstOrFail();
+        $user = $this->manageableSites()->with('farmerProfile')->findOrFail($id);
         $siteName = $user->name;
 
         DB::transaction(function () use ($user) {
             FarmerVisit::where('farmer_id', $user->id)->delete();
             $user->farmerProfile?->delete();
-            $user->delete();
+            $user->forceDelete();
         });
 
         $redirectUrl = ($request->is('fieldy/*') && ! str_ends_with(rtrim(url('/'), '/'), '/fieldy'))
@@ -429,6 +397,15 @@ class FarmerDirectoryController extends Controller
             : '/admin/farmers';
 
         return redirect($redirectUrl)->with('success', $siteName . ' deleted successfully.');
+    }
+
+    private function manageableSites()
+    {
+        $admin = auth()->user();
+
+        return User::where('role', 'farmer')
+            ->when(! $admin->isSuperAdmin() || $admin->company_id,
+                fn ($query) => $query->where('company_id', $admin->company_id));
     }
 
     private function employeeOptions(?int $companyId)

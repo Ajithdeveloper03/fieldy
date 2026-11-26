@@ -2,7 +2,7 @@ import { asset, withBase, BASE } from '../../basePath';
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import {
-    LayoutDashboard, FileCheck2, ShieldAlert, ClipboardList,
+    LayoutDashboard, FileCheck2, ShieldAlert, ClipboardList, CalendarClock,
     Briefcase, MapPin, Search, Bell, Globe, Building2, Sparkles,
     ChevronDown, ChevronRight, Menu, X, Star, Compass,
     PanelLeftClose, PanelLeftOpen, LogOut, HelpCircle, Layers
@@ -13,6 +13,7 @@ import Chatbot from '../../Components/Chatbot';
 import GuidedTour from '../../Components/GuidedTour';
 import SessionInactivityGuard from '../../Components/SessionInactivityGuard';
 import ThemeCustomizerPopover from '../../Components/ThemeCustomizerPopover';
+import CompanyProfileDetails from '../../Components/CompanyProfileDetails';
 import { attachLiquidPointerTracking } from '../../lib/dashboardTheme';
 import { INDUSTRIES, getIndustryById } from '../../data/industriesConfig';
 import { getVocab } from '../../data/industryVocab';
@@ -35,6 +36,11 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const isSuperadmin = user?.role === 'superadmin';
     const userName = user?.name || (isSuperadmin ? 'Fieldy Platform Owner' : 'Admin');
     const companyName = user?.company?.name || 'Fieldy Operations';
+    const company = user?.company;
+    const companyLogo = company?.has_logo ? withBase('/admin/company-logo') : null;
+    const profileName = company?.name || userName;
+    const profileInitial = profileName.charAt(0).toUpperCase();
+    const accountRole = isSuperadmin ? t('Superadmin') : t('Client Admin');
     const companyId = user?.company?.id || user?.company_id || null;
     const companyTourCompleted = user?.company ? Boolean(user.company.tour_completed) : true;
 
@@ -217,6 +223,8 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const [favorites, setFavorites] = useState(() => readStore('fieldy.favorites', ['/admin/monitor', '/admin/tasks']));
     const [mobileOpen, setMobileOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
+    const companyProfileRef = useRef(null);
+    const profileMenuButtonRef = useRef(null);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -261,6 +269,7 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
             items: [
                 { href: '/admin/farmers', tourId: 'nav-farmers', icon: ActiveIndIcon, color: '#0284C7', label: labels.navEntities || vocab.entity.plural },
                 { href: '/admin/employees', tourId: 'nav-employees', icon: Briefcase, color: '#059669', label: labels.navAgents || vocab.staff.plural },
+                { href: '/admin/attendance', icon: CalendarClock, color: '#0F766E', label: 'Attendance' },
             ],
         },
         {
@@ -570,33 +579,57 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                         <button
                             type="button"
                             id="profile-menu-button"
-                            onClick={() => setProfileOpen(!profileOpen)}
+                            ref={profileMenuButtonRef}
+                            aria-label={profileName}
+                            aria-expanded={profileOpen}
+                            onClick={() => setProfileOpen(open => !open)}
                             className={`flex items-center gap-2 h-10 pl-1 pr-2 rounded-full transition-colors ${profileOpen ? 'bg-hp-hover' : 'hover:bg-hp-hover'}`}
                         >
                             <span
                                 className="w-8 h-8 rounded-full text-white flex items-center justify-center text-sm font-bold shadow-md"
                                 style={{ backgroundColor: 'var(--color-hp-primary)' }}
                             >
-                                {userName.charAt(0).toUpperCase()}
+                                {companyLogo ? <img src={companyLogo} alt="" className="h-full w-full rounded-full bg-white object-contain p-0.5" /> : profileInitial}
                             </span>
                             <ChevronDown className={`w-4 h-4 text-hp-muted hidden sm:block transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
                         </button>
 
                         {profileOpen && (
-                            <div className="hp-pop absolute right-0 top-full mt-2 w-72 bg-white border border-hp-border rounded-xl shadow-[var(--shadow-hp-lg)] overflow-hidden z-50">
+                            <div className="hp-pop absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-5rem)] bg-white border border-hp-border rounded-xl shadow-[var(--shadow-hp-lg)] overflow-y-auto z-50">
                                 <div className="p-4 flex items-center gap-3 border-b border-hp-border">
                                     <span className="w-11 h-11 rounded-full bg-hp-dark text-white flex items-center justify-center text-base font-bold flex-shrink-0">
-                                        {userName.charAt(0).toUpperCase()}
+                                        {companyLogo ? <img src={companyLogo} alt="" className="h-full w-full rounded-full bg-white object-contain p-0.5" /> : profileInitial}
                                     </span>
                                     <div className="min-w-0">
-                                        <p className="text-sm font-bold text-hp-dark truncate">{userName}</p>
+                                        <p className="text-sm font-bold text-hp-dark break-words">{profileName}</p>
+                                        {company && <p className="text-xs font-medium text-hp-muted">{userName}</p>}
                                         <p className="text-xs text-hp-muted truncate">{user?.email || companyName}</p>
-                                        <span className="hp-chip hp-chip-primary !h-5 !text-[11px] mt-1.5">{t(currentIndustry.shortName)} {t('Admin')}</span>
+                                        {company?.admin_designation && <p className="text-xs text-hp-muted">{company.admin_designation}</p>}
+                                        {company && user?.phone && <p className="text-xs text-hp-muted">{user.phone}</p>}
+                                        <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                                            <span className="hp-chip hp-chip-primary !h-5 !text-[11px]">{accountRole}</span>
+                                            {company && (
+                                                <button
+                                                    type="button"
+                                                    className="hp-btn hp-btn-sm hp-btn-outline"
+                                                    aria-haspopup="dialog"
+                                                    aria-controls="company-profile-dialog"
+                                                    onClick={() => {
+                                                        companyProfileRef.current?.showModal();
+                                                        setProfileOpen(false);
+                                                    }}
+                                                >
+                                                    {t('Profile')}
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="p-1.5">
                                     <div className="px-3 py-2 text-xs text-hp-muted">
-                                        {t('Tenant Enterprise')}: <span className="font-bold text-hp-dark">{companyName}</span>
+                                        {company
+                                            ? <span className="font-bold text-hp-dark">{t(currentIndustry.name)}</span>
+                                            : <span className="font-bold text-hp-dark">{companyName}</span>}
                                     </div>
                                     {isSuperadmin && (
                                         <Link href="/superadmin/dashboard" className="hp-nav-item font-semibold text-hp-primary">
@@ -675,6 +708,47 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
                     </div>
                 </main>
             </div>
+
+            {company && (
+                <dialog
+                    ref={companyProfileRef}
+                    id="company-profile-dialog"
+                    aria-labelledby="company-profile-title"
+                    onClose={() => profileMenuButtonRef.current?.focus()}
+                    className="fixed inset-0 m-0 h-[100dvh] w-full max-h-none max-w-none overflow-hidden border-0 bg-hp-bg p-0 text-hp-dark"
+                >
+                    <div className="flex h-full flex-col">
+                        <header className="flex shrink-0 items-center justify-between gap-4 border-b border-hp-border bg-white px-4 py-4 sm:px-8">
+                            <h2 id="company-profile-title" className="text-lg font-bold">{t('Company Profile')}</h2>
+                            <button
+                                type="button"
+                                autoFocus
+                                aria-label={t('Close company profile')}
+                                className="hp-icon-btn flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
+                                onClick={() => companyProfileRef.current?.close()}
+                            >
+                                <X className="h-6 w-6" aria-hidden="true" />
+                            </button>
+                        </header>
+                        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                            <section className="mx-auto max-w-5xl px-4 py-6 sm:px-8 sm:py-10" aria-label={companyName}>
+                                <div className="flex items-center gap-4">
+                                    <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-hp-border bg-white text-xl font-bold">
+                                        {companyLogo
+                                            ? <img src={companyLogo} alt="" loading="lazy" className="h-full w-full rounded-xl object-contain p-1.5" />
+                                            : profileInitial}
+                                    </span>
+                                    <div className="min-w-0">
+                                        <h3 className="break-words text-xl font-bold sm:text-2xl">{companyName}</h3>
+                                        <p className="mt-1 text-sm text-hp-muted">{t(currentIndustry.name)}</p>
+                                    </div>
+                                </div>
+                                <CompanyProfileDetails company={company} />
+                            </section>
+                        </div>
+                    </div>
+                </dialog>
+            )}
 
             <Chatbot />
 

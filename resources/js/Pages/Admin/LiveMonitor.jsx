@@ -15,16 +15,49 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-function ChangeView({ center, zoom, fullscreen }) {
-  const map = useMap();
-  useEffect(() => {
-    map.setView(center, zoom);
-    const timer = setTimeout(() => {
-      map.invalidateSize();
-    }, 60);
-    return () => clearTimeout(timer);
-  }, [center, zoom, fullscreen, map]);
-  return null;
+function ChangeView({ latitude, longitude, zoom }) {
+    const map = useMap();
+
+    useEffect(() => {
+        map.setView([latitude, longitude], zoom);
+    }, [latitude, longitude, zoom, map]);
+
+    useEffect(() => {
+        let frame = 0;
+        const refreshSize = () => {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(() => map.invalidateSize({ pan: false }));
+        };
+        const observer = new ResizeObserver(refreshSize);
+        observer.observe(map.getContainer());
+        refreshSize();
+
+        return () => {
+            observer.disconnect();
+            cancelAnimationFrame(frame);
+        };
+    }, [map]);
+
+    return null;
+}
+
+function LiveMapTiles() {
+    const [useFallback, setUseFallback] = useState(false);
+
+    return useFallback ? (
+        <TileLayer
+            key="openstreetmap"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+    ) : (
+        <TileLayer
+            key="google"
+            attribution="&copy; Google Maps"
+            url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+            eventHandlers={{ tileerror: () => setUseFallback(true) }}
+        />
+    );
 }
 
 import {
@@ -330,17 +363,14 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                                     <MapContainer
                                         center={[parseFloat(selectedEmployee.latitude) || 12.9716, parseFloat(selectedEmployee.longitude) || 77.5946]}
                                         zoom={fullscreenMode ? 15 : 14}
-                                        style={{ width: '100%', height: '100%', zIndex: 0 }}
+                                        className="absolute inset-0 z-0"
                                     >
                                         <ChangeView
-                                            center={[parseFloat(selectedEmployee.latitude) || 12.9716, parseFloat(selectedEmployee.longitude) || 77.5946]}
+                                            latitude={parseFloat(selectedEmployee.latitude) || 12.9716}
+                                            longitude={parseFloat(selectedEmployee.longitude) || 77.5946}
                                             zoom={fullscreenMode ? 15 : 14}
-                                            fullscreen={fullscreenMode}
                                         />
-                                        <TileLayer
-                                            attribution='&copy; Google Maps'
-                                            url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
-                                        />
+                                        <LiveMapTiles />
                                         {selectedEmployee.recentPath && selectedEmployee.recentPath.length > 1 && (
                                             <Polyline 
                                                 positions={selectedEmployee.recentPath.map(p => [p.lat, p.lng])} 
@@ -381,7 +411,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                                                 </button>
                                             </div>
 
-                                            <div className="w-full h-full relative">
+                                            <div className="relative min-h-0 flex-1">
                                                 {!isMapFullscreen && renderMap(false)}
                                             </div>
                                         </div>
@@ -429,7 +459,7 @@ export default function LiveMonitor({ employees: propEmployees = [] }) {
                                                             <span>{t('Close Map')}</span>
                                                         </button>
                                                     </div>
-                                                    <div style={{ flex: 1, position: 'relative', width: '100%', height: '100%' }}>
+                                                    <div className="relative min-h-0 flex-1">
                                                         {renderMap(true)}
                                                     </div>
                                                 </div>

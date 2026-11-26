@@ -4,11 +4,10 @@ import {
     AlertCircle, Calendar, Clock, ArrowUpRight, ArrowUp, ArrowDown, FileCheck2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getIndianPhoto } from '../CardPhotoBackdrop';
+import CardPhotoBackdrop, { getIndianPhoto } from '../CardPhotoBackdrop';
 
 export default function VisualCommandDeck({
     currentIndustry,
-    stats = {},
     resolvedKpis = [],
     effectiveIsTenant = false,
     growthData = [],
@@ -202,9 +201,9 @@ export default function VisualCommandDeck({
                     </div>
                 </article>
 
-                {/* CARD 4: QUICK CHANNEL TILES + DARK PILL CTA */}
-                <article className="rounded-[24px] bg-white border border-hp-border shadow-[var(--shadow-hp)] p-5 flex flex-col justify-between min-h-[218px]">
-                    <div>
+                <article className="relative isolate overflow-hidden rounded-[24px] bg-white border border-hp-border shadow-[var(--shadow-hp)] p-5 min-h-[218px]">
+                    <CardPhotoBackdrop photoKey="documents" variant="bottom" opacity={0.9} />
+                    <div className="relative">
                         <div className="flex items-center justify-between gap-2">
                             <span className="text-xs font-bold text-hp-muted truncate">{t(kpi3.label)}</span>
                             <div className="flex items-center gap-1.5 shrink-0">
@@ -231,41 +230,6 @@ export default function VisualCommandDeck({
                         </div>
                     </div>
 
-                    {/* 3 Compact Vertical Channel Tiles + Dark Pill CTA */}
-                    <div className="flex items-end gap-2 mt-3">
-                        <button
-                            type="button"
-                            onClick={() => router.visit('/admin/employees')}
-                            className="flex-1 rounded-2xl bg-hp-gray-50 hover:bg-hp-gray-100 border border-hp-border p-2.5 text-left transition-colors cursor-pointer"
-                        >
-                            <div className="text-sm font-extrabold text-hp-dark tabular-nums">{stats?.totalEmployees ?? 0}</div>
-                            <div className="text-[10px] font-bold text-hp-muted truncate mt-2">{t('Staff')}</div>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => router.visit('/admin/farmers')}
-                            className="flex-1 rounded-2xl p-2.5 text-left text-white shadow-md transition-transform hover:-translate-y-0.5 cursor-pointer"
-                            style={{ backgroundColor: 'var(--color-hp-primary)' }}
-                        >
-                            <div className="text-sm font-extrabold tabular-nums">{stats?.totalFarmers ?? 0}</div>
-                            <div className="text-[10px] font-bold text-white/90 truncate mt-2">{t('Sites')}</div>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => router.visit('/admin/tasks')}
-                            className="flex-1 rounded-2xl bg-hp-gray-50 hover:bg-hp-gray-100 border border-hp-border p-2.5 text-left transition-colors cursor-pointer"
-                        >
-                            <div className="text-sm font-extrabold text-hp-dark tabular-nums">{stats?.activeWorkOrders ?? 0}</div>
-                            <div className="text-[10px] font-bold text-hp-muted truncate mt-2">{t('Tasks')}</div>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => router.visit('/admin/employees/create')}
-                            className="px-3.5 h-9 rounded-full bg-[#14172B] hover:bg-slate-800 text-white text-[11px] font-extrabold whitespace-nowrap shrink-0 shadow-md cursor-pointer transition-colors"
-                        >
-                            {t('Add Staff')}
-                        </button>
-                    </div>
                 </article>
             </div>
         </section>

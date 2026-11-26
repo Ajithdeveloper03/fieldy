@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\Industry\IndustryContext;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -14,15 +15,8 @@ class TasksController extends Controller
     public function index()
     {
         $companyId = auth()->user()?->company_id;
-        $industryKey = \App\Services\Industry\IndustryContext::current();
-
-        $query = Task::with(['assignedTo:id,name', 'customer:id,name', 'createdBy:id,name'])
-            ->when($companyId, fn ($q) => $q->where(function ($tasks) use ($companyId) {
-                $tasks->whereHas('assignedTo', fn ($user) => $user->where('company_id', $companyId))
-                    ->orWhereHas('createdBy', fn ($user) => $user->where('company_id', $companyId));
-            }));
-
-        $query = \App\Services\Industry\IndustryContext::scope($query, $industryKey);
+        $industryKey = IndustryContext::current();
+        $query = $this->manageableTasks()->with(['assignedTo:id,name', 'customer:id,name', 'createdBy:id,name']);
 
         $tasks = $query->orderByRaw("CASE status 
                 WHEN 'in_progress' THEN 1 
@@ -59,17 +53,6 @@ class TasksController extends Controller
                 'overdue' => $t->due_date && $t->due_date->isPast() && $t->status !== 'done',
             ]);
 
-        // If no tasks exist for this vertical in DB (platform preview only), load curated catalog work orders
-        if ($tasks->isEmpty() && ! $companyId) {
-            $catalogTasks = collect(\App\Services\Industry\IndustryCatalog::tasks($industryKey))->map(fn ($t) => array_merge($t, [
-                'checklist' => self::getDefaultChecklist($industryKey),
-                'safety_requirements' => self::getDefaultSafety($industryKey),
-            ]));
-            $tasks = $catalogTasks;
-        }
-
-        // Assignment selects must only contain real database users. Catalog IDs are
-        // display-only demo data and fail the foreign-key/exists validation on submit.
         $employees = User::where('role', 'employee')->where('status', 'active')
             ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
             ->select('id', 'name')->orderBy('name')->get();
@@ -88,7 +71,7 @@ class TasksController extends Controller
     public function store(Request $request)
     {
         $companyId = auth()->user()?->company_id;
-        $assignedToRule = Rule::exists('users', 'id')->where('role', 'employee')->where('status', 'active');
+        $assignedToRule = Rule::exists('users', 'id')->where('role', 'employee')->where('status', 'active')->whereNull('deleted_at');
         $customerRule = Rule::exists('users', 'id')->where('role', 'farmer');
         if ($companyId) {
             $assignedToRule->where('company_id', $companyId);
@@ -126,7 +109,7 @@ class TasksController extends Controller
     public function update(Request $request, $id)
     {
         $companyId = auth()->user()?->company_id;
-        $assignedToRule = Rule::exists('users', 'id')->where('role', 'employee')->where('status', 'active');
+        $assignedToRule = Rule::exists('users', 'id')->where('role', 'employee')->where('status', 'active')->whereNull('deleted_at');
         $customerRule = Rule::exists('users', 'id')->where('role', 'farmer');
         if ($companyId) {
             $assignedToRule->where('company_id', $companyId);
@@ -145,7 +128,7 @@ class TasksController extends Controller
             'otp_verified' => 'nullable|boolean',
         ]);
 
-        $task = Task::findOrFail($id);
+        $task = $this->manageableTasks()->findOrFail($id);
         $task->update($validated);
 
         return redirect()->back()->with('success', 'Work order updated successfully.');
@@ -153,9 +136,21 @@ class TasksController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        Task::findOrFail($id)->delete();
+        $this->manageableTasks()->findOrFail($id)->delete();
 
         return redirect()->back()->with('success', 'Work order removed.');
+    }
+
+    private function manageableTasks()
+    {
+        $admin = auth()->user();
+        $query = Task::query()->when(! $admin->isSuperAdmin() || $admin->company_id,
+            fn ($query) => $query->where(function ($tasks) use ($admin) {
+                $tasks->whereHas('createdBy', fn ($user) => $user->where('company_id', $admin->company_id))
+                    ->orWhereHas('assignedTo', fn ($user) => $user->withTrashed()->where('company_id', $admin->company_id));
+            }));
+
+        return IndustryContext::scope($query, IndustryContext::current());
     }
 
     private function tasksUrl(Request $request): string

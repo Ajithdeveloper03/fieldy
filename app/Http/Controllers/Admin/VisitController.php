@@ -67,55 +67,11 @@ class VisitController extends Controller
             'dossier_url' => url("/admin/visits/{$v->id}/dossier"),
         ]);
 
-        // If no visits recorded in DB for this service vertical (platform preview only), supply curated catalog visits
-        if ($visits->isEmpty() && ! $companyId) {
-            $catalogVisits = collect(IndustryCatalog::visits($industryKey));
-            if ($employeeId) {
-                $catalogVisits = $catalogVisits->filter(fn ($v) => (string) $v['staff_id'] === (string) $employeeId)->values();
-            }
-            if ($search) {
-                $catalogVisits = $catalogVisits->filter(fn ($v) => stripos($v['entity_name'], $search) !== false || stripos($v['staff_name'], $search) !== false)->values();
-            }
-
-            $items = $catalogVisits->map(fn ($v) => [
-                'id' => $v['id'],
-                'farmer' => [
-                    'user' => ['name' => $v['entity_name']],
-                    'farmer_code' => $v['entity_code'] ?? null,
-                    'village' => $v['address'] ?? null,
-                ],
-                'employee' => ['name' => $v['staff_name']],
-                'distance_from_previous_farmer_km' => $v['distance_km'],
-                'check_in_time' => $v['check_in'],
-                'check_out_time' => $v['check_out'],
-                'date' => $v['date'],
-                'farm_condition_notes' => $v['notes'],
-                'recommendations' => $v['recommendations'],
-                'media' => [],
-                'is_sample' => true,
-            ]);
-
-            // Construct paginated array shape
-            $visits = [
-                'data' => $items->values()->all(),
-                'current_page' => 1,
-                'last_page' => 1,
-                'per_page' => 20,
-                'total' => $items->count(),
-                'links' => [],
-            ];
-
-            $employees = collect(IndustryCatalog::staff($industryKey))
-                ->where('status', 'active')
-                ->map(fn ($s) => ['id' => $s['id'], 'name' => $s['name']])
-                ->values();
-        } else {
-            $employees = User::where('role', 'employee')
-                ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
-                ->select('id', 'name')
-                ->orderBy('name')
-                ->get();
-        }
+        $employees = User::where('role', 'employee')
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
 
         return Inertia::render('Admin/Visits', [
             'currentIndustry' => $industryKey,

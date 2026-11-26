@@ -11,8 +11,10 @@ use App\Services\IndustryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class CompanyManagementController extends Controller
@@ -58,9 +60,13 @@ class CompanyManagementController extends Controller
         if (is_string($request->input('code'))) {
             $request->merge(['code' => strtoupper(trim($request->input('code'))) ?: null]);
         }
+        if (is_string($request->input('admin_email'))) {
+            $request->merge(['admin_email' => Str::lower(trim($request->input('admin_email')))]);
+        }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'code' => ['required', 'string', 'max:50', 'regex:/^[A-Z0-9]+(?:-[A-Z0-9]+)*$/', 'unique:companies,code'],
             'industry' => ['required', 'string', Rule::in(IndustryCatalog::CLIENT_INDUSTRIES)],
             'email' => 'required|email|max:255',
@@ -90,12 +96,13 @@ class CompanyManagementController extends Controller
             // Primary Admin Account & Security Controls
             'admin_name' => 'required|string|max:255',
             'admin_designation' => 'nullable|string|max:120',
-            'admin_email' => 'required|email|unique:users,email',
+            'admin_email' => 'required|email|max:255|unique:users,email',
             'admin_phone' => 'required|string|max:20|unique:users,phone',
             'admin_password' => [
                 'required',
                 'string',
                 'min:8',
+                'max:72',
                 'regex:/^(?=.*[A-Za-z])(?=.*\d).+$/',
             ],
             'force_password_reset' => 'nullable|boolean',
@@ -121,52 +128,68 @@ class CompanyManagementController extends Controller
             $validated['state'] ?? null,
         ])->filter()->implode(', ');
 
-        $company = DB::transaction(function () use ($validated, $slug, $code, $fullAddress) {
-            $company = Company::create([
-                'name' => $validated['name'],
-                'slug' => $slug,
-                'code' => $code,
-                'industry' => $validated['industry'],
-                'email' => $validated['email'],
-                'phone' => $validated['phone'],
-                'address' => $fullAddress ?: null,
-                'plan' => $validated['plan'],
-                'status' => 'active',
-                'max_employees' => $validated['max_employees'],
-                'subscription_expires_at' => $validated['subscription_expires_at'] ?? now()->addYear(),
-                'settings' => [
-                    'city' => $validated['city'],
-                    'state' => $validated['state'] ?? 'Tamil Nadu',
-                    'gst_number' => $validated['gst_number'] ?? null,
-                    'website' => $validated['website'] ?? null,
-                    'estimated_sites' => (int) ($validated['estimated_sites'] ?? 5),
-                    'billing_cycle' => $validated['billing_cycle'] ?? 'annual',
-                    'admin_designation' => $validated['admin_designation'] ?? 'Operations Director',
-                    'onboarding_tour_completed' => false,
-                    'security' => [
-                        'force_password_reset' => (bool) ($validated['force_password_reset'] ?? true),
-                        'require_gps_geofence' => (bool) ($validated['require_gps_geofence'] ?? true),
-                        'require_selfie_verification' => (bool) ($validated['require_selfie_verification'] ?? true),
-                    ],
-                ],
-            ]);
-
-            $adminAttrs = [
-                'company_id' => $company->id,
-                'name' => $validated['admin_name'],
-                'email' => $validated['admin_email'],
-                'phone' => $validated['admin_phone'],
-                'password' => Hash::make($validated['admin_password']),
-                'role' => 'admin',
-                'status' => 'active',
-            ];
-            if (IndustryContext::hasColumn('users')) {
-                $adminAttrs['industry'] = $validated['industry'];
+        $logoPath = null;
+        if ($request->hasFile('logo')) {
+            $logoPath = $request->file('logo')->store('company-logos', 'local');
+            if (! $logoPath) {
+                throw ValidationException::withMessages(['logo' => 'The company logo could not be saved.']);
             }
-            User::create($adminAttrs);
+        }
 
-            return $company;
-        });
+        try {
+            $company = DB::transaction(function () use ($validated, $slug, $code, $fullAddress, $logoPath) {
+                $company = Company::create([
+                    'name' => $validated['name'],
+                    'logo' => $logoPath,
+                    'slug' => $slug,
+                    'code' => $code,
+                    'industry' => $validated['industry'],
+                    'email' => $validated['email'],
+                    'phone' => $validated['phone'],
+                    'address' => $fullAddress ?: null,
+                    'plan' => $validated['plan'],
+                    'status' => 'active',
+                    'max_employees' => $validated['max_employees'],
+                    'subscription_expires_at' => $validated['subscription_expires_at'] ?? now()->addYear(),
+                    'settings' => [
+                        'city' => $validated['city'],
+                        'state' => $validated['state'] ?? 'Tamil Nadu',
+                        'gst_number' => $validated['gst_number'] ?? null,
+                        'website' => $validated['website'] ?? null,
+                        'estimated_sites' => (int) ($validated['estimated_sites'] ?? 5),
+                        'billing_cycle' => $validated['billing_cycle'] ?? 'annual',
+                        'admin_designation' => $validated['admin_designation'] ?? 'Operations Director',
+                        'onboarding_tour_completed' => false,
+                        'security' => [
+                            'force_password_reset' => (bool) ($validated['force_password_reset'] ?? true),
+                            'require_gps_geofence' => (bool) ($validated['require_gps_geofence'] ?? true),
+                            'require_selfie_verification' => (bool) ($validated['require_selfie_verification'] ?? true),
+                        ],
+                    ],
+                ]);
+
+                $adminAttrs = [
+                    'company_id' => $company->id,
+                    'name' => $validated['admin_name'],
+                    'email' => $validated['admin_email'],
+                    'phone' => $validated['admin_phone'],
+                    'password' => Hash::make($validated['admin_password']),
+                    'role' => 'admin',
+                    'status' => 'active',
+                ];
+                if (IndustryContext::hasColumn('users')) {
+                    $adminAttrs['industry'] = $validated['industry'];
+                }
+                User::create($adminAttrs);
+
+                return $company;
+            });
+        } catch (\Throwable $exception) {
+            if ($logoPath) {
+                Storage::disk('local')->delete($logoPath);
+            }
+            throw $exception;
+        }
 
         return redirect()->back()->with('success', "Company '{$company->name}' and Client Admin created successfully!");
     }

@@ -9,6 +9,32 @@ import {
 import { useTranslation } from 'react-i18next';
 import CardPhotoBackdrop from '../../../Components/CardPhotoBackdrop';
 import useIndustry from '../../../hooks/useIndustry';
+import { withBase } from '../../../basePath';
+
+function EmployeeActions({ employee }) {
+    const { t } = useTranslation();
+    if (employee.is_sample) return null;
+
+    const path = withBase(`/admin/employees/${employee.id}`);
+
+    function removeEmployee(event) {
+        event.stopPropagation();
+        if (window.confirm(t('Remove {{name}} from the employee directory? Attendance history will be kept.', { name: employee.name }))) {
+            router.delete(path, { preserveScroll: true });
+        }
+    }
+
+    return (
+        <div className="flex flex-wrap justify-end gap-2">
+            <Link href={`${path}/edit`} onClick={event => event.stopPropagation()} className="hp-btn hp-btn-sm hp-btn-outline">
+                {t('Edit')}
+            </Link>
+            <button type="button" onClick={removeEmployee} className="hp-btn hp-btn-sm hp-btn-outline text-hp-danger">
+                {t('Delete')}
+            </button>
+        </div>
+    );
+}
 
 function CopyButton({ value }) {
     const { t } = useTranslation();
@@ -254,7 +280,9 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                     <div className="hp-card-visual h-32 mb-4 p-4 flex flex-col justify-between relative bg-white/40">
                                         <div className="flex items-start justify-between">
                                             <div className="w-12 h-12 rounded-2xl bg-hp-dark text-white font-bold text-base flex items-center justify-center shadow-md">
-                                                {emp.name?.charAt(0) || 'S'}
+                                                {emp.has_photo ? (
+                                                    <img className="h-full w-full rounded-[inherit] object-cover" src={withBase(`/admin/employees/${emp.id}/photo`)} alt="" loading="lazy" />
+                                                ) : emp.name?.charAt(0) || 'S'}
                                             </div>
                                             <span className={`hp-chip !bg-white/90 backdrop-blur-sm ${emp.status === 'active' || emp.checked_in ? 'hp-chip-success hp-chip-dot' : 'hp-chip-gray'}`}>
                                                 {emp.status === 'active' || emp.checked_in ? t('On Duty') : t('Offline')}
@@ -282,7 +310,7 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                     </div>
                                 </div>
 
-                                <div className="mt-5 pt-3 border-t border-hp-border">
+                                <div className="mt-5 pt-3 border-t border-hp-border space-y-2">
                                     <Link 
                                         href={`/admin/employees/${emp.id}`}
                                         className="hp-btn hp-btn-outline w-full !rounded-xl !h-10 text-sm font-semibold"
@@ -290,6 +318,7 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                         <span>{t('View {{staff}} Profile', { staff: vocab.staff.singular })}</span>
                                         <ArrowUpRight className="w-4 h-4 ml-1" />
                                     </Link>
+                                    <EmployeeActions employee={emp} />
                                 </div>
                             </div>
                         ))}
@@ -314,7 +343,9 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                             <td>
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 rounded-xl bg-hp-hover border border-hp-border flex items-center justify-center font-bold text-xs shrink-0 text-hp-dark">
-                                                        {emp.name?.charAt(0) || 'S'}
+                                                        {emp.has_photo ? (
+                                                            <img className="h-full w-full rounded-[inherit] object-cover" src={withBase(`/admin/employees/${emp.id}/photo`)} alt="" loading="lazy" />
+                                                        ) : emp.name?.charAt(0) || 'S'}
                                                     </div>
                                                     <div>
                                                         <p className="font-bold text-sm text-hp-dark">{emp.name}</p>
@@ -342,10 +373,11 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                                     {emp.status === 'active' || emp.checked_in ? t('On Duty') : t('Offline')}
                                                 </span>
                                             </td>
-                                            <td className="text-right">
-                                                <Link href={`/admin/employees/${emp.id}`} className="hp-btn hp-btn-sm hp-btn-outline">
+                                            <td className="text-right space-y-1">
+                                                <Link href={`/admin/employees/${emp.id}`} onClick={event => event.stopPropagation()} className="hp-btn hp-btn-sm hp-btn-outline">
                                                     {t('Profile')} <ArrowUpRight className="w-3.5 h-3.5" />
                                                 </Link>
+                                                <EmployeeActions employee={emp} />
                                             </td>
                                         </tr>
                                     ))}

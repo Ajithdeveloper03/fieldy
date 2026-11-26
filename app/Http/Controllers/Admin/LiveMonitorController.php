@@ -116,51 +116,6 @@ class LiveMonitorController extends Controller
             ];
         });
 
-        // If no employees exist for this service vertical in DB (platform preview only), build curated live map positions
-        if ($employees->isEmpty() && ! $companyId) {
-            $catalogStaff = IndustryCatalog::staff($industryKey);
-            $catalogEntities = IndustryCatalog::entities($industryKey);
-
-            $employees = collect($catalogStaff)->map(function ($s, $idx) use ($catalogEntities, $vocab) {
-                $e = $catalogEntities[$idx % count($catalogEntities)];
-                $lat = $e['latitude'] + 0.0012 * ($idx % 3);
-                $lng = $e['longitude'] - 0.0009 * ($idx % 2);
-
-                $recentPath = [
-                    ['lat' => round($lat - 0.005, 6), 'lng' => round($lng - 0.004, 6), 'time' => '09:00 AM'],
-                    ['lat' => round($lat - 0.002, 6), 'lng' => round($lng - 0.001, 6), 'time' => '10:30 AM'],
-                    ['lat' => round($lat, 6), 'lng' => round($lng, 6), 'time' => '11:45 AM'],
-                ];
-
-                return [
-                    'id' => $s['id'],
-                    'name' => $s['name'],
-                    'phone' => $s['phone'],
-                    'role' => $s['role'],
-                    'region' => $s['region'],
-                    'employee_code' => $s['code'],
-                    'status' => $s['online'] ? 'active' : 'idle',
-                    'gps' => 'enabled',
-
-                    'lastSeen' => $s['online'] ? '2 mins ago' : '1 hour ago',
-                    'visitsDone' => 2 + ($idx % 3),
-                    'visitsTarget' => 5,
-                    'currentLocation' => "Lat: {$lat}, Lng: {$lng}",
-                    'latitude' => $lat,
-                    'longitude' => $lng,
-                    'within_geofence' => true,
-                    'distance_today_km' => round(12.4 + ($idx * 3.8), 1),
-                    'checkInTime' => '08:55 AM',
-                    'recentPath' => $recentPath,
-                    'activities' => [
-                        ['type' => 'location', 'action' => "Live Beat: {$e['name']}", 'time' => '11:45 AM', 'location' => "Lat: {$lat}, Lng: {$lng}"],
-                        ['type' => 'checkin', 'action' => 'Clocked in on duty', 'time' => '08:55 AM', 'location' => $e['address']],
-                    ],
-                    'is_sample' => true,
-                ];
-            });
-        }
-
         return $employees;
     }
 

@@ -18,6 +18,8 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -27,11 +29,9 @@ class EmployeeDirectoryController extends Controller
     {
         $search = $request->query('search', '');
         $region = $request->query('region', '');
-        $companyId = auth()->user()?->company_id;
         $industryKey = IndustryContext::current();
 
-        $query = User::where('role', 'employee')
-            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+        $query = $this->manageableEmployees()
             ->with(['employeeDetail', 'attendanceLogs' => fn ($q) => $q->whereDate('date', Carbon::today())]);
 
         if (IndustryContext::hasColumn('users')) {
@@ -63,6 +63,7 @@ class EmployeeDirectoryController extends Controller
             'email' => $user->email,
             'status' => $user->status,
             'employee_code' => $user->employeeDetail?->employee_code ?? 'N/A',
+            'has_photo' => filled($user->employeeDetail?->photo_path),
             'region' => $user->employeeDetail?->assigned_region ?? 'Unassigned',
             'designation' => $user->employeeDetail?->designation ?? 'field_staff',
             'reports_to' => $user->employeeDetail?->reports_to,
@@ -70,33 +71,6 @@ class EmployeeDirectoryController extends Controller
             'emergency' => $user->employeeDetail?->emergency_phone ?? 'N/A',
             'checked_in' => $user->attendanceLogs->isNotEmpty(),
         ]);
-
-        // If no employees exist in DB for this service vertical, supply curated catalog workforce
-        if ($employees->isEmpty() && ! $companyId) {
-            $catalogStaff = IndustryCatalog::staff($industryKey);
-            $employees = collect($catalogStaff)->map(fn ($s) => [
-                'id' => $s['id'],
-                'name' => $s['name'],
-                'phone' => $s['phone'],
-                'email' => $s['email'],
-                'status' => $s['status'],
-                'employee_code' => $s['code'],
-                'region' => $s['region'],
-                'designation' => $s['role'],
-                'reports_to' => null,
-                'manager_name' => 'Operations Head',
-                'emergency' => '9840099881',
-                'checked_in' => $s['online'],
-                'is_sample' => true,
-            ]);
-
-            if ($search) {
-                $employees = $employees->filter(fn ($e) => stripos($e['name'], $search) !== false || stripos($e['employee_code'], $search) !== false || stripos($e['phone'], $search) !== false)->values();
-            }
-            if ($region) {
-                $employees = $employees->filter(fn ($e) => stripos($e['region'], $region) !== false)->values();
-            }
-        }
 
         $regions = $employees->pluck('region')->filter()->unique()->values();
 
@@ -107,7 +81,7 @@ class EmployeeDirectoryController extends Controller
         ]);
     }
 
-    public function show($id, EmployeePerformanceService $performance)
+    public function show($id, EmployeePerformanceService $performance, bool $editing = false)
     {
         $industryKey = IndustryContext::current();
         $companyId = auth()->user()?->company_id;
@@ -175,7 +149,7 @@ class EmployeeDirectoryController extends Controller
             ]);
         }
 
-        $user = User::where('id', $id)->where('role', 'employee')
+        $user = $this->manageableEmployees()->whereKey($id)
             ->with('employeeDetail')
             ->firstOrFail();
 
@@ -256,6 +230,7 @@ class EmployeeDirectoryController extends Controller
             });
 
         return Inertia::render('Admin/Profiles/EmployeeDetail', [
+            'editing' => $editing,
             'employee' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -263,6 +238,7 @@ class EmployeeDirectoryController extends Controller
                 'email' => $user->email,
                 'status' => $user->status,
                 'employee_code' => $user->employeeDetail?->employee_code ?? 'N/A',
+                'has_photo' => filled($user->employeeDetail?->photo_path),
                 'region' => $user->employeeDetail?->assigned_region ?? 'Unassigned',
                 'emergency' => $user->employeeDetail?->emergency_phone ?? 'N/A',
                 'last_latitude' => $recentPoints->first()['lat'] ?? null,
@@ -295,6 +271,7 @@ class EmployeeDirectoryController extends Controller
             'password' => 'nullable|string|min:4|max:100',
             'emergency_phone' => 'nullable|string|max:20',
             'assigned_region' => 'nullable|string|max:255',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         $password = !empty($validated['password']) ? $validated['password'] : Str::random(10);
@@ -312,13 +289,29 @@ class EmployeeDirectoryController extends Controller
         if (IndustryContext::hasColumn('users')) {
             $userAttributes = IndustryContext::tag($userAttributes, 'users', $industryKey);
         }
-        DB::transaction(function () use ($userAttributes, $validated) {
-            $user = User::create($userAttributes);
-            app(EmployeeCodeService::class)->ensure($user, [
-                'emergency_phone' => $validated['emergency_phone'] ?? null,
-                'assigned_region' => $validated['assigned_region'] ?? null,
-            ]);
-        });
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('employee-photos', 'local');
+            if (! $photoPath) {
+                throw ValidationException::withMessages(['photo' => 'The photo could not be saved. Please try again.']);
+            }
+        }
+
+        try {
+            DB::transaction(function () use ($userAttributes, $validated, $photoPath) {
+                $user = User::create($userAttributes);
+                app(EmployeeCodeService::class)->ensure($user, [
+                    'emergency_phone' => $validated['emergency_phone'] ?? null,
+                    'assigned_region' => $validated['assigned_region'] ?? null,
+                    'photo_path' => $photoPath,
+                ]);
+            });
+        } catch (\Throwable $exception) {
+            if ($photoPath) {
+                Storage::disk('local')->delete($photoPath);
+            }
+            throw $exception;
+        }
 
         $employeesUrl = ($request->is('fieldy/*') && ! str_ends_with(rtrim(url('/'), '/'), '/fieldy'))
             ? '/fieldy/admin/employees'
@@ -331,56 +324,27 @@ class EmployeeDirectoryController extends Controller
             ->with('generated_name', $validated['name']);
     }
 
-    public function edit($id)
+    public function edit($id, EmployeePerformanceService $performance)
     {
-        $industryKey = IndustryContext::current();
-        $companyId = auth()->user()?->company_id;
-        $catalogMember = ! $companyId ? IndustryCatalog::staffMember($industryKey, $id) : null;
-        if ($catalogMember) {
-            return Inertia::render('Admin/Profiles/EmployeeDetail', [
-                'employee' => [
-                    'id' => $catalogMember['id'],
-                    'name' => $catalogMember['name'],
-                    'phone' => $catalogMember['phone'],
-                    'status' => $catalogMember['status'],
-                    'employee_code' => $catalogMember['code'],
-                    'region' => $catalogMember['region'],
-                    'emergency' => '9840099881',
-                ],
-                'editing' => true,
-            ]);
-        }
+        return $this->show($id, $performance, true);
+    }
 
-        $user = User::where('id', $id)->where('role', 'employee')
-            ->with('employeeDetail')
-            ->firstOrFail();
+    public function photo($id)
+    {
+        $employee = $this->manageableEmployees()->with('employeeDetail')->findOrFail($id);
+        $path = $employee->employeeDetail?->photo_path;
+        $disk = Storage::disk('local');
+        abort_unless($path && $disk->exists($path), 404);
 
-        return Inertia::render('Admin/Profiles/EmployeeDetail', [
-            'employee' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'phone' => $user->phone,
-                'status' => $user->status,
-                'employee_code' => $user->employeeDetail?->employee_code,
-                'region' => $user->employeeDetail?->assigned_region,
-                'emergency' => $user->employeeDetail?->emergency_phone,
-            ],
-            'editing' => true,
+        return $disk->response($path, headers: [
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
         ]);
     }
 
     public function update(Request $request, $id)
     {
-        $industryKey = IndustryContext::current();
-        $companyId = auth()->user()?->company_id;
-        if (! $companyId && IndustryCatalog::staffMember($industryKey, $id)) {
-            return redirect()->back()->with('success', 'Staff member updated.');
-        }
-
-        $user = User::where('id', $id)
-            ->where('role', 'employee')
-            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
-            ->firstOrFail();
+        $user = $this->manageableEmployees()->findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -401,14 +365,48 @@ class EmployeeDirectoryController extends Controller
         if (!empty($validated['password'])) {
             $userData['password'] = Hash::make($validated['password']);
         }
-        $user->update($userData);
+        DB::transaction(function () use ($user, $userData, $validated) {
+            $user->update($userData);
+            app(EmployeeCodeService::class)->ensure($user, [
+                'assigned_region' => $validated['assigned_region'] ?? null,
+                'emergency_phone' => $validated['emergency_phone'] ?? null,
+            ]);
+            if (isset($userData['password'])) {
+                $user->tokens()->delete();
+            }
+        });
 
-        app(EmployeeCodeService::class)->ensure($user, [
-            'assigned_region' => $validated['assigned_region'] ?? null,
-            'emergency_phone' => $validated['emergency_phone'] ?? null,
-        ]);
+        return $this->employeeRedirect($request, 'employees.show', $user->id)
+            ->with('success', $validated['name'].' credentials and profile updated.');
+    }
 
-        return redirect()->back()->with('success', $validated['name'].' credentials and profile updated.');
+    public function destroy(Request $request, $id)
+    {
+        $employee = $this->manageableEmployees()->findOrFail($id);
+
+        DB::transaction(function () use ($employee) {
+            $employee->tokens()->delete();
+            $employee->delete();
+        });
+
+        return $this->employeeRedirect($request, 'employees.index')
+            ->with('success', $employee->name.' removed. Attendance history was kept.');
+    }
+
+    private function manageableEmployees()
+    {
+        $admin = auth()->user();
+
+        return User::where('role', 'employee')
+            ->when(! $admin->isSuperAdmin() || $admin->company_id,
+                fn ($query) => $query->where('company_id', $admin->company_id));
+    }
+
+    private function employeeRedirect(Request $request, string $route, ?int $id = null)
+    {
+        $name = str_starts_with($request->route()->getName(), 'fieldy.') ? 'fieldy.'.$route : $route;
+
+        return redirect()->route($name, $id === null ? [] : ['id' => $id]);
     }
 
     private function performanceHistory(User $employee, EmployeePerformanceService $performance): array

@@ -32,6 +32,11 @@ class Company extends Model
         'max_employees' => 'integer',
     ];
 
+    public function hasUploadedLogo(): bool
+    {
+        return str_starts_with((string) $this->logo, 'company-logos/');
+    }
+
     public function users()
     {
         return $this->hasMany(User::class);

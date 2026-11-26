@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Services\IndustryService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -22,6 +23,18 @@ class DashboardController extends Controller
         $payload = IndustryService::getDashboardData($industryKey, $companyId);
 
         return Inertia::render('Admin/Dashboard', $payload);
+    }
+
+    public function companyLogo(Request $request)
+    {
+        $company = $request->user()->company;
+        $disk = Storage::disk('local');
+        abort_unless($company?->hasUploadedLogo() && $disk->exists($company->logo), 404);
+
+        return $disk->response($company->logo, headers: [
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     public function completeOnboardingTour(Request $request)

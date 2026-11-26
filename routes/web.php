@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AlertsController;
+use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EmployeeDirectoryController;
 use App\Http\Controllers\Admin\FarmerController;
@@ -120,6 +121,7 @@ foreach (['admin', 'fieldy/admin'] as $adminPrefix) {
 
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+        Route::get('/company-logo', [DashboardController::class, 'companyLogo'])->name('admin.company-logo');
         Route::post('/onboarding-tour/complete', [DashboardController::class, 'completeOnboardingTour'])->name('admin.onboarding-tour.complete');
         Route::get('/', fn () => redirect('/admin/dashboard'));
 
@@ -135,7 +137,10 @@ foreach (['admin', 'fieldy/admin'] as $adminPrefix) {
         Route::post('/employees', [EmployeeDirectoryController::class, 'store'])->name('employees.store');
         Route::get('/employees/{id}', [EmployeeDirectoryController::class, 'show'])->name('employees.show');
         Route::get('/employees/{id}/edit', [EmployeeDirectoryController::class, 'edit'])->name('employees.edit');
+        Route::get('/employees/{id}/photo', [EmployeeDirectoryController::class, 'photo'])->name('employees.photo');
         Route::put('/employees/{id}', [EmployeeDirectoryController::class, 'update'])->name('employees.update');
+        Route::delete('/employees/{id}', [EmployeeDirectoryController::class, 'destroy'])->name('employees.destroy');
+        Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
 
         // Farmer / Project Site CRUD Management
         Route::get('/farmers', [FarmerDirectoryController::class, 'index'])->name('farmers.index');

@@ -26,6 +26,7 @@ export default function Companies({ companies = [] }) {
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
+        logo: null,
         code: '',
         industry: 'construction',
         email: '',
@@ -288,6 +289,14 @@ export default function Companies({ companies = [] }) {
                                     {t('1. Organization & Business Identity')}
                                 </div>
 
+                                <div>
+                                    <label htmlFor="company-logo" className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Company Logo (optional)')}</label>
+                                    <input id="company-logo" type="file" accept="image/jpeg,image/png,image/webp" className="hp-input"
+                                        onChange={event => setData('logo', event.target.files[0] ?? null)} />
+                                    <p className="mt-1 text-xs text-hp-muted">{t('JPG, PNG or WebP, up to 2 MB')}</p>
+                                    {errors.logo && <p className="mt-1 text-xs text-rose-600">{errors.logo}</p>}
+                                </div>
+
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Company Legal Name')} *</label>
@@ -523,7 +532,7 @@ export default function Companies({ companies = [] }) {
                                         {errors.admin_phone && <p className="text-rose-600 text-xs mt-1">{errors.admin_phone}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Admin Login Email')} *</label>
+                                        <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1">{t('Client Admin Login ID (Email)')} *</label>
                                         <input
                                             type="email"
                                             required

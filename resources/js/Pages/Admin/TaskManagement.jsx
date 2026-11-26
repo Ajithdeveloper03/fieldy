@@ -1196,6 +1196,18 @@ export default function TaskManagement({ tasks = [], employees = [], customers =
                                 </select>
                             </div>
 
+                            <label className="block text-xs font-semibold text-hp-dark">
+                                {t('Project Site')}
+                                <select
+                                    value={editTask.customer_id}
+                                    onChange={event => setEditTask(previous => ({ ...previous, customer_id: event.target.value }))}
+                                    className="hp-input mt-1"
+                                >
+                                    <option value="">{t('No Site Assigned')}</option>
+                                    {customers.map(site => <option key={site.id} value={site.id}>{site.name}</option>)}
+                                </select>
+                            </label>
+
                             {/* Status, Priority & Due Date */}
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <div>

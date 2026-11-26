@@ -12,7 +12,6 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useTranslation } from 'react-i18next';
 import { useAlert } from '../../Components/AlertSystem';
-import AdminSessionBar from '../../Components/Dashboard/AdminSessionBar';
 import InteractiveOpsLab from '../../Components/Dashboard/InteractiveOpsLab';
 import VisualCommandDeck from '../../Components/Dashboard/VisualCommandDeck';
 import ConfettiBurst from '../../Components/Dashboard/ConfettiBurst';
@@ -53,69 +52,11 @@ export default function Dashboard({ currentIndustry: initialIndustry, isTenant =
     const companyId = props.auth?.user?.company?.id || props.auth?.user?.company_id || null;
     const storagePrefix = companyId ? `fieldy_dash_c${companyId}` : 'fieldy_dash_platform';
 
-    // Interactive session XP, sprints & confetti celebration state (isolated per company)
-    const [sessionXp, setSessionXp] = useState(() => {
-        try {
-            return parseInt(localStorage.getItem(`${storagePrefix}_xp`) || '0', 10) || 0;
-        } catch {
-            return 0;
-        }
-    });
-    const [sprintsDone, setSprintsDone] = useState(() => {
-        try {
-            return parseInt(localStorage.getItem(`${storagePrefix}_sprints`) || '0', 10) || 0;
-        } catch {
-            return 0;
-        }
-    });
     const [confettiTick, setConfettiTick] = useState(0);
 
-    useEffect(() => {
-        try {
-            setSessionXp(parseInt(localStorage.getItem(`${storagePrefix}_xp`) || '0', 10) || 0);
-            setSprintsDone(parseInt(localStorage.getItem(`${storagePrefix}_sprints`) || '0', 10) || 0);
-        } catch {
-            setSessionXp(0);
-            setSprintsDone(0);
-        }
-    }, [storagePrefix]);
-
-    const realMilestoneXp = ((stats?.totalEmployees ?? 0) > 0 ? 50 : 0)
-        + ((stats?.totalFarmers ?? 0) > 0 ? 50 : 0)
-        + (((stats?.activeWorkOrders ?? 0) + (stats?.completedWorkOrders ?? 0)) > 0 ? 50 : 0)
-        + ((stats?.totalVisits ?? 0) > 0 ? 100 : 0);
-
-    const totalXp = sessionXp + realMilestoneXp;
-
-    const handleEarnXp = (points, message, celebrate = false) => {
-        setSessionXp((prev) => {
-            const next = prev + points;
-            try {
-                localStorage.setItem(`${storagePrefix}_xp`, String(next));
-            } catch {
-                // ignore
-            }
-            return next;
-        });
-        if (celebrate) {
-            setConfettiTick((c) => c + 1);
-        }
-        if (message && triggerSuccess) {
-            triggerSuccess(message);
-        }
-    };
-
-    const handleSprintComplete = () => {
-        setSprintsDone((prev) => {
-            const next = prev + 1;
-            try {
-                localStorage.setItem(`${storagePrefix}_sprints`, String(next));
-            } catch {
-                // ignore
-            }
-            return next;
-        });
-        handleEarnXp(40, t('Focus sprint completed! +40 XP'), true);
+    const handleEarnXp = (_points, message, celebrate = false) => {
+        if (celebrate) setConfettiTick(value => value + 1);
+        if (message && triggerSuccess) triggerSuccess(message);
     };
 
     // Determine current industry from prop, query parameter or page props
@@ -179,10 +120,10 @@ export default function Dashboard({ currentIndustry: initialIndustry, isTenant =
         { label: t('Open Map'), icon: MapPin, color: '#2563EB', onClick: () => setIsFullScreenMap(true) },
     ];
 
-    const effectiveIsTenant = isTenant || Boolean(props.auth?.user?.company_id);
+    const usesOperationalData = isTenant || Boolean(props.auth?.user?.company_id) || currentIndustry.id === 'construction';
 
     const resolvedKpis = currentIndustry.kpis.map((kpi, idx) => {
-        if (!effectiveIsTenant) return kpi;
+        if (!usesOperationalData) return kpi;
         if (idx === 0) {
             return {
                 ...kpi,
@@ -360,33 +301,27 @@ export default function Dashboard({ currentIndustry: initialIndustry, isTenant =
                 </div>
             </section>
 
-            {/* ══════════ LIVE ADMIN SESSION & FOCUS SPRINT BAR ══════════ */}
             <ConfettiBurst trigger={confettiTick} />
-            <AdminSessionBar
-                storagePrefix={storagePrefix}
-                xp={totalXp}
-                sprintsDone={sprintsDone}
-                onSprintComplete={handleSprintComplete}
-            />
 
             {/* ══════════ 4 VISUAL KPI BENTO CARDS ══════════ */}
             <VisualCommandDeck
                 currentIndustry={currentIndustry}
-                stats={stats}
                 resolvedKpis={resolvedKpis}
-                effectiveIsTenant={effectiveIsTenant}
+                effectiveIsTenant={usesOperationalData}
                 growthData={growthData}
             />
 
             {/* ══════════ INTERACTIVE MISSIONS, 7-DAY PULSE & TEAM FUN HUB ══════════ */}
-            <InteractiveOpsLab
-                storagePrefix={storagePrefix}
-                stats={stats}
-                growthData={growthData}
-                labels={labels}
-                currentIndustry={currentIndustry}
-                onEarnXp={handleEarnXp}
-            />
+            {currentIndustry.id !== 'construction' && (
+                <InteractiveOpsLab
+                    storagePrefix={storagePrefix}
+                    stats={stats}
+                    growthData={growthData}
+                    labels={labels}
+                    currentIndustry={currentIndustry}
+                    onEarnXp={handleEarnXp}
+                />
+            )}
 
             {/* ══════════ PROMO / TIP BANNER ══════════ */}
             {showTip && (

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import useIndustry from '../../../hooks/useIndustry';
+import { withBase } from '../../../basePath';
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -27,12 +28,13 @@ function ChangeView({ center, zoom }) {
   return null;
 }
 
-export default function EmployeeDetail({ employee = {}, attendance = [], visitsThisWeek = [], assignedFarmers = [], recentReviews = [], performanceHistory = [] }) {
+export default function EmployeeDetail({ employee = {}, attendance = [], visitsThisWeek = [], assignedFarmers = [], recentReviews = [], performanceHistory = [], editing = false }) {
     const { t } = useTranslation();
     const { flash } = usePage().props;
     const { vocab, labels, industry } = useIndustry();
     const [isMapFullscreen, setIsMapFullscreen] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(editing);
+    const [showPassword, setShowPassword] = useState(false);
 
     const { data: editData, setData: setEditData, put, processing: savingEdit, errors: editErrors } = useForm({
         name: employee.name || '',
@@ -44,14 +46,17 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
         status: employee.status === 'disabled' ? 'disabled' : 'active',
     });
 
+    const closeEditModal = () => {
+        setEditData('password', '');
+        setShowPassword(false);
+        setShowEditModal(false);
+    };
+
     const handleSaveCredentials = (e) => {
         e.preventDefault();
-        put(`/admin/employees/${employee.id}`, {
+        put(withBase(`/admin/employees/${employee.id}`), {
             preserveScroll: true,
-            onSuccess: () => {
-                setEditData('password', '');
-                setShowEditModal(false);
-            },
+            onSuccess: closeEditModal,
         });
     };
 
@@ -185,7 +190,9 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <div className="flex items-center gap-5">
                             <div className="w-18 h-18 rounded-2xl bg-hp-dark text-white font-bold text-3xl flex items-center justify-center shrink-0 shadow-sm">
-                                {(employee.name || 'A').charAt(0)}
+                                {employee.has_photo ? (
+                                    <img className="h-full w-full rounded-[inherit] object-cover" src={withBase(`/admin/employees/${employee.id}/photo`)} alt="" />
+                                ) : (employee.name || 'A').charAt(0)}
                             </div>
                             <div>
                                 <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -203,14 +210,14 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
 
                         {/* Top Action Buttons */}
                         <div className="flex flex-wrap items-center gap-3 shrink-0 self-start lg:self-center">
-                            <button
+                            {!employee.is_sample && <button
                                 type="button"
                                 onClick={() => setShowEditModal(true)}
                                 className="hp-btn hp-btn-secondary !rounded-full"
                             >
                                 <KeyRound className="w-4 h-4 mr-1 text-hp-primary" />
                                 <span>{t('Change Login & Password')}</span>
-                            </button>
+                            </button>}
                             <button 
                                 type="button" 
                                 onClick={() => window.location.href = `tel:${employee.phone}`}
@@ -425,13 +432,13 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
             </div>
 
             {showEditModal && (
-                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4" onClick={() => setShowEditModal(false)}>
+                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4" onClick={closeEditModal}>
                     <div className="hp-card w-full max-w-lg p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-between pb-3 border-b border-hp-border">
                             <h2 className="text-lg font-bold text-hp-dark flex items-center gap-2">
                                 <KeyRound className="w-5 h-5 text-hp-primary" /> {t('Edit Profile & Login Credentials')}
                             </h2>
-                            <button type="button" onClick={() => setShowEditModal(false)} className="p-1 text-hp-muted hover:text-hp-dark">
+                            <button type="button" onClick={closeEditModal} className="p-1 text-hp-muted hover:text-hp-dark">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -473,13 +480,19 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                                 </div>
                                 <div className="sm:col-span-2">
                                     <label className="block text-xs font-bold text-hp-dark mb-1">{t('New Password (leave blank to keep current)')}</label>
-                                    <input
-                                        type="text"
-                                        className="hp-input font-mono text-xs"
-                                        placeholder={t('Enter new password (min 4 chars)')}
-                                        value={editData.password}
-                                        onChange={(e) => setEditData('password', e.target.value)}
-                                    />
+                                    <div className="flex gap-2">
+                                        <input
+                                            type={showPassword ? 'text' : 'password'}
+                                            autoComplete="new-password"
+                                            className="hp-input font-mono text-xs"
+                                            placeholder={t('Enter new password (min 4 chars)')}
+                                            value={editData.password}
+                                            onChange={(e) => setEditData('password', e.target.value)}
+                                        />
+                                        <button type="button" className="hp-btn hp-btn-outline shrink-0" onClick={() => setShowPassword(value => !value)}>
+                                            {showPassword ? t('Hide Password') : t('Show Password')}
+                                        </button>
+                                    </div>
                                     {editErrors.password && <p className="text-hp-danger text-xs mt-1">{editErrors.password}</p>}
                                 </div>
                                 <div>
@@ -505,7 +518,7 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                             </div>
 
                             <div className="flex justify-end gap-2 pt-3 border-t border-hp-border">
-                                <button type="button" onClick={() => setShowEditModal(false)} className="hp-btn hp-btn-secondary">
+                                <button type="button" onClick={closeEditModal} className="hp-btn hp-btn-secondary">
                                     {t('Cancel')}
                                 </button>
                                 <button type="submit" disabled={savingEdit} className="hp-btn hp-btn-primary">

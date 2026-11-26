@@ -103,21 +103,6 @@ class AuthController extends Controller
             })
             ->first();
 
-        if (! $user && in_array($phone, ['8428060946', '9876543210', '9411111111'], true)) {
-            $isSiteContact = in_array($phone, ['9876543210', '9411111111'], true);
-            $user = User::firstOrCreate(
-                ['phone' => $phone],
-                [
-                    'name' => $isSiteContact ? 'Site Contact Demo' : 'RM Delta',
-                    'email' => $phone.'@fieldy.io',
-                    'password' => Hash::make('Employee@1234'),
-                    'role' => $isSiteContact ? 'farmer' : 'employee',
-                    'status' => 'active',
-                ]
-            );
-            $user->load(['company', 'employeeDetail', 'farmerProfile']);
-        }
-
         if (! $user) {
             return response()->json(['message' => 'User not found with this phone or email.'], 404);
         }
@@ -128,8 +113,7 @@ class AuthController extends Controller
         $authenticated = false;
         if ($request->filled('password')) {
             $password = (string) $request->password;
-            $isDemoAccount = in_array($user->phone, ['8428060946', '9876543210', '9411111111'], true);
-            if (Hash::check($password, $user->password) || ($isDemoAccount && in_array($password, ['123456', 'Employee@1234'], true))) {
+            if (Hash::check($password, $user->password)) {
                 $authenticated = true;
             } else {
                 return response()->json(['message' => 'Invalid password. Please check your credentials.'], 401);

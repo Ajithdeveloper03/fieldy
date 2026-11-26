@@ -88,8 +88,7 @@ class IndustryService
 
     /**
      * Build service-specific payload with backend database queries and industry metadata.
-     * Tenant companies ($companyId !== null) ALWAYS receive strictly scoped real DB data
-     * (never demo/catalog fallback numbers), so newly created companies launch 100% fresh.
+     * Tenant dashboards and the construction platform view use operational records.
      */
     public static function getDashboardData(string $industryKey, $companyId = null): array
     {
@@ -141,8 +140,7 @@ class IndustryService
             ->whereDate('due_date', '<', $today)
             ->count();
 
-        if ($isTenant) {
-            // 100% real database queries scoped strictly to this tenant company
+        if ($isTenant || $industryKey === 'construction') {
             $visitBase = FarmerVisit::whereIn('employee_id', $empIds);
             $visitBase = IndustryContext::scope($visitBase, $industryKey);
 
@@ -164,7 +162,8 @@ class IndustryService
                 ->values()
                 ->all();
 
-            $farmerBase = FarmerProfile::whereHas('user', fn ($u) => $u->where('company_id', $companyId));
+            $farmerBase = FarmerProfile::whereHas('user', fn ($user) => $user
+                ->when($isTenant, fn ($query) => $query->where('company_id', $companyId)));
             $farmerBase = IndustryContext::scope($farmerBase, $industryKey);
 
             $totalFarmers = (clone $farmerBase)->count();
@@ -247,7 +246,7 @@ class IndustryService
 
             return [
                 'currentIndustry' => $industryKey,
-                'isTenant' => true,
+                'isTenant' => $isTenant,
                 'isFreshCompany' => $isFreshCompany,
                 'locationLogs' => $locationLogs,
                 'stats' => $stats,
@@ -353,49 +352,6 @@ class IndustryService
                         ['metric' => 'HEPA Vacuum Dust Containment', 'status' => '0.01% Leakage (Pass)', 'state' => 'good'],
                         ['metric' => 'Autonomous Scrubber Water Tank', 'status' => '82% Fresh Water', 'state' => 'good'],
                         ['metric' => 'Chemical Room Ventilation Flow', 'status' => '15 Air Changes/hr', 'state' => 'good'],
-                    ],
-                ];
-
-            case 'construction':
-                return [
-                    'stats' => [
-                        'totalVisits' => 240,
-                        'weeklyVisits' => 62,
-                        'totalEntities' => 18,
-                        'activeWorkOrders' => 28,
-                        'completedWorkOrders' => 212,
-                        'slaCompliance' => '99.1%',
-                    ],
-                    'recentVisits' => [
-                        ['id' => 501, 'farmer' => 'Tower B Level 4 Rebar Inspection', 'employee' => 'Er. Rajesh K.', 'time' => '14 mins ago', 'date' => now()->format('M d, Y')],
-                        ['id' => 502, 'farmer' => 'Excavator #04 Diesel Refuel & Telemetry', 'employee' => 'Mani Operator', 'time' => '30 mins ago', 'date' => now()->format('M d, Y')],
-                        ['id' => 503, 'farmer' => 'Batching Plant Concrete Slump Verification', 'employee' => 'Quality QC Lab', 'time' => '1 hour ago', 'date' => now()->format('M d, Y')],
-                        ['id' => 504, 'farmer' => 'Scaffolding Safety Perimeter Green Tagging', 'employee' => 'Safety Officer Murugan', 'time' => '3 hours ago', 'date' => now()->format('M d, Y')],
-                    ],
-                    'recentEntities' => [
-                        ['id' => 1, 'name' => 'Tower B Residential Block', 'farmer_code' => 'CN-BL-201', 'crop' => 'G+18 Concrete Block', 'acres' => '18 Floors', 'photo' => null, 'status' => 'In Progress', 'date' => 'Today'],
-                        ['id' => 2, 'name' => 'Civil Infrastructure Flyover Pier 4', 'farmer_code' => 'CN-BL-202', 'crop' => 'Heavy Rebar Cast', 'acres' => '4 Piers', 'photo' => null, 'status' => 'Certified', 'date' => 'Yesterday'],
-                        ['id' => 3, 'name' => 'Pre-cast Slab Casting Yard', 'farmer_code' => 'CN-BL-203', 'crop' => 'Material QC Lab', 'acres' => '2 Acres', 'photo' => null, 'status' => 'Active', 'date' => '3 days ago'],
-                        ['id' => 4, 'name' => 'Deep Foundation Excavation Pit 2', 'farmer_code' => 'CN-BL-204', 'crop' => 'Retaining Wall', 'acres' => '1 Pit', 'photo' => null, 'status' => 'Active', 'date' => '4 days ago'],
-                    ],
-                    'pendingApprovals' => [
-                        ['id' => 1, 'name' => 'Tower B Foundation Concrete Slump 120mm Pour Sign-off', 'farmer_code' => 'QC-SLUMP-104', 'district' => 'Civil Tower B', 'date' => '20 mins ago'],
-                        ['id' => 2, 'name' => 'Scaffolding Safety Perimeter Green Tag Clearance', 'farmer_code' => 'HSE-SCAF-44', 'district' => 'External Facade', 'date' => '2 hours ago'],
-                    ],
-                    'growthData' => [
-                        ['day' => 'Mon', 'val' => 35, 'rev' => 200],
-                        ['day' => 'Tue', 'val' => 48, 'rev' => 280],
-                        ['day' => 'Wed', 'val' => 52, 'rev' => 290],
-                        ['day' => 'Thu', 'val' => 88, 'rev' => 450],
-                        ['day' => 'Fri', 'val' => 68, 'rev' => 340],
-                        ['day' => 'Sat', 'val' => 96, 'rev' => 490],
-                        ['day' => 'Sun', 'val' => 40, 'rev' => 180],
-                    ],
-                    'telemetry' => [
-                        ['metric' => 'Tower Crane Wind Velocity Anemometer', 'status' => '14 km/h (Safe Limits)', 'state' => 'good'],
-                        ['metric' => 'Earth Pit Soil Moisture Grounding', 'status' => '4.8 Ohms (Optimal)', 'state' => 'good'],
-                        ['metric' => 'Dust PM10 Environmental Sensor', 'status' => '42 µg/m³ (Compliant)', 'state' => 'good'],
-                        ['metric' => 'Site Emergency Stop Beacons', 'status' => '16/16 Functional', 'state' => 'good'],
                     ],
                 ];
 

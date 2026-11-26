@@ -67,7 +67,7 @@ export default function Login({ sessionNotice = null }) {
                         {/* Email */}
                         <div>
                             <label className="block text-xs font-semibold text-[var(--color-hp-dark)] mb-1.5">
-                                Email Address
+                                Login ID (Email)
                             </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -79,8 +79,8 @@ export default function Login({ sessionNotice = null }) {
                                     value={data.email}
                                     onChange={(e) => setData('email', e.target.value)}
                                     className="hp-input pl-10"
-                                    placeholder="admin@infinityorganics.com"
-                                    autoComplete="email"
+                                    placeholder="admin@company.in"
+                                    autoComplete="username"
                                 />
                             </div>
                         </div>
@@ -133,17 +133,6 @@ export default function Login({ sessionNotice = null }) {
                         </button>
                     </form>
 
-                    {/* Quick Demo Credentials Panel */}
-                    <div className="mt-5 p-3 rounded-lg border border-[var(--color-hp-border)] bg-[var(--color-hp-gray-50)] space-y-1.5">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-[var(--color-hp-gray-600)]">
-                            <span className="font-semibold text-[var(--color-hp-dark)]">Superadmin:</span>
-                            <span className="font-mono text-[var(--color-hp-primary)] font-semibold">superadmin@fieldy.in / SuperAdmin@1234</span>
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-[var(--color-hp-gray-600)] pt-1.5 border-t border-[var(--color-hp-border)]">
-                            <span className="font-semibold text-[var(--color-hp-dark)]">Client Admin:</span>
-                            <span className="font-mono text-emerald-700 font-semibold">admin@infinityorganics.com / admin@123</span>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Security Protection Badge + Footer */}
