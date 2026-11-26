@@ -253,10 +253,16 @@ export default function EmployeeDashboardScreen() {
             <Image
               source={HERO_LOCAL_IMAGES[serviceConfig.key] || require("../../assets/images/image2.jpg")}
               resizeMode="cover"
-              style={[
-                StyleSheet.absoluteFillObject,
-                { width: "100%", height: "100%", opacity: 0.30 },
-              ]}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                width: undefined,
+                height: undefined,
+                opacity: 0.32,
+              }}
             />
             <View
               pointerEvents="none"
