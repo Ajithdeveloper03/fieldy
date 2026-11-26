@@ -52,7 +52,7 @@ const SITE_CARD_IMAGES = [
 const HERO_LOCAL_IMAGES: Record<string, any> = {
   real_estate: require("../../assets/images/image1.jpg"),
   facility_fmcg: require("../../assets/images/image2.jpg"),
-  construction: require("../../assets/images/image3.jpg"),
+  construction: require("../../assets/images/employee1.jpg"),
   security: require("../../assets/images/image4.jpg"),
   cleaning: require("../../assets/images/image5.jpg"),
   maintenance: require("../../assets/images/image6.jpg"),
@@ -197,14 +197,14 @@ export default function EmployeeDashboardScreen() {
               overflow: "hidden",
               borderBottomLeftRadius: 44,
               borderBottomRightRadius: 44,
-              backgroundColor: "#062214",
+              backgroundColor: "#000000",
             }}
           >
             <LinearGradient
               colors={[
-                "rgba(4, 24, 14, 0.50)",
-                "rgba(6, 34, 20, 0.68)",
-                "rgba(4, 18, 10, 0.96)",
+                "rgba(0, 0, 0, 0.56)",
+                "rgba(0, 0, 0, 0.72)",
+                "rgba(0, 0, 0, 0.90)",
               ]}
               locations={[0, 0.45, 1]}
               style={[StyleSheet.absoluteFillObject, { zIndex: 1 }]}
@@ -1053,7 +1053,7 @@ export default function EmployeeDashboardScreen() {
                   title: "Visit Logs & Proof",
                   sub: `All ${serviceConfig.vocab.visits.toLowerCase()} & notes`,
                   bg: "#7c3aed",
-                  img: require("../../assets/images/person6.png"),
+                  img: require("../../assets/images/person2.png"),
                   route: "/(employee)/visit-history",
                 },
                 {
@@ -1061,7 +1061,7 @@ export default function EmployeeDashboardScreen() {
                   title: "My Score & SLA",
                   sub: `${serviceConfig.kpis.efficiencyRate} â€¢ ${serviceConfig.kpis.points}`,
                   bg: "#0369a1",
-                  img: require("../../assets/images/person5.png"),
+                  img: require("../../assets/images/person7.png"),
                   route: "/(employee)/performance",
                 },
               ].map((slide, idx) => (
@@ -1090,8 +1090,8 @@ export default function EmployeeDashboardScreen() {
                       position: "absolute",
                       right: -14,
                       bottom: -35,
-                      width: 198,
-                      height: 196,
+                      width: 208,
+                      height: 206,
                       opacity: 0.96,
                     }}
                     resizeMode="contain"
