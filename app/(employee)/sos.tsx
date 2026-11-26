@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -20,6 +20,8 @@ import {
   Flame,
 } from "lucide-react-native";
 import { api } from "../../services/api";
+import { useLiveRefresh } from "../../hooks/useLiveRefresh";
+import { emitLiveSync } from "../../utils/liveSyncBus";
 import {
   LiquidGlassBackdrop,
   LiquidGlassCard,
@@ -31,34 +33,65 @@ import { PageHeroBanner } from "../../components/PageHeroBanner";
 
 export default function SOSScreen() {
   const [sosTriggered, setSosTriggered] = useState(false);
+  const [emergencyContacts, setEmergencyContacts] = useState<
+    { role: string; phone: string; available: string }[]
+  >([
+    { role: "National Emergency Response (Police / Medical / Fire)", phone: "112", available: "24/7 Emergency Services" },
+  ]);
 
-  const emergencyContacts = [
-    { role: "Central HQ Security & Dispatch", phone: "+91 800-456-7890", available: "24/7 Monitored" },
-    { role: "Local Emergency Services (Police/Medical)", phone: "112", available: "Immediate Govt" },
-  ];
+  const loadSosState = useCallback(async () => {
+    try {
+      const res = await api.get("/employee/sos-contacts");
+      const payload = res?.data ?? res;
+      if (typeof payload?.has_active_sos === "boolean") {
+        setSosTriggered(payload.has_active_sos);
+      }
+      if (Array.isArray(payload?.contacts) && payload.contacts.length > 0) {
+        setEmergencyContacts(payload.contacts);
+      }
+    } catch {
+      // Keep default emergency contact when offline
+    }
+  }, []);
+
+  useLiveRefresh(loadSosState, 10000);
+
+  const dispatchSos = async (incidentType = "Emergency SOS") => {
+    try {
+      const perm = await Location.requestForegroundPermissionsAsync().catch(() => ({ granted: false }));
+      const loc = perm.granted
+        ? await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High }).catch(() => null)
+        : null;
+      await api.post("/employee/sos", {
+        latitude: loc?.coords?.latitude ?? null,
+        longitude: loc?.coords?.longitude ?? null,
+        incident_type: incidentType,
+      });
+      setSosTriggered(true);
+      emitLiveSync("notifications");
+      Alert.alert(
+        "SOS DISPATCHED",
+        "Your emergency alert & live GPS coordinates have been sent to Web Admin Alerts and Live Monitor."
+      );
+    } catch (err: any) {
+      Alert.alert(
+        "SOS Sync Error",
+        err?.message || "Could not reach server. Please call your emergency contact directly."
+      );
+    }
+  };
 
   const handleTriggerSOS = async () => {
     Alert.alert(
       "CONFIRM CRITICAL EMERGENCY SOS",
-      "This will immediately transmit your high-precision live GPS coordinates, battery level, and audible alert to HQ and your field supervisor.",
+      "This will immediately transmit your high-precision live GPS coordinates and critical alert to your Web Admin Live Monitor.",
       [
         { text: "Cancel", style: "cancel" },
         {
           text: "SEND ALARM",
           style: "destructive",
-          onPress: async () => {
-            setSosTriggered(true);
-            try {
-              const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High }).catch(() => null);
-              await api.post("/employee/sos", {
-                latitude: loc?.coords?.latitude ?? 13.0827,
-                longitude: loc?.coords?.longitude ?? 80.2707,
-                timestamp: new Date().toISOString(),
-              }).catch(() => null);
-            } catch {
-              // Ignore failure to ensure alert appears
-            }
-            Alert.alert("SOS DISPATCHED", "Your live GPS coordinates have been sent to HQ Live Monitor with highest critical priority.");
+          onPress: () => {
+            void dispatchSos("Critical Manual SOS");
           },
         },
       ]
@@ -149,7 +182,7 @@ export default function SOSScreen() {
               variant="dark"
               borderRadius={20}
               dropletColor="#38bdf8"
-              onPress={() => Alert.alert("Medical Alert", "Connecting with nearest emergency paramedic...")}
+              onPress={() => void dispatchSos("Medical Injury")}
               style={{ flex: 1 }}
               contentStyle={{ padding: 16, alignItems: "center", gap: 8 }}
             >
@@ -163,7 +196,7 @@ export default function SOSScreen() {
               variant="dark"
               borderRadius={20}
               dropletColor="#f97316"
-              onPress={() => Alert.alert("Field Hazard", "Hazard report flagged on route map.")}
+              onPress={() => void dispatchSos("Fire / Field Hazard")}
               style={{ flex: 1 }}
               contentStyle={{ padding: 16, alignItems: "center", gap: 8 }}
             >

@@ -112,9 +112,10 @@ export default function EditProfileScreen() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await api.put("/employee/profile", {
+      const res = await api.post("/employee/profile", {
         phone: form.mobile.trim(),
         email: form.email.trim() || null,
+        ...(avatarUri && avatarUri.startsWith("http") ? { photo_path: avatarUri } : {}),
       });
       const updated = res?.data?.user ?? res?.user;
       const existing = await getAuthUser();
