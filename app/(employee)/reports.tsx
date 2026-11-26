@@ -186,8 +186,8 @@ export default function EmployeeReportsScreen() {
   const documents = submittedReports;
 
   return (
-    <LiquidGlassBackdrop variant="light">
-      <StatusBar barStyle="dark-content" />
+    <LiquidGlassBackdrop variant="dark">
+      <StatusBar barStyle="light-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* TOP HEADER (Reference Image 1: "2026 v" on left, Calendar & New Report on right) */}
@@ -211,7 +211,7 @@ export default function EmployeeReportsScreen() {
           >
             <Text
               style={{
-                color: "#0f172a",
+                color: "#ffffff",
                 fontFamily: "Brandon-Bold",
                 fontSize: 24,
                 letterSpacing: 0.4,
@@ -251,9 +251,9 @@ export default function EmployeeReportsScreen() {
             <LiquidGlassIconButton
               onPress={() => router.push("/(employee)/calendar")}
               size={42}
-              variant="light"
+              variant="dark"
             >
-              <CalendarDays size={20} color="#0f172a" />
+              <CalendarDays size={20} color="#ffffff" />
             </LiquidGlassIconButton>
           </View>
         </View>
@@ -288,7 +288,7 @@ export default function EmployeeReportsScreen() {
                   overflow: "hidden",
                   backgroundColor: "#0f172a",
                   borderWidth: 1,
-                  borderColor: "#334155",
+                  borderColor: "rgba(255,255,255,0.14)",
                   shadowColor: "#000",
                   shadowOffset: { width: 0, height: 10 },
                   shadowOpacity: 0.3,
@@ -336,7 +336,7 @@ export default function EmployeeReportsScreen() {
                   >
                     <Text
                       style={{
-                        color: "#0f172a",
+                        color: "#ffffff",
                         fontFamily: "Brandon-Bold",
                         fontSize: 13,
                         letterSpacing: 0.3,
@@ -446,7 +446,7 @@ export default function EmployeeReportsScreen() {
               </Text>
               <Text
                 style={{
-                  color: "#0f172a",
+                  color: "#ffffff",
                   fontFamily: "Brandon-Bold",
                   fontSize: 19,
                   marginBottom: 12,
@@ -465,7 +465,7 @@ export default function EmployeeReportsScreen() {
                   return (
                     <LiquidGlassCard
                       key={`media-${file.id}`}
-                      variant="light"
+                      variant="dark"
                       borderRadius={20}
                       dropletColor={tint}
                       onPress={() => void handleDownload(file.download_url, file.title, file.original_name)}
@@ -477,7 +477,7 @@ export default function EmployeeReportsScreen() {
                           style={{ width: 46, height: 46, borderRadius: 12, marginRight: 12, backgroundColor: "#1e293b" }}
                         />
                       ) : (
-                        <LiquidGlassIconBadge size={46} borderRadius={14} variant="light" tintColor={tint} style={{ marginRight: 12 }}>
+                        <LiquidGlassIconBadge size={46} borderRadius={14} variant="dark" tintColor={tint} style={{ marginRight: 12 }}>
                           {file.category === "video" ? <Video size={20} color={tint} /> : <FileText size={20} color={tint} />}
                         </LiquidGlassIconBadge>
                       )}
@@ -486,7 +486,7 @@ export default function EmployeeReportsScreen() {
                         <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14 }} numberOfLines={1}>
                           {file.title}
                         </Text>
-                        <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 2 }}>
+                        <Text style={{ color: "rgba(255,255,255,0.65)", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 2 }}>
                           {file.category.toUpperCase()} • {file.size_human} • {file.date_label}
                         </Text>
                       </View>
@@ -497,14 +497,14 @@ export default function EmployeeReportsScreen() {
                           paddingHorizontal: 12,
                           paddingVertical: 8,
                           borderRadius: 12,
-                          backgroundColor: "#334155",
+                          backgroundColor: "rgba(255,255,255,0.14)",
                           flexDirection: "row",
                           alignItems: "center",
                           gap: 5,
                         }}
                       >
                         <Download size={15} color="#ffffff" />
-                        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 11 }}>Download</Text>
+                        <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 11 }}>Download</Text>
                       </TouchableOpacity>
                     </LiquidGlassCard>
                   );
@@ -535,7 +535,7 @@ export default function EmployeeReportsScreen() {
               </Text>
               <Text
                 style={{
-                  color: "#0f172a",
+                  color: "#ffffff",
                   fontFamily: "Brandon-Bold",
                   fontSize: 19,
                 }}
@@ -544,18 +544,18 @@ export default function EmployeeReportsScreen() {
               </Text>
             </View>
             <LiquidGlassPill
-              variant="light"
+              variant="dark"
               onPress={() => router.push("/(employee)/visit-history")}
               contentStyle={{ paddingHorizontal: 14, paddingVertical: 8 }}
             >
               <Filter
                 size={13}
-                color="#0f172a"
+                color="#ffffff"
                 style={{ marginRight: 5 }}
               />
               <Text
                 style={{
-                  color: "#0f172a",
+                  color: "#ffffff",
                   fontFamily: "Brandon-Bold",
                   fontSize: 12,
                 }}
@@ -567,9 +567,9 @@ export default function EmployeeReportsScreen() {
 
           <View style={{ gap: 14 }}>
             {documents.length === 0 && (
-              <LiquidGlassCard variant="light" borderRadius={22} contentStyle={{ padding: 22, alignItems: "center" }}>
-                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>No field documents yet</Text>
-                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 4, textAlign: "center" }}>
+              <LiquidGlassCard variant="dark" borderRadius={22} contentStyle={{ padding: 22, alignItems: "center" }}>
+                <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>No field documents yet</Text>
+                <Text style={{ color: "rgba(255,255,255,0.65)", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 4, textAlign: "center" }}>
                   Submitted visit reports and dossiers appear here.
                 </Text>
               </LiquidGlassCard>
@@ -584,7 +584,7 @@ export default function EmployeeReportsScreen() {
               return (
                 <LiquidGlassCard
                   key={doc.id}
-                  variant="light"
+                  variant="dark"
                   borderRadius={22}
                   dropletColor={iconColor}
                   onPress={() => router.push(`/(employee)/report/${doc.id}` as any)}
@@ -598,7 +598,7 @@ export default function EmployeeReportsScreen() {
                   <LiquidGlassIconBadge
                     size={46}
                     borderRadius={15}
-                    variant="light"
+                    variant="dark"
                     tintColor={iconColor}
                     style={{ marginRight: 14 }}
                   >
@@ -621,7 +621,7 @@ export default function EmployeeReportsScreen() {
                     </Text>
                     <Text
                       style={{
-                        color: "#64748b",
+                        color: "rgba(255,255,255,0.65)",
                         fontFamily: "Brandon-Medium",
                         fontSize: 12,
                       }}

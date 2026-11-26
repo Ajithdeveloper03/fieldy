@@ -96,8 +96,8 @@ export default function ClockOutScreen() {
   };
 
   return (
-    <LiquidGlassBackdrop variant="light">
-      <StatusBar barStyle="dark-content" />
+    <LiquidGlassBackdrop variant="dark">
+      <StatusBar barStyle="light-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER */}
@@ -111,7 +111,7 @@ export default function ClockOutScreen() {
           }}
         >
           <LiquidGlassIconButton
-            variant="light"
+            variant="dark"
             size={44}
             onPress={() =>
               router.canGoBack()
@@ -119,11 +119,11 @@ export default function ClockOutScreen() {
                 : router.replace("/(employee)/dashboard")
             }
           >
-            <ChevronLeft size={24} color="#0f172a" />
+            <ChevronLeft size={24} color="#ffffff" />
           </LiquidGlassIconButton>
           <Text
             style={{
-              color: "#0f172a",
+              color: "#ffffff",
               fontFamily: "Brandon-Bold",
               fontSize: 18,
             }}
@@ -146,7 +146,7 @@ export default function ClockOutScreen() {
             <Moon size={32} color="#fca5a5" style={{ marginBottom: 16 }} />
             <Text
               style={{
-                color: "#0f172a",
+                color: "#ffffff",
                 fontFamily: "Brandon-Bold",
                 fontSize: 56,
                 lineHeight: 60,
@@ -176,13 +176,13 @@ export default function ClockOutScreen() {
           </View>
 
           <LiquidGlassCard
-            variant="light"
+            variant="dark"
             borderRadius={32}
             contentStyle={{ padding: 24 }}
           >
             <Text
               style={{
-                color: "#64748b",
+                color: "rgba(255,255,255,0.6)",
                 fontFamily: "Brandon-Medium",
                 fontSize: 14,
                 letterSpacing: 1,
@@ -194,7 +194,7 @@ export default function ClockOutScreen() {
 
             {/* TIMELINE */}
             <LiquidGlassCard
-              variant="light"
+              variant="dark"
               borderRadius={20}
               style={{ marginBottom: 32 }}
               contentStyle={{
@@ -206,7 +206,7 @@ export default function ClockOutScreen() {
               <View style={{ alignItems: "center", flex: 1 }}>
                 <Text
                   style={{
-                    color: "#64748b",
+                    color: "rgba(255,255,255,0.5)",
                     fontFamily: "Brandon-Medium",
                     fontSize: 12,
                   }}
@@ -215,7 +215,7 @@ export default function ClockOutScreen() {
                 </Text>
                 <Text
                   style={{
-                    color: "#0f172a",
+                    color: "#ffffff",
                     fontFamily: "Brandon-Bold",
                     fontSize: 18,
                     marginTop: 4,
@@ -234,7 +234,7 @@ export default function ClockOutScreen() {
               <View style={{ alignItems: "center", flex: 1 }}>
                 <Text
                   style={{
-                    color: "#64748b",
+                    color: "rgba(255,255,255,0.5)",
                     fontFamily: "Brandon-Medium",
                     fontSize: 12,
                   }}
@@ -256,7 +256,7 @@ export default function ClockOutScreen() {
 
             <Text
               style={{
-                color: "#64748b",
+                color: "rgba(255,255,255,0.6)",
                 fontFamily: "Brandon-Medium",
                 fontSize: 14,
                 letterSpacing: 1,
@@ -268,7 +268,7 @@ export default function ClockOutScreen() {
 
             {/* STEP 1: LOCATION */}
             <LiquidGlassCard
-              variant="light"
+              variant="dark"
               borderRadius={20}
               style={{ marginBottom: 32 }}
               contentStyle={{
@@ -278,7 +278,7 @@ export default function ClockOutScreen() {
               }}
             >
               <LiquidGlassIconBadge
-                variant="light"
+                variant="dark"
                 size={48}
                 borderRadius={24}
                 tintColor={locationVerified ? "#4ade80" : "#94a3b8"}

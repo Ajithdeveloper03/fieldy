@@ -127,8 +127,8 @@ export default function LoginScreen() {
   };
 
   return (
-    <LiquidGlassBackdrop variant="light">
-      <StatusBar barStyle="dark-content" />
+    <LiquidGlassBackdrop variant="dark">
+      <StatusBar barStyle="light-content" />
 
       <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}>
         <KeyboardAvoidingView
@@ -150,11 +150,11 @@ export default function LoginScreen() {
             <LiquidGlassIconButton
               onPress={() => router.back()}
               size={42}
-              variant="light"
+              variant="dark"
             >
-              <ChevronLeft size={22} color="#0f172a" />
+              <ChevronLeft size={22} color="#ffffff" />
             </LiquidGlassIconButton>
-            <ServiceSelectorPill compact />
+            <ServiceSelectorPill dark compact />
           </View>
 
           <ScrollView
@@ -192,7 +192,7 @@ export default function LoginScreen() {
 
               <Text
                 style={{
-                  color: "#0f172a",
+                  color: "#ffffff",
                   fontFamily: "Brandon-Bold",
                   fontSize: 28,
                   textAlign: "center",
@@ -204,7 +204,7 @@ export default function LoginScreen() {
               </Text>
               <Text
                 style={{
-                  color: "#64748b",
+                  color: "rgba(255,255,255,0.72)",
                   fontFamily: "Brandon-Medium",
                   fontSize: 14,
                   marginTop: 4,
@@ -217,7 +217,7 @@ export default function LoginScreen() {
 
             {/* Frosted Apple Liquid Glass Form Card */}
             <LiquidGlassCard
-              variant="light"
+              variant="dark"
               borderRadius={30}
               intensity={76}
               dropletColor={accentColor}
@@ -251,7 +251,7 @@ export default function LoginScreen() {
               <View style={{ marginBottom: 16 }}>
                 <Text
                   style={{
-                    color: "#64748b",
+                    color: "rgba(255,255,255,0.76)",
                     fontFamily: "Brandon-Bold",
                     fontSize: 11,
                     letterSpacing: 1,
@@ -279,7 +279,7 @@ export default function LoginScreen() {
                       borderRadius: 16,
                       flexDirection: "row",
                       alignItems: "center",
-                      backgroundColor: "#f1f5f9",
+                      backgroundColor: "rgba(255,255,255,0.08)",
                       paddingHorizontal: 16,
                     }}
                   >
@@ -290,7 +290,7 @@ export default function LoginScreen() {
                         marginLeft: 12,
                         fontFamily: "Brandon-Bold",
                         fontSize: 16,
-                        color: "#0f172a",
+                        color: "#ffffff",
                       }}
                       placeholder="Phone number or email"
                       placeholderTextColor="rgba(255,255,255,0.38)"
@@ -307,7 +307,7 @@ export default function LoginScreen() {
               <View style={{ marginBottom: 24 }}>
                 <Text
                   style={{
-                    color: "#64748b",
+                    color: "rgba(255,255,255,0.76)",
                     fontFamily: "Brandon-Bold",
                     fontSize: 11,
                     letterSpacing: 1,
@@ -335,7 +335,7 @@ export default function LoginScreen() {
                       borderRadius: 16,
                       flexDirection: "row",
                       alignItems: "center",
-                      backgroundColor: "#f1f5f9",
+                      backgroundColor: "rgba(255,255,255,0.08)",
                       paddingHorizontal: 16,
                     }}
                   >
@@ -346,7 +346,7 @@ export default function LoginScreen() {
                         marginLeft: 12,
                         fontFamily: "Brandon-Bold",
                         fontSize: 16,
-                        color: "#0f172a",
+                        color: "#ffffff",
                       }}
                       placeholder="Password"
                       placeholderTextColor="rgba(255,255,255,0.38)"

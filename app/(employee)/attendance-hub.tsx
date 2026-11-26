@@ -88,8 +88,8 @@ export default function AttendanceHubScreen() {
   const themeColor = serviceConfig.themeColor || "#059669";
 
   return (
-    <LiquidGlassBackdrop variant="light">
-      <StatusBar barStyle="dark-content" />
+    <LiquidGlassBackdrop variant="dark">
+      <StatusBar barStyle="light-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER */}
@@ -104,13 +104,13 @@ export default function AttendanceHubScreen() {
           }}
         >
           <LiquidGlassIconButton
-            variant="light"
+            variant="dark"
             size={44}
             onPress={() => (router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard"))}
           >
-            <ChevronLeft size={24} color="#0f172a" />
+            <ChevronLeft size={24} color="#ffffff" />
           </LiquidGlassIconButton>
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 22 }}>
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 22 }}>
             Attendance & Shift Hub
           </Text>
           <View style={{ width: 44 }} />
@@ -141,7 +141,7 @@ export default function AttendanceHubScreen() {
             <>
               {/* LIVE SHIFT STATUS CARD */}
               <LiquidGlassCard
-                variant="light"
+                variant="dark"
                 borderRadius={30}
                 dropletColor={isOnDuty ? "#10b981" : "#38bdf8"}
                 style={{ marginBottom: 20 }}
@@ -150,7 +150,7 @@ export default function AttendanceHubScreen() {
                 <LiquidGlassIconBadge
                   size={68}
                   borderRadius={24}
-                  variant="light"
+                  variant="dark"
                   tintColor={isOnDuty ? "#10b981" : "#38bdf8"}
                   style={{ marginBottom: 12 }}
                 >
@@ -178,7 +178,7 @@ export default function AttendanceHubScreen() {
                 {data?.target_site?.name ? (
                   <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }}>
                     <MapPin size={14} color="#34d399" />
-                    <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 12, marginLeft: 5 }}>
+                    <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Medium", fontSize: 12, marginLeft: 5 }}>
                       Assigned Zone: {data.target_site.name}
                     </Text>
                   </View>
@@ -211,7 +211,7 @@ export default function AttendanceHubScreen() {
 
               {/* MONTHLY SUMMARY STATS */}
               <View style={{ flexDirection: "row", gap: 10, marginBottom: 20 }}>
-                <LiquidGlassCard variant="light" borderRadius={20} style={{ flex: 1 }} contentStyle={{ padding: 14, alignItems: "center" }}>
+                <LiquidGlassCard variant="dark" borderRadius={20} style={{ flex: 1 }} contentStyle={{ padding: 14, alignItems: "center" }}>
                   <Text style={{ color: "#4ade80", fontFamily: "Brandon-Bold", fontSize: 22 }}>
                     {summary.days_present ?? 0}
                   </Text>
@@ -220,7 +220,7 @@ export default function AttendanceHubScreen() {
                   </Text>
                 </LiquidGlassCard>
 
-                <LiquidGlassCard variant="light" borderRadius={20} style={{ flex: 1 }} contentStyle={{ padding: 14, alignItems: "center" }}>
+                <LiquidGlassCard variant="dark" borderRadius={20} style={{ flex: 1 }} contentStyle={{ padding: 14, alignItems: "center" }}>
                   <Text style={{ color: "#38bdf8", fontFamily: "Brandon-Bold", fontSize: 22 }}>
                     {Number(summary.total_hours ?? 0).toFixed(1)}h
                   </Text>
@@ -229,7 +229,7 @@ export default function AttendanceHubScreen() {
                   </Text>
                 </LiquidGlassCard>
 
-                <LiquidGlassCard variant="light" borderRadius={20} style={{ flex: 1 }} contentStyle={{ padding: 14, alignItems: "center" }}>
+                <LiquidGlassCard variant="dark" borderRadius={20} style={{ flex: 1 }} contentStyle={{ padding: 14, alignItems: "center" }}>
                   <Text style={{ color: "#fbbf24", fontFamily: "Brandon-Bold", fontSize: 22 }}>
                     {summary.geofence_compliance_rate ?? 100}%
                   </Text>
@@ -241,13 +241,13 @@ export default function AttendanceHubScreen() {
 
               {/* REAL CURRENT MONTH ATTENDANCE CALENDAR */}
               <LiquidGlassCard
-                variant="light"
+                variant="dark"
                 borderRadius={26}
                 style={{ marginBottom: 22 }}
                 contentStyle={{ padding: 20 }}
               >
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>
+                  <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>
                     {calendar.month_label ||
                       new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
                   </Text>
@@ -287,7 +287,7 @@ export default function AttendanceHubScreen() {
                                 : "rgba(16,185,129,0.24)"
                               : isToday
                                 ? "rgba(56,189,248,0.22)"
-                                : "#f1f5f9",
+                                : "rgba(255,255,255,0.04)",
                             borderWidth: isToday ? 1.5 : 0,
                             borderColor: "#38bdf8",
                           }}
@@ -315,7 +315,7 @@ export default function AttendanceHubScreen() {
               </LiquidGlassCard>
 
               {/* REAL RECENT SHIFT LOGS */}
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 19, marginBottom: 12 }}>
+              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 19, marginBottom: 12 }}>
                 Recent Shift Logs ({recentLogs.length})
               </Text>
 
@@ -324,7 +324,7 @@ export default function AttendanceHubScreen() {
                   {recentLogs.map((log) => (
                     <LiquidGlassCard
                       key={log.id}
-                      variant="light"
+                      variant="dark"
                       borderRadius={20}
                       contentStyle={{ padding: 16, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}
                     >
@@ -335,7 +335,7 @@ export default function AttendanceHubScreen() {
                           <CheckCircle2 size={20} color={log.is_late ? "#fbbf24" : "#34d399"} style={{ marginRight: 12 }} />
                         )}
                         <View>
-                          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 15 }}>
+                          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 15 }}>
                             {log.day_name}
                           </Text>
                           <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 2 }}>
@@ -352,8 +352,8 @@ export default function AttendanceHubScreen() {
                   ))}
                 </View>
               ) : (
-                <LiquidGlassCard variant="light" borderRadius={22} contentStyle={{ padding: 24, alignItems: "center" }}>
-                  <Text style={{ color: "#475569", fontFamily: "Brandon-Bold", fontSize: 15 }}>
+                <LiquidGlassCard variant="dark" borderRadius={22} contentStyle={{ padding: 24, alignItems: "center" }}>
+                  <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Bold", fontSize: 15 }}>
                     No Shift Logs Yet
                   </Text>
                   <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 13, textAlign: "center", marginTop: 4 }}>

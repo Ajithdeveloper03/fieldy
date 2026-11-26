@@ -47,20 +47,20 @@ export default function InventoryScreen() {
   );
 
   return (
-    <LiquidGlassBackdrop variant="light">
-      <StatusBar barStyle="dark-content" />
+    <LiquidGlassBackdrop variant="dark">
+      <StatusBar barStyle="light-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16 }}>
           <LiquidGlassIconButton
             onPress={() => (router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard"))}
-            variant="light"
+            variant="dark"
             size={42}
           >
-            <ChevronLeft size={24} color="#0f172a" />
+            <ChevronLeft size={24} color="#ffffff" />
           </LiquidGlassIconButton>
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>Field Boot Kit & Materials</Text>
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>Field Boot Kit & Materials</Text>
           <LiquidGlassIconButton
             onPress={() => Alert.alert("Barcode Scanner", "Point camera at item QR/Barcode sticker to identify material.")}
             variant="tinted"
@@ -75,7 +75,7 @@ export default function InventoryScreen() {
         {/* SEARCH BAR */}
         <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>
           <LiquidGlassCard
-            variant="light"
+            variant="dark"
             borderRadius={16}
             contentStyle={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 14 }}
           >
@@ -93,16 +93,16 @@ export default function InventoryScreen() {
         {/* SUMMARY STATS */}
         <View style={{ flexDirection: "row", paddingHorizontal: 20, gap: 10, marginBottom: 20 }}>
           <LiquidGlassCard
-            variant="light"
+            variant="dark"
             borderRadius={18}
             style={{ flex: 1 }}
             contentStyle={{ padding: 14 }}
           >
             <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 11 }}>TOTAL SKUS</Text>
-            <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 22, marginTop: 2 }}>{items.length}</Text>
+            <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 22, marginTop: 2 }}>{items.length}</Text>
           </LiquidGlassCard>
           <LiquidGlassCard
-            variant="light"
+            variant="dark"
             borderRadius={18}
             dropletColor="#f59e0b"
             style={{ flex: 1 }}
@@ -122,7 +122,7 @@ export default function InventoryScreen() {
             return (
               <LiquidGlassCard
                 key={item.id}
-                variant="light"
+                variant="dark"
                 borderRadius={20}
                 dropletColor={isLow ? "#f59e0b" : undefined}
                 contentStyle={{ padding: 16 }}
@@ -138,16 +138,16 @@ export default function InventoryScreen() {
                         </View>
                       )}
                     </View>
-                    <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 15, marginTop: 2 }}>{item.name}</Text>
+                    <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 15, marginTop: 2 }}>{item.name}</Text>
                     <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12, marginTop: 2 }}>{item.category}</Text>
                   </View>
                   <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 15 }}>{item.price}</Text>
                 </View>
 
                 {/* Stock Controls */}
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: "#f1f5f9" }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)" }}>
                   <View>
-                    <Text style={{ color: "#475569", fontFamily: "Brandon-Bold", fontSize: 14 }}>
+                    <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Bold", fontSize: 14 }}>
                       {item.qty} {item.unit} in Van
                     </Text>
                     <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 11 }}>{item.reserved} allocated for today&apos;s visits</Text>
@@ -155,7 +155,7 @@ export default function InventoryScreen() {
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                     <LiquidGlassIconButton
                       onPress={() => handleAdjustStock(item.id, -1)}
-                      variant="light"
+                      variant="dark"
                       size={36}
                     >
                       <Minus size={16} color="#ffffff" />

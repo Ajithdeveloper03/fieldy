@@ -144,7 +144,7 @@ export default function EmployeeCalendarScreen() {
     const isFuture = day > currentDay;
     const hasData = workReports[day] !== undefined;
 
-    let bgColor = "#f1f5f9";
+    let bgColor = "rgba(255,255,255,0.05)";
     let textColor = "#ffffff";
     let borderColor = "transparent";
 
@@ -188,23 +188,23 @@ export default function EmployeeCalendarScreen() {
   };
 
   return (
-    <LiquidGlassBackdrop variant="light">
-      <StatusBar barStyle="dark-content" />
+    <LiquidGlassBackdrop variant="dark">
+      <StatusBar barStyle="light-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
         
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}>
           <LiquidGlassIconButton
-            variant="light"
+            variant="dark"
             size={42}
             onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")}
           >
-            <ChevronLeft size={24} color="#0f172a" />
+            <ChevronLeft size={24} color="#ffffff" />
           </LiquidGlassIconButton>
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 25 }}>Work Calendar</Text>
-          <LiquidGlassIconButton variant="light" size={42}>
-            <CalendarDays size={20} color="#0f172a" />
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 25 }}>Work Calendar</Text>
+          <LiquidGlassIconButton variant="dark" size={42}>
+            <CalendarDays size={20} color="#ffffff" />
           </LiquidGlassIconButton>
         </View>
 
@@ -220,7 +220,7 @@ export default function EmployeeCalendarScreen() {
           
           {/* EXACT CALENDAR LAYOUT */}
           <LiquidGlassCard
-            variant="light"
+            variant="dark"
             borderRadius={34}
             style={{ marginBottom: 32 }}
             contentStyle={{ padding: 24 }}
@@ -246,7 +246,7 @@ export default function EmployeeCalendarScreen() {
           </LiquidGlassCard>
 
           {/* DETAILED WORK REPORT FOR SELECTED DATE */}
-          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 24, marginBottom: 18 }}>
+          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 24, marginBottom: 18 }}>
             {selectedDay === currentDay ? "Today's Agenda" : `Work Report: Day ${selectedDay}`}
           </Text>
 
@@ -272,13 +272,13 @@ export default function EmployeeCalendarScreen() {
                 {workReports[selectedDay].visits.map((visit: any, index: number) => (
                   <LiquidGlassCard
                     key={index}
-                    variant="light"
+                    variant="dark"
                     borderRadius={28}
                     contentStyle={{ padding: 22 }}
                   >
                     <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
                       <View style={{ flex: 1, paddingRight: 10 }}>
-                        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 21 }}>{visit.site_contact}</Text>
+                        <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 21 }}>{visit.site_contact}</Text>
                         <View style={{ flexDirection: "row", alignItems: "center", marginTop: 6 }}>
                           <MapPin size={14} color="#94a3b8" />
                           <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 15, marginLeft: 5 }}>{visit.location}</Text>
@@ -292,10 +292,10 @@ export default function EmployeeCalendarScreen() {
                       </View>
                     </View>
                     
-                    <View style={{ backgroundColor: "#f8fafc", borderWidth: 1, borderColor: "#334155", padding: 18, borderRadius: 18, marginTop: 8 }}>
+                    <View style={{ backgroundColor: "rgba(0,0,0,0.22)", borderWidth: 1, borderColor: "rgba(255,255,255,0.10)", padding: 18, borderRadius: 18, marginTop: 8 }}>
                       <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
                         <FileText size={18} color="#64748b" style={{ marginRight: 10, marginTop: 2 }} />
-                        <Text style={{ flex: 1, color: "#475569", fontFamily: "Brandon-Medium", fontSize: 15, lineHeight: 22 }}>
+                        <Text style={{ flex: 1, color: "#cbd5e1", fontFamily: "Brandon-Medium", fontSize: 15, lineHeight: 22 }}>
                           <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold" }}>Visit Notes: </Text>
                           {visit.note}
                         </Text>
@@ -304,7 +304,7 @@ export default function EmployeeCalendarScreen() {
 
                     {visit.status === "Completed" && (
                        <LiquidGlassButton
-                         variant="light"
+                         variant="dark"
                          dropletColor="#38bdf8"
                          onPress={() => router.push("/(employee)/report/1")}
                          style={{ marginTop: 18 }}
@@ -320,7 +320,7 @@ export default function EmployeeCalendarScreen() {
             </View>
           ) : (
             <LiquidGlassCard
-              variant="light"
+              variant="dark"
               borderRadius={24}
               contentStyle={{ padding: 32, alignItems: "center" }}
             >

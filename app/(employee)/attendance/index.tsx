@@ -38,8 +38,8 @@ export default function AttendanceScreen() {
   }, []);
 
   return (
-    <LiquidGlassBackdrop variant="light">
-      <StatusBar barStyle="dark-content" />
+    <LiquidGlassBackdrop variant="dark">
+      <StatusBar barStyle="light-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER */}
@@ -53,7 +53,7 @@ export default function AttendanceScreen() {
           }}
         >
           <LiquidGlassIconButton
-            variant="light"
+            variant="dark"
             size={44}
             onPress={() =>
               router.canGoBack()
@@ -61,11 +61,11 @@ export default function AttendanceScreen() {
                 : router.replace("/(employee)/dashboard")
             }
           >
-            <ChevronLeft size={24} color="#0f172a" />
+            <ChevronLeft size={24} color="#ffffff" />
           </LiquidGlassIconButton>
           <Text
             style={{
-              color: "#0f172a",
+              color: "#ffffff",
               fontFamily: "Brandon-Bold",
               fontSize: 18,
             }}
@@ -88,7 +88,7 @@ export default function AttendanceScreen() {
           >
             <Text
               style={{
-                color: "#64748b",
+                color: "rgba(255,255,255,0.7)",
                 fontFamily: "Brandon-Medium",
                 fontSize: 14,
                 letterSpacing: 1,
@@ -132,7 +132,7 @@ export default function AttendanceScreen() {
 
           {/* ACTION CARD */}
           <LiquidGlassCard
-            variant="light"
+            variant="dark"
             borderRadius={32}
             style={{ marginBottom: 32 }}
             contentStyle={{ padding: 24 }}
@@ -145,7 +145,7 @@ export default function AttendanceScreen() {
               }}
             >
               <LiquidGlassIconBadge
-                variant="light"
+                variant="dark"
                 size={48}
                 borderRadius={24}
                 tintColor="#3b82f6"
@@ -165,7 +165,7 @@ export default function AttendanceScreen() {
                 </Text>
                 <Text
                   style={{
-                    color: "#64748b",
+                    color: "rgba(255,255,255,0.6)",
                     fontFamily: "Brandon-Medium",
                     fontSize: 13,
                   }}
@@ -222,7 +222,7 @@ export default function AttendanceScreen() {
           {/* WEEKLY LOG */}
           <Text
             style={{
-              color: "#0f172a",
+              color: "#ffffff",
               fontFamily: "Brandon-Bold",
               fontSize: 18,
               marginBottom: 16,
@@ -257,7 +257,7 @@ export default function AttendanceScreen() {
             ].map((log, index) => (
               <LiquidGlassCard
                 key={index}
-                variant="light"
+                variant="dark"
                 borderRadius={20}
                 contentStyle={{
                   flexDirection: "row",
@@ -277,7 +277,7 @@ export default function AttendanceScreen() {
                 >
                   <Text
                     style={{
-                      color: "#0f172a",
+                      color: "#ffffff",
                       fontFamily: "Brandon-Bold",
                       fontSize: 14,
                     }}
@@ -286,7 +286,7 @@ export default function AttendanceScreen() {
                   </Text>
                   <Text
                     style={{
-                      color: "#64748b",
+                      color: "rgba(255,255,255,0.5)",
                       fontFamily: "Brandon-Medium",
                       fontSize: 11,
                     }}
@@ -305,7 +305,7 @@ export default function AttendanceScreen() {
                   <View>
                     <Text
                       style={{
-                        color: "#64748b",
+                        color: "rgba(255,255,255,0.5)",
                         fontFamily: "Brandon-Medium",
                         fontSize: 11,
                         marginBottom: 2,
@@ -315,7 +315,7 @@ export default function AttendanceScreen() {
                     </Text>
                     <Text
                       style={{
-                        color: "#0f172a",
+                        color: "#ffffff",
                         fontFamily: "Brandon-Bold",
                         fontSize: 14,
                       }}
@@ -326,7 +326,7 @@ export default function AttendanceScreen() {
                   <View style={{ alignItems: "flex-end" }}>
                     <Text
                       style={{
-                        color: "#64748b",
+                        color: "rgba(255,255,255,0.5)",
                         fontFamily: "Brandon-Medium",
                         fontSize: 11,
                         marginBottom: 2,
@@ -336,7 +336,7 @@ export default function AttendanceScreen() {
                     </Text>
                     <Text
                       style={{
-                        color: "#0f172a",
+                        color: "#ffffff",
                         fontFamily: "Brandon-Bold",
                         fontSize: 14,
                       }}

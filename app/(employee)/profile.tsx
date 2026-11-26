@@ -122,8 +122,8 @@ export default function EmployeeProfileScreen() {
     setRefreshing(false);
   }, [loadProfile]);
   return (
-    <LiquidGlassBackdrop variant="light">
-      <StatusBar barStyle="dark-content" />
+    <LiquidGlassBackdrop variant="dark">
+      <StatusBar barStyle="light-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER */}
@@ -144,13 +144,13 @@ export default function EmployeeProfileScreen() {
                 : router.replace("/(employee)/dashboard")
             }
             size={44}
-            variant="light"
+            variant="dark"
           >
-            <ChevronLeft size={22} color="#0f172a" />
+            <ChevronLeft size={22} color="#ffffff" />
           </LiquidGlassIconButton>
           <Text
             style={{
-              color: "#0f172a",
+              color: "#ffffff",
               fontFamily: "Brandon-Bold",
               fontSize: 24,
             }}
@@ -161,16 +161,16 @@ export default function EmployeeProfileScreen() {
             <LiquidGlassIconButton
               onPress={() => router.push("/(employee)/notifications")}
               size={42}
-              variant="light"
+              variant="dark"
             >
-              <Bell size={20} color="#0f172a" />
+              <Bell size={20} color="#ffffff" />
             </LiquidGlassIconButton>
             <LiquidGlassIconButton
               onPress={() => router.push("/(employee)/menu")}
               size={42}
-              variant="light"
+              variant="dark"
             >
-              <Settings size={20} color="#0f172a" />
+              <Settings size={20} color="#ffffff" />
             </LiquidGlassIconButton>
           </View>
         </View>
@@ -192,7 +192,7 @@ export default function EmployeeProfileScreen() {
         >
           {/* HERO PROFILE CARD WITH APPLE LIQUID GLASS */}
           <LiquidGlassCard
-            variant="light"
+            variant="dark"
             borderRadius={36}
             dropletColor="#10B981"
             style={{ marginBottom: 18 }}
@@ -213,7 +213,7 @@ export default function EmployeeProfileScreen() {
               <View style={{ alignItems: "center", flex: 1 }}>
                 <Text
                   style={{
-                    color: "#0f172a",
+                    color: "#ffffff",
                     fontFamily: "Brandon-Bold",
                     fontSize: 28,
                   }}
@@ -222,7 +222,7 @@ export default function EmployeeProfileScreen() {
                 </Text>
                 <Text
                   style={{
-                    color: "#64748b",
+                    color: "rgba(255,255,255,0.7)",
                     fontFamily: "Brandon-Medium",
                     fontSize: 13,
                     marginTop: 2,
@@ -242,7 +242,7 @@ export default function EmployeeProfileScreen() {
                   borderWidth: 3.5,
                   borderColor: "rgba(74, 222, 128, 0.75)",
                   padding: 4,
-                  backgroundColor: "#f1f5f9",
+                  backgroundColor: "rgba(255,255,255,0.08)",
                 }}
               >
                 <Image
@@ -264,7 +264,7 @@ export default function EmployeeProfileScreen() {
                 </Text>
                 <Text
                   style={{
-                    color: "#64748b",
+                    color: "rgba(255,255,255,0.7)",
                     fontFamily: "Brandon-Medium",
                     fontSize: 13,
                     marginTop: 2,
@@ -286,7 +286,7 @@ export default function EmployeeProfileScreen() {
             >
               <Text
                 style={{
-                  color: "#0f172a",
+                  color: "#ffffff",
                   fontFamily: "Brandon-Bold",
                   fontSize: 30,
                 }}
@@ -307,7 +307,7 @@ export default function EmployeeProfileScreen() {
 
             <Text
               style={{
-                color: "#64748b",
+                color: "rgba(255,255,255,0.8)",
                 fontFamily: "Brandon-Bold",
                 fontSize: 16,
                 textAlign: "center",
@@ -332,14 +332,14 @@ export default function EmployeeProfileScreen() {
             <View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
               <LiquidGlassButton
                 onPress={() => router.push("/(employee)/attendance-hub")}
-                variant="light"
+                variant="dark"
                 style={{ flex: 1 }}
                 contentStyle={{ paddingVertical: 14, paddingHorizontal: 14 }}
               >
                 <Fingerprint size={17} color="#ffffff" style={{ marginRight: 6 }} />
                 <Text
                   style={{
-                    color: "#0f172a",
+                    color: "#ffffff",
                     fontFamily: "Brandon-Bold",
                     fontSize: 15,
                   }}
@@ -442,13 +442,13 @@ export default function EmployeeProfileScreen() {
 
               <LiquidGlassButton
                 onPress={() => router.push("/(employee)/tasks")}
-                variant="light"
+                variant="dark"
                 style={{ width: "100%" }}
                 contentStyle={{ paddingVertical: 11, paddingHorizontal: 14 }}
               >
                 <Text
                   style={{
-                    color: "#0f172a",
+                    color: "#ffffff",
                     fontFamily: "Brandon-Bold",
                     fontSize: 14,
                   }}
@@ -498,7 +498,7 @@ export default function EmployeeProfileScreen() {
                 </Text>
                 <Text
                   style={{
-                    color: "#0f172a",
+                    color: "#ffffff",
                     fontFamily: "Brandon-Bold",
                     fontSize: 20,
                     marginTop: 2,
@@ -594,7 +594,7 @@ export default function EmployeeProfileScreen() {
           {/* OPERATIONAL IMPACT METRICS GRID */}
           <Text
             style={{
-              color: "#0f172a",
+              color: "#ffffff",
               fontFamily: "Brandon-Bold",
               fontSize: 24,
               marginBottom: 16,
@@ -641,7 +641,7 @@ export default function EmployeeProfileScreen() {
             ].map((metric, idx) => (
               <LiquidGlassCard
                 key={idx}
-                variant="light"
+                variant="dark"
                 borderRadius={26}
                 dropletColor={metric.color}
                 onPress={() => router.push(metric.route as any)}
@@ -651,7 +651,7 @@ export default function EmployeeProfileScreen() {
                 <LiquidGlassIconBadge
                   size={48}
                   borderRadius={16}
-                  variant="light"
+                  variant="dark"
                   tintColor={metric.color}
                   style={{ marginBottom: 12 }}
                 >
@@ -669,7 +669,7 @@ export default function EmployeeProfileScreen() {
                 </Text>
                 <Text
                   style={{
-                    color: "#64748b",
+                    color: "rgba(255,255,255,0.74)",
                     fontFamily: "Brandon-Medium",
                     fontSize: 15,
                   }}

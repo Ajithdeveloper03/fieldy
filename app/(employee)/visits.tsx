@@ -69,8 +69,8 @@ export default function EmployeeVisitsScreen() {
   }));
 
   return (
-    <LiquidGlassBackdrop variant="light">
-      <StatusBar barStyle="dark-content" />
+    <LiquidGlassBackdrop variant="dark">
+      <StatusBar barStyle="light-content" />
       <SafeAreaView style={{ flex: 1 }}>
         {/* CLEAN ALIGNED HEADER */}
         <View
@@ -91,16 +91,16 @@ export default function EmployeeVisitsScreen() {
                 : router.replace("/(employee)/dashboard")
             }
             size={42}
-            variant="light"
+            variant="dark"
           >
-            <ChevronLeft size={22} color="#0f172a" />
+            <ChevronLeft size={22} color="#FFFFFF" />
           </LiquidGlassIconButton>
 
           <View style={{ alignItems: "center", flex: 1, minWidth: 0 }}>
             <Text
               numberOfLines={1}
               style={{
-                color: "#0f172a",
+                color: "#FFFFFF",
                 fontFamily: "Brandon-Bold",
                 fontSize: 20,
               }}
@@ -108,16 +108,16 @@ export default function EmployeeVisitsScreen() {
               Daily {serviceConfig.vocab.visits}
             </Text>
             <View style={{ marginTop: 4 }}>
-              <ServiceSelectorPill compact />
+              <ServiceSelectorPill compact dark />
             </View>
           </View>
 
           <LiquidGlassIconButton
             onPress={() => router.push("/(employee)/calendar")}
             size={42}
-            variant="light"
+            variant="dark"
           >
-            <CalendarDays size={19} color="#0f172a" />
+            <CalendarDays size={19} color="#FFFFFF" />
           </LiquidGlassIconButton>
         </View>
 
@@ -143,7 +143,7 @@ export default function EmployeeVisitsScreen() {
           {/* CLEAN LEFT-RAIL TIMELINE — ZERO OVERLAP ON ANY PHONE WIDTH */}
           <View style={{ gap: 12, marginBottom: 20 }}>
             {visits.length === 0 && (
-              <LiquidGlassCard variant="light" borderRadius={18} contentStyle={{ padding: 22, alignItems: "center" }}>
+              <LiquidGlassCard variant="dark" borderRadius={18} contentStyle={{ padding: 22, alignItems: "center" }}>
                 <Text style={{ color: "#FFFFFF", fontFamily: "Brandon-Bold", fontSize: 16, textAlign: "center" }}>
                   No {serviceConfig.vocab.visits} Yet
                 </Text>
@@ -188,7 +188,7 @@ export default function EmployeeVisitsScreen() {
                         style={{
                           width: 2,
                           flex: 1,
-                          backgroundColor: "#334155",
+                          backgroundColor: "rgba(255,255,255,0.14)",
                           marginTop: 6,
                         }}
                       />
@@ -197,7 +197,7 @@ export default function EmployeeVisitsScreen() {
 
                   {/* Visit Card */}
                   <LiquidGlassCard
-                    variant="light"
+                    variant="dark"
                     borderRadius={18}
                     onPress={() =>
                       router.push(`/(employee)/visit/${visit.id}` as any)
@@ -241,7 +241,7 @@ export default function EmployeeVisitsScreen() {
                           <Text
                             numberOfLines={1}
                             style={{
-                              color: "#334155",
+                              color: "#E2E8F0",
                               fontFamily: "Brandon-Bold",
                               fontSize: 12,
                               marginLeft: 4,
@@ -277,7 +277,7 @@ export default function EmployeeVisitsScreen() {
                       <Text
                         numberOfLines={1}
                         style={{
-                          color: "#0f172a",
+                          color: "#FFFFFF",
                           fontFamily: "Brandon-Bold",
                           fontSize: 15,
                         }}
