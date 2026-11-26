@@ -62,7 +62,7 @@ export default function EmployeeVisitHistoryScreen() {
 
   return (
     <LiquidGlassBackdrop variant="light">
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="dark-content" />
 
       {/* Header Gradient */}
       <View style={{ position: "absolute", top: 0, left: 0, right: 0, height: 250 }}>
@@ -77,15 +77,15 @@ export default function EmployeeVisitHistoryScreen() {
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24 }}>
           <LiquidGlassIconButton
-            variant="dark"
+            variant="light"
             size={44}
             onPress={() => router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard")}
           >
-            <ChevronLeft size={26} color="#ffffff" />
+            <ChevronLeft size={26} color="#0f172a" />
           </LiquidGlassIconButton>
           <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 25 }}>Visit History</Text>
-          <LiquidGlassIconButton variant="dark" size={44}>
-            <Filter size={22} color="#ffffff" />
+          <LiquidGlassIconButton variant="light" size={44}>
+            <Filter size={22} color="#0f172a" />
           </LiquidGlassIconButton>
         </View>
 
@@ -102,10 +102,10 @@ export default function EmployeeVisitHistoryScreen() {
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
             <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>Showing {history.length} past visits</Text>
             <LiquidGlassPill
-              variant="dark"
+              variant="light"
               contentStyle={{ paddingHorizontal: 14, paddingVertical: 8 }}
             >
-              <Calendar size={16} color="#ffffff" style={{ marginRight: 6 }} />
+              <Calendar size={16} color="#0f172a" style={{ marginRight: 6 }} />
               <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14 }}>This Month</Text>
             </LiquidGlassPill>
           </View>
@@ -142,7 +142,7 @@ export default function EmployeeVisitHistoryScreen() {
 
                 {/* SiteContact Info */}
                 <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 18 }}>
-                  <View style={{ width: 76, height: 76, borderRadius: 26, overflow: "hidden", backgroundColor: "#e2e8f0", marginRight: 16 }}>
+                  <View style={{ width: 76, height: 76, borderRadius: 26, overflow: "hidden", backgroundColor: "#334155", marginRight: 16 }}>
                     <Image source={visit.image} style={{ width: "100%", height: "100%" }} />
                   </View>
                   <View style={{ flex: 1 }}>

@@ -72,26 +72,26 @@ export default function ExpensesScreen() {
   const totalClaimed = expenses.reduce((acc, curr) => acc + Number(curr.amount), 0);
 
   return (
-    <LiquidGlassBackdrop variant="dark">
-      <StatusBar barStyle="light-content" />
+    <LiquidGlassBackdrop variant="light">
+      <StatusBar barStyle="dark-content" />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16 }}>
           <LiquidGlassIconButton
             onPress={() => (router.canGoBack() ? router.back() : router.replace("/(employee)/dashboard"))}
-            variant="dark"
+            variant="light"
             size={42}
           >
-            <ChevronLeft size={24} color="#ffffff" />
+            <ChevronLeft size={24} color="#0f172a" />
           </LiquidGlassIconButton>
-          <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>Field Expense Claims</Text>
+          <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}>Field Expense Claims</Text>
           <View style={{ width: 42 }} />
         </View>
 
         {/* TOP SUMMARY CARD */}
         <LiquidGlassCard
-          variant="dark"
+          variant="light"
           borderRadius={24}
           dropletColor="#10b981"
           style={{ marginHorizontal: 20, marginBottom: 20 }}
@@ -100,24 +100,24 @@ export default function ExpensesScreen() {
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
             <View>
               <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 12, letterSpacing: 1 }}>OCTOBER CLAIMS</Text>
-              <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 32, marginTop: 2 }}>
+              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 32, marginTop: 2 }}>
                 ₹{totalClaimed.toLocaleString()}
               </Text>
             </View>
-            <LiquidGlassIconBadge size={48} borderRadius={16} variant="dark" tintColor="#10b981">
+            <LiquidGlassIconBadge size={48} borderRadius={16} variant="light" tintColor="#10b981">
               <Receipt size={24} color="#10b981" />
             </LiquidGlassIconBadge>
           </View>
           <View style={{ flexDirection: "row", gap: 8, marginTop: 16 }}>
-            <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", padding: 10, borderRadius: 12 }}>
+            <View style={{ flex: 1, backgroundColor: "#f1f5f9", borderWidth: 1, borderColor: "#334155", padding: 10, borderRadius: 12 }}>
               <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 10 }}>APPROVED</Text>
               <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 15, marginTop: 2 }}>₹450</Text>
             </View>
-            <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", padding: 10, borderRadius: 12 }}>
+            <View style={{ flex: 1, backgroundColor: "#f1f5f9", borderWidth: 1, borderColor: "#334155", padding: 10, borderRadius: 12 }}>
               <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 10 }}>UNDER REVIEW</Text>
               <Text style={{ color: "#f59e0b", fontFamily: "Brandon-Bold", fontSize: 15, marginTop: 2 }}>₹180</Text>
             </View>
-            <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", padding: 10, borderRadius: 12 }}>
+            <View style={{ flex: 1, backgroundColor: "#f1f5f9", borderWidth: 1, borderColor: "#334155", padding: 10, borderRadius: 12 }}>
               <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Medium", fontSize: 10 }}>PAID OUT</Text>
               <Text style={{ color: "#38bdf8", fontFamily: "Brandon-Bold", fontSize: 15, marginTop: 2 }}>₹320</Text>
             </View>
@@ -127,7 +127,7 @@ export default function ExpensesScreen() {
         {/* TABS */}
         <View style={{ flexDirection: "row", marginHorizontal: 20, marginBottom: 20, gap: 10 }}>
           <LiquidGlassPill
-            variant="dark"
+            variant="light"
             active={activeTab === "claims"}
             tintColor="rgba(16, 185, 129, 0.72)"
             onPress={() => setActiveTab("claims")}
@@ -139,7 +139,7 @@ export default function ExpensesScreen() {
             </Text>
           </LiquidGlassPill>
           <LiquidGlassPill
-            variant="dark"
+            variant="light"
             active={activeTab === "new"}
             tintColor="rgba(16, 185, 129, 0.72)"
             onPress={() => setActiveTab("new")}
@@ -158,7 +158,7 @@ export default function ExpensesScreen() {
               {expenses.map((item) => (
                 <LiquidGlassCard
                   key={item.id}
-                  variant="dark"
+                  variant="light"
                   borderRadius={20}
                   dropletColor={item.statusColor}
                   contentStyle={{ padding: 16 }}
@@ -166,7 +166,7 @@ export default function ExpensesScreen() {
                   <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <View>
                       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                        <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 16 }}>{item.category}</Text>
+                        <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>{item.category}</Text>
                         <View style={{ backgroundColor: `${item.statusColor}20`, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
                           <Text style={{ color: item.statusColor, fontFamily: "Brandon-Bold", fontSize: 10 }}>{item.status.toUpperCase()}</Text>
                         </View>
@@ -176,7 +176,7 @@ export default function ExpensesScreen() {
                     <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 18 }}>₹{item.amount}</Text>
                   </View>
                   {item.note && (
-                    <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 10, backgroundColor: "rgba(255,255,255,0.06)", padding: 8, borderRadius: 8 }}>
+                    <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 10, backgroundColor: "#f1f5f9", padding: 8, borderRadius: 8 }}>
                       {item.note}
                     </Text>
                   )}
@@ -185,7 +185,7 @@ export default function ExpensesScreen() {
             </View>
           ) : (
             <LiquidGlassCard
-              variant="dark"
+              variant="light"
               borderRadius={24}
               contentStyle={{ padding: 20, gap: 18 }}
             >
@@ -199,7 +199,7 @@ export default function ExpensesScreen() {
                     return (
                       <LiquidGlassPill
                         key={c.label}
-                        variant="dark"
+                        variant="light"
                         active={isSelected}
                         tintColor="rgba(16, 185, 129, 0.72)"
                         onPress={() => setExpenseType(c.label)}
@@ -216,7 +216,7 @@ export default function ExpensesScreen() {
               {/* Amount Input */}
               <View>
                 <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 12, letterSpacing: 1, marginBottom: 8 }}>AMOUNT (INR)</Text>
-                <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 14, borderWidth: 1, borderColor: "rgba(255,255,255,0.18)", paddingHorizontal: 16 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#f1f5f9", borderRadius: 14, borderWidth: 1, borderColor: "#334155", paddingHorizontal: 16 }}>
                   <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 20, marginRight: 8 }}>₹</Text>
                   <TextInput
                     keyboardType="numeric"
@@ -224,7 +224,7 @@ export default function ExpensesScreen() {
                     placeholderTextColor="#64748b"
                     value={amount}
                     onChangeText={setAmount}
-                    style={{ flex: 1, height: 50, color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}
+                    style={{ flex: 1, height: 50, color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}
                   />
                 </View>
               </View>
@@ -234,7 +234,7 @@ export default function ExpensesScreen() {
                 <Text style={{ color: "#94a3b8", fontFamily: "Brandon-Bold", fontSize: 12, letterSpacing: 1, marginBottom: 8 }}>PROOF OF BILL / RECEIPT</Text>
                 <TouchableOpacity
                   onPress={() => setReceiptAttached(!receiptAttached)}
-                  style={{ height: 90, borderRadius: 16, borderStyle: "dashed", borderWidth: 1.5, borderColor: receiptAttached ? "#10b981" : "rgba(255,255,255,0.24)", backgroundColor: receiptAttached ? "rgba(16, 185, 129, 0.14)" : "rgba(255, 255, 255, 0.05)", alignItems: "center", justifyContent: "center", gap: 6 }}
+                  style={{ height: 90, borderRadius: 16, borderStyle: "dashed", borderWidth: 1.5, borderColor: receiptAttached ? "#10b981" : "rgba(255,255,255,0.24)", backgroundColor: receiptAttached ? "rgba(16, 185, 129, 0.14)" : "#f1f5f9", alignItems: "center", justifyContent: "center", gap: 6 }}
                 >
                   {receiptAttached ? (
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -244,7 +244,7 @@ export default function ExpensesScreen() {
                   ) : (
                     <>
                       <Camera size={22} color="#94a3b8" />
-                      <Text style={{ color: "#cbd5e1", fontFamily: "Brandon-Medium", fontSize: 12 }}>Tap to snap bill receipt</Text>
+                      <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 12 }}>Tap to snap bill receipt</Text>
                     </>
                   )}
                 </TouchableOpacity>
@@ -260,7 +260,7 @@ export default function ExpensesScreen() {
                   onChangeText={setNote}
                   multiline
                   numberOfLines={2}
-                  style={{ backgroundColor: "rgba(255, 255, 255, 0.06)", borderRadius: 14, borderWidth: 1, borderColor: "rgba(255,255,255,0.18)", padding: 14, color: "#ffffff", fontFamily: "Brandon-Medium", fontSize: 13, height: 70 }}
+                  style={{ backgroundColor: "#f1f5f9", borderRadius: 14, borderWidth: 1, borderColor: "#334155", padding: 14, color: "#0f172a", fontFamily: "Brandon-Medium", fontSize: 13, height: 70 }}
                 />
               </View>
 
