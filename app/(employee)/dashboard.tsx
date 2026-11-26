@@ -766,11 +766,11 @@ export default function EmployeeDashboardScreen() {
                   source={require("../../assets/images/person1.png")}
                   style={{
                     position: "absolute",
-                    right: 2,
-                    bottom: 0,
-                    width: 72,
-                    height: 82,
-                    opacity: 0.94,
+                    right: -10,
+                    bottom: -14,
+                    width: 86,
+                    height: 98,
+                    opacity: 0.96,
                   }}
                   resizeMode="contain"
                 />
@@ -846,11 +846,11 @@ export default function EmployeeDashboardScreen() {
                     source={require("../../assets/images/person3.png")}
                     style={{
                       position: "absolute",
-                      right: 2,
-                      bottom: 0,
-                      width: 58,
-                      height: 64,
-                      opacity: 0.94,
+                      right: -8,
+                      bottom: -12,
+                      width: 68,
+                      height: 76,
+                      opacity: 0.96,
                     }}
                     resizeMode="contain"
                   />
@@ -1088,11 +1088,11 @@ export default function EmployeeDashboardScreen() {
                     source={slide.img}
                     style={{
                       position: "absolute",
-                      right: -10,
-                      bottom: -8,
-                      width: 144,
-                      height: 162,
-                      opacity: 0.92,
+                      right: -14,
+                      bottom: -18,
+                      width: 158,
+                      height: 176,
+                      opacity: 0.96,
                     }}
                     resizeMode="contain"
                   />
