@@ -9,7 +9,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import {
   ChevronLeft,
   Calendar,
@@ -21,6 +21,7 @@ import {
 import { useService, ServiceSelectorPill } from "../../context/ServiceContext";
 import { apiClient } from "../../api/client";
 import { getAuthUser } from "../../services/api";
+import { useLiveRefresh } from "../../hooks/useLiveRefresh";
 import {
   LiquidGlassBackdrop,
   LiquidGlassButton,
@@ -46,18 +47,7 @@ export default function EmployeeTasksScreen() {
     setBackendTasks(Array.isArray(res?.tasks) ? res.tasks : []);
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-      (async () => {
-        if (!active) return;
-        await loadTasks();
-      })();
-      return () => {
-        active = false;
-      };
-    }, [loadTasks])
-  );
+  useLiveRefresh(loadTasks, 12000);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);

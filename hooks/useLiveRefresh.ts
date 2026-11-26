@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef } from "react";
 import { AppState } from "react-native";
 import { useFocusEffect } from "expo-router";
+import { subscribeLiveSync } from "../utils/liveSyncBus";
 
 /**
  * Automatically runs `fetcher` on screen focus, on app foreground resume,
- * and on a lightweight background interval (default 12s) while focused
- * so mobile screens stay live-synced with Web Admin without manual reload.
+ * whenever any screen emits a `liveSyncBus` mutation event, and on a lightweight
+ * background interval (default 12s) while focused so all screens stay 100% in sync.
  */
 export function useLiveRefresh(
   fetcher: () => void | Promise<void>,
@@ -30,6 +31,7 @@ export function useLiveRefresh(
 
       run();
       const timer = setInterval(run, intervalMs);
+      const unsubSync = subscribeLiveSync(() => run());
       const sub = AppState.addEventListener("change", (state) => {
         if (state === "active") {
           run();
@@ -39,6 +41,7 @@ export function useLiveRefresh(
       return () => {
         active = false;
         clearInterval(timer);
+        unsubSync();
         sub.remove();
       };
     }, [intervalMs])

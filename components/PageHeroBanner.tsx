@@ -142,10 +142,10 @@ const styles = StyleSheet.create({
   },
   personImg: {
     position: "absolute",
-    right: -4,
-    bottom: -14,
-    width: 118,
-    height: 132,
+    right: -34,
+    bottom: -24,
+    width: 198,
+    height: 152,
     zIndex: 2,
   },
 });

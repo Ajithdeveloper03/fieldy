@@ -11,9 +11,10 @@ import {
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { apiClient } from "../../api/client";
 import { getAuthUser } from "../../services/api";
+import { useLiveRefresh } from "../../hooks/useLiveRefresh";
 import { useService, ServiceSelectorPill } from "../../context/ServiceContext";
 import {
   LiquidGlassBackdrop,
@@ -57,18 +58,7 @@ export default function EmployeeMySiteContactsScreen() {
     setSites(Array.isArray(response?.sites) ? response.sites : []);
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-      (async () => {
-        if (!active) return;
-        await loadSites();
-      })();
-      return () => {
-        active = false;
-      };
-    }, [loadSites])
-  );
+  useLiveRefresh(loadSites, 12000);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);

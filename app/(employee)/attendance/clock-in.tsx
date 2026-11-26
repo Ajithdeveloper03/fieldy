@@ -21,6 +21,7 @@ import { useService } from "../../../context/ServiceContext";
 import * as Location from "expo-location";
 import * as ImagePicker from "expo-image-picker";
 import { api } from "../../../services/api";
+import { emitLiveSync } from "../../../utils/liveSyncBus";
 import { showToast } from "../../../components/ui/ToastMessage";
 import {
   LiquidGlassBackdrop,
@@ -98,25 +99,33 @@ export default function ClockInScreen() {
 
     setIsProcessing(true);
     try {
-      await api
-        .post("/employee/attendance", {
-          action: "check_in",
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-          selfie_image_path: selfieUri,
-        })
-        .catch(() => null);
+      const res = await api.post("/employee/attendance", {
+        action: "check_in",
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        selfie_image_path: selfieUri,
+      });
+      const checkInTimeLabel =
+        res?.check_in_at ||
+        res?.data?.check_in_at ||
+        new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
       await AsyncStorage.setItem("isClockedIn", "true");
-      await AsyncStorage.setItem(
-        "clockInTime",
-        new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      );
+      await AsyncStorage.setItem("clockInTime", String(checkInTimeLabel));
+      emitLiveSync("attendance");
+
       showToast({
         title: "Clocked In",
-        message: `Attendance synced for ${serviceConfig.label}.`,
+        message: `Attendance synced for ${serviceConfig.label} at ${checkInTimeLabel}.`,
         type: "success",
       });
-      router.replace("/(employee)/dashboard");
+      router.replace("/(employee)/attendance-hub");
+    } catch (err: any) {
+      showToast({
+        title: "Clock-In Failed",
+        message: err?.message || "Could not sync clock-in with server. Check connection.",
+        type: "error",
+      });
     } finally {
       setIsProcessing(false);
     }

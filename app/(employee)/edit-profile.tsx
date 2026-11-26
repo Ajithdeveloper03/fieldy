@@ -16,6 +16,7 @@ import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ChevronLeft, Camera, Save, Mail, Phone } from "lucide-react-native";
 import { api, getAuthUser } from "../../services/api";
+import { emitLiveSync } from "../../utils/liveSyncBus";
 import { pickImageAsset, uploadMediaAsset } from "../../services/media";
 import { useLanguage } from "../../context/LanguageContext";
 import { useLiveRefresh } from "../../hooks/useLiveRefresh";
@@ -126,6 +127,7 @@ export default function EditProfileScreen() {
       };
       await AsyncStorage.setItem("@auth_user", JSON.stringify(mergedUser));
       await AsyncStorage.setItem("@fieldy_user", JSON.stringify(mergedUser));
+      emitLiveSync("profile");
 
       Alert.alert(
         "Profile Updated",

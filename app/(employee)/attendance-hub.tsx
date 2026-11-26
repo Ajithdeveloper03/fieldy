@@ -8,7 +8,8 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   ChevronLeft,
   Fingerprint,
@@ -20,6 +21,7 @@ import {
   CalendarCheck,
 } from "lucide-react-native";
 import { api } from "../../services/api";
+import { useLiveRefresh } from "../../hooks/useLiveRefresh";
 import { useService } from "../../context/ServiceContext";
 import {
   LiquidGlassBackdrop,
@@ -36,31 +38,50 @@ export default function AttendanceHubScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  const [localClockedIn, setLocalClockedIn] = useState(false);
+  const [localClockInTime, setLocalClockInTime] = useState<string | null>(null);
+
   const loadAttendance = useCallback(async (isPull = false) => {
     if (isPull) setRefreshing(true);
     try {
-      const res = await api.get("/employee/attendance");
-      setData(res);
-    } catch {
-      setData(null);
+      const [storedStatus, storedTime, res] = await Promise.all([
+        AsyncStorage.getItem("isClockedIn"),
+        AsyncStorage.getItem("clockInTime"),
+        api.get("/employee/attendance").catch(() => null),
+      ]);
+      setLocalClockedIn(storedStatus === "true");
+      if (storedTime) setLocalClockInTime(storedTime);
+
+      const payload = res?.data ?? res;
+      if (payload && typeof payload === "object") {
+        setData(payload);
+        const serverToday = payload.today || {};
+        const serverOnDuty = Boolean(
+          serverToday.is_on_duty || (serverToday.checked_in && !serverToday.checked_out)
+        );
+        await AsyncStorage.setItem("isClockedIn", serverOnDuty ? "true" : "false");
+        if (serverToday.check_in_at) {
+          await AsyncStorage.setItem("clockInTime", String(serverToday.check_in_at));
+        }
+        setLocalClockedIn(serverOnDuty);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      void loadAttendance(false);
-    }, [loadAttendance])
-  );
+  useLiveRefresh(() => loadAttendance(false), 10000);
 
   const today = data?.today || {};
   const calendar = data?.calendar || {};
   const summary = data?.summary || {};
   const recentLogs: any[] = Array.isArray(data?.recent_logs) ? data.recent_logs : [];
-  const isOnDuty = Boolean(today.is_on_duty);
   const checkedOut = Boolean(today.checked_out);
+  const isOnDuty = data
+    ? Boolean(today.is_on_duty || (today.checked_in && !checkedOut))
+    : localClockedIn;
+  const checkInDisplay = today.check_in_at || localClockInTime || null;
   const daysInMonth = Number(calendar.days_in_month || new Date().getDate());
   const startOffset = Number(calendar.start_day_offset || 0);
   const dayMap: Record<string, any> = calendar.days || {};
@@ -98,7 +119,7 @@ export default function AttendanceHubScreen() {
         <PageHeroBanner
           badge={isOnDuty ? "ON DUTY" : "SHIFT READY"}
           title="Daily Attendance"
-          subtitle={isOnDuty ? `Clocked in${today.check_in_label ? ` at ${today.check_in_label}` : ""}` : "Mark GPS clock-in & selfie here"}
+          subtitle={isOnDuty ? `Clocked in${checkInDisplay ? ` at ${checkInDisplay}` : ""}` : "Mark GPS clock-in & selfie here"}
           colors={["#059669", "#064e3b"]}
           personIndex={3}
         />

@@ -29,6 +29,7 @@ import { useTracking } from "../../../context/TrackingContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import { apiClient } from "../../../api/client";
+import { emitLiveSync } from "../../../utils/liveSyncBus";
 import {
   LocalMediaAsset,
   pickImageAsset,
@@ -248,6 +249,7 @@ export default function SubmitReportScreen() {
       await AsyncStorage.setItem("@last_submitted_report", JSON.stringify(savedReport));
       await stopSession().catch(() => null);
       await AsyncStorage.multiRemove(["@active_task", "@active_checkin"]).catch(() => null);
+      emitLiveSync("visits");
       setLoading(false);
       showToast({
         title: "Report Saved",

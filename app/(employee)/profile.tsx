@@ -10,7 +10,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -28,6 +28,7 @@ import {
 } from "lucide-react-native";
 import { useService, ALL_SERVICE_KEYS } from "../../context/ServiceContext";
 import { api, getAuthUser } from "../../services/api";
+import { useLiveRefresh } from "../../hooks/useLiveRefresh";
 import {
   LiquidGlassBackdrop,
   LiquidGlassButton,
@@ -113,18 +114,7 @@ export default function EmployeeProfileScreen() {
     setDistanceTodayKm(Number(stats?.distance_today_km ?? 0));
   }, [serviceConfig.name, setService]);
 
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-      (async () => {
-        if (!active) return;
-        await loadProfile();
-      })();
-      return () => {
-        active = false;
-      };
-    }, [loadProfile])
-  );
+  useLiveRefresh(loadProfile, 12000);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);

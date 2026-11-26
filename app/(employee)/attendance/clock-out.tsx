@@ -18,6 +18,8 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import { api } from "../../../services/api";
+import { emitLiveSync } from "../../../utils/liveSyncBus";
+import { showToast } from "../../../components/ui/ToastMessage";
 import {
   LiquidGlassBackdrop,
   LiquidGlassButton,
@@ -68,16 +70,26 @@ export default function ClockOutScreen() {
 
     setLoading(true);
     try {
-      await api
-        .post("/employee/attendance", {
-          action: "check_out",
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-        })
-        .catch(() => null);
+      await api.post("/employee/attendance", {
+        action: "check_out",
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+      });
       await AsyncStorage.setItem("isClockedIn", "false");
       await AsyncStorage.removeItem("clockInTime");
-      router.replace("/(employee)/dashboard");
+      emitLiveSync("attendance");
+      showToast({
+        title: "Clocked Out",
+        message: "Shift checkout synced with Web Admin.",
+        type: "success",
+      });
+      router.replace("/(employee)/attendance-hub");
+    } catch (err: any) {
+      showToast({
+        title: "Clock-Out Failed",
+        message: err?.message || "Could not sync checkout with server.",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }

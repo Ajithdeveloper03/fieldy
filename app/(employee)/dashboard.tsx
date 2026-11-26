@@ -251,7 +251,7 @@ export default function EmployeeDashboardScreen() {
             }}
           >
             <Image
-              source={HERO_LOCAL_IMAGES[serviceConfig.key] || require("../../assets/images/image2.jpg")}
+              source={HERO_LOCAL_IMAGES[serviceConfig.key] || require("../../assets/images/employee1.jpg")}
               resizeMode="cover"
               style={{
                 position: "absolute",
@@ -261,21 +261,21 @@ export default function EmployeeDashboardScreen() {
                 bottom: 0,
                 width: undefined,
                 height: undefined,
-                opacity: 0.32,
+                opacity: 0.62,
               }}
             />
             <View
               pointerEvents="none"
               style={[
                 StyleSheet.absoluteFillObject,
-                { backgroundColor: "rgba(0, 0, 0, 0.58)", zIndex: 1 },
+                { backgroundColor: "rgba(0, 0, 0, 0.28)", zIndex: 1 },
               ]}
             />
             <LinearGradient
               colors={[
                 "rgba(0, 0, 0, 0.40)",
                 "rgba(0, 0, 0, 0.62)",
-                "rgba(0, 0, 0, 0.92)",
+                "rgba(0, 0, 0, 0.52)",
               ]}
               locations={[0, 0.45, 1]}
               style={[StyleSheet.absoluteFillObject, { zIndex: 1 }]}
