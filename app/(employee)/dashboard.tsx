@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+﻿import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -636,7 +636,7 @@ export default function EmployeeDashboardScreen() {
             </LiquidGlassCard>
 
             {/* Right Bento Card: Assigned Facilities & Reports */}
-            <LiquidGlassCard
+            {/* <LiquidGlassCard
               variant="light"
               borderRadius={30}
               onPress={() => router.push("/(employee)/my-sites")}
@@ -674,7 +674,7 @@ export default function EmployeeDashboardScreen() {
                   {serverTasks[0]?.title || "All assigned orders on track"}
                 </Text>
               </View>
-              </LiquidGlassCard>
+              </LiquidGlassCard> */}
 
               {/* Right Bento Card: Assigned Facilities & Reports */}
               <LiquidGlassCard
@@ -728,7 +728,7 @@ export default function EmployeeDashboardScreen() {
                         fontSize: 13,
                       }}
                     >
-                      âœ“ {efficiencyScore}% {t("efficiency", "Score")}
+                       {efficiencyScore}% {t("efficiency", "Score")}
                     </Text>
                   </View>
                 </View>
@@ -902,13 +902,13 @@ export default function EmployeeDashboardScreen() {
             </View>
 
             {/* MY PROJECT SITES (ROUNDED IMAGE + SIMPLE OVERVIEW, VERTICAL PADDING) */}
-            <View style={{ marginBottom: 24 }}>
+            <View style={{ marginBottom: 4 }}>
               <View
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  marginBottom: 6,
+                  marginBottom: 2,
                 }}
               >
                 <Text
@@ -940,7 +940,7 @@ export default function EmployeeDashboardScreen() {
                 contentContainerStyle={{
                   gap: 18,
                   paddingHorizontal: 22,
-                  paddingVertical: 18,
+                  paddingVertical: 6,
                 }}
                 style={{ marginHorizontal: -22 }}
               >
@@ -1119,7 +1119,7 @@ export default function EmployeeDashboardScreen() {
             {/* TODAY'S SERVICE VISITS */}
             <View
               style={{
-                flexDirection: "row",
+                flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "space-between",
                 marginBottom: 16,

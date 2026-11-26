@@ -47,8 +47,9 @@ export async function pickImageAsset(
     }
     const res = await ImagePicker.launchCameraAsync({
       mediaTypes: ["images"],
-      allowsEditing: true,
-      quality: 0.72,
+      allowsEditing: false,
+      quality: 0.45,
+      exif: false,
     });
     if (res.canceled || !res.assets?.[0]?.uri) return null;
     const asset = res.assets[0];
@@ -66,8 +67,9 @@ export async function pickImageAsset(
 
   const res = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ["images"],
-    allowsEditing: true,
-    quality: 0.72,
+    allowsEditing: false,
+    quality: 0.45,
+    exif: false,
   });
   if (res.canceled || !res.assets?.[0]?.uri) return null;
   const asset = res.assets[0];
@@ -142,10 +144,16 @@ export async function uploadMediaAsset(params: {
     const blob = await resp.blob();
     formData.append("file", blob, asset.name);
   } else {
+    const normalizedUri =
+      Platform.OS === "android" &&
+      !asset.uri.startsWith("file://") &&
+      !asset.uri.startsWith("content://")
+        ? `file://${asset.uri}`
+        : asset.uri;
     formData.append("file", {
-      uri: asset.uri,
-      name: asset.name,
-      type: asset.mimeType,
+      uri: normalizedUri,
+      name: asset.name || guessFilename(normalizedUri, asset.category === "video" ? "mp4" : "jpg", asset.category),
+      type: asset.mimeType || (asset.category === "video" ? "video/mp4" : "image/jpeg"),
     } as any);
   }
 

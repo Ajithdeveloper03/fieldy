@@ -77,7 +77,12 @@ export default function ClockInScreen() {
     try {
       const perm = await ImagePicker.requestCameraPermissionsAsync();
       if (perm.granted) {
-        const shot = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.5 });
+        const shot = await ImagePicker.launchCameraAsync({
+          allowsEditing: false,
+          quality: 0.45,
+          exif: false,
+          cameraType: ImagePicker.CameraType.front,
+        });
         if (!shot.canceled && shot.assets?.[0]?.uri) {
           setSelfieUri(shot.assets[0].uri);
         }

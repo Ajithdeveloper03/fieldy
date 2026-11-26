@@ -14,8 +14,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ChevronLeft, Camera, Save, User, Mail, Phone } from "lucide-react-native";
+import { ChevronLeft, Camera, Save, Mail, Phone } from "lucide-react-native";
 import { api, getAuthUser } from "../../services/api";
+import { pickImageAsset, uploadMediaAsset } from "../../services/media";
 import { useLanguage } from "../../context/LanguageContext";
 import { useLiveRefresh } from "../../hooks/useLiveRefresh";
 import {
@@ -28,17 +29,20 @@ import {
 export default function EditProfileScreen() {
   const { t } = useLanguage();
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [form, setForm] = useState({
-    username: "",
     mobile: "",
     email: "",
   });
 
   const loadProfile = useCallback(async () => {
     const authUser = await getAuthUser();
-    const storedName = await AsyncStorage.getItem("userName");
+    const storedAvatar = await AsyncStorage.getItem("@user_avatar_uri");
+    if (storedAvatar) setAvatarUri(storedAvatar);
+    else if (authUser?.avatar_url) setAvatarUri(authUser.avatar_url);
+
     setForm((prev) => ({
-      username: prev.username || authUser?.name || storedName || "",
       mobile: prev.mobile || authUser?.phone || "",
       email: prev.email || authUser?.email || "",
     }));
@@ -47,7 +51,6 @@ export default function EditProfileScreen() {
       const emp = dash?.data?.employee ?? dash?.employee;
       if (emp) {
         setForm({
-          username: emp.name || "",
           mobile: emp.phone || "",
           email: emp.email || "",
         });
@@ -59,17 +62,55 @@ export default function EditProfileScreen() {
 
   useLiveRefresh(loadProfile, 20000);
 
-  const handleSave = async () => {
-    const trimmedUsername = form.username.trim();
-    if (!trimmedUsername) {
-      Alert.alert("Required", "Please enter a valid username.");
+  const handleChangePhoto = () => {
+    const runPick = async (source: "camera" | "library") => {
+      try {
+        const picked = await pickImageAsset(source);
+        if (!picked) return;
+        setAvatarUri(picked.uri);
+        await AsyncStorage.setItem("@user_avatar_uri", picked.uri);
+        setUploadingPhoto(true);
+        try {
+          const uploaded = await uploadMediaAsset({
+            asset: picked,
+            title: "Profile Photo",
+          });
+          if (uploaded?.preview_url) {
+            setAvatarUri(uploaded.preview_url);
+            await AsyncStorage.setItem("@user_avatar_uri", uploaded.preview_url);
+            const existing = await getAuthUser();
+            if (existing) {
+              const nextUser = { ...existing, avatar_url: uploaded.preview_url };
+              await AsyncStorage.setItem("@auth_user", JSON.stringify(nextUser));
+            }
+          }
+          Alert.alert("Photo Updated", "Your profile image has been uploaded and saved.");
+        } catch {
+          Alert.alert("Saved Locally", "Photo updated on device. It will sync when network is stable.");
+        } finally {
+          setUploadingPhoto(false);
+        }
+      } catch {
+        Alert.alert("Permission Needed", "Please allow camera or photo library access to change your profile photo.");
+      }
+    };
+
+    if (Platform.OS === "web") {
+      void runPick("library");
       return;
     }
+
+    Alert.alert("Update Profile Photo", "Choose an option", [
+      { text: "Take Photo", onPress: () => void runPick("camera") },
+      { text: "Choose from Gallery", onPress: () => void runPick("library") },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  };
+
+  const handleSave = async () => {
     setSaving(true);
     try {
       const res = await api.put("/employee/profile", {
-        username: trimmedUsername,
-        name: trimmedUsername,
         phone: form.mobile.trim(),
         email: form.email.trim() || null,
       });
@@ -78,17 +119,16 @@ export default function EditProfileScreen() {
       const mergedUser = {
         ...(existing || {}),
         ...(updated || {}),
-        name: updated?.name || trimmedUsername,
         phone: updated?.phone || form.mobile.trim(),
         email: updated?.email ?? form.email.trim(),
+        avatar_url: avatarUri || existing?.avatar_url,
       };
       await AsyncStorage.setItem("@auth_user", JSON.stringify(mergedUser));
       await AsyncStorage.setItem("@fieldy_user", JSON.stringify(mergedUser));
-      await AsyncStorage.setItem("userName", mergedUser.name);
 
       Alert.alert(
         "Profile Updated",
-        "Your username & contact details have been synced with Web Admin.",
+        "Your contact details have been synced with Web Admin.",
         [
           {
             text: "OK",
@@ -171,63 +211,32 @@ export default function EditProfileScreen() {
                 }}
               >
                 <Image
-                  source={require("../../assets/images/image3.jpg")}
+                  source={
+                    avatarUri
+                      ? { uri: avatarUri }
+                      : require("../../assets/images/image3.jpg")
+                  }
                   style={{ width: "100%", height: "100%", borderRadius: 56 }}
                 />
                 <LiquidGlassIconButton
+                  onPress={handleChangePhoto}
                   variant="tinted"
                   tintColor="rgba(21, 128, 61, 0.84)"
                   dropletColor="#4ade80"
                   size={40}
                   style={{ position: "absolute", bottom: -4, right: -4 }}
                 >
-                  <Camera size={18} color="#ffffff" />
+                  {uploadingPhoto ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <Camera size={18} color="#ffffff" />
+                  )}
                 </LiquidGlassIconButton>
               </View>
             </View>
 
             {/* FORM */}
             <View style={{ gap: 20 }}>
-              <View>
-                <Text
-                  style={{
-                    color: "#64748b",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 13,
-                    marginLeft: 4,
-                    marginBottom: 8,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {t("username", "Username")}
-                </Text>
-                <LiquidGlassCard
-                  variant="light"
-                  borderRadius={18}
-                  style={{ height: 60 }}
-                  contentStyle={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingHorizontal: 18,
-                  }}
-                >
-                  <User size={22} color="#15803d" />
-                  <TextInput
-                    style={{
-                      flex: 1,
-                      marginLeft: 12,
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 18,
-                      color: "#0f172a",
-                    }}
-                    placeholder="Enter username"
-                    placeholderTextColor="#94a3b8"
-                    value={form.username}
-                    onChangeText={(val) => setForm({ ...form, username: val })}
-                  />
-                </LiquidGlassCard>
-              </View>
-
               <View>
                 <Text
                   style={{
