@@ -49,9 +49,55 @@ export const TrackingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (!isTracking) return;
     const interval = setInterval(() => {
       void syncLocations();
-    }, 10000);
+    }, 8000);
     return () => clearInterval(interval);
   }, [isTracking]);
+
+  // Continuous real-time foreground GPS stream to Web Admin Live Monitor
+  useEffect(() => {
+    let sub: Location.LocationSubscription | null = null;
+    let cancelled = false;
+    let lastPingAt = 0;
+
+    (async () => {
+      try {
+        const perm = await Location.getForegroundPermissionsAsync();
+        if (!perm.granted) return;
+        if (cancelled) return;
+
+        sub = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.High,
+            timeInterval: 5000,
+            distanceInterval: 5,
+          },
+          async (loc) => {
+            const now = Date.now();
+            if (now - lastPingAt < 4500) return;
+            const token = await AsyncStorage.getItem("token");
+            if (!token) return;
+            lastPingAt = now;
+            void api
+              .post("/employee/location-ping", {
+                latitude: loc.coords.latitude,
+                longitude: loc.coords.longitude,
+                accuracy: loc.coords.accuracy ?? 10,
+                speed: loc.coords.speed ?? 0,
+                heading: loc.coords.heading ?? 0,
+              })
+              .catch(() => null);
+          }
+        );
+      } catch {
+        // Ignore if GPS is unavailable on simulator
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      sub?.remove();
+    };
+  }, []);
 
   const startSession = useCallback(async (customSessionId?: string): Promise<string> => {
     if (sessionRef.current) {
