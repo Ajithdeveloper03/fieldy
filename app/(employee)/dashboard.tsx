@@ -5,7 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  ImageBackground,
   StyleSheet,
   StatusBar,
 } from "react-native";
@@ -241,30 +240,36 @@ export default function EmployeeDashboardScreen() {
           }}
           contentContainerStyle={{ paddingBottom: 140 }}
         >
-          {/* HERO BACKGROUND IMAGE WRAPPING HEADER + TRANSPARENT OFF-DUTY SECTION (AUTO HEIGHT, NO OVERLAP BELOW) */}
-          <ImageBackground
-            source={HERO_LOCAL_IMAGES[serviceConfig.key] || require("../../assets/images/image2.jpg")}
-            resizeMode="cover"
+          {/* HERO BACKGROUND IMAGE WRAPPING HEADER + TRANSPARENT OFF-DUTY SECTION (View + Image + Dark Black Overlay) */}
+          <View
             style={{
               width: "100%",
               overflow: "hidden",
               borderBottomLeftRadius: 44,
               borderBottomRightRadius: 44,
-              backgroundColor: "#062214",
+              backgroundColor: "#000000",
             }}
           >
+            <Image
+              source={HERO_LOCAL_IMAGES[serviceConfig.key] || require("../../assets/images/image2.jpg")}
+              resizeMode="cover"
+              style={[
+                StyleSheet.absoluteFillObject,
+                { width: "100%", height: "100%", opacity: 0.30 },
+              ]}
+            />
             <View
               pointerEvents="none"
               style={[
                 StyleSheet.absoluteFillObject,
-                { backgroundColor: "rgba(0, 0, 0, 0.62)", zIndex: 1 },
+                { backgroundColor: "rgba(0, 0, 0, 0.58)", zIndex: 1 },
               ]}
             />
             <LinearGradient
               colors={[
-                "rgba(0, 0, 0, 0.45)",
-                "rgba(0, 0, 0, 0.58)",
-                "rgba(0, 0, 0, 0.86)",
+                "rgba(0, 0, 0, 0.40)",
+                "rgba(0, 0, 0, 0.62)",
+                "rgba(0, 0, 0, 0.92)",
               ]}
               locations={[0, 0.45, 1]}
               style={[StyleSheet.absoluteFillObject, { zIndex: 1 }]}
@@ -601,7 +606,7 @@ export default function EmployeeDashboardScreen() {
                 </TouchableOpacity>
               </View>
             </View>
-          </ImageBackground>
+          </View>
 
           <View style={{ paddingHorizontal: 22, paddingTop: 22 }}>
             {/* DUAL BENTO SUMMARY CARDS (Plain Colorless Apple Liquid Glass) */}
