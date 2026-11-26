@@ -1243,60 +1243,62 @@ export default function EmployeeDashboardScreen() {
               ))}
             </ScrollView>
 
-            {/* TODAY'S SERVICE VISITS */}
+            {/* TODAY'S SERVICE VISITS (Clean Flat List) */}
             <View
               style={{
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: 16,
+                alignItems: "flex-start",
+                marginBottom: 12,
               }}
             >
               <Text
                 style={{
                   color: "#0f172a",
                   fontFamily: "Brandon-Bold",
-                  fontSize: 25,
+                  fontSize: 22,
                 }}
               >
                 Today&apos;s {serviceConfig.vocab.visits}
               </Text>
-              <TouchableOpacity onPress={() => router.push("/(employee)/map")}>
+              <TouchableOpacity
+                onPress={() => router.push("/(employee)/map")}
+                style={{ marginTop: 4 }}
+              >
                 <Text
                   style={{
                     color: serviceConfig.themeColor,
                     fontFamily: "Brandon-Bold",
-                    fontSize: 14,
+                    fontSize: 13,
                     textTransform: "uppercase",
                   }}
                 >
-                  Open Live Map
+                  {t("openLiveMap", "Open Live Map")}
                 </Text>
               </TouchableOpacity>
             </View>
 
-          <View style={{ gap: 16, marginBottom: 28 }}>
+          <View style={{ marginBottom: 24 }}>
             {serverVisits.length > 0 ? (
-              serverVisits.slice(0, 3).map((visit, vIdx) => (
-                <LiquidGlassCard
+              serverVisits.slice(0, 5).map((visit, vIdx) => (
+                <TouchableOpacity
                   key={visit.id ?? vIdx}
-                  variant="light"
-                  borderRadius={26}
+                  activeOpacity={0.75}
                   onPress={() => router.push(`/(employee)/visit/${visit.id}` as any)}
-                  contentStyle={{
-                    padding: 18,
+                  style={{
                     flexDirection: "row",
                     alignItems: "center",
                     justifyContent: "space-between",
+                    paddingVertical: 14,
+                    borderBottomWidth: 1,
+                    borderBottomColor: "#e2e8f0",
                   }}
                 >
                   <Image
                     source={SITE_CARD_IMAGES[vIdx % SITE_CARD_IMAGES.length]}
                     style={{
-                      width: 68,
-                      height: 68,
-                      borderRadius: 20,
-                      marginRight: 14,
+                      width: 52,
+                      height: 52,
+                      borderRadius: 14,
+                      marginRight: 12,
                     }}
                     resizeMode="cover"
                   />
@@ -1305,11 +1307,11 @@ export default function EmployeeDashboardScreen() {
                       style={{
                         color: "#0f172a",
                         fontFamily: "Brandon-Bold",
-                        fontSize: 19,
-                        lineHeight: 23,
-                        marginBottom: 4,
+                        fontSize: 16,
+                        lineHeight: 20,
+                        marginBottom: 3,
                       }}
-                      numberOfLines={2}
+                      numberOfLines={1}
                     >
                       {visit.site?.name ?? visit.client_name ?? "Site Visit"}
                     </Text>
@@ -1318,14 +1320,14 @@ export default function EmployeeDashboardScreen() {
                       style={{
                         color: "#64748b",
                         fontFamily: "Brandon-Medium",
-                        fontSize: 14,
+                        fontSize: 13,
                       }}
                     >
-                      {visit.visit_date ?? "Today"} â€¢ {visit.purpose ?? serviceConfig.vocab.visitSingular}
+                      {visit.visit_date ?? "Today"} • {visit.purpose ?? serviceConfig.vocab.visitSingular}
                     </Text>
                   </View>
 
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                     <View
                       style={{
                         backgroundColor:
@@ -1334,8 +1336,8 @@ export default function EmployeeDashboardScreen() {
                             : visit.status === "in_progress"
                             ? "rgba(217, 119, 6, 0.14)"
                             : "rgba(100, 116, 139, 0.12)",
-                        paddingHorizontal: 12,
-                        paddingVertical: 6,
+                        paddingHorizontal: 10,
+                        paddingVertical: 4,
                         borderRadius: 999,
                       }}
                     >
@@ -1348,30 +1350,40 @@ export default function EmployeeDashboardScreen() {
                                 ? "#b45309"
                                 : "#475569",
                           fontFamily: "Brandon-Bold",
-                          fontSize: 12,
+                          fontSize: 11,
                         }}
-                        >
-                          {visit.status === "completed" ? "Completed" : visit.status === "in_progress" ? "In Progress" : "Scheduled"}
-                        </Text>
-                      </View>
-                      <ArrowRight size={18} color="#64748b" />
+                      >
+                        {visit.status === "completed" ? "Completed" : visit.status === "in_progress" ? "In Progress" : "Scheduled"}
+                      </Text>
                     </View>
-                  </LiquidGlassCard>
-                ))
-              ) : (
-                <LiquidGlassCard
-                  variant="light"
-                  borderRadius={26}
-                  contentStyle={{ padding: 22, alignItems: "center" }}
-                >
-                  <Clock size={28} color="#94a3b8" style={{ marginBottom: 8 }} />
-                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 16 }}>No Visits Queued Today</Text>
-                  <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 4 }}>
-                    All scheduled route visits have been completed or none assigned.
+                    <ArrowRight size={16} color="#94a3b8" />
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <View
+                style={{
+                  paddingVertical: 20,
+                  borderTopWidth: 1,
+                  borderBottomWidth: 1,
+                  borderColor: "#e2e8f0",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                <Clock size={22} color="#94a3b8" />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 15 }}>
+                    {t("noVisitsQueued", "No Visits Queued Today")}
                   </Text>
-                </LiquidGlassCard>
-              )}
-            </View>
+                  <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13, marginTop: 2 }}>
+                    {t("noVisitsDesc", "All scheduled route visits have been completed or none assigned.")}
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
 
             {/* COMPACT SOS SAFETY BAR (Liquid Glass) */}
             <LiquidGlassCard
