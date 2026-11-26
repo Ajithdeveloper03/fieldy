@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -581,21 +581,23 @@ export default function EmployeeDashboardScreen() {
                 }}
               >
                 {[
-                  require("../../assets/images/image2.jpg"),
-                  require("../../assets/images/image3.jpg"),
-                  require("../../assets/images/image4.jpg"),
+                  require("../../assets/images/person1.png"),
+                  require("../../assets/images/person2.png"),
+                  require("../../assets/images/person3.png"),
                 ].map((imgSrc, i) => (
                   <Image
                     key={i}
                     source={imgSrc}
                     style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 16,
+                      width: 34,
+                      height: 34,
+                      borderRadius: 17,
                       borderWidth: 2,
                       borderColor: "#ffffff",
+                      backgroundColor: "#e2e8f0",
                       marginLeft: i === 0 ? 0 : -10,
                     }}
+                    resizeMode="cover"
                   />
                 ))}
                   <View
@@ -751,17 +753,16 @@ export default function EmployeeDashboardScreen() {
                 }}
               >
                 <Image
-                  source={require("../../assets/images/image11.jpg")}
+                  source={require("../../assets/images/person1.png")}
                   style={{
                     position: "absolute",
-                    right: -22,
-                    bottom: -22,
-                    width: 148,
-                    height: 148,
-                    borderRadius: 74,
-                    opacity: 0.36,
+                    right: -12,
+                    bottom: -8,
+                    width: 138,
+                    height: 152,
+                    opacity: 0.92,
                   }}
-                  resizeMode="cover"
+                  resizeMode="contain"
                 />
                 <View>
                   <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
@@ -774,7 +775,7 @@ export default function EmployeeDashboardScreen() {
                     Active {serviceConfig.vocab.tasks}
                   </Text>
                   <Text style={{ color: "rgba(255,255,255,0.85)", fontFamily: "Brandon-Medium", fontSize: 14, marginTop: 6 }}>
-                    {serviceConfig.sampleTasks.length} assigned orders
+                    {serverTasks.length} assigned orders
                   </Text>
                 </View>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -799,17 +800,16 @@ export default function EmployeeDashboardScreen() {
                   }}
                 >
                   <Image
-                    source={require("../../assets/images/image13.jpg")}
+                    source={require("../../assets/images/person2.png")}
                     style={{
                       position: "absolute",
-                      right: -14,
-                      bottom: -14,
+                      right: -8,
+                      bottom: -6,
                       width: 96,
-                      height: 96,
-                      borderRadius: 48,
-                      opacity: 0.38,
+                      height: 108,
+                      opacity: 0.92,
                     }}
-                    resizeMode="cover"
+                    resizeMode="contain"
                   />
                   <Text style={{ color: "#fef08a", fontFamily: "Brandon-Bold", fontSize: 12, letterSpacing: 0.8 }}>
                     GPS TRACKING
@@ -833,17 +833,16 @@ export default function EmployeeDashboardScreen() {
                   }}
                 >
                   <Image
-                    source={require("../../assets/images/image12.jpg")}
+                    source={require("../../assets/images/person3.png")}
                     style={{
                       position: "absolute",
-                      right: -14,
-                      bottom: -14,
+                      right: -8,
+                      bottom: -6,
                       width: 96,
-                      height: 96,
-                      borderRadius: 48,
-                      opacity: 0.38,
+                      height: 108,
+                      opacity: 0.92,
                     }}
-                    resizeMode="cover"
+                    resizeMode="contain"
                   />
                   <Text style={{ color: "#a5b4fc", fontFamily: "Brandon-Bold", fontSize: 12, letterSpacing: 0.8 }}>
                     FIELD PROOF
@@ -1035,7 +1034,7 @@ export default function EmployeeDashboardScreen() {
                   title: "Attendance & Selfie",
                   sub: "Verify GPS clock-in now",
                   bg: "#0f766e",
-                  img: require("../../assets/images/image14.jpg"),
+                  img: require("../../assets/images/person4.png"),
                   route: "/(employee)/attendance-hub",
                 },
                 {
@@ -1043,7 +1042,7 @@ export default function EmployeeDashboardScreen() {
                   title: `My ${serviceConfig.vocab.entities}`,
                   sub: `Open all ${projectSiteProfiles.length} site profiles`,
                   bg: "#ea580c",
-                  img: require("../../assets/images/image15.jpg"),
+                  img: require("../../assets/images/person5.png"),
                   route: "/(employee)/my-sites",
                 },
                 {
@@ -1051,7 +1050,7 @@ export default function EmployeeDashboardScreen() {
                   title: "Visit Logs & Proof",
                   sub: `All ${serviceConfig.vocab.visits.toLowerCase()} & notes`,
                   bg: "#7c3aed",
-                  img: require("../../assets/images/image16.jpg"),
+                  img: require("../../assets/images/person6.png"),
                   route: "/(employee)/visit-history",
                 },
                 {
@@ -1059,7 +1058,7 @@ export default function EmployeeDashboardScreen() {
                   title: "My Score & SLA",
                   sub: `${serviceConfig.kpis.efficiencyRate} â€¢ ${serviceConfig.kpis.points}`,
                   bg: "#0369a1",
-                  img: require("../../assets/images/image17.jpg"),
+                  img: require("../../assets/images/person7.png"),
                   route: "/(employee)/performance",
                 },
               ].map((slide, idx) => (
@@ -1086,14 +1085,13 @@ export default function EmployeeDashboardScreen() {
                     source={slide.img}
                     style={{
                       position: "absolute",
-                      right: -18,
-                      bottom: -18,
-                      width: 146,
-                      height: 146,
-                      borderRadius: 73,
-                      opacity: 0.38,
+                      right: -10,
+                      bottom: -8,
+                      width: 144,
+                      height: 162,
+                      opacity: 0.92,
                     }}
-                    resizeMode="cover"
+                    resizeMode="contain"
                   />
                   <View style={{ maxWidth: "78%" }}>
                     <Text style={{ color: "#fde047", fontFamily: "Brandon-Bold", fontSize: 13, letterSpacing: 0.9 }}>
