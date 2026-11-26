@@ -7,7 +7,7 @@ import { setGlobalFontLanguage } from "../utils/fontSetup";
 
 export type AppLanguage = "en" | "ta";
 
-// Simple, everyday words for English and easy-to-understand Tanglish
+// English and Tamil-script Tanglish pronunciations
 export const translations: Record<AppLanguage, Record<string, string>> = {
   en: {
     appName: "Fieldy",
@@ -74,68 +74,68 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     open: "Open",
   },
   ta: {
-    appName: "Fieldy",
-    tagline: "Field Work & Site App",
-    login: "Login Pannu",
-    logout: "Log Out",
-    continue: "Next Po",
-    home: "Home",
-    dashboard: "Home",
-    today: "Innaiku",
-    onDuty: "Duty-la Irukken",
-    offDuty: "Off Duty",
-    efficiency: "Work Score",
-    activeWorkOrders: "Active Work Orders",
-    ordersUnit: "Orders",
-    mySites: "Ennoda Sites",
-    sites: "Sites",
-    tasks: "Tasks",
-    visits: "Visits",
-    todaysVisits: "Innaiku Visits",
-    openLiveMap: "Live Map Open",
-    viewAll: "Ellam Paaru",
-    viewTasks: "Tasks Paaru",
-    noVisitsQueued: "Innaiku Visits Illa",
-    noVisitsDesc: "Ella visits-um mudinchiduchu illa assign aagala.",
-    noSitesAssigned: "Sites Assign Aagala",
-    noSitesDesc: "Admin site add panna udane inga automatic-ah kaatum.",
-    emergencySos: "Emergency SOS",
-    emergencySosSub: "Live GPS oda Admin-ku alert anuppu",
-    attendanceHub: "Attendance Hub",
-    attendance: "Attendance",
-    clockIn: "Clock In Pannu",
-    clockOut: "Clock Out Pannu",
-    myPerformance: "Ennoda Performance",
-    workQuality: "Work Quality",
-    targetQuota: "Mudicha Work",
-    loggedTime: "Work Hours",
-    weeklyOutput: "Indha Vaaram Work",
-    recentTasks: "Recent Tasks",
-    noPendingTasks: "Pending Tasks Illa",
-    myCredentials: "Ennoda Details",
-    username: "Username",
-    mobileNumber: "Mobile Number",
-    emailAddress: "Email Address",
-    saveChanges: "Save Pannu",
-    notifications: "Alerts & Updates",
-    recentUpdates: "Pudhu Updates",
-    allCaughtUp: "Ellam Paathachu",
-    noNotifications: "Pudhu alerts edhuvum illa.",
-    submitReport: "Report Anuppu",
-    workNotes: "Work Notes",
-    menu: "Menu",
-    reports: "Reports",
-    profile: "Profile",
-    calendar: "Work Calendar",
-    search: "Search pannu...",
-    completed: "Mudinchiduchu",
-    pending: "Pending",
-    scheduled: "Scheduled",
-    active: "Nadakkudhu",
-    status: "Status",
-    all: "Ellam",
-    back: "Back",
-    open: "Open Pannu",
+    appName: "ஃபீல்டி",
+    tagline: "ஃபீல்ட் ஆபரேஷன்ஸ் & சைட் ஆப்",
+    login: "லாகின்",
+    logout: "லாக் அவுட்",
+    continue: "கன்டினியூ",
+    home: "ஹோம்",
+    dashboard: "ஹோம்",
+    today: "டுடே",
+    onDuty: "ஆன் டியூட்டி",
+    offDuty: "ஆஃப் டியூட்டி",
+    efficiency: "வொர்க் ஸ்கோர்",
+    activeWorkOrders: "ஆக்டிவ் வொர்க் ஆர்டர்ஸ்",
+    ordersUnit: "ஆர்டர்ஸ்",
+    mySites: "மை ப்ராஜெக்ட் சைட்ஸ்",
+    sites: "சைட்ஸ்",
+    tasks: "டாஸ்க்ஸ்",
+    visits: "விசிட்ஸ்",
+    todaysVisits: "டுடேஸ் விசிட்ஸ்",
+    openLiveMap: "லைவ் மேப் ஓபன்",
+    viewAll: "வியூ ஆல்",
+    viewTasks: "மை டாஸ்க்ஸ் பாரு",
+    noVisitsQueued: "டுடே விசிட்ஸ் இல்ல",
+    noVisitsDesc: "எல்லா விசிட்ஸும் கம்ப்ளீட் ஆயிடுச்சு இல்ல அசைன் ஆகல.",
+    noSitesAssigned: "சைட்ஸ் அசைன் ஆகல",
+    noSitesDesc: "வெப் அட்மின்ல சைட் ஆட் பண்ணா இங்க ஆட்டோமேட்டிக்கா வரும்.",
+    emergencySos: "ஃபீல்ட் எமர்ஜென்சி SOS",
+    emergencySosSub: "லைவ் GPS ஓட அட்மினுக்கு அலர்ட் அனுப்பு",
+    attendanceHub: "அட்டெண்டன்ஸ் ஹப்",
+    attendance: "அட்டெண்டன்ஸ்",
+    clockIn: "க்ளாக் இன்",
+    clockOut: "க்ளாக் அவுட்",
+    myPerformance: "பெர்ஃபார்மன்ஸ் & ஸ்டேட்ஸ்",
+    workQuality: "வொர்க் குவாலிட்டி",
+    targetQuota: "கம்ப்ளீட் வொர்க்",
+    loggedTime: "லாக் ஹவர்ஸ்",
+    weeklyOutput: "வீக்லி அவுட்புட்",
+    recentTasks: "ரீசன்ட் டாஸ்க்ஸ்",
+    noPendingTasks: "எல்லா டாஸ்கும் கம்ப்ளீட்",
+    myCredentials: "மை கிரெடென்ஷியல்ஸ்",
+    username: "யூசர்நேம்",
+    mobileNumber: "மொபைல் நம்பர்",
+    emailAddress: "ஈமெயில் அட்ரஸ்",
+    saveChanges: "சேவ் சேஞ்சஸ்",
+    notifications: "நோட்டிஃபிகேஷன்ஸ்",
+    recentUpdates: "ரீசன்ட் அப்டேட்ஸ்",
+    allCaughtUp: "எல்லாம் பார்த்தாச்சு",
+    noNotifications: "புது அலர்ட்ஸ் எதுவும் இல்ல.",
+    submitReport: "ரிப்போர்ட் சப்மிட்",
+    workNotes: "வொர்க் நோட்ஸ்",
+    menu: "மெனு",
+    reports: "ரிப்போர்ட்ஸ்",
+    profile: "ப்ரொஃபைல்",
+    calendar: "வொர்க் காலண்டர்",
+    search: "சர்ச்...",
+    completed: "கம்ப்ளீட்டட்",
+    pending: "பெண்டிங்",
+    scheduled: "ஷெட்யூல்ட்",
+    active: "இன் ப்ராக்ரஸ்",
+    status: "ஸ்டேட்டஸ்",
+    all: "ஆல்",
+    back: "பேக்",
+    open: "ஓபன்",
   },
 };
 
@@ -164,8 +164,10 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
         const savedLang = await AsyncStorage.getItem("app_language");
         if (savedLang === "en" || savedLang === "ta") {
           setLanguageState(savedLang as AppLanguage);
+          setGlobalFontLanguage(savedLang as AppLanguage);
+        } else {
+          setGlobalFontLanguage("en");
         }
-        setGlobalFontLanguage("en");
       } catch (e) {
         console.log("Language load error:", e);
       }
@@ -174,7 +176,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const setLanguage = async (lang: AppLanguage) => {
     setLanguageState(lang);
-    setGlobalFontLanguage("en");
+    setGlobalFontLanguage(lang);
     try {
       await AsyncStorage.setItem("app_language", lang);
     } catch (e) {
@@ -270,12 +272,11 @@ export const LanguageTogglePill: React.FC<{
           style={{
             fontFamily: "Brandon-Bold",
             fontSize: 11,
-            letterSpacing: 0.8,
+            letterSpacing: 0.6,
             color: dark ? "#ffffff" : "#1F1917",
-            textTransform: "uppercase",
           }}
         >
-          {language === "en" ? "EN" : "TANGLISH"}
+          {language === "en" ? "EN" : "தமிழ்"}
         </Text>
       </SafeBlurView>
     </TouchableOpacity>
