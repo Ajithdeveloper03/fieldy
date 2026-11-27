@@ -3,6 +3,7 @@ import { Animated, Image, StyleSheet, Text } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { LiquidGlassBackdrop, LiquidGlassCard } from "../components/LiquidGlass";
+import { checkAndRecoverPendingClockIn } from "../utils/pendingClockIn";
 
 export default function IndexScreen() {
   const [scaleAnim] = useState(() => new Animated.Value(0.3));
@@ -10,6 +11,9 @@ export default function IndexScreen() {
   const [textOpacityAnim] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
     const introAnim = Animated.sequence([
       Animated.parallel([
         Animated.spring(scaleAnim, {
@@ -30,15 +34,33 @@ export default function IndexScreen() {
         useNativeDriver: true,
       }),
     ]);
-    introAnim.start();
 
-    const timer = setTimeout(() => {
-      router.replace("/intro");
-    }, 2400);
+    (async () => {
+      // If Android killed the activity while the user was taking an attendance selfie,
+      // skip splash/intro and resume Clock-In immediately with the captured selfie.
+      try {
+        const recovery = await checkAndRecoverPendingClockIn();
+        if (!cancelled && recovery.shouldRedirectToClockIn) {
+          router.replace("/(employee)/attendance/clock-in");
+          return;
+        }
+      } catch {
+        // Proceed with normal startup
+      }
+
+      if (cancelled) return;
+      introAnim.start();
+      timer = setTimeout(() => {
+        if (!cancelled) {
+          router.replace("/intro");
+        }
+      }, 2400);
+    })();
 
     return () => {
+      cancelled = true;
       introAnim.stop();
-      clearTimeout(timer);
+      if (timer) clearTimeout(timer);
     };
   }, [opacityAnim, scaleAnim, textOpacityAnim]);
 
