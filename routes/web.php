@@ -138,6 +138,7 @@ foreach (['admin', 'fieldy/admin'] as $adminPrefix) {
         Route::get('/employees/{id}', [EmployeeDirectoryController::class, 'show'])->name('employees.show');
         Route::get('/employees/{id}/edit', [EmployeeDirectoryController::class, 'edit'])->name('employees.edit');
         Route::get('/employees/{id}/photo', [EmployeeDirectoryController::class, 'photo'])->name('employees.photo');
+        Route::post('/employees/{id}/photo', [EmployeeDirectoryController::class, 'updatePhoto'])->name('employees.photo.update');
         Route::put('/employees/{id}', [EmployeeDirectoryController::class, 'update'])->name('employees.update');
         Route::delete('/employees/{id}', [EmployeeDirectoryController::class, 'destroy'])->name('employees.destroy');
         Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');

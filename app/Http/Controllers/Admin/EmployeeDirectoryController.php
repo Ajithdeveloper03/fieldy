@@ -10,6 +10,7 @@ use App\Models\FarmerVisit;
 use App\Models\LocationPoint;
 use App\Models\User;
 use App\Services\EmployeeCodeService;
+use App\Services\EmployeePhotoService;
 use App\Services\EmployeePerformanceService;
 use App\Services\Industry\IndustryCatalog;
 use App\Services\Industry\IndustryContext;
@@ -64,6 +65,7 @@ class EmployeeDirectoryController extends Controller
             'status' => $user->status,
             'employee_code' => $user->employeeDetail?->employee_code ?? 'N/A',
             'has_photo' => filled($user->employeeDetail?->photo_path),
+            'photo_version' => $user->employeeDetail?->photoVersion(),
             'region' => $user->employeeDetail?->assigned_region ?? 'Unassigned',
             'designation' => $user->employeeDetail?->designation ?? 'field_staff',
             'reports_to' => $user->employeeDetail?->reports_to,
@@ -239,6 +241,7 @@ class EmployeeDirectoryController extends Controller
                 'status' => $user->status,
                 'employee_code' => $user->employeeDetail?->employee_code ?? 'N/A',
                 'has_photo' => filled($user->employeeDetail?->photo_path),
+                'photo_version' => $user->employeeDetail?->photoVersion(),
                 'region' => $user->employeeDetail?->assigned_region ?? 'Unassigned',
                 'emergency' => $user->employeeDetail?->emergency_phone ?? 'N/A',
                 'last_latitude' => $recentPoints->first()['lat'] ?? null,
@@ -329,17 +332,19 @@ class EmployeeDirectoryController extends Controller
         return $this->show($id, $performance, true);
     }
 
-    public function photo($id)
+    public function photo($id, EmployeePhotoService $photos)
     {
-        $employee = $this->manageableEmployees()->with('employeeDetail')->findOrFail($id);
-        $path = $employee->employeeDetail?->photo_path;
-        $disk = Storage::disk('local');
-        abort_unless($path && $disk->exists($path), 404);
+        return $photos->response($this->manageableEmployees()->with('employeeDetail')->findOrFail($id));
+    }
 
-        return $disk->response($path, headers: [
-            'Cache-Control' => 'private, no-store',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+    public function updatePhoto(Request $request, $id, EmployeePhotoService $photos)
+    {
+        $employee = $this->manageableEmployees()->findOrFail($id);
+        $request->validate(['photo' => EmployeePhotoService::RULE]);
+        $photos->replace($employee, $request->file('photo'));
+
+        return $this->employeeRedirect($request, 'employees.show', $employee->id)
+            ->with('success', 'Employee photo updated.');
     }
 
     public function update(Request $request, $id)

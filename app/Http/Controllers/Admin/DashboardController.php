@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Services\IndustryService;
+use App\Services\ClientReportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(ClientReportService $reports)
     {
         $user = auth()->user();
         $companyId = $user?->company_id;
@@ -22,7 +23,10 @@ class DashboardController extends Controller
         // Fetch industry-specific backend data
         $payload = IndustryService::getDashboardData($industryKey, $companyId);
 
-        return Inertia::render('Admin/Dashboard', $payload);
+        return Inertia::render('Admin/Dashboard', [
+            ...$payload,
+            'reportTabs' => fn () => $reports->tabs($user, $industryKey, $reports->visits($user, $industryKey)),
+        ]);
     }
 
     public function companyLogo(Request $request)

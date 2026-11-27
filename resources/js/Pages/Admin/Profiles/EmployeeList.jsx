@@ -281,7 +281,7 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                         <div className="flex items-start justify-between">
                                             <div className="w-12 h-12 rounded-2xl bg-hp-dark text-white font-bold text-base flex items-center justify-center shadow-md">
                                                 {emp.has_photo ? (
-                                                    <img className="h-full w-full rounded-[inherit] object-cover" src={withBase(`/admin/employees/${emp.id}/photo`)} alt="" loading="lazy" />
+                                                    <img className="h-full w-full rounded-[inherit] object-cover" src={withBase(`/admin/employees/${emp.id}/photo?v=${encodeURIComponent(emp.photo_version || '')}`)} alt="" loading="lazy" />
                                                 ) : emp.name?.charAt(0) || 'S'}
                                             </div>
                                             <span className={`hp-chip !bg-white/90 backdrop-blur-sm ${emp.status === 'active' || emp.checked_in ? 'hp-chip-success hp-chip-dot' : 'hp-chip-gray'}`}>
@@ -344,7 +344,7 @@ export default function EmployeeList({ employees = [], regions = [], filters = {
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 rounded-xl bg-hp-hover border border-hp-border flex items-center justify-center font-bold text-xs shrink-0 text-hp-dark">
                                                         {emp.has_photo ? (
-                                                            <img className="h-full w-full rounded-[inherit] object-cover" src={withBase(`/admin/employees/${emp.id}/photo`)} alt="" loading="lazy" />
+                                                            <img className="h-full w-full rounded-[inherit] object-cover" src={withBase(`/admin/employees/${emp.id}/photo?v=${encodeURIComponent(emp.photo_version || '')}`)} alt="" loading="lazy" />
                                                         ) : emp.name?.charAt(0) || 'S'}
                                                     </div>
                                                     <div>

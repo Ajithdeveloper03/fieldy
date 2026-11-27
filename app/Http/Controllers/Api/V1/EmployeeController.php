@@ -1242,10 +1242,13 @@ class EmployeeController extends Controller
         $task = $this->employeeTasksQuery($user, $industry)->whereKey($id)->firstOrFail();
         $task->update(['status' => $validated['status']]);
 
-        if (SessionActivity::tableReady()) {
+        if ($task->wasChanged('status') && SessionActivity::tableReady()) {
+            $cancelled = $task->status === 'cancelled';
             SessionActivity::record(
-                'employee_task_updated',
-                "Employee {$user->name} updated task \"{$task->title}\" to {$validated['status']}.",
+                $cancelled ? 'employee_task_cancelled' : 'employee_task_updated',
+                $cancelled
+                    ? "{$user->name} cancelled work order \"{$task->title}\"."
+                    : "{$user->name} updated work order \"{$task->title}\" to {$task->status}.",
                 $request,
                 $user,
                 'info',
@@ -1455,16 +1458,17 @@ class EmployeeController extends Controller
             ->each(function (Task $task) use ($items) {
                 $siteName = $task->customer?->name ? " at {$task->customer->name}" : '';
                 $isDone = $task->status === 'done';
+                $isCancelled = $task->status === 'cancelled';
                 $items->push([
                     'id' => 'task-'.$task->id,
-                    'category' => $isDone ? 'completed' : ($task->priority === 'urgent' ? 'urgent' : 'task'),
-                    'title' => $isDone ? 'Work Order Completed' : 'Assigned Work Order',
-                    'message' => "{$task->title}{$siteName}".($task->due_date && ! $isDone ? ' • Due '.$task->due_date->format('M d') : ''),
+                    'category' => $isCancelled ? 'alert' : ($isDone ? 'completed' : ($task->priority === 'urgent' ? 'urgent' : 'task')),
+                    'title' => $isCancelled ? 'Work Order Cancelled' : ($isDone ? 'Work Order Completed' : 'Assigned Work Order'),
+                    'message' => "{$task->title}{$siteName}".($isCancelled ? ' was cancelled.' : ($task->due_date && ! $isDone ? ' • Due '.$task->due_date->format('M d') : '')),
                     'time' => $task->updated_at?->diffForHumans() ?? 'Recently',
                     'timestamp' => $task->updated_at?->timestamp ?? 0,
                     'isUnread' => ! $isDone,
                     'route' => '/(employee)/task/'.$task->id,
-                    'actionLabel' => $isDone ? 'Details' : 'Open',
+                    'actionLabel' => $isDone || $isCancelled ? 'Details' : 'Open',
                 ]);
             });
 

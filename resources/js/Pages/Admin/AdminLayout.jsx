@@ -344,6 +344,25 @@ export default function AdminLayout({ children, currentIndustry: passedIndustry 
     const cleanPath = BASE && pathWithoutBase.startsWith(`${BASE}/`)
         ? pathWithoutBase.slice(BASE.length)
         : pathWithoutBase;
+    const liveProps = useMemo(() => {
+        const pages = {
+            '/admin/dashboard': ['stats', 'locationLogs', 'recentVisits', 'recentFarmers', 'pendingApprovals', 'growthData', 'reportTabs'],
+            '/admin/visits': ['visits', 'analytics', 'reportTabs'],
+            '/admin/alerts': ['alerts'],
+            '/admin/tasks': ['tasks'],
+            '/admin/attendance': ['logs'],
+            '/admin/employees': ['employees'],
+            '/admin/farmers': ['farmers'],
+            '/admin/performance': ['employees'],
+        };
+        return pages[cleanPath] || (/^\/admin\/employees\/\d+$/.test(cleanPath) ? ['employee'] : null);
+    }, [cleanPath]);
+    useEffect(() => {
+        if (!liveProps) return;
+        const poll = router.poll(5000, { only: liveProps });
+        return () => poll.destroy();
+    }, [liveProps]);
+
     const isActive = (path) => cleanPath.startsWith(path);
     const testAlert = () => {
         triggerCritical("SAFETY ALERT - GEOFENCE BREACH OR TELEMETRY EVENT LOGGED");

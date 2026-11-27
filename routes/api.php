@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\TrackingController;
 use App\Http\Controllers\Api\V1\TranslationController;
 use App\Http\Controllers\MediaFileController;
 use App\Http\Middleware\DemoAuthMiddleware;
+use App\Http\Controllers\Api\V1\EmployeePhotoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +33,11 @@ Route::prefix('v1')->group(function () {
     // we bypass Sanctum by automatically authenticating the user via the phone number stored in AsyncStorage.
 
     // ── Protected Routes ──
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/employee/profile/photo', [EmployeePhotoController::class, 'show']);
+        Route::post('/employee/profile/photo', [EmployeePhotoController::class, 'store']);
+    });
+
     Route::middleware([DemoAuthMiddleware::class])->group(function () {
 
         // Current user info

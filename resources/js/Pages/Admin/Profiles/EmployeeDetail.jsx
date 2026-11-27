@@ -35,6 +35,15 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
     const [isMapFullscreen, setIsMapFullscreen] = useState(false);
     const [showEditModal, setShowEditModal] = useState(editing);
     const [showPassword, setShowPassword] = useState(false);
+    const photoForm = useForm({ photo: null });
+
+    function updatePhoto(event) {
+        const photo = event.target.files?.[0];
+        event.target.value = '';
+        if (!photo) return;
+        photoForm.transform(() => ({ photo }));
+        photoForm.post(withBase(`/admin/employees/${employee.id}/photo`), { preserveScroll: true });
+    }
 
     const { data: editData, setData: setEditData, put, processing: savingEdit, errors: editErrors } = useForm({
         name: employee.name || '',
@@ -191,7 +200,7 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
                         <div className="flex items-center gap-5">
                             <div className="w-18 h-18 rounded-2xl bg-hp-dark text-white font-bold text-3xl flex items-center justify-center shrink-0 shadow-sm">
                                 {employee.has_photo ? (
-                                    <img className="h-full w-full rounded-[inherit] object-cover" src={withBase(`/admin/employees/${employee.id}/photo`)} alt="" />
+                                    <img className="h-full w-full rounded-[inherit] object-cover" src={withBase(`/admin/employees/${employee.id}/photo?v=${encodeURIComponent(employee.photo_version || '')}`)} alt="" />
                                 ) : (employee.name || 'A').charAt(0)}
                             </div>
                             <div>
@@ -210,6 +219,15 @@ export default function EmployeeDetail({ employee = {}, attendance = [], visitsT
 
                         {/* Top Action Buttons */}
                         <div className="flex flex-wrap items-center gap-3 shrink-0 self-start lg:self-center">
+                            {!employee.is_sample && (
+                                <div>
+                                    <label className="hp-btn hp-btn-secondary cursor-pointer">
+                                        {photoForm.processing ? t('Uploading…') : t('Change Photo')}
+                                        <input type="file" className="sr-only" accept="image/jpeg,image/png,image/webp" disabled={photoForm.processing} onChange={updatePhoto} />
+                                    </label>
+                                    {photoForm.errors.photo && <p className="text-xs text-hp-danger">{photoForm.errors.photo}</p>}
+                                </div>
+                            )}
                             {!employee.is_sample && <button
                                 type="button"
                                 onClick={() => setShowEditModal(true)}

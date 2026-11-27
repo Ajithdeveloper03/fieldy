@@ -19,6 +19,11 @@ class EmployeeDetail extends Model
 
     protected $hidden = ['photo_path'];
 
+    public function photoVersion(): ?string
+    {
+        return $this->photo_path ? basename($this->photo_path) : null;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

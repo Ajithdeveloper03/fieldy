@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Task;
+use App\Models\SessionActivity;
 use App\Models\User;
 use App\Services\Industry\IndustryContext;
 use Illuminate\Http\Request;
@@ -130,6 +131,10 @@ class TasksController extends Controller
 
         $task = $this->manageableTasks()->findOrFail($id);
         $task->update($validated);
+        if ($task->wasChanged('status') && $task->status === 'cancelled') {
+            $admin = $request->user();
+            SessionActivity::record('admin_task_cancelled', "{$admin->name} cancelled work order \"{$task->title}\".", $request, $admin, 'info', 0, ['task_id' => $task->id]);
+        }
 
         return redirect()->back()->with('success', 'Work order updated successfully.');
     }

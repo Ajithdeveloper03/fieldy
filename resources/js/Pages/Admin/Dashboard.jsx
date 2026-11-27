@@ -15,6 +15,7 @@ import { useAlert } from '../../Components/AlertSystem';
 import InteractiveOpsLab from '../../Components/Dashboard/InteractiveOpsLab';
 import VisualCommandDeck from '../../Components/Dashboard/VisualCommandDeck';
 import ConfettiBurst from '../../Components/Dashboard/ConfettiBurst';
+import ClientReportTabs from '../../Components/ClientReportTabs';
 import { getIndustryById } from '../../data/industriesConfig';
 import { createFieldEmployeeIcon } from '../../lib/mapIcons';
 
@@ -40,7 +41,7 @@ const GROWTH = [
 
 const greetingFor = (h) => (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening');
 
-export default function Dashboard({ currentIndustry: initialIndustry, isTenant = false, isFreshCompany = false, locationLogs = [], stats = {}, recentVisits = [], recentFarmers = [], pendingApprovals = [], agriStats = {}, growthData = [], telemetry = [] }) {
+export default function Dashboard({ currentIndustry: initialIndustry, isTenant = false, isFreshCompany = false, locationLogs = [], stats = {}, recentVisits = [], recentFarmers = [], pendingApprovals = [], agriStats = {}, growthData = [], telemetry = [], reportTabs }) {
     const [prompt, setPrompt] = useState('');
     const [showTip, setShowTip] = useState(true);
     const [isFullScreenMap, setIsFullScreenMap] = useState(false);
@@ -449,51 +450,7 @@ export default function Dashboard({ currentIndustry: initialIndustry, isTenant =
                 </section>
             </div>
 
-            {/* ══════════ RECENT LOGS & VISITS ══════════ */}
-            <section className="hp-card overflow-hidden mb-8">
-                <div className="hp-card-header flex-wrap">
-                    <h2 className="hp-card-title">{t(labels.recentVisitsTitle)}</h2>
-                    <button type="button" onClick={() => router.visit('/admin/visits')} className="hp-btn hp-btn-sm hp-btn-text">
-                        {t('View All')} <ChevronRight className="w-4 h-4" />
-                    </button>
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="hp-table min-w-[560px]">
-                        <thead>
-                            <tr>
-                                <th>{t('Record & Assignee')}</th>
-                                <th>{t('ID')}</th>
-                                <th>{t('Date')}</th>
-                                <th>{t('Status')}</th>
-                                <th className="text-right"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {recentVisits.length > 0 ? recentVisits.map((visit, i) => (
-                                <tr key={i} className="cursor-pointer" onClick={() => visit.id && router.visit(`/admin/visits/${visit.id}`)}>
-                                    <td>
-                                        <div className="flex items-center gap-3">
-                                            <span className="hp-icon-tile !w-10 !h-10"><FileText className="w-4 h-4" /></span>
-                                            <div>
-                                                <span className="font-bold block text-sm">{visit.farmer}</span>
-                                                <span className="text-xs text-hp-muted">Assignee: {visit.employee}</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="!text-hp-muted font-mono text-sm">LOG-{String(visit.id).padStart(4, '0')}</td>
-                                    <td className="!text-hp-muted text-sm">{visit.date}</td>
-                                    <td><span className="hp-chip hp-chip-success hp-chip-dot">{t('Completed')}</span></td>
-                                    <td className="text-right"><ChevronRight className="w-4 h-4 text-hp-muted inline" /></td>
-                                </tr>
-                            )) : (
-                                <tr>
-                                    <td colSpan="5" className="!py-12 text-center !text-hp-muted text-base">{t('No activity records found yet.')}</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+            <ClientReportTabs data={reportTabs} title={t(labels.recentVisitsTitle)} />
 
             {/* ══════════ PROJECT SITES OVERVIEW ══════════ */}
             <div className="grid grid-cols-1 gap-6">

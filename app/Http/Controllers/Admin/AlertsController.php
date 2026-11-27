@@ -118,8 +118,12 @@ class AlertsController extends Controller
 
             // 3. Real-time employee activity notifications (username/profile updates, attendance, visits, tasks)
             if (SessionActivity::tableReady()) {
-                $activities = SessionActivity::whereIn('user_id', $empIds)
-                    ->where('event_type', 'like', 'employee_%')
+                $activities = SessionActivity::where(function ($query) use ($empIds, $companyId) {
+                    $query->where(fn ($events) => $events->whereIn('user_id', $empIds)
+                        ->where('event_type', 'like', 'employee_%'))
+                        ->orWhere(fn ($events) => $events->where('company_id', $companyId)
+                            ->where('event_type', 'admin_task_cancelled'));
+                    })
                     ->with('user:id,name')
                     ->latest('id')
                     ->take(20)
@@ -133,13 +137,15 @@ class AlertsController extends Controller
                         'employee_visit_checkin' => 'Site Visit Check-In',
                         'employee_visit_submitted' => 'Visit Report Submitted',
                         'employee_task_updated' => 'Task Updated',
+                        'employee_task_cancelled' => 'Work Order Cancelled',
+                        'admin_task_cancelled' => 'Work Order Cancelled by Admin',
                     ];
                     $alerts[] = [
                         'id' => 'act-' . $act->id,
-                        'type' => $act->severity === 'critical' ? 'critical' : 'medium',
+                        'type' => $act->status === 'critical' ? 'critical' : 'medium',
                         'title' => ($titleMap[$act->event_type] ?? 'Employee Activity') . ': ' . ($act->user?->name ?? 'Field Staff'),
-                        'message' => $act->description ?: 'Activity logged from mobile app.',
-                        'location' => 'Mobile App Live Sync',
+                        'message' => $act->label ?: 'Employee activity recorded.',
+                        'location' => $act->event_type === 'admin_task_cancelled' ? 'Web Admin' : 'Mobile App',
                         'timestamp' => $act->created_at ? $act->created_at->diffForHumans() : 'Just now',
                         'resolved' => false,
                     ];
