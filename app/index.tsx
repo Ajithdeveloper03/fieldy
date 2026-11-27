@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Animated, Image, StyleSheet, Text } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LiquidGlassBackdrop, LiquidGlassCard } from "../components/LiquidGlass";
 import { checkAndRecoverPendingClockIn } from "../utils/pendingClockIn";
 
@@ -36,7 +37,7 @@ export default function IndexScreen() {
     ]);
 
     (async () => {
-      // If Android killed the activity while the user was taking an attendance selfie,
+      // 1. If Android killed the activity while the user was taking an attendance selfie,
       // skip splash/intro and resume Clock-In immediately with the captured selfie.
       try {
         const recovery = await checkAndRecoverPendingClockIn();
@@ -45,7 +46,34 @@ export default function IndexScreen() {
           return;
         }
       } catch {
-        // Proceed with normal startup
+        // Proceed to session check
+      }
+
+      // 2. If user is already signed in, resume directly where they were instead of restarting at /intro.
+      try {
+        const entries = await AsyncStorage.multiGet([
+          "token",
+          "@auth_user",
+          "isLoggedIn",
+          "@fieldy_last_route",
+        ]);
+        const map = Object.fromEntries(entries);
+        const hasSession = Boolean(
+          map["token"] || map["@auth_user"] || map["isLoggedIn"] === "true"
+        );
+        if (!cancelled && hasSession) {
+          const lastRoute = map["@fieldy_last_route"];
+          const isValidSavedRoute =
+            typeof lastRoute === "string" &&
+            lastRoute.startsWith("/") &&
+            lastRoute !== "/" &&
+            lastRoute !== "/intro" &&
+            lastRoute !== "/login";
+          router.replace((isValidSavedRoute ? lastRoute : "/(employee)/dashboard") as any);
+          return;
+        }
+      } catch {
+        // Fall through to intro
       }
 
       if (cancelled) return;

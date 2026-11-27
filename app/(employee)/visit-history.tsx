@@ -8,8 +8,9 @@ import {
   StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { api } from "../../services/api";
+import { useLiveRefresh } from "../../hooks/useLiveRefresh";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   ChevronLeft,
@@ -28,36 +29,25 @@ import {
 } from "../../components/LiquidGlass";
 import { PageHeroBanner } from "../../components/PageHeroBanner";
 
-const HISTORY_IMAGES = [
-  require("../../assets/images/image2.jpg"),
-  require("../../assets/images/image5.jpg"),
-  require("../../assets/images/image3.jpg"),
-  require("../../assets/images/image11.jpg"),
-];
+const DEFAULT_HISTORY_IMAGE = require("../../assets/images/default-site.jpg");
 
 export default function EmployeeVisitHistoryScreen() {
   const [rawVisits, setRawVisits] = React.useState<any[]>([]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      let active = true;
-      (async () => {
-        const res = await api.get("/employee/visits").catch(() => null);
-        if (active) setRawVisits(Array.isArray(res?.visits) ? res.visits : []);
-      })();
-      return () => {
-        active = false;
-      };
-    }, [])
-  );
+  const loadHistory = React.useCallback(async () => {
+    const res = await api.get("/employee/visits").catch(() => null);
+    setRawVisits(Array.isArray(res?.visits) ? res.visits : []);
+  }, []);
 
-  const history = rawVisits.map((v: any, i: number) => ({
+  useLiveRefresh(loadHistory, 10000);
+
+  const history = rawVisits.map((v: any) => ({
     id: String(v.id),
     date: [v.date, v.time].filter(Boolean).join(", "),
     site_contact: v.farmerName || v.site || "Field Site",
     status: v.status === "completed" ? "Report Submitted" : "In Progress",
     location: v.address || v.farmerCode || "Field Location",
-    image: HISTORY_IMAGES[i % HISTORY_IMAGES.length],
+    image: DEFAULT_HISTORY_IMAGE,
   }));
 
   return (

@@ -173,6 +173,36 @@ export async function uploadMediaAsset(params: {
   return uploaded;
 }
 
+export async function uploadProfilePhotoAsset(
+  asset: LocalMediaAsset
+): Promise<{ avatar_url: string | null; photo_url: string | null; photo_path?: string | null }> {
+  const formData = new FormData();
+  if (Platform.OS === "web") {
+    const resp = await fetch(asset.uri);
+    const blob = await resp.blob();
+    formData.append("photo", blob, asset.name || `profile-${Date.now()}.jpg`);
+  } else {
+    const normalizedUri =
+      Platform.OS === "android" &&
+      !asset.uri.startsWith("file://") &&
+      !asset.uri.startsWith("content://")
+        ? `file://${asset.uri}`
+        : asset.uri;
+    formData.append("photo", {
+      uri: normalizedUri,
+      name: asset.name || guessFilename(normalizedUri, "jpg", "profile"),
+      type: asset.mimeType || "image/jpeg",
+    } as any);
+  }
+
+  const res = await apiClient.upload("/employee/profile/photo", formData);
+  return {
+    avatar_url: res?.avatar_url || res?.photo_url || null,
+    photo_url: res?.photo_url || res?.avatar_url || null,
+    photo_path: res?.photo_path || null,
+  };
+}
+
 export async function fetchMediaFiles(filters?: {
   visitId?: number | string;
   taskId?: number | string;
@@ -237,7 +267,7 @@ export async function downloadVisitDossierToDevice(
   signedDossierUrl?: string | null
 ): Promise<boolean> {
   if (signedDossierUrl && /^https?:\/\//i.test(signedDossierUrl)) {
-    return downloadRemoteFile(signedDossierUrl, `visit-${visitId}-dossier.txt`);
+    return downloadRemoteFile(signedDossierUrl, `fieldy-visit-report-${visitId}.pdf`);
   }
   try {
     const res = await apiClient.get("/employee/visits");
@@ -245,7 +275,7 @@ export async function downloadVisitDossierToDevice(
       (v: any) => String(v.id) === String(visitId)
     );
     if (match?.dossier_url) {
-      return downloadRemoteFile(match.dossier_url, `visit-${visitId}-dossier.txt`);
+      return downloadRemoteFile(match.dossier_url, `fieldy-visit-report-${visitId}.pdf`);
     }
   } catch {
     // Fallback false

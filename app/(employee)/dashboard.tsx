@@ -40,26 +40,25 @@ import {
   LiquidGlassIconButton,
 } from "../../components/LiquidGlass";
 
-const SITE_CARD_IMAGES = [
-  require("../../assets/images/image2.jpg"),
-  require("../../assets/images/image5.jpg"),
-  require("../../assets/images/image3.jpg"),
-  require("../../assets/images/image11.jpg"),
-  require("../../assets/images/image12.jpg"),
-  require("../../assets/images/image15.jpg"),
-];
+const DEFAULT_SITE_IMAGE = require("../../assets/images/default-site.jpg");
 
 const HERO_LOCAL_IMAGES: Record<string, any> = {
-  real_estate: require("../../assets/images/image1.jpg"),
-  facility_fmcg: require("../../assets/images/image2.jpg"),
+  real_estate: require("../../assets/images/default-site.jpg"),
+  facility_fmcg: require("../../assets/images/default-site.jpg"),
   construction: require("../../assets/images/employee1.jpg"),
-  security: require("../../assets/images/image4.jpg"),
-  cleaning: require("../../assets/images/image5.jpg"),
-  maintenance: require("../../assets/images/image6.jpg"),
-  solar: require("../../assets/images/image7.jpg"),
-  pest_control: require("../../assets/images/image8.jpg"),
-  logistics: require("../../assets/images/image10.jpg"),
+  security: require("../../assets/images/default-site.jpg"),
+  cleaning: require("../../assets/images/default-site.jpg"),
+  maintenance: require("../../assets/images/default-site.jpg"),
+  solar: require("../../assets/images/default-site.jpg"),
+  pest_control: require("../../assets/images/default-site.jpg"),
+  logistics: require("../../assets/images/default-site.jpg"),
 };
+
+function getInitials(name: string): string {
+  const parts = (name || "FE").trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  return (parts[0] || "FE").slice(0, 2).toUpperCase();
+}
 
 export default function EmployeeDashboardScreen() {
   const insets = useSafeAreaInsets();
@@ -68,6 +67,8 @@ export default function EmployeeDashboardScreen() {
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [userName, setUserName] = useState("Field Executive");
   const [employeeCode, setEmployeeCode] = useState("EMP");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarLoadError, setAvatarLoadError] = useState(false);
   const [pointsEarned, setPointsEarned] = useState(0);
   const [efficiencyScore, setEfficiencyScore] = useState(0);
   const [apiSites, setApiSites] = useState<any[]>([]);
@@ -83,6 +84,7 @@ export default function EmployeeDashboardScreen() {
     if (authUser?.name) setUserName(authUser.name);
     else if (name) setUserName(name);
     if (authUser?.employee_code) setEmployeeCode(authUser.employee_code);
+    if (authUser?.avatar_url) setAvatarUrl(authUser.avatar_url);
 
     try {
       const [dash, tasksRes, visitsRes, sitesRes] = await Promise.all([
@@ -97,6 +99,32 @@ export default function EmployeeDashboardScreen() {
       const stats = payload?.stats;
       if (emp?.name) setUserName(emp.name);
       if (emp?.employee_code) setEmployeeCode(emp.employee_code);
+      if (emp) {
+        const serverPhoto = emp.avatar_url || emp.photo_url || null;
+        setAvatarLoadError(false);
+        setAvatarUrl(serverPhoto);
+        if (serverPhoto) {
+          await AsyncStorage.setItem("@user_avatar_uri", serverPhoto);
+        } else {
+          await AsyncStorage.removeItem("@user_avatar_uri");
+        }
+        if (authUser) {
+          await AsyncStorage.setItem(
+            "@auth_user",
+            JSON.stringify({
+              ...authUser,
+              name: emp.name || authUser.name,
+              phone: emp.phone || authUser.phone,
+              email: emp.email ?? authUser.email,
+              employee_code: emp.employee_code || authUser.employee_code,
+              designation: emp.designation ?? authUser.designation,
+              region: emp.assigned_region ?? emp.region ?? authUser.region,
+              company_name: emp.company_name ?? authUser.company_name,
+              avatar_url: serverPhoto,
+            })
+          );
+        }
+      }
       if (emp?.industry && ALL_SERVICE_KEYS.includes(emp.industry)) {
         await setService(emp.industry);
       }
@@ -107,7 +135,8 @@ export default function EmployeeDashboardScreen() {
       }
       if (stats) {
         if (typeof stats.points_earned === "number") setPointsEarned(stats.points_earned);
-        if (typeof stats.efficiency_score === "number") setEfficiencyScore(stats.efficiency_score);
+        const resolvedScore = Number(stats.score ?? stats.efficiency_score ?? stats.task_completion_rate ?? 0);
+        if (!Number.isNaN(resolvedScore)) setEfficiencyScore(resolvedScore);
       }
 
       const tList = Array.isArray(tasksRes?.tasks)
@@ -145,7 +174,7 @@ export default function EmployeeDashboardScreen() {
     }
   }, [setService]);
 
-  useLiveRefresh(loadDashboard, 12000);
+  useLiveRefresh(loadDashboard, 10000);
 
   const projectSiteProfiles = React.useMemo(() => {
     return apiSites.map((s: any, idx: number) => ({
@@ -153,13 +182,13 @@ export default function EmployeeDashboardScreen() {
       code: s.site_code || s.code || `SITE-${String(idx + 1).padStart(3, "0")}`,
       name: s.name || "Project Site",
       type: s.type || serviceConfig.vocab.entitySingular,
-      size: s.size || "0",
+      size: s.size || "",
       sizeUnit: s.sizeUnit || serviceConfig.vocab.sizeUnit,
       area: s.area || s.city || "Assigned Zone",
       city: s.city || "Assigned Sector",
       contactName: s.contactName || s.phone || "Site Coordinator",
       status: s.status || "verified",
-      image: s.image || SITE_CARD_IMAGES[idx % SITE_CARD_IMAGES.length],
+      image: s.image || s.photo_url || DEFAULT_SITE_IMAGE,
     }));
   }, [apiSites, serviceConfig.vocab]);
   const renderActionIcon = (iconName: string, color: string) => {
@@ -304,14 +333,23 @@ export default function EmployeeDashboardScreen() {
                       overflow: "hidden",
                       marginRight: 12,
                       flexShrink: 0,
+                      backgroundColor: "#0f766e",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    <Image
-                      source={{
-                        uri: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=project&q=80",
-                      }}
-                      style={{ width: "100%", height: "100%" }}
-                    />
+                    {avatarUrl && !avatarLoadError ? (
+                      <Image
+                        source={{ uri: avatarUrl }}
+                        onError={() => setAvatarLoadError(true)}
+                        style={{ width: "100%", height: "100%" }}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 20 }}>
+                        {getInitials(userName)}
+                      </Text>
+                    )}
                   </TouchableOpacity>
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text
@@ -1071,7 +1109,7 @@ export default function EmployeeDashboardScreen() {
                   const cardImg =
                     typeof entity.image === "string"
                       ? { uri: entity.image }
-                      : entity.image || SITE_CARD_IMAGES[idx % SITE_CARD_IMAGES.length];
+                      : entity.image || DEFAULT_SITE_IMAGE;
 
                   return (
                     <TouchableOpacity
@@ -1304,7 +1342,7 @@ export default function EmployeeDashboardScreen() {
                   }}
                 >
                   <Image
-                    source={SITE_CARD_IMAGES[vIdx % SITE_CARD_IMAGES.length]}
+                    source={DEFAULT_SITE_IMAGE}
                     style={{
                       width: 52,
                       height: 52,

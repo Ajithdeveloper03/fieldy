@@ -40,20 +40,29 @@ export default function EmployeePerformanceScreen() {
     }
   }, []);
 
-  useLiveRefresh(loadPerformance, 15000);
+  useLiveRefresh(loadPerformance, 10000);
 
   const metrics = perfData?.metrics ?? {};
-  const efficiency = Number(metrics.efficiency_score ?? metrics.efficiency ?? 0);
+  const efficiency = Math.round(
+    Number(metrics.score ?? perfData?.score ?? metrics.efficiency_score ?? metrics.task_completion_rate ?? 0)
+  );
   const pointsEarned = Number(metrics.points_earned ?? metrics.points ?? 0);
   const tasksCompleted = Number(metrics.tasks_completed ?? 0);
   const tasksTotal = Number(metrics.tasks_total ?? 0);
   const visitsCompleted = Number(metrics.visits_completed ?? 0);
+  const visitsTotal = Number(metrics.visits_total ?? visitsCompleted);
   const attendanceDays = Number(metrics.attendance_days ?? 0);
+  const attendanceRate = Number(metrics.attendance_rate ?? 0);
+  const punctualityRate = Number(metrics.punctuality_rate ?? 0);
   const hoursWorked = Number(metrics.hours_worked ?? metrics.hours ?? 0);
-  const distanceKm = Number(metrics.distance_month_km ?? 0);
+  const distanceKm = Number(metrics.distance_km_month ?? metrics.distance_month_km ?? 0);
   const periodLabel =
+    perfData?.period ??
     perfData?.period_label ??
     new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const recentAttendance: any[] = Array.isArray(perfData?.attendance)
+    ? perfData.attendance
+    : [];
 
   const rawBars: any[] = Array.isArray(perfData?.weekly_bars)
     ? perfData.weekly_bars
@@ -435,10 +444,20 @@ export default function EmployeePerformanceScreen() {
               >
                 {rawBars.map((bar, i) => {
                   const val = Number(bar.total_actions ?? 0);
-                  const barHeight = val > 0 ? Math.max(16, Math.round((val / maxActions) * 62)) : 8;
+                  const barHeight = val > 0 ? Math.max(16, Math.round((val / maxActions) * 52)) : 8;
                   const isToday = Boolean(bar.is_today);
                   return (
                     <View key={i} style={{ alignItems: "center", flex: 1 }}>
+                      <Text
+                        style={{
+                          color: val > 0 ? "#0f172a" : "#94a3b8",
+                          fontFamily: "Brandon-Bold",
+                          fontSize: 10,
+                          marginBottom: 3,
+                        }}
+                      >
+                        {val}
+                      </Text>
                       <View
                         style={{
                           width: 18,
@@ -496,15 +515,23 @@ export default function EmployeePerformanceScreen() {
                   Attendance Days Logged
                 </Text>
                 <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14 }}>
-                  {attendanceDays} Days ({hoursWorked.toFixed(1)} hrs)
+                  {attendanceDays} Days • {attendanceRate}% ({hoursWorked.toFixed(1)} hrs)
                 </Text>
               </View>
               <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                 <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>
-                  Completed Site Visits
+                  On-Time Punctuality
+                </Text>
+                <Text style={{ color: "#0284c7", fontFamily: "Brandon-Bold", fontSize: 14 }}>
+                  {punctualityRate}%
+                </Text>
+              </View>
+              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>
+                  Site Visits Completed
                 </Text>
                 <Text style={{ color: "#10b981", fontFamily: "Brandon-Bold", fontSize: 14 }}>
-                  {visitsCompleted} Visits
+                  {visitsCompleted} / {visitsTotal} Visits
                 </Text>
               </View>
               <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -515,6 +542,23 @@ export default function EmployeePerformanceScreen() {
                   {distanceKm.toFixed(1)} km
                 </Text>
               </View>
+              {recentAttendance.length > 0 && (
+                <View style={{ marginTop: 6, paddingTop: 10, borderTopWidth: 1, borderTopColor: "rgba(148, 163, 184, 0.18)", gap: 6 }}>
+                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 13 }}>
+                    Recent Shifts
+                  </Text>
+                  {recentAttendance.slice(0, 3).map((att, idx) => (
+                    <View key={att.date || idx} style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                      <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 12 }}>
+                        {att.date_label || att.date}
+                      </Text>
+                      <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 12 }}>
+                        {att.check_in || "—"} – {att.check_out || "On Duty"}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
             </View>
           </LiquidGlassCard>
 

@@ -18,7 +18,7 @@ import {
   Check,
   Plus,
   ChevronDown,
-  IndianRupee,
+  ChevronUp,
   Video,
   Camera,
   Trash2,
@@ -41,8 +41,15 @@ import {
   LiquidGlassButton,
   LiquidGlassCard,
   LiquidGlassIconButton,
-  LiquidGlassPill,
 } from "../../../components/LiquidGlass";
+
+const SITE_STATUS_OPTIONS = [
+  { label: "Done & Verified (Good)", color: "#059669" },
+  { label: "In Progress / Ongoing", color: "#0284c7" },
+  { label: "Needs Rework / Attention", color: "#d97706" },
+  { label: "Pending Material / Approval", color: "#7c3aed" },
+  { label: "Issue Escalated", color: "#dc2626" },
+];
 
 export default function SubmitReportScreen() {
   const insets = useSafeAreaInsets();
@@ -59,9 +66,9 @@ export default function SubmitReportScreen() {
   }>();
   const { serviceConfig } = useService();
   const { stopSession } = useTracking();
+  const [siteStatus, setSiteStatus] = useState(SITE_STATUS_OPTIONS[0].label);
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const [notes, setNotes] = useState("");
-  const [paymentMode, setPaymentMode] = useState("None");
-  const [amountCollected, setAmountCollected] = useState("");
   const [beforePhoto, setBeforePhoto] = useState<LocalMediaAsset | null>(null);
   const [afterPhoto, setAfterPhoto] = useState<LocalMediaAsset | null>(null);
   const [siteVideo, setSiteVideo] = useState<LocalMediaAsset | null>(null);
@@ -123,19 +130,6 @@ export default function SubmitReportScreen() {
       showToast({
         title: "Missing Notes",
         message: "Please write work notes (at least 5 characters).",
-        type: "error",
-      });
-      return;
-    }
-    if (
-      paymentMode !== "None" &&
-      (!amountCollected ||
-        isNaN(Number(amountCollected)) ||
-        Number(amountCollected) <= 0)
-    ) {
-      showToast({
-        title: "Invalid Amount",
-        message: "Please enter a valid amount.",
         type: "error",
       });
       return;
@@ -215,10 +209,10 @@ export default function SubmitReportScreen() {
       farmer_id: resolvedFarmerId ? Number(resolvedFarmerId) : undefined,
       distance_km: resolvedDistanceKm || undefined,
       method: method || "report",
+      site_status: siteStatus,
+      work_status: siteStatus,
       notes: notes.trim(),
       farm_condition_notes: notes.trim(),
-      paymentMode,
-      amountCollected: paymentMode !== "None" ? Number(amountCollected) : 0,
       beforePhoto: beforePhoto?.uri || null,
       afterPhoto: afterPhoto?.uri || null,
       siteVideo: siteVideo?.uri || null,
@@ -341,15 +335,15 @@ export default function SubmitReportScreen() {
               ))}
             </View>
 
-            {/* Status */}
+            {/* Status Dropdown (Multi-Option) */}
             <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, marginBottom: 8 }}>
               {serviceConfig.shortName} Status
             </Text>
             <LiquidGlassCard
               variant="light"
               borderRadius={14}
-              onPress={() => {}}
-              style={{ marginBottom: 20 }}
+              onPress={() => setStatusDropdownOpen((prev) => !prev)}
+              style={{ marginBottom: statusDropdownOpen ? 8 : 20 }}
               contentStyle={{
                 paddingHorizontal: 16,
                 paddingVertical: 14,
@@ -358,11 +352,82 @@ export default function SubmitReportScreen() {
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: "#0f172a", fontFamily: "Brandon-Medium", fontSize: 15 }}>
-                Done & Verified (Good)
-              </Text>
-              <ChevronDown size={20} color="#64748b" />
+              <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                <View
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor:
+                      SITE_STATUS_OPTIONS.find((o) => o.label === siteStatus)?.color || "#059669",
+                    marginRight: 10,
+                  }}
+                />
+                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 15 }}>
+                  {siteStatus}
+                </Text>
+              </View>
+              {statusDropdownOpen ? (
+                <ChevronUp size={20} color="#64748b" />
+              ) : (
+                <ChevronDown size={20} color="#64748b" />
+              )}
             </LiquidGlassCard>
+
+            {statusDropdownOpen && (
+              <LiquidGlassCard
+                variant="light"
+                borderRadius={14}
+                style={{ marginBottom: 20 }}
+                contentStyle={{ paddingVertical: 6 }}
+              >
+                {SITE_STATUS_OPTIONS.map((option, idx) => {
+                  const selected = option.label === siteStatus;
+                  return (
+                    <TouchableOpacity
+                      key={option.label}
+                      activeOpacity={0.75}
+                      onPress={() => {
+                        setSiteStatus(option.label);
+                        setStatusDropdownOpen(false);
+                      }}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        paddingHorizontal: 16,
+                        paddingVertical: 12,
+                        backgroundColor: selected ? "rgba(15, 118, 110, 0.10)" : "transparent",
+                        borderBottomWidth: idx < SITE_STATUS_OPTIONS.length - 1 ? 1 : 0,
+                        borderBottomColor: "rgba(15, 23, 42, 0.06)",
+                      }}
+                    >
+                      <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                        <View
+                          style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: 5,
+                            backgroundColor: option.color,
+                            marginRight: 10,
+                          }}
+                        />
+                        <Text
+                          style={{
+                            color: selected ? "#0f766e" : "#0f172a",
+                            fontFamily: selected ? "Brandon-Bold" : "Brandon-Medium",
+                            fontSize: 14,
+                          }}
+                        >
+                          {option.label}
+                        </Text>
+                      </View>
+                      {selected && <Check size={16} color="#0f766e" />}
+                    </TouchableOpacity>
+                  );
+                })}
+              </LiquidGlassCard>
+            )}
 
             {/* Notes */}
             <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 14, marginBottom: 8 }}>
@@ -386,69 +451,6 @@ export default function SubmitReportScreen() {
                 value={notes}
                 onChangeText={setNotes}
               />
-            </LiquidGlassCard>
-
-            {/* Payment */}
-            <LiquidGlassCard
-              variant="light"
-              borderRadius={18}
-              style={{ marginBottom: 20 }}
-              contentStyle={{ padding: 16 }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-                <IndianRupee size={18} color="#ea580c" style={{ marginRight: 8 }} />
-                <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 15 }}>
-                  Payment
-                </Text>
-              </View>
-              <View style={{ flexDirection: "row", gap: 8, marginBottom: paymentMode !== "None" ? 12 : 0 }}>
-                {["None", "Cash", "UPI"].map((mode) => (
-                  <LiquidGlassPill
-                    key={mode}
-                    variant="light"
-                    active={paymentMode === mode}
-                    tintColor="rgba(249, 115, 22, 0.85)"
-                    onPress={() => setPaymentMode(mode)}
-                    style={{ flex: 1 }}
-                    contentStyle={{ paddingVertical: 10, paddingHorizontal: 10 }}
-                  >
-                    <Text
-                      style={{
-                        fontFamily: "Brandon-Bold",
-                        fontSize: 13,
-                        color: paymentMode === mode ? "#ffffff" : "#64748b",
-                      }}
-                    >
-                      {mode}
-                    </Text>
-                  </LiquidGlassPill>
-                ))}
-              </View>
-              {paymentMode !== "None" && (
-                <View
-                  style={{
-                    borderWidth: 1,
-                    borderColor: "rgba(255, 255, 255, 0.92)",
-                    borderRadius: 12,
-                    paddingHorizontal: 14,
-                    paddingVertical: 10,
-                    backgroundColor: "rgba(255, 255, 255, 0.66)",
-                    flexDirection: "row",
-                    alignItems: "center",
-                  }}
-                >
-                  <Text style={{ color: "#64748b", fontFamily: "Brandon-Bold", fontSize: 18, marginRight: 8 }}>
-                    ₹
-                  </Text>
-                  <TextInput
-                    style={{ flex: 1, color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 18 }}
-                    placeholder="Amount"
-                    keyboardType="numeric"
-                    value={amountCollected}
-                    onChangeText={setAmountCollected}
-                  />
-                </View>
-              )}
             </LiquidGlassCard>
 
             {/* Before & After Photos + Site Video */}

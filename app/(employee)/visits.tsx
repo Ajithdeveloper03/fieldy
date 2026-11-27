@@ -8,8 +8,9 @@ import {
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { api } from "../../services/api";
+import { useLiveRefresh } from "../../hooks/useLiveRefresh";
 import {
   ChevronLeft,
   CalendarDays,
@@ -30,12 +31,7 @@ import { PageHeroBanner } from "../../components/PageHeroBanner";
 export default function EmployeeVisitsScreen() {
   const { serviceConfig } = useService();
 
-  const fallbackImages = [
-    require("../../assets/images/image1.jpg"),
-    require("../../assets/images/image2.jpg"),
-    require("../../assets/images/image5.jpg"),
-    require("../../assets/images/image6.jpg"),
-  ];
+  const defaultSiteImage = require("../../assets/images/default-site.jpg");
 
   const [rawVisits, setRawVisits] = React.useState<any[]>([]);
   const [refreshing, setRefreshing] = React.useState(false);
@@ -45,13 +41,7 @@ export default function EmployeeVisitsScreen() {
     setRawVisits(Array.isArray(res?.visits) ? res.visits : []);
   }, []);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      (async () => {
-        await loadVisits();
-      })();
-    }, [loadVisits])
-  );
+  useLiveRefresh(loadVisits, 10000);
 
   const handleRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -59,13 +49,13 @@ export default function EmployeeVisitsScreen() {
     setRefreshing(false);
   }, [loadVisits]);
 
-  const visits = rawVisits.map((v: any, i: number) => ({
+  const visits = rawVisits.map((v: any) => ({
     id: v.id,
-    type: v.type || serviceConfig.vocab.visitSingular,
+    type: v.siteStatus || v.type || serviceConfig.vocab.visitSingular,
     site_contact: v.farmerName || v.site || v.siteName || serviceConfig.vocab.entitySingular,
     time: [v.date, v.time].filter(Boolean).join(" • "),
     status: v.status === "completed" ? "Completed" : v.status === "in_progress" ? "In Progress" : v.status || "Completed",
-    image: fallbackImages[i % fallbackImages.length],
+    image: defaultSiteImage,
   }));
 
   return (

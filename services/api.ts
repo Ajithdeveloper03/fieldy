@@ -122,6 +122,7 @@ export const clearAuthSession = async () => {
   await AsyncStorage.removeItem(USER_KEY);
   await AsyncStorage.removeItem('isLoggedIn');
   await AsyncStorage.removeItem('isClockedIn');
+  await AsyncStorage.removeItem('@fieldy_last_route');
 };
 
 export const setAuthToken = async (token: string) => {

@@ -53,7 +53,7 @@ export default function EmployeeMySiteContactsScreen() {
     setFailedImages({});
   }, []);
 
-  useLiveRefresh(loadSites, 12000);
+  useLiveRefresh(loadSites, 10000);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);

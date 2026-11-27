@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Stack, router, usePathname } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { CalendarDays, FileText, Home, Fingerprint, User } from "lucide-react-native";
 import {
   Animated,
@@ -26,7 +27,7 @@ const MAIN_TAB_SCREENS = ["/dashboard", "/visits", "/reports", "/profile"];
 
 function hapticTap() {
   if (Platform.OS === "ios" || Platform.OS === "android") {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
   }
 }
 
@@ -312,6 +313,21 @@ const styles = StyleSheet.create({
 });
 
 export default function EmployeeLayout() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (
+      pathname &&
+      pathname.startsWith("/") &&
+      pathname !== "/" &&
+      pathname !== "/intro" &&
+      pathname !== "/login" &&
+      !pathname.includes("/visit/success")
+    ) {
+      AsyncStorage.setItem("@fieldy_last_route", pathname).catch(() => {});
+    }
+  }, [pathname]);
+
   return (
     <TrackingProvider>
       <View style={{ flex: 1 }}>

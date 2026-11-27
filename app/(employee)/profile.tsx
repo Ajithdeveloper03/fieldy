@@ -168,7 +168,7 @@ export default function EmployeeProfileScreen() {
     setDistanceTodayKm(Number(stats?.distance_today_km ?? 0));
   }, [serviceConfig.name, serviceConfig.vocab.staffRole, setService]);
 
-  useLiveRefresh(loadProfile, 12000);
+  useLiveRefresh(loadProfile, 10000);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);

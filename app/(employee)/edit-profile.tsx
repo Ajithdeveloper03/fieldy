@@ -17,7 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ChevronLeft, Camera, Save, Mail, Phone } from "lucide-react-native";
 import { api, getAuthUser } from "../../services/api";
 import { emitLiveSync } from "../../utils/liveSyncBus";
-import { pickImageAsset, uploadMediaAsset } from "../../services/media";
+import { pickImageAsset, uploadProfilePhotoAsset } from "../../services/media";
 import { useLanguage } from "../../context/LanguageContext";
 import { useLiveRefresh } from "../../hooks/useLiveRefresh";
 import {
@@ -75,33 +75,31 @@ export default function EditProfileScreen() {
     else if (authUser?.avatar_url) setAvatarUri(authUser.avatar_url);
   }, []);
 
-  useLiveRefresh(loadProfile, 20000);
+  useLiveRefresh(loadProfile, 10000);
 
   const handleChangePhoto = () => {
     const runPick = async (source: "camera" | "library") => {
       try {
         const picked = await pickImageAsset(source);
         if (!picked) return;
+        setAvatarLoadError(false);
         setAvatarUri(picked.uri);
-        await AsyncStorage.setItem("@user_avatar_uri", picked.uri);
         setUploadingPhoto(true);
         try {
-          const uploaded = await uploadMediaAsset({
-            asset: picked,
-            title: "Profile Photo",
-          });
-          if (uploaded?.preview_url) {
-            setAvatarUri(uploaded.preview_url);
-            await AsyncStorage.setItem("@user_avatar_uri", uploaded.preview_url);
-            const existing = await getAuthUser();
-            if (existing) {
-              const nextUser = { ...existing, avatar_url: uploaded.preview_url };
-              await AsyncStorage.setItem("@auth_user", JSON.stringify(nextUser));
-            }
+          const uploaded = await uploadProfilePhotoAsset(picked);
+          const finalUrl = uploaded.avatar_url || uploaded.photo_url || picked.uri;
+          setAvatarLoadError(false);
+          setAvatarUri(finalUrl);
+          await AsyncStorage.setItem("@user_avatar_uri", finalUrl);
+          const existing = await getAuthUser();
+          if (existing) {
+            const nextUser = { ...existing, avatar_url: finalUrl, photo_url: finalUrl };
+            await AsyncStorage.setItem("@auth_user", JSON.stringify(nextUser));
           }
-          Alert.alert("Photo Updated", "Your profile image has been uploaded and saved.");
-        } catch {
-          Alert.alert("Saved Locally", "Photo updated on device. It will sync when network is stable.");
+          emitLiveSync("profile");
+          Alert.alert("Photo Updated", "Your profile image has been synced to Mobile & Web Admin.");
+        } catch (err: any) {
+          Alert.alert("Upload Failed", err?.message || "Could not upload profile photo to server. Check connection.");
         } finally {
           setUploadingPhoto(false);
         }

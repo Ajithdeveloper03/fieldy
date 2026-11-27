@@ -47,7 +47,7 @@ export default function EmployeeTasksScreen() {
     setBackendTasks(Array.isArray(res?.tasks) ? res.tasks : []);
   }, []);
 
-  useLiveRefresh(loadTasks, 12000);
+  useLiveRefresh(loadTasks, 10000);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);

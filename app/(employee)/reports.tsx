@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -28,6 +28,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { useService } from "../../context/ServiceContext";
 import { apiClient } from "../../api/client";
+import { useLiveRefresh } from "../../hooks/useLiveRefresh";
 import { showToast } from "../../components/ui/ToastMessage";
 import {
   ServerMediaFile,
@@ -67,39 +68,34 @@ export default function EmployeeReportsScreen() {
 
       const serverReports = (visitsRes?.visits || []).map((v: any) => ({
         id: String(v.id),
-        title: `${v.farmerName || serviceConfig.vocab.entitySingular} • ${serviceConfig.shortName} Report`,
+        title: `${v.farmerName || serviceConfig.vocab.entitySingular} • ${v.siteStatus || serviceConfig.shortName}`,
         date: v.date || "Today",
-        size: v.media_count ? `${v.media_count} file(s)` : "Synced",
-        type: "REPORT",
+        size: v.media_count ? `PDF • ${v.media_count} file(s)` : "PDF Report",
+        type: "PDF",
         status: v.status === "completed" ? "Approved" : "Pending",
         downloadUrl: v.dossier_url || null,
-        filename: `fieldy-visit-report-${v.id}.html`,
+        filename: `fieldy-visit-report-${v.id}.pdf`,
       }));
       const serverIds = new Set(serverReports.map((s: any) => s.id));
       const formattedLocal = localReports
         .filter((r: any) => !r.serverVisitId || !serverIds.has(String(r.serverVisitId)))
         .map((r: any) => ({
-        id: r.serverVisitId || r.id,
-        title: `${r.siteName || r.service || serviceConfig.shortName} • ${r.notes?.slice(0, 28) || "Field Report"}`,
-        date: new Date(r.createdAt || Date.now()).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }),
-        size: r.uploadedMedia?.length ? `${r.uploadedMedia.length} file(s)` : r.beforePhoto || r.afterPhoto ? "Photo Log" : "Text Log",
-        type: "FIELD",
-        status: "Approved",
-        downloadUrl: r.dossierUrl || r.uploadedMedia?.[0]?.download_url || null,
-        filename: `fieldy-report-${r.id}.html`,
-      }));
+          id: r.serverVisitId || r.id,
+          title: `${r.siteName || r.service || serviceConfig.shortName} • ${r.notes?.slice(0, 28) || "Field Report"}`,
+          date: new Date(r.createdAt || Date.now()).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }),
+          size: r.uploadedMedia?.length ? `PDF • ${r.uploadedMedia.length} file(s)` : "PDF Report",
+          type: "PDF",
+          status: "Approved",
+          downloadUrl: r.dossierUrl || r.uploadedMedia?.[0]?.download_url || null,
+          filename: `fieldy-visit-report-${r.serverVisitId || r.id}.pdf`,
+        }));
       setSubmittedReports([...formattedLocal, ...serverReports]);
     } catch {
       // Fallback smoothly
     }
   }, [serviceConfig.shortName, serviceConfig.vocab.entitySingular]);
 
-  useEffect(() => {
-    (async () => {
-      await Promise.resolve();
-      await loadData();
-    })();
-  }, [loadData, serviceConfig.key]);
+  useLiveRefresh(loadData, 10000);
 
   const handleQuickUpload = (kind: "image" | "video") => {
     const runUpload = async (source: "camera" | "library") => {
@@ -162,9 +158,7 @@ export default function EmployeeReportsScreen() {
   };
 
   const archiveImages = [
-    require("../../assets/images/image10.jpg"),
-    require("../../assets/images/image4.jpg"),
-    require("../../assets/images/image14.jpg"),
+    require("../../assets/images/default-site.jpg"),
   ];
   const monthGroups: Record<string, { count: number; reportId: string }> = {};
   submittedReports.forEach((r: any) => {

@@ -5,13 +5,14 @@ import { subscribeLiveSync } from "../utils/liveSyncBus";
 
 /**
  * Automatically runs `fetcher` on screen focus, on app foreground resume,
- * whenever any screen emits a `liveSyncBus` mutation event, and on a lightweight
- * background interval (default 12s) while focused so all screens stay 100% in sync.
+ * whenever any screen emits a `liveSyncBus` mutation event, and every 10s
+ * while focused so Web Admin -> Mobile communication stays live in real time.
  */
 export function useLiveRefresh(
   fetcher: () => void | Promise<void>,
-  intervalMs = 12000
+  intervalMs = 10000
 ) {
+  const effectiveInterval = Math.min(Math.max(intervalMs, 3000), 10000);
   const fetcherRef = useRef(fetcher);
   useEffect(() => {
     fetcherRef.current = fetcher;
@@ -30,7 +31,7 @@ export function useLiveRefresh(
       };
 
       run();
-      const timer = setInterval(run, intervalMs);
+      const timer = setInterval(run, effectiveInterval);
       const unsubSync = subscribeLiveSync(() => run());
       const sub = AppState.addEventListener("change", (state) => {
         if (state === "active") {
@@ -44,6 +45,6 @@ export function useLiveRefresh(
         unsubSync();
         sub.remove();
       };
-    }, [intervalMs])
+    }, [effectiveInterval])
   );
 }

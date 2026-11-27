@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -26,6 +26,7 @@ import {
   FileText,
 } from "lucide-react-native";
 import { apiClient } from "../../../api/client";
+import { useLiveRefresh } from "../../../hooks/useLiveRefresh";
 import { showToast } from "../../../components/ui/ToastMessage";
 import {
   ServerMediaFile,
@@ -69,6 +70,7 @@ export default function EmployeeReportDetailScreen() {
           address: serverMatch.address || "Verified Field Location",
           notes: serverMatch.remarks || "Field visit completed and verified.",
           recommendations: serverMatch.recommendations || "No follow-up recommendations.",
+          siteStatus: serverMatch.siteStatus || "Done & Verified (Good)",
           status: serverMatch.status === "completed" ? "APPROVED" : "PENDING",
           dossierUrl: serverMatch.dossier_url || null,
           isServerVisit: true,
@@ -89,6 +91,7 @@ export default function EmployeeReportDetailScreen() {
           address: localMatch.service || "Field Operations",
           notes: localMatch.notes || "Field report submitted.",
           recommendations: localMatch.recommendations || "No follow-up recommendations.",
+          siteStatus: localMatch.site_status || "Done & Verified (Good)",
           status: "APPROVED",
           dossierUrl: localMatch.dossierUrl || null,
           isServerVisit: Boolean(localMatch.serverVisitId),
@@ -102,12 +105,7 @@ export default function EmployeeReportDetailScreen() {
     }
   }, [id]);
 
-  useEffect(() => {
-    (async () => {
-      await Promise.resolve();
-      await loadReport();
-    })();
-  }, [loadReport]);
+  useLiveRefresh(loadReport, 10000);
 
   const handleUploadAttachment = (kind: "image" | "video") => {
     const run = async (source: "camera" | "library") => {
@@ -186,7 +184,7 @@ export default function EmployeeReportDetailScreen() {
           <LiquidGlassIconButton
             variant="light"
             size={42}
-            onPress={() => void handleDownload(report?.dossierUrl || mediaItems[0]?.download_url, `fieldy-report-${id || "dossier"}.html`)}
+            onPress={() => void handleDownload(report?.dossierUrl || mediaItems[0]?.download_url, `fieldy-visit-report-${id || "report"}.pdf`)}
           >
             <Download size={20} color="#0f172a" />
           </LiquidGlassIconButton>
