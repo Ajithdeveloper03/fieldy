@@ -49,16 +49,16 @@ import {
   Download,
 } from "lucide-react-native";
 
+const DEFAULT_SITE_IMAGE = require("../../../assets/images/default-site.jpg");
+
 export default function EmployeeSiteContactProfileScreen() {
   const { id } = useLocalSearchParams();
   const { serviceConfig } = useService();
-  const [selectedService, setSelectedService] = useState<"audit" | "full">(
-    "audit"
-  );
   const [siteMedia, setSiteMedia] = useState<ServerMediaFile[]>([]);
   const [uploadingKind, setUploadingKind] = useState<"image" | "video" | null>(null);
   const [liveSite, setLiveSite] = useState<any | null>(null);
   const [siteVisits, setSiteVisits] = useState<any[]>([]);
+  const [heroImageError, setHeroImageError] = useState(false);
 
   const loadSiteMedia = useCallback(async () => {
     if (!id || !/^\d+$/.test(String(id))) return;
@@ -152,18 +152,39 @@ export default function EmployeeSiteContactProfileScreen() {
     });
   };
 
+  const locationParts = [
+    liveSite?.village || liveSite?.area,
+    liveSite?.district || liveSite?.city,
+    liveSite?.state,
+  ]
+    .map((v) => (typeof v === "string" ? v.trim() : ""))
+    .filter(Boolean);
+  const remoteSitePhoto = liveSite?.image || liveSite?.photo_url;
   const matchedEntity = {
     id: String(liveSite?.site_contact_id || liveSite?.id || id || ""),
+    code: liveSite?.site_code || liveSite?.code || `SITE-${id || ""}`,
     name: liveSite?.name || serviceConfig.vocab.entitySingular,
-    type: liveSite?.type || liveSite?.permit_status || serviceConfig.vocab.entitySingular,
-    address: liveSite?.site_address || liveSite?.address || liveSite?.area || "Assigned Zone",
-    size: liveSite?.size || liveSite?.site_area || "—",
+    type: liveSite?.type || serviceConfig.vocab.entitySingular,
+    address:
+      (typeof liveSite?.site_address === "string" && liveSite.site_address.trim()) ||
+      (typeof liveSite?.address === "string" && liveSite.address.trim()) ||
+      (locationParts.length > 0 ? locationParts.join(", ") : "Address not specified"),
+    regionText: locationParts.join(", "),
+    size: liveSite?.size || liveSite?.site_area || null,
     sizeUnit: liveSite?.sizeUnit || serviceConfig.vocab.sizeUnit,
     contactPhone: liveSite?.contactPhone || liveSite?.phone || "",
     contactName: liveSite?.contactName || liveSite?.name || serviceConfig.vocab.customerRole,
+    approvalStatus: liveSite?.approval_status || "approved",
+    registeredBy: liveSite?.registered_by || "Admin",
+    joined: liveSite?.joined || null,
+    visitsCount: Number(liveSite?.visits_count ?? siteVisits.length ?? 0),
+    lastVisitAt: liveSite?.last_visit_at || null,
     latitude: liveSite?.latitude || null,
     longitude: liveSite?.longitude || null,
-    image: liveSite?.image ? { uri: liveSite.image } : require("../../../assets/images/image5.jpg"),
+    image:
+      typeof remoteSitePhoto === "string" && remoteSitePhoto.trim().length > 0 && !heroImageError
+        ? { uri: remoteSitePhoto }
+        : DEFAULT_SITE_IMAGE,
   };
 
   const handleStartSiteVisit = async () => {
@@ -214,7 +235,8 @@ export default function EmployeeSiteContactProfileScreen() {
             }}
           >
             <Image
-              source={matchedEntity.image || require("../../../assets/images/image5.jpg")}
+              source={matchedEntity.image}
+              onError={() => setHeroImageError(true)}
               style={[
                 StyleSheet.absoluteFillObject,
                 { width: "100%", height: "100%" },
@@ -320,229 +342,82 @@ export default function EmployeeSiteContactProfileScreen() {
                 <MapPin size={14} color="rgba(255,255,255,0.75)" />
                 <Text
                   style={{
-                    color: "rgba(255,255,255,0.8)",
+                    color: "rgba(255,255,255,0.85)",
                     fontFamily: "Brandon-Medium",
                     fontSize: 13,
                     marginLeft: 6,
+                    flex: 1,
                   }}
                 >
-                  {matchedEntity.address} • {matchedEntity.size} {matchedEntity.sizeUnit}
+                  {matchedEntity.address}
+                  {matchedEntity.size ? ` • ${matchedEntity.size} ${matchedEntity.sizeUnit}` : ""}
                 </Text>
               </View>
             </View>
           </View>
         </View>
 
-        {/* RADIO SELECTION CARDS + PRIMARY BLACK PILL CTA */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 22 }}>
-          <Text
-            style={{
-              color: "#475569",
-              fontFamily: "Brandon-Bold",
-              fontSize: 13,
-              textAlign: "center",
-              marginBottom: 16,
-            }}
-          >
-            Select {serviceConfig.name} Inspection Protocol
-          </Text>
-
-          {/* Option 1 with Floating Top-Left Badge */}
-          <View style={{ position: "relative", marginBottom: 12 }}>
-            <LiquidGlassCard
-              variant="light"
-              borderRadius={22}
-              onPress={() => setSelectedService("audit")}
-              style={{
-                borderWidth: 1.5,
-                borderColor:
-                  selectedService === "audit"
-                    ? serviceConfig.themeColor
-                    : "transparent",
-              }}
-              contentStyle={{
-                paddingHorizontal: 18,
-                paddingVertical: 18,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <View
-                  style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: 11,
-                    borderWidth: 2,
-                    borderColor:
-                      selectedService === "audit" ? serviceConfig.themeColor : "#94a3b8",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginRight: 12,
-                  }}
-                >
-                  {selectedService === "audit" && (
-                    <View
-                      style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 5,
-                        backgroundColor: serviceConfig.themeColor,
-                      }}
-                    />
-                  )}
-                </View>
-                <View>
-                  <Text
-                    style={{
-                      color: "#0f172a",
-                      fontFamily: "Brandon-Bold",
-                      fontSize: 16,
-                    }}
-                  >
-                    Routine {serviceConfig.vocab.visit}
-                  </Text>
-                  <Text
-                    style={{
-                      color: "#64748b",
-                      fontFamily: "Brandon-Medium",
-                      fontSize: 12,
-                    }}
-                  >
-                    Geofence Check-In & OTP Sign-off
-                  </Text>
-                </View>
-              </View>
-
-              <View style={{ alignItems: "flex-end" }}>
-                <Text
-                  style={{
-                    color: "#0f172a",
-                    fontFamily: "Brandon-Bold",
-                    fontSize: 16,
-                  }}
-                >
-                  45 mins
-                </Text>
-                <Text
-                  style={{
-                    color: "#94a3b8",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 12,
-                    textDecorationLine: "line-through",
-                  }}
-                >
-                  90 mins
-                </Text>
-              </View>
-            </LiquidGlassCard>
-
-            {/* Floating Top-Left Pill Badge */}
-            <View
-              pointerEvents="none"
-              style={{
-                position: "absolute",
-                top: -10,
-                left: 18,
-                zIndex: 10,
-                backgroundColor: "#0f172a",
-                paddingHorizontal: 10,
-                paddingVertical: 3,
-                borderRadius: 999,
-                borderWidth: 1,
-                borderColor: "rgba(255, 255, 255, 0.35)",
-              }}
-            >
-              <Text
-                style={{
-                  color: "#4ade80",
-                  fontFamily: "Brandon-Bold",
-                  fontSize: 10,
-                }}
-              >
-                +40 PTS
-              </Text>
-            </View>
-          </View>
-
-          {/* Option 2 */}
+        {/* REAL WEB ADMIN SITE INFORMATION + START VISIT CTA */}
+        <View style={{ paddingHorizontal: 20, paddingTop: 20 }}>
           <LiquidGlassCard
             variant="light"
-            borderRadius={22}
-            onPress={() => setSelectedService("full")}
-            style={{
-              marginBottom: 20,
-              borderWidth: 1.5,
-              borderColor:
-                selectedService === "full"
-                  ? serviceConfig.themeColor
-                  : "transparent",
-            }}
-            contentStyle={{
-              paddingHorizontal: 18,
-              paddingVertical: 18,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
+            borderRadius={24}
+            style={{ marginBottom: 18 }}
+            contentStyle={{ padding: 18, gap: 12 }}
           >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text
+              style={{
+                color: "#64748b",
+                fontFamily: "Brandon-Bold",
+                fontSize: 12,
+                letterSpacing: 0.8,
+                textTransform: "uppercase",
+              }}
+            >
+              {serviceConfig.vocab.entitySingular} Details
+            </Text>
+
+            {[
+              { label: "Site Code", value: matchedEntity.code },
+              { label: "Category / Type", value: matchedEntity.type },
+              { label: "Address", value: matchedEntity.address },
+              ...(matchedEntity.regionText ? [{ label: "Location", value: matchedEntity.regionText }] : []),
+              ...(matchedEntity.size ? [{ label: "Area / Size", value: `${matchedEntity.size} ${matchedEntity.sizeUnit}` }] : []),
+              ...(matchedEntity.contactPhone ? [{ label: "Contact Phone", value: matchedEntity.contactPhone }] : []),
+              {
+                label: "Recorded Visits",
+                value: `${matchedEntity.visitsCount}${matchedEntity.lastVisitAt ? ` • Last visit ${matchedEntity.lastVisitAt}` : ""}`,
+              },
+              ...(matchedEntity.joined ? [{ label: "Registered", value: `${matchedEntity.joined} by ${matchedEntity.registeredBy}` }] : []),
+            ].map((row, idx, arr) => (
               <View
+                key={row.label}
                 style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 11,
-                  borderWidth: 2,
-                  borderColor:
-                    selectedService === "full" ? serviceConfig.themeColor : "#94a3b8",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginRight: 12,
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: 12,
+                  paddingBottom: idx < arr.length - 1 ? 10 : 0,
+                  borderBottomWidth: idx < arr.length - 1 ? 1 : 0,
+                  borderBottomColor: "rgba(15, 23, 42, 0.08)",
                 }}
               >
-                {selectedService === "full" && (
-                  <View
-                    style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: 5,
-                      backgroundColor: serviceConfig.themeColor,
-                    }}
-                  />
-                )}
-              </View>
-              <View>
+                <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 13 }}>
+                  {row.label}
+                </Text>
                 <Text
                   style={{
                     color: "#0f172a",
                     fontFamily: "Brandon-Bold",
-                    fontSize: 16,
+                    fontSize: 14,
+                    textAlign: "right",
+                    flex: 1,
                   }}
                 >
-                  Full {serviceConfig.vocab.entitySingular} Overhaul
-                </Text>
-                <Text
-                  style={{
-                    color: "#64748b",
-                    fontFamily: "Brandon-Medium",
-                    fontSize: 12,
-                  }}
-                >
-                  Complete Quality & Inspection Audit
+                  {row.value}
                 </Text>
               </View>
-            </View>
-
-            <Text
-              style={{
-                color: "#0f172a",
-                fontFamily: "Brandon-Bold",
-                fontSize: 16,
-              }}
-            >
-              2.5 hrs
-            </Text>
+            ))}
           </LiquidGlassCard>
 
           {/* Primary CTA Button */}
@@ -562,9 +437,7 @@ export default function EmployeeSiteContactProfileScreen() {
                 fontSize: 16,
               }}
             >
-              {selectedService === "audit"
-                ? `Start Routine ${serviceConfig.vocab.visit} • Check-In`
-                : `Start Full ${serviceConfig.vocab.entitySingular} Overhaul`}
+              Start {serviceConfig.vocab.visit} • Check-In
             </Text>
           </LiquidGlassButton>
 
@@ -588,16 +461,15 @@ export default function EmployeeSiteContactProfileScreen() {
                   fontSize: 14,
                 }}
               >
-                Call {serviceConfig.vocab.customerRole}
+                Call Site Contact
               </Text>
             </LiquidGlassButton>
             <LiquidGlassButton
               variant="light"
               onPress={() =>
-                Alert.alert(
-                  `${serviceConfig.vocab.entitySingular} Chat`,
-                  `Connecting to ${matchedEntity.contactName} (${serviceConfig.vocab.customerRole})...`
-                )
+                matchedEntity.contactPhone
+                  ? Linking.openURL(`sms:${matchedEntity.contactPhone}`)
+                  : Alert.alert("Contact unavailable", "No phone number is registered for this site.")
               }
               style={{ flex: 1 }}
               contentStyle={{ paddingVertical: 13, paddingHorizontal: 12 }}
@@ -614,7 +486,7 @@ export default function EmployeeSiteContactProfileScreen() {
                   fontSize: 14,
                 }}
               >
-                Direct Chat
+                Message
               </Text>
             </LiquidGlassButton>
           </View>

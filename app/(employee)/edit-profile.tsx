@@ -33,6 +33,8 @@ export default function EditProfileScreen() {
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const [avatarLoadError, setAvatarLoadError] = useState(false);
+  const [displayName, setDisplayName] = useState("Field Officer");
   const [form, setForm] = useState({
     mobile: "",
     email: "",
@@ -40,9 +42,7 @@ export default function EditProfileScreen() {
 
   const loadProfile = useCallback(async () => {
     const authUser = await getAuthUser();
-    const storedAvatar = await AsyncStorage.getItem("@user_avatar_uri");
-    if (storedAvatar) setAvatarUri(storedAvatar);
-    else if (authUser?.avatar_url) setAvatarUri(authUser.avatar_url);
+    if (authUser?.name) setDisplayName(authUser.name);
 
     setForm((prev) => ({
       mobile: prev.mobile || authUser?.phone || "",
@@ -52,14 +52,27 @@ export default function EditProfileScreen() {
       const dash = await api.get("/employee/dashboard");
       const emp = dash?.data?.employee ?? dash?.employee;
       if (emp) {
+        if (emp.name) setDisplayName(emp.name);
         setForm({
           mobile: emp.phone || "",
           email: emp.email || "",
         });
+        const serverPhoto = emp.avatar_url || emp.photo_url || null;
+        setAvatarLoadError(false);
+        setAvatarUri(serverPhoto);
+        if (serverPhoto) {
+          await AsyncStorage.setItem("@user_avatar_uri", serverPhoto);
+        } else {
+          await AsyncStorage.removeItem("@user_avatar_uri");
+        }
+        return;
       }
     } catch {
       // Offline fallback uses stored values
     }
+    const storedAvatar = await AsyncStorage.getItem("@user_avatar_uri");
+    if (storedAvatar) setAvatarUri(storedAvatar);
+    else if (authUser?.avatar_url) setAvatarUri(authUser.avatar_url);
   }, []);
 
   useLiveRefresh(loadProfile, 20000);
@@ -222,14 +235,41 @@ export default function EditProfileScreen() {
                   elevation: 6,
                 }}
               >
-                <Image
-                  source={
-                    avatarUri
-                      ? { uri: avatarUri }
-                      : require("../../assets/images/image3.jpg")
-                  }
-                  style={{ width: "100%", height: "100%", borderRadius: 56 }}
-                />
+                {avatarUri && !avatarLoadError ? (
+                  <Image
+                    source={{ uri: avatarUri }}
+                    onError={() => setAvatarLoadError(true)}
+                    style={{ width: "100%", height: "100%", borderRadius: 56 }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 56,
+                      backgroundColor: "#0f766e",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#ffffff",
+                        fontFamily: "Brandon-Bold",
+                        fontSize: 36,
+                      }}
+                    >
+                      {displayName
+                        .trim()
+                        .split(/\s+/)
+                        .slice(0, 2)
+                        .map((w) => w[0])
+                        .join("")
+                        .toUpperCase() || "FO"}
+                    </Text>
+                  </View>
+                )}
                 <LiquidGlassIconButton
                   onPress={handleChangePhoto}
                   variant="tinted"

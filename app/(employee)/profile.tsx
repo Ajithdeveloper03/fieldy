@@ -25,6 +25,12 @@ import {
   Sparkles,
   Bell,
   Fingerprint,
+  Phone,
+  Mail,
+  MapPin,
+  Building2,
+  UserCheck,
+  ShieldAlert,
 } from "lucide-react-native";
 import { useService, ALL_SERVICE_KEYS } from "../../context/ServiceContext";
 import { api, getAuthUser } from "../../services/api";
@@ -37,23 +43,34 @@ import {
   LiquidGlassIconButton,
 } from "../../components/LiquidGlass";
 
-const SERVICE_CARD_IMAGES: Record<string, any> = {
-  real_estate: require("../../assets/images/image1.jpg"),
-  facility_fmcg: require("../../assets/images/image2.jpg"),
-  construction: require("../../assets/images/image3.jpg"),
-  security: require("../../assets/images/image4.jpg"),
-  cleaning: require("../../assets/images/image5.jpg"),
-  maintenance: require("../../assets/images/image6.jpg"),
-  solar: require("../../assets/images/image7.jpg"),
-  pest_control: require("../../assets/images/image8.jpg"),
-  logistics: require("../../assets/images/image10.jpg"),
-};
+const DEFAULT_SITE_IMAGE = require("../../assets/images/default-site.jpg");
+
+function formatDesignation(raw?: string | null, fallback?: string): string {
+  if (!raw || !raw.trim()) return fallback || "Field Officer";
+  return raw
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function getInitials(name: string): string {
+  const parts = (name || "FO").trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  return (parts[0] || "FO").slice(0, 2).toUpperCase();
+}
 
 export default function EmployeeProfileScreen() {
   const { serviceConfig, setService } = useService();
   const [userName, setUserName] = useState("Field Officer");
-  const [employeeCode, setEmployeeCode] = useState("EMP");
+  const [employeeCode, setEmployeeCode] = useState("—");
+  const [designationLabel, setDesignationLabel] = useState(serviceConfig.vocab.staffRole);
   const [companyName, setCompanyName] = useState(serviceConfig.name);
+  const [phone, setPhone] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
+  const [region, setRegion] = useState<string | null>(null);
+  const [emergencyPhone, setEmergencyPhone] = useState<string | null>(null);
+  const [managerName, setManagerName] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarLoadError, setAvatarLoadError] = useState(false);
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [siteCount, setSiteCount] = useState(0);
   const [taskCount, setTaskCount] = useState(0);
@@ -83,17 +100,54 @@ export default function EmployeeProfileScreen() {
       ? sitesRes.data.sites
       : [];
 
-    if (emp?.name) setUserName(emp.name);
-    else if (authUser?.name) setUserName(authUser.name);
-    else if (storedName) setUserName(storedName);
+    const resolvedName = emp?.name || authUser?.name || storedName || "Field Officer";
+    const resolvedCode = emp?.employee_code || authUser?.employee_code || "—";
+    const resolvedCompany = emp?.company?.name || emp?.company_name || authUser?.company_name || serviceConfig.name;
+    const resolvedDesignation = formatDesignation(emp?.designation || authUser?.designation, serviceConfig.vocab.staffRole);
+    const resolvedPhone = emp?.phone || authUser?.phone || null;
+    const resolvedEmail = emp?.email || authUser?.email || null;
+    const resolvedRegion = emp?.assigned_region || emp?.region || authUser?.region || null;
+    const resolvedEmergency = emp?.emergency_phone || authUser?.emergency_phone || null;
+    const resolvedManager = emp?.manager_name || null;
+    const serverPhoto = emp?.avatar_url || emp?.photo_url || null;
 
-    if (emp?.employee_code) setEmployeeCode(emp.employee_code);
-    else if (authUser?.employee_code) setEmployeeCode(authUser.employee_code);
+    setUserName(resolvedName);
+    setEmployeeCode(resolvedCode);
+    setCompanyName(resolvedCompany);
+    setDesignationLabel(resolvedDesignation);
+    setPhone(resolvedPhone);
+    setEmail(resolvedEmail);
+    setRegion(resolvedRegion);
+    setEmergencyPhone(resolvedEmergency);
+    setManagerName(resolvedManager);
 
-    if (emp?.company?.name || emp?.company_name || authUser?.company_name) {
-      setCompanyName(emp?.company?.name || emp?.company_name || authUser?.company_name);
-    } else {
-      setCompanyName(serviceConfig.name);
+    if (emp) {
+      // Server photo is authoritative when /employee/dashboard succeeds
+      setAvatarLoadError(false);
+      setAvatarUrl(serverPhoto);
+      if (serverPhoto) {
+        await AsyncStorage.setItem("@user_avatar_uri", serverPhoto);
+      } else {
+        await AsyncStorage.removeItem("@user_avatar_uri");
+      }
+      // Keep local auth cache in sync with Web Admin edits
+      if (authUser) {
+        const syncedUser = {
+          ...authUser,
+          name: resolvedName,
+          phone: resolvedPhone ?? authUser.phone,
+          email: resolvedEmail ?? authUser.email,
+          employee_code: resolvedCode,
+          designation: emp.designation ?? authUser.designation,
+          region: resolvedRegion ?? authUser.region,
+          emergency_phone: resolvedEmergency ?? authUser.emergency_phone,
+          company_name: resolvedCompany,
+          avatar_url: serverPhoto,
+        };
+        await AsyncStorage.setItem("@auth_user", JSON.stringify(syncedUser));
+      }
+    } else if (authUser?.avatar_url) {
+      setAvatarUrl(authUser.avatar_url);
     }
 
     if (emp?.industry && ALL_SERVICE_KEYS.includes(emp.industry)) {
@@ -112,7 +166,7 @@ export default function EmployeeProfileScreen() {
     setPointsEarned(Number(stats?.points_earned ?? 0));
     setEfficiencyScore(Number(stats?.score ?? stats?.task_completion_rate ?? 0));
     setDistanceTodayKm(Number(stats?.distance_today_km ?? 0));
-  }, [serviceConfig.name, setService]);
+  }, [serviceConfig.name, serviceConfig.vocab.staffRole, setService]);
 
   useLiveRefresh(loadProfile, 12000);
 
@@ -245,10 +299,36 @@ export default function EmployeeProfileScreen() {
                   backgroundColor: "rgba(255,255,255,0.08)",
                 }}
               >
-                <Image
-                  source={SERVICE_CARD_IMAGES[serviceConfig.key] || require("../../assets/images/image1.jpg")}
-                  style={{ width: "100%", height: "100%", borderRadius: 64 }}
-                />
+                {avatarUrl && !avatarLoadError ? (
+                  <Image
+                    source={{ uri: avatarUrl }}
+                    onError={() => setAvatarLoadError(true)}
+                    style={{ width: "100%", height: "100%", borderRadius: 64 }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <LinearGradient
+                    colors={["#059669", "#0f766e"]}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 64,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#ffffff",
+                        fontFamily: "Brandon-Bold",
+                        fontSize: 40,
+                        letterSpacing: 1,
+                      }}
+                    >
+                      {getInitials(userName)}
+                    </Text>
+                  </LinearGradient>
+                )}
               </View>
 
               {/* Right Metric */}
@@ -313,7 +393,7 @@ export default function EmployeeProfileScreen() {
                 textAlign: "center",
               }}
             >
-              {serviceConfig.vocab.staffRole} • {employeeCode}
+              {designationLabel} • {employeeCode}
             </Text>
             <Text
               style={{
@@ -370,6 +450,71 @@ export default function EmployeeProfileScreen() {
             </View>
           </LiquidGlassCard>
 
+          {/* VERIFIED WEB ADMIN PROFILE DETAILS */}
+          <LiquidGlassCard
+            variant="dark"
+            borderRadius={28}
+            style={{ marginBottom: 18 }}
+            contentStyle={{ padding: 20, gap: 12 }}
+          >
+            <Text
+              style={{
+                color: "rgba(255,255,255,0.6)",
+                fontFamily: "Brandon-Bold",
+                fontSize: 12,
+                letterSpacing: 1,
+                textTransform: "uppercase",
+                marginBottom: 2,
+              }}
+            >
+              Official Profile Details
+            </Text>
+
+            {[
+              { icon: Phone, label: "Mobile Number", value: phone || "Not assigned" },
+              { icon: Mail, label: "Email Address", value: email || "Not assigned" },
+              { icon: MapPin, label: "Assigned Region", value: region || "All Zones" },
+              { icon: Building2, label: "Organization", value: companyName },
+              ...(emergencyPhone ? [{ icon: ShieldAlert, label: "Emergency Contact", value: emergencyPhone }] : []),
+              ...(managerName ? [{ icon: UserCheck, label: "Reporting Manager", value: managerName }] : []),
+            ].map((row, idx, arr) => (
+              <View
+                key={row.label}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingBottom: idx < arr.length - 1 ? 10 : 0,
+                  borderBottomWidth: idx < arr.length - 1 ? 1 : 0,
+                  borderBottomColor: "rgba(255,255,255,0.08)",
+                }}
+              >
+                <row.icon size={16} color="#4ade80" style={{ marginRight: 12 }} />
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      color: "rgba(255,255,255,0.58)",
+                      fontFamily: "Brandon-Medium",
+                      fontSize: 12,
+                    }}
+                  >
+                    {row.label}
+                  </Text>
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      color: "#ffffff",
+                      fontFamily: "Brandon-Bold",
+                      fontSize: 15,
+                      marginTop: 1,
+                    }}
+                  >
+                    {row.value}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </LiquidGlassCard>
+
           {/* SPLIT BENTO FEATURE CARDS */}
           <View
             style={{
@@ -402,12 +547,23 @@ export default function EmployeeProfileScreen() {
                     borderColor: "#ffffff",
                     overflow: "hidden",
                     marginBottom: 8,
+                    backgroundColor: "#0f766e",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  <Image
-                    source={SERVICE_CARD_IMAGES[serviceConfig.key] || require("../../assets/images/image1.jpg")}
-                    style={{ width: "100%", height: "100%" }}
-                  />
+                  {avatarUrl && !avatarLoadError ? (
+                    <Image
+                      source={{ uri: avatarUrl }}
+                      onError={() => setAvatarLoadError(true)}
+                      style={{ width: "100%", height: "100%" }}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 18 }}>
+                      {getInitials(userName)}
+                    </Text>
+                  )}
                 </View>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <Text
@@ -470,7 +626,7 @@ export default function EmployeeProfileScreen() {
               }}
             >
               <Image
-                source={SERVICE_CARD_IMAGES[serviceConfig.key] || require("../../assets/images/image3.jpg")}
+                source={DEFAULT_SITE_IMAGE}
                 style={{ width: "100%", height: "100%" }}
                 resizeMode="cover"
               />
@@ -584,7 +740,7 @@ export default function EmployeeProfileScreen() {
               }}
             >
               <Image
-                source={require("../../assets/images/image10.jpg")}
+                source={DEFAULT_SITE_IMAGE}
                 style={{ width: "100%", height: "100%" }}
                 resizeMode="cover"
               />

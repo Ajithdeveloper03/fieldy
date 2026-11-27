@@ -20,7 +20,6 @@ import {
   LiquidGlassBackdrop,
   LiquidGlassButton,
   LiquidGlassCard,
-  LiquidGlassIconBadge,
   LiquidGlassIconButton,
 } from "../../components/LiquidGlass";
 import { PageHeroBanner } from "../../components/PageHeroBanner";
@@ -30,23 +29,18 @@ import {
   MapPin,
   Phone,
   MessageSquare,
-  MoreVertical,
   Activity,
   ArrowRight,
+  CalendarDays,
 } from "lucide-react-native";
 
-const SITE_FALLBACK_IMAGES = [
-  require("../../assets/images/image2.jpg"),
-  require("../../assets/images/image5.jpg"),
-  require("../../assets/images/image3.jpg"),
-  require("../../assets/images/image11.jpg"),
-  require("../../assets/images/image12.jpg"),
-  require("../../assets/images/image15.jpg"),
-];
+// Single consistent default image used ONLY when no site photo was uploaded in Web Admin
+const DEFAULT_SITE_IMAGE = require("../../assets/images/default-site.jpg");
 
 export default function EmployeeMySiteContactsScreen() {
   const { serviceConfig } = useService();
   const [sites, setSites] = useState<any[]>([]);
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [isTenant, setIsTenant] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -56,6 +50,7 @@ export default function EmployeeMySiteContactsScreen() {
     setIsTenant(Boolean(authUser?.company_id));
     const response = await apiClient.get("/employee/sites").catch(() => null);
     setSites(Array.isArray(response?.sites) ? response.sites : []);
+    setFailedImages({});
   }, []);
 
   useLiveRefresh(loadSites, 12000);
@@ -66,20 +61,16 @@ export default function EmployeeMySiteContactsScreen() {
     setRefreshing(false);
   }, [loadSites]);
 
-  const mergedList = React.useMemo(() => {
-    return sites.map((s: any, idx: number) => ({
-      ...s,
-      image: s.image || SITE_FALLBACK_IMAGES[idx % SITE_FALLBACK_IMAGES.length],
-    }));
-  }, [sites]);
-
-  const displayList = mergedList.filter((item: any) => {
+  const displayList = sites.filter((item: any) => {
     const q = searchQuery.toLowerCase();
     return (
       !q ||
       item.name?.toLowerCase().includes(q) ||
+      item.site_code?.toLowerCase().includes(q) ||
       item.address?.toLowerCase().includes(q) ||
+      item.site_address?.toLowerCase().includes(q) ||
       item.area?.toLowerCase().includes(q) ||
+      item.city?.toLowerCase().includes(q) ||
       item.type?.toLowerCase().includes(q)
     );
   });
@@ -161,33 +152,60 @@ export default function EmployeeMySiteContactsScreen() {
           ) : null}
           
           {displayList.map((site: any, idx: number) => {
-            const siteId = site.site_contact_id || site.id;
-            const siteAddress = site.site_address || site.address || `${site.area || ''}, ${site.city || ''}`;
-            const siteCode = site.site_code || site.code || "REG-VERIFIED";
-            const siteAreaText = site.size ? `${site.size} ${site.sizeUnit || serviceConfig.vocab.sizeUnit}` : (site.site_area ? `${site.site_area} ${serviceConfig.vocab.sizeUnit}` : serviceConfig.vocab.entitySingular);
-            const siteImage = site.image || SITE_FALLBACK_IMAGES[idx % SITE_FALLBACK_IMAGES.length];
+            const siteId = String(site.site_contact_id || site.id);
+            const locationParts = [site.village || site.area, site.district || site.city, site.state]
+              .map((v) => (typeof v === "string" ? v.trim() : ""))
+              .filter(Boolean);
+            const siteAddress =
+              (typeof site.site_address === "string" && site.site_address.trim()) ||
+              (typeof site.address === "string" && site.address.trim()) ||
+              (locationParts.length > 0 ? locationParts.join(", ") : "Address not specified");
+            const siteCode = site.site_code || site.code || `SITE-${siteId}`;
+            const siteAreaText = site.size
+              ? `${site.size} ${site.sizeUnit || serviceConfig.vocab.sizeUnit}`
+              : null;
+            const remotePhoto = site.image || site.photo_url;
+            const hasRemotePhoto =
+              typeof remotePhoto === "string" &&
+              remotePhoto.trim().length > 0 &&
+              !failedImages[siteId];
+            const siteImageSource = hasRemotePhoto ? { uri: remotePhoto } : DEFAULT_SITE_IMAGE;
+            const phoneValue = site.contactPhone || site.phone;
 
             return (
               <LiquidGlassCard
-                key={`${site.id}-${idx}`}
+                key={`${siteId}-${idx}`}
                 variant="light"
-                borderRadius={30}
+                borderRadius={28}
                 onPress={() => router.push(`/(employee)/site/${siteId}` as any)}
               >
-                {/* Top Banner Image */}
-                <View style={{ height: 196 }}>
-                  <Image source={typeof siteImage === "number" ? siteImage : { uri: siteImage }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
-                  <LiquidGlassIconBadge
-                    size={36}
-                    borderRadius={18}
-                    variant="dark"
-                    tintColor="#0f172a"
-                    style={{ position: "absolute", top: 14, right: 14 }}
+                {/* Top Banner Image (Web Admin photo or single default site image) */}
+                <View style={{ height: 186, backgroundColor: "#e2e8f0" }}>
+                  <Image
+                    source={siteImageSource}
+                    onError={() => setFailedImages((prev) => ({ ...prev, [siteId]: true }))}
+                    style={{ width: "100%", height: "100%" }}
+                    resizeMode="cover"
+                  />
+
+                  {/* Site Code Pill */}
+                  <View
+                    style={{
+                      position: "absolute",
+                      top: 14,
+                      left: 14,
+                      backgroundColor: "rgba(15, 23, 42, 0.78)",
+                      paddingHorizontal: 12,
+                      paddingVertical: 5,
+                      borderRadius: 999,
+                    }}
                   >
-                    <MoreVertical size={20} color="#ffffff" />
-                  </LiquidGlassIconBadge>
-                  
-                  {/* Status Badge Over Image */}
+                    <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 12 }}>
+                      {siteCode}
+                    </Text>
+                  </View>
+
+                  {/* Category / Status Badge Over Image */}
                   <LiquidGlassCard
                     variant="tinted"
                     tintColor={`${serviceConfig.themeColor}CC`}
@@ -195,62 +213,81 @@ export default function EmployeeMySiteContactsScreen() {
                     style={{ position: "absolute", bottom: 14, right: 14 }}
                     contentStyle={{ paddingHorizontal: 14, paddingVertical: 7, flexDirection: "row", alignItems: "center" }}
                   >
-                    <Activity size={16} color="#ffffff" style={{ marginRight: 6 }} />
-                    <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13 }}>{site.type || site.permit_status || "Active Site"}</Text>
+                    <Activity size={15} color="#ffffff" style={{ marginRight: 6 }} />
+                    <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 13 }}>
+                      {site.type || serviceConfig.vocab.entitySingular}
+                    </Text>
                   </LiquidGlassCard>
                 </View>
 
-                <View style={{ padding: 22 }}>
-                  {/* Profile Floating Rounded Avatar */}
-                  <View style={{ marginTop: -56, marginBottom: 14, width: 88, height: 88, borderRadius: 30, borderWidth: 3.5, borderColor: "rgba(255, 255, 255, 0.94)", overflow: "hidden", backgroundColor: "#e2e8f0" }}>
-                    <Image source={typeof siteImage === "number" ? siteImage : { uri: siteImage }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
-                  </View>
+                <View style={{ padding: 20 }}>
+                  {/* Real Web Admin Site Title & Location */}
+                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 22, lineHeight: 28, marginBottom: 6 }}>
+                    {site.name}
+                  </Text>
 
-                  {/* Info Text */}
-                  <Text style={{ color: "#0f172a", fontFamily: "Brandon-Bold", fontSize: 26, lineHeight: 30, marginBottom: 6 }}>{site.name}</Text>
-                  
-                  <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
-                    <MapPin size={16} color="#64748b" />
-                    <Text style={{ color: "#64748b", fontFamily: "Brandon-Medium", fontSize: 16, marginLeft: 6, flex: 1 }}>
-                      {siteAddress} • <Text style={{ color: serviceConfig.themeColor, fontFamily: "Brandon-Bold" }}>{siteCode}</Text>
+                  <View style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 14 }}>
+                    <MapPin size={16} color="#64748b" style={{ marginTop: 2 }} />
+                    <Text style={{ color: "#475569", fontFamily: "Brandon-Medium", fontSize: 14, marginLeft: 6, flex: 1, lineHeight: 20 }}>
+                      {siteAddress}
                     </Text>
                   </View>
 
-                  <LiquidGlassCard
-                    variant="light"
-                    borderRadius={14}
-                    style={{ alignSelf: "flex-start", marginBottom: 20 }}
-                    contentStyle={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 14, paddingVertical: 9 }}
-                  >
-                    <Text style={{ color: serviceConfig.themeColor, fontFamily: "Brandon-Bold", fontSize: 15 }}>{siteAreaText}</Text>
-                  </LiquidGlassCard>
+                  {/* Accurate Metadata Chips */}
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
+                    {siteAreaText ? (
+                      <LiquidGlassCard
+                        variant="light"
+                        borderRadius={12}
+                        contentStyle={{ paddingHorizontal: 12, paddingVertical: 7 }}
+                      >
+                        <Text style={{ color: serviceConfig.themeColor, fontFamily: "Brandon-Bold", fontSize: 13 }}>
+                          {siteAreaText}
+                        </Text>
+                      </LiquidGlassCard>
+                    ) : null}
+
+                    <LiquidGlassCard
+                      variant="light"
+                      borderRadius={12}
+                      contentStyle={{ paddingHorizontal: 12, paddingVertical: 7, flexDirection: "row", alignItems: "center", gap: 5 }}
+                    >
+                      <CalendarDays size={13} color="#475569" />
+                      <Text style={{ color: "#334155", fontFamily: "Brandon-Bold", fontSize: 13 }}>
+                        {Number(site.visits_count || 0)} {Number(site.visits_count || 0) === 1 ? "Visit" : "Visits"}
+                        {site.last_visit_at ? ` • Last ${site.last_visit_at}` : ""}
+                      </Text>
+                    </LiquidGlassCard>
+                  </View>
 
                   {/* Bottom Action Icons */}
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 1, borderTopColor: "rgba(15, 23, 42, 0.08)", paddingTop: 18 }}>
-                    <View style={{ flexDirection: "row", gap: 12 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 1, borderTopColor: "rgba(15, 23, 42, 0.08)", paddingTop: 16 }}>
+                    <View style={{ flexDirection: "row", gap: 10 }}>
                       <LiquidGlassIconButton
                         variant="light"
-                        size={48}
-                        onPress={() => site.contactPhone || site.phone ? Linking.openURL(`tel:${site.contactPhone || site.phone}`) : Alert.alert("Contact unavailable", "No phone number is available.")}
+                        size={44}
+                        onPress={() => phoneValue ? Linking.openURL(`tel:${phoneValue}`) : Alert.alert("Contact unavailable", "No phone number is registered for this site.")}
                       >
-                        <Phone size={20} color="#0f172a" />
+                        <Phone size={18} color="#0f172a" />
                       </LiquidGlassIconButton>
                       <LiquidGlassIconButton
                         variant="light"
-                        size={48}
-                        onPress={() => site.contactPhone || site.phone ? Linking.openURL(`tel:${site.contactPhone || site.phone}`) : Alert.alert("Contact unavailable", "No phone number is available.")}
+                        size={44}
+                        onPress={() => phoneValue ? Linking.openURL(`sms:${phoneValue}`) : Alert.alert("Contact unavailable", "No phone number is registered for this site.")}
                       >
-                        <MessageSquare size={20} color="#0f172a" />
+                        <MessageSquare size={18} color="#0f172a" />
                       </LiquidGlassIconButton>
                     </View>
                     <LiquidGlassButton
                       variant="tinted"
                       tintColor="rgba(15, 23, 42, 0.86)"
                       onPress={() => router.push(`/(employee)/site/${siteId}` as any)}
-                      contentStyle={{ paddingHorizontal: 18, paddingVertical: 12 }}
+                      contentStyle={{ paddingHorizontal: 18, paddingVertical: 11 }}
                     >
-                      <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 15, marginRight: 8 }}>View {serviceConfig.vocab.entitySingular}</Text>
-                      <ArrowRight size={18} color="#ffffff" />
+                      <Text style={{ color: "#ffffff", fontFamily: "Brandon-Bold", fontSize: 14, marginRight: 8 }}>
+                        View {serviceConfig.vocab.entitySingular}
+                      </Text>
+                      <ArrowRight size={17} color="#ffffff" />
                     </LiquidGlassButton>
                   </View>
                 </View>
